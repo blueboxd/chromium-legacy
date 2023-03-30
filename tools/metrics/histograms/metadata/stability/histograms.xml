@@ -105,7 +105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Android.ProcessedRealMinidumps"
-    enum="AndroidProcessedMinidumps" expires_after="2023-07-23">
+    enum="AndroidProcessedMinidumps" expires_after="2023-09-24">
   <owner>wnwen@chromium.org</owner>
   <owner>src/components/minidump_uploader/OWNERS</owner>
   <summary>
@@ -392,7 +392,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.IOS.Experimental.Counts2"
-    enum="IOSStabilityUserVisibleTerminationType" expires_after="2023-05-03">
+    enum="IOSStabilityUserVisibleTerminationType" expires_after="2024-03-20">
   <owner>ajuma@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -421,9 +421,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.TabCountBefore{Event}" units="tabs"
-    expires_after="2023-04-27">
-  <owner>djean@chromium.org</owner>
-  <owner>olivierrobin@chromium.org</owner>
+    expires_after="2024-03-21">
+  <owner>ajuma@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
   <summary>
     The number of tabs opened in the previous session when the app starts after
     {Event}. Can be used to understand if there is a correlation between
@@ -490,7 +490,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.HasPossibleExplanation"
-    enum="BooleanHasPossibleExplanation" expires_after="2023-07-16">
+    enum="BooleanHasPossibleExplanation" expires_after="2023-09-24">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -571,7 +571,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.MobileSessionShutdownType"
-    enum="MobileSessionShutdownType" expires_after="2023-07-16">
+    enum="MobileSessionShutdownType" expires_after="2023-09-17">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -588,7 +588,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.MobileSessionShutdownType2"
-    enum="MobileSessionShutdownType" expires_after="2023-07-16">
+    enum="MobileSessionShutdownType" expires_after="2023-09-17">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>

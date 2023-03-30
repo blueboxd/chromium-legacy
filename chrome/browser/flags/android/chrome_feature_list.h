@@ -14,6 +14,8 @@ namespace android {
 
 // Alphabetical:
 BASE_DECLARE_FEATURE(kAdaptiveButtonInTopToolbar);
+BASE_DECLARE_FEATURE(kAdaptiveButtonInTopToolbarTranslate);
+BASE_DECLARE_FEATURE(kAdaptiveButtonInTopToolbarAddToBookmarks);
 BASE_DECLARE_FEATURE(kAdaptiveButtonInTopToolbarCustomizationV2);
 BASE_DECLARE_FEATURE(kAddEduAccountFromAccountSettingsForSupervisedUsers);
 BASE_DECLARE_FEATURE(kAddToHomescreenIPH);
@@ -57,6 +59,7 @@ BASE_DECLARE_FEATURE(kCCTReportParallelRequestStatus);
 BASE_DECLARE_FEATURE(kCCTResizable90MaximumHeight);
 BASE_DECLARE_FEATURE(kCCTResizableForThirdParties);
 BASE_DECLARE_FEATURE(kCCTResizableSideSheet);
+BASE_DECLARE_FEATURE(kCCTResizableSideSheetDiscoverFeedSettings);
 BASE_DECLARE_FEATURE(kCCTResizableSideSheetForThirdParties);
 BASE_DECLARE_FEATURE(kCCTResourcePrefetch);
 BASE_DECLARE_FEATURE(kCCTRetainingStateInMemory);
@@ -84,6 +87,7 @@ BASE_DECLARE_FEATURE(kContextualSearchSuppressShortView);
 BASE_DECLARE_FEATURE(kContextualSearchThinWebViewImplementation);
 BASE_DECLARE_FEATURE(kDeferKeepScreenOnDuringGesture);
 BASE_DECLARE_FEATURE(kDeferNotifyInMotion);
+BASE_DECLARE_FEATURE(kDelayTransitionsForAnimation);
 BASE_DECLARE_FEATURE(kDontPrefetchLibraries);
 BASE_DECLARE_FEATURE(kDownloadAutoResumptionThrottling);
 BASE_DECLARE_FEATURE(kDownloadHomeForExternalApp);
@@ -164,7 +168,6 @@ BASE_DECLARE_FEATURE(kTabGroupsForTablets);
 BASE_DECLARE_FEATURE(kTabGridLayoutAndroid);
 BASE_DECLARE_FEATURE(kTabSelectionEditorV2);
 BASE_DECLARE_FEATURE(kTabStateV1Optimizations);
-BASE_DECLARE_FEATURE(kTabStripImprovements);
 BASE_DECLARE_FEATURE(kDiscoverFeedMultiColumn);
 BASE_DECLARE_FEATURE(kTabStripRedesign);
 BASE_DECLARE_FEATURE(kTabToGTSAnimation);

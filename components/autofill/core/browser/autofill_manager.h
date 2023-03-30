@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_trigger_source.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_data.h"
@@ -40,13 +41,12 @@ class RectF;
 namespace autofill {
 
 class AutofillField;
-class AutofillOfferManager;
 class CreditCardAccessManager;
 struct FormData;
 struct FormFieldData;
 class FormStructure;
 class LogManager;
-class TouchToFillDelegateImpl;
+class TouchToFillDelegateAndroidImpl;
 
 // This class defines the interface should be implemented by autofill
 // implementation in browser side to interact with AutofillDriver.
@@ -153,15 +153,12 @@ class AutofillManager
   }
 
   AutofillClient* unsafe_client(
-      base::PassKey<TouchToFillDelegateImpl> pass_key) {
+      base::PassKey<TouchToFillDelegateAndroidImpl> pass_key) {
     return AutofillManager::unsafe_client();
   }
 
   // Returns a WeakPtr to the leaf class.
   virtual base::WeakPtr<AutofillManager> GetWeakPtr() = 0;
-
-  // May return nullptr.
-  virtual AutofillOfferManager* GetOfferManager() = 0;
 
   // May return nullptr.
   virtual CreditCardAccessManager* GetCreditCardAccessManager() = 0;
@@ -223,11 +220,13 @@ class AutofillManager
   void FillCreditCardForm(const FormData& form,
                           const FormFieldData& field,
                           const CreditCard& credit_card,
-                          const std::u16string& cvc);
+                          const std::u16string& cvc,
+                          const AutofillTriggerSource trigger_source);
 
   void FillProfileForm(const AutofillProfile& profile,
                        const FormData& form,
-                       const FormFieldData& field);
+                       const FormFieldData& field,
+                       const AutofillTriggerSource trigger_source);
 
   // Invoked when |form| has been filled with the value given by
   // FillOrPreviewForm.
@@ -423,10 +422,12 @@ class AutofillManager
   virtual void FillCreditCardFormImpl(const FormData& form,
                                       const FormFieldData& field,
                                       const CreditCard& credit_card,
-                                      const std::u16string& cvc) = 0;
+                                      const std::u16string& cvc,
+                                      AutofillTriggerSource trigger_source) = 0;
   virtual void FillProfileFormImpl(const FormData& form,
                                    const FormFieldData& field,
-                                   const AutofillProfile& profile) = 0;
+                                   const AutofillProfile& profile,
+                                   AutofillTriggerSource trigger_source) = 0;
 
   virtual void OnFocusNoLongerOnFormImpl(bool had_interacted_form) = 0;
 

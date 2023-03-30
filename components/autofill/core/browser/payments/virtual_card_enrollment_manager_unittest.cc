@@ -62,6 +62,7 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
         /*local_state=*/autofill_client_->GetPrefs(),
         /*identity_manager=*/nullptr,
         /*history_service=*/nullptr,
+        /*sync_service=*/nullptr,
         /*strike_database=*/nullptr,
         /*image_fetcher=*/nullptr,
         /*is_off_the_record=*/false);
@@ -703,6 +704,44 @@ TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleBlocked) {
           base::NumberToString(state->virtual_card_enrollment_fields.credit_card
                                    .instrument_id()),
           VirtualCardEnrollmentSource::kDownstream));
+}
+
+TEST_F(VirtualCardEnrollmentManagerTest,
+       StrikeDatabase_EnrollmentAttemptFailed) {
+  base::HistogramTester histogram_tester;
+  SetUpStrikeDatabaseTest();
+
+  std::vector<AutofillClient::PaymentsRpcResult> failure_results = {
+      AutofillClient::PaymentsRpcResult::kTryAgainFailure,
+      AutofillClient::PaymentsRpcResult::kPermanentFailure};
+
+  VirtualCardEnrollmentProcessState* state =
+      virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
+
+  for (int i = 0; i < static_cast<int>(failure_results.size()); i++) {
+    virtual_card_enrollment_manager_
+        ->OnDidGetUpdateVirtualCardEnrollmentResponse(
+            VirtualCardEnrollmentRequestType::kEnroll, failure_results[i]);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.StrikeDatabase.NthStrikeAdded.VirtualCardEnrollment",
+        /*sample=*/i + 1, /*count=*/1);
+
+    EXPECT_EQ(virtual_card_enrollment_manager_
+                  ->GetVirtualCardEnrollmentStrikeDatabase()
+                  ->GetStrikes(
+                      base::NumberToString(state->virtual_card_enrollment_fields
+                                               .credit_card.instrument_id())),
+              i + 1);
+
+    histogram_tester.ExpectBucketCount(
+        "Autofill.VirtualCardEnrollmentStrikeDatabase." +
+            VirtualCardEnrollmentSourceToMetricSuffix(
+                state->virtual_card_enrollment_fields
+                    .virtual_card_enrollment_source),
+        VirtualCardEnrollmentStrikeDatabaseEvent::
+            VIRTUAL_CARD_ENROLLMENT_STRIKE_DATABASE_STRIKE_LOGGED,
+        i + 1);
+  }
 }
 
 TEST_F(VirtualCardEnrollmentManagerTest,

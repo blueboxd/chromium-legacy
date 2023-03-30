@@ -5,9 +5,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/test_future.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -22,6 +23,8 @@
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -31,6 +34,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension.h"
+#include "ui/gfx/skia_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -191,15 +195,16 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest, WorksAfterDelayedIFrameLoad) {
   // Append an iframe and wait for it to finish loading.
   const char script[] = R"(
     const iframe = document.createElement('iframe');
-    iframe.onload = _ => domAutomationController.send('success');
-    iframe.srcdoc = 'inner page';
-    document.body.appendChild(iframe);
+    new Promise(resolve => {
+      iframe.onload = _ => resolve('success');
+      iframe.srcdoc = 'inner page';
+      document.body.appendChild(iframe);
+    });
   )";
-  EXPECT_EQ(
-      content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                      script, content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
-          .ExtractString(),
-      "success");
+  EXPECT_EQ(content::EvalJs(
+                browser()->tab_strip_model()->GetActiveWebContents(), script)
+                .ExtractString(),
+            "success");
 
   InstallShortcutAppForCurrentUrl();
 }
@@ -263,6 +268,29 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest, OpenShortcutWindowOnlyOnce) {
   ASSERT_TRUE(chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT));
 
   EXPECT_EQ(1u, provider().command_manager().GetCommandCountForTesting());
+}
+
+// Tests that Create Shortcut on sites where the title is a url generates a
+// letter icon correctly and does not use the "H" letter from the "https"
+// scheme.
+IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest, UseHostWhenTitleIsUrl) {
+  NavigateToURLAndWait(browser(),
+                       https_server()->GetURL("example.com", "/empty.html"));
+  AppId app_id = InstallShortcutAppForCurrentUrl();
+
+  base::test::TestFuture<std::map<SquareSizePx, SkBitmap>> future;
+  WebAppProvider::GetForTest(profile())->icon_manager().ReadIcons(
+      app_id, IconPurpose::ANY, {icon_size::k128}, future.GetCallback());
+
+  std::map<SquareSizePx, SkBitmap> icon_bitmaps = future.Get();
+  DCHECK(base::Contains(icon_bitmaps, icon_size::k128));
+  SkBitmap bitmap = std::move(icon_bitmaps.at(icon_size::k128));
+
+  // The letter for https://example.com should be the first letter of the host,
+  // which is "E".
+  SkBitmap generated_icon_bitmap =
+      GenerateBitmap(icon_size::k128, static_cast<char32_t>('E'));
+  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, generated_icon_bitmap));
 }
 
 }  // namespace web_app

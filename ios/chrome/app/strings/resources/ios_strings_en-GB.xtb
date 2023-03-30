@@ -8,14 +8,11 @@
 <translation id="1044891598689252897">Sites will work normally</translation>
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="105093091697134113">The following accounts use passwords which were exposed in a third-party data breach or entered on a deceptive website. Change these passwords immediately to keep your accounts safe.</translation>
-<translation id="105214722824962652">You won't be signed out of your Google Account. <ph name="BEGIN_LINK" />Other forms of activity<ph name="END_LINK" /> may be saved in your Google Account when you’re signed in. You can delete them at any time.
-
-        
-Your search engine is <ph name="DSE_NAME" />. See their instructions for deleting your search history, if applicable.</translation>
 <translation id="1054045277222934172">You can change the default site view to desktop in Settings, then Content settings</translation>
 <translation id="1054745118061919935">By continuing, you agree to the <ph name="BEGIN_LINK" />Terms of Service<ph name="END_LINK" />.</translation>
 <translation id="1063454504051558093">Use other password...</translation>
 <translation id="1066060668811609597">Manage Sync</translation>
+<translation id="1069154182096085577">Password already exists</translation>
 <translation id="1076421457278169141">Code scanned</translation>
 <translation id="1076785341346483463">Sync with managed account</translation>
 <translation id="1084365883616172403">Facebook post completed.</translation>
@@ -32,6 +29,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="1154984953698510061">See other tabs</translation>
 <translation id="1161340988127985692">Ask to open links from other apps in Incognito</translation>
 <translation id="1164064664035028907">Use strong password:</translation>
+<translation id="1164891049599601209">Entered on deceptive site</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Next field</translation>
 <translation id="1176932207622159128">Cannot Save Image</translation>
@@ -57,6 +55,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="1283524564873030414">Last 24 hours</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1291506870746876680"><ph name="BEGIN_BOLD" />'<ph name="SITE_NAME" />'<ph name="END_BOLD" /> permissions will reset to off when you leave this site.</translation>
+<translation id="1305822519689023679">To make sure that you can always use the passwords in your Google Account, verify that it's you.</translation>
 <translation id="1312721752506309252">Enhanced protection is on</translation>
 <translation id="1321993286294231467">Error saving image.</translation>
 <translation id="1322735045095424339">Your organisation requires Incognito mode</translation>
@@ -94,7 +93,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="1545749641540134597">Scan QR Code</translation>
 <translation id="1552525382687785070">Sync is disabled by your administrator</translation>
 <translation id="1554477036522844996">New window</translation>
-<translation id="1565371473877914088">New incognito tab</translation>
+<translation id="1565371473877914088">New Incognito tab</translation>
 <translation id="1580715474678097352">Stay protected from dangerous websites</translation>
 <translation id="1580783302095112590">Mail sent.</translation>
 <translation id="1582732959743469162">This will stop all progress for your current download.</translation>
@@ -106,6 +105,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="1626771852476987600"><ph name="COUNT" /> reused passwords</translation>
 <translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1644574205037202324">History</translation>
+<translation id="165008673352427892">New feature</translation>
 <translation id="1650222530560417226">Tap the 'Start Logging' button to collect future JavaScript console logs and errors from all tabs. Logs will be collected (and stored only in memory) until this page is closed or 'Stop Logging' is tapped.</translation>
 <translation id="1653432787084483144">{count,plural, =1{{count} saved password available above your keyboard.}other{{count} saved passwords available above your keyboard.}}</translation>
 <translation id="1657011748321897393">Sharing failed because you are not connected to the network.</translation>
@@ -119,8 +119,10 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selected</translation>
 <translation id="1715515772563243997">If you trust <ph name="SITE" />, you can use a saved password to sign in.</translation>
 <translation id="1740468249224277719">Double tap to install.</translation>
+<translation id="1750238553597293878">Keep using the passwords in your Google Account</translation>
 <translation id="1752547299766512813">Save Passwords</translation>
 <translation id="1753905327828125965">Most Visited</translation>
+<translation id="1767766085187034454">Google Translate</translation>
 <translation id="1789803444939621101">Welcome back, <ph name="USER_NAME" /></translation>
 <translation id="1803264062614276815">Cardholder name</translation>
 <translation id="1809939268435598390">Delete folder</translation>
@@ -143,6 +145,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="1965935827552890526">Finish what you were doing in your other open Chrome window.</translation>
 <translation id="1973912524893600642">Keep Data</translation>
 <translation id="1974060860693918893">Advanced</translation>
+<translation id="1980417445547898121">{count,plural, =1{Get your {count} recently active tab from your other device on this iPhone}other{Get your {count} recently active tabs from your other device on this iPhone}}</translation>
 <translation id="1981118202195772574">Mobile</translation>
 <translation id="1989112275319619282">Browse</translation>
 <translation id="1990820278544963435">Find</translation>
@@ -152,6 +155,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="2021670401941426298">See your search engine’s instructions for deleting your search history, if applicable.</translation>
 <translation id="202292859882676807">Microphone access allowed</translation>
 <translation id="20485545164632846">new item</translation>
+<translation id="2049727122989709386"><ph name="COUNT" /> accounts using same password</translation>
 <translation id="2050196510205866090">{count,plural, =1{{count} saved payment method available above your keyboard.}other{{count} saved payment methods available above your keyboard.}}</translation>
 <translation id="2073572773299281212">Active <ph name="DAYS" /> days ago</translation>
 <translation id="2074131957428911366">You can always choose what to sync in <ph name="BEGIN_LINK" />settings<ph name="END_LINK" />.</translation>
@@ -215,6 +219,7 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="2523363575747517183">This website is repeatedly trying to open another application.</translation>
 <translation id="2529021024822217800">Open All</translation>
 <translation id="2547458583188611426">Sync is not working. To start sync, enter your passphrase.</translation>
+<translation id="2551153019974022505">Account error</translation>
 <translation id="2556092377360758201">No protection (not recommended)</translation>
 <translation id="2562041823070056534">Sending to <ph name="DEVICE_NAME" />...</translation>
 <translation id="2576499762020411840">Use and save passwords in Your Google Account</translation>
@@ -234,6 +239,10 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="26915454213703967">Search inside image with Google</translation>
 <translation id="2691653761409724435">Not available offline</translation>
 <translation id="2695507686909505111">Page translated</translation>
+<translation id="2696180352517415858">You won't be signed out of your Google Account. <ph name="BEGIN_LINK" />Other forms of activity<ph name="END_LINK" /> may be saved in your Google Account when you’re signed in. You can delete them at any time.
+
+
+Your search engine is <ph name="DSE_NAME" />. See their instructions for deleting your search history, if applicable.</translation>
 <translation id="2697526135132990015">Sign out and clear data</translation>
 <translation id="2700241355396984822">Options to set permissions</translation>
 <translation id="2702801445560668637">Reading List</translation>
@@ -246,6 +255,7 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="2747003861858887689">Previous field</translation>
 <translation id="2749231692441336879">Following <ph name="CHANNEL_NAME" /></translation>
 <translation id="2764831210418622012">just now</translation>
+<translation id="2772667768515195373">You can use saved addresses across Google products. This address is saved in your Google Account, <ph name="USER_EMAIL" />.</translation>
 <translation id="2773292004659987824">Incognito Search</translation>
 <translation id="277771892408211951">Select language</translation>
 <translation id="2780046210906776326">No Email Accounts</translation>
@@ -262,6 +272,7 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="2834399722155632105">3. Tap Password options</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Reset Translate settings</translation>
+<translation id="284581348330507117">Create unique passwords</translation>
 <translation id="2848086008667475748">Make default in settings…</translation>
 <translation id="2858204748079866344">To protect your privacy, Chrome will not auto-fill your password in this field.</translation>
 <translation id="285960592395650245">Retry Download</translation>
@@ -321,6 +332,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3214379938835224220">You were signed out as part of your iPad reset. Tap continue below to sign in.</translation>
 <translation id="3224641773458703735">To export passwords, you must first set a passcode on your device.</translation>
 <translation id="3227137524299004712">Microphone</translation>
+<translation id="3235063766008841141">Entered on a deceptive site and found in a data breach</translation>
 <translation id="3240426699337459095">Link copied</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3245744387817103524">Your change couldn't be saved.</translation>
@@ -360,6 +372,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3494788280727468875">Confirm clear browsing data</translation>
 <translation id="35083190962747987">Open ${url}</translation>
 <translation id="3519193562722059437">Open a tab to browse the web.</translation>
+<translation id="3519905498307021260">{count,plural, =1{Open the tab}other{Open {count} tabs}}</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3529024052484145543">Not secure</translation>
 <translation id="3530206579861815432">Quickly find open and recently closed tabs across your synced devices.</translation>
@@ -374,6 +387,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3595252146048399851">You can always choose what to sync in <ph name="BEGIN_LINK" />settings<ph name="END_LINK" />. Google may personalise Search and other services based on your history.</translation>
 <translation id="3603009562372709545">Copy link URL</translation>
 <translation id="3607167657931203000">Auto-fill Data</translation>
+<translation id="3608008480985212611">Sign in to manage your preferences</translation>
 <translation id="3609785682760573515">Syncing...</translation>
 <translation id="3631443864840848029">Make sure that you're saving your current password for this site.</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
@@ -393,10 +407,10 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3789841737615482174">Install</translation>
 <translation id="380329542618494757">Name</translation>
 <translation id="3803696231112616155">Offer to translate this site</translation>
-<translation id="3803967590068704619">This address is saved in your Google Account (<ph name="USER_EMAIL" />). You can use this address across Google products on any device.</translation>
 <translation id="3810973564298564668">Manage</translation>
 <translation id="3818293389945649617">Find Next</translation>
 <translation id="3819183753496523827">You're offline. Check your Internet connection and try again.</translation>
+<translation id="3832419617903252251">Password saved only on this device</translation>
 <translation id="3835964409414434850">Go to next tab</translation>
 <translation id="3838691874161539578">Check your saved passwords to strengthen your security and stay safer online</translation>
 <translation id="385051799172605136">Back</translation>
@@ -406,6 +420,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3863769054730344136">Send to Your Devices</translation>
 <translation id="387280738075653372">Download Chrome here.</translation>
 <translation id="3888863481921783344">This will be used to show you possible invitees to your event.</translation>
+<translation id="3891414008432200754">Price</translation>
 <translation id="3892144330757387737">You'll find your history here</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3904829425754749514">Your organisation turned off sync. You can still see your bookmarks, history, passwords and other settings on this device. If you make changes, they won’t sync to your account.</translation>
@@ -415,6 +430,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3928666092801078803">Combine my data</translation>
 <translation id="3929457972718048006">Addresses</translation>
 <translation id="3943492037546055397">Passwords</translation>
+<translation id="3951717558054674026">{count,plural, =1{{count} weak password}other{{count} weak passwords}}</translation>
 <translation id="3959736869653157332">Menu → New incognito tab</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="3968505803272650567">Manage interests</translation>
@@ -452,6 +468,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="4237377247299956313">Tap <ph name="BEGIN_BOLD" />Default browser app<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Enter Passphrase</translation>
 <translation id="4249955472157341256">Sort by Latest</translation>
+<translation id="4250432749243022864">{count,plural, =0{Open {count} tab}=1{Open {count} tab}other{Open {count} tabs}}</translation>
 <translation id="4253168017788158739">Note</translation>
 <translation id="4263576668337963058">Show available page actions</translation>
 <translation id="4267586310863245665">{COUNT,plural, =1{You dismissed {COUNT} warning}other{You dismissed {COUNT} warnings}}</translation>
@@ -466,8 +483,10 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="4334428914252001502">One unread article.</translation>
 <translation id="4338650699862464074">Sends URLs of pages that you visit to Google.</translation>
 <translation id="4342054591427973606">{count,plural, =1{This address will be deleted from this and your other signed-in devices.}other{These addresses will be deleted from this and your other signed-in devices.}}</translation>
+<translation id="4342946437867096381">You already saved a password for this site in your Google Account. Google can choose the most recent password for you.</translation>
 <translation id="4343046787186034850">Camera and microphone access allowed</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
+<translation id="4371526908359194219">Email notifications</translation>
 <translation id="4375040482473363939">QR code Search</translation>
 <translation id="4378154925671717803">Phone</translation>
 <translation id="4389019817280890563">Tap to change language.</translation>
@@ -476,10 +495,13 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="4454246407045105932">Add language</translation>
 <translation id="4461286950227634995">Offer to save passwords</translation>
 <translation id="4462491365653392320">Track prices on tabs</translation>
+<translation id="4469324811108161144">Notes can save up to <ph name="CHARACTER_LIMIT" /> characters.</translation>
 <translation id="4469418912670346607">Continue setup</translation>
 <translation id="4474494258097106883">Built for your iPhone</translation>
 <translation id="4476574785019001431">Settings</translation>
 <translation id="448433063499977729">Sync has been turned off</translation>
+<translation id="4488754974567924717">If your passwords are compromised, we'll let you know</translation>
+<translation id="4489536976005181779">{count,plural, =1{Page added to your reading list in your account, {email}}other{Pages added to your reading list in your account, {email}}}</translation>
 <translation id="4496373720959965247">Add tabs and switch between pages</translation>
 <translation id="4502566650163919158">Check now</translation>
 <translation id="4505980578794259603">Last checked <ph name="TIME" />.</translation>
@@ -489,6 +511,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="452750746583162491">Review your synced data</translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
 <translation id="4540780316273593836">Something went wrong</translation>
+<translation id="457292989631956153">{COUNT,plural, =1{Close {COUNT} inactive tab?}other{Close {COUNT} inactive tabs?}}</translation>
 <translation id="457386861538956877">More...</translation>
 <translation id="4587235830039045480">Save password in your Google Account</translation>
 <translation id="4587589328781138893">Sites</translation>
@@ -518,6 +541,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="470966556546083668">Don't turn on sync</translation>
 <translation id="4737560986434232178">Search recent tabs</translation>
 <translation id="473775607612524610">Update</translation>
+<translation id="4746926359847517643">You can always get them back in history.</translation>
 <translation id="4747097190499141774">Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you will need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="4751162929052964260"><ph name="TITLE" />, <ph name="STATE" />, Only on this device, <ph name="URL" /></translation>
 <translation id="4751645464639803239">New incognito tab</translation>
@@ -566,6 +590,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4986678885919050584">Remove from this device</translation>
 <translation id="498985224078955265">To send this tab to another device, sign in to Chrome on both devices.</translation>
 <translation id="5005498671520578047">Copy password</translation>
+<translation id="5016420433031926653">Send to <ph name="USER_EMAIL" /></translation>
 <translation id="5017828934289857214">Remind me later</translation>
 <translation id="5037676449506322593">Select All</translation>
 <translation id="5039804452771397117">Allow</translation>
@@ -585,6 +610,8 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5150492518600715772">Send to your device</translation>
 <translation id="5168414296986405587">Built for iPadOS</translation>
 <translation id="5173088371991956744">Sync needs to verify that it's you</translation>
+<translation id="5176312250994681348">Keep recent password</translation>
+<translation id="51802232683641391">{count,plural, =1{Pick up the tab from where you left off in Android?}other{Pick up the tabs from where you left off in Android?}}</translation>
 <translation id="5181140330217080051">Downloading</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
 <translation id="5186185447130319458">Private</translation>
@@ -619,6 +646,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="5443952882982198570">Credit cards</translation>
 <translation id="5444892875087332195">Bookmarks</translation>
+<translation id="5453250766792920795">{count,plural, =1{Bookmark saved in your account, {email}}other{Bookmarks saved in your account, {email}}}</translation>
 <translation id="5457226814769348910">Open offline version</translation>
 <translation id="5489208564673669003">To manage cookies for all sites, see <ph name="BEGIN_LINK" />Cookie settings<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Block all cookies (not recommended)</translation>
@@ -645,11 +673,13 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5669528293118408608">www</translation>
 <translation id="5669617676038747374">Create a QR Code</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5683499062697987550">To use and save passwords in your Google Account, verify that it's you.</translation>
 <translation id="5690398455483874150">{count,plural, =1{Now showing 1 Chrome window}other{Now showing {count} Chrome windows}}</translation>
 <translation id="5701270923492462699">Camera access allowed</translation>
 <translation id="5704908597376970822">Can't sign in.</translation>
 <translation id="5706552126692816153">Active 1 day ago</translation>
 <translation id="5711039611392265845">For more settings that relate to privacy, security and data collection, see <ph name="BEGIN_LINK" />Sync and Google Services<ph name="END_LINK" />.</translation>
+<translation id="5718049162805123412">You should change these now</translation>
 <translation id="5724941645893276623">To browse the web privately, add a new tab</translation>
 <translation id="5728700505257787410">Sorry, there was a problem signing in to your account.</translation>
 <translation id="5733084997078800044">Chrome tip</translation>
@@ -694,6 +724,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5963939892571022323">A link to the highlight cannot be created.</translation>
 <translation id="5965679971710331625">You're signed in</translation>
 <translation id="5979837087407522202">Search passwords</translation>
+<translation id="5981230843984570095">Close all inactive</translation>
 <translation id="5982717868370722439">Add existing data to <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Recently Visited</translation>
 <translation id="5988097621740394599">See price drops on your tabs.</translation>
@@ -737,11 +768,13 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6219550825416862075">Welcome back</translation>
 <translation id="6219688215832490856">Never translate</translation>
 <translation id="6223816392543092032">Get your bookmarks, history, passwords and other settings on all your devices.</translation>
+<translation id="6224759905509595045">Verify that it’s you</translation>
 <translation id="6229318421047648685">Request Desktop Site</translation>
 <translation id="6231782223312638214">Suggested</translation>
 <translation id="6232329973559504466">Incognito search</translation>
 <translation id="6247557882553405851">Google Password Manager</translation>
 <translation id="6254066287920239840">Open links in the app instead of the browser.</translation>
+<translation id="625491139841322297">{count,plural, =1{Review the tab}other{Review all tabs}}</translation>
 <translation id="6255097610484507482">Edit credit card</translation>
 <translation id="6277426346321820595">No protection</translation>
 <translation id="6284652193729350524">Offer to translate <ph name="LANGUAGE" /></translation>
@@ -776,6 +809,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 
 Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="6418346271604475326">Preparing PDF</translation>
+<translation id="6421095165635308">{count,plural, =1{Bookmark saved to {title} in your account, {email}}other{Bookmarks saved to {title} in your account, {email}}}</translation>
 <translation id="6429213933892582367">Open Password options</translation>
 <translation id="6434591244308415567">An error occurred. Try again later.</translation>
 <translation id="6435236283694032571">Add to reading list</translation>
@@ -800,6 +834,7 @@ Try to use a unique password for every site.</translation>
 <translation id="650279896687777322">Learn more…</translation>
 <translation id="6510072653668207258">Remind me later</translation>
 <translation id="651505212789431520">Cancel sync? You can turn on sync at any time in Settings.</translation>
+<translation id="6518133107902771759">Verify</translation>
 <translation id="6524918542306337007">Incognito mode is unavailable</translation>
 <translation id="6530992499366869131">Warn you if passwords are exposed in a data breach</translation>
 <translation id="6537746030088321027">sample.co.uk</translation>
@@ -829,6 +864,7 @@ Try to use a unique password for every site.</translation>
 <translation id="6672241253012342409">Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping basket.
 
 While in Incognito, sites can't use cookies to see your browsing activity across different sites; for example, to personalise ads.</translation>
+<translation id="6672697278890207089">Enter your passphrase</translation>
 <translation id="6674571176963658787">To start sync, enter your passphrase</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6684906340059221832">Tracking prices</translation>
@@ -862,6 +898,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="6888009575607455378">Are you sure that you want to discard your changes?</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6897187120838603299">Your password will be saved to your device.</translation>
+<translation id="6906448540340261898">Make sure that you can always use the passwords in your Google Account</translation>
 <translation id="6913136913033237761"><ph name="FOLDER_NAME" />. Only on this device.</translation>
 <translation id="6914583639806229067">Search for image that you copied</translation>
 <translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
@@ -893,6 +930,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="7108762695052995889">Visit site</translation>
 <translation id="7133798577887235672">Full Name</translation>
 <translation id="7136892417564438900">Camera is unavailable</translation>
+<translation id="7161230316646448869">Sync your bookmarks, history and more on all devices</translation>
 <translation id="7162168282402939716">Unlock incognito tabs with <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /></translation>
 <translation id="7172852049901402487">Keep your passwords safe from security issues</translation>
 <translation id="7173114856073700355">Open settings</translation>
@@ -903,7 +941,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="721597782417389033">Invalid card nickname</translation>
 <translation id="7221173315674413369">Explore new features and tips in 'What’s new'</translation>
 <translation id="7223102419539744003">Close tab</translation>
-<translation id="722454870747268814">New incognito tab</translation>
+<translation id="722454870747268814">New Incognito tab</translation>
 <translation id="7265758999917665941">Never for this site</translation>
 <translation id="7272437679830969316">Can't verify your identity. Password not copied.</translation>
 <translation id="7291368939935408496">Preparing Passwords…</translation>
@@ -948,6 +986,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="7607521702806708809">Delete password</translation>
 <translation id="7611459119367035420">You can find your pinned tabs here.</translation>
 <translation id="7638584964844754484">Incorrect passphrase</translation>
+<translation id="7640669552036055091">Tabs from Android</translation>
 <translation id="7646263789464975852">Menu → Settings → Safety check</translation>
 <translation id="7646772052135772216">Password sync isn't working</translation>
 <translation id="764827086632467055">Tap default browser app</translation>
@@ -957,11 +996,13 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="7679915578945954324">Site addresses copied</translation>
 <translation id="7687508192620387263">Calendar file available</translation>
 <translation id="7701040980221191251">None</translation>
+<translation id="7711440461521638739">You're not reusing any passwords</translation>
 <translation id="7720410380936703141">TRY AGAIN</translation>
 <translation id="7726702057919861819">Menu → History → Clear browsing data</translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. Only on this device.</translation>
 <translation id="7738120385185846461">Report an issue…</translation>
 <translation id="7741325291586284254">New incognito tab page</translation>
+<translation id="7744192722284567281">Found in data breach</translation>
 <translation id="7744394900930577716">Passwords in other apps</translation>
 <translation id="7749790401023484470">You have not selected any text.</translation>
 <translation id="7756478488453921771">Menu → Settings → Payment methods</translation>
@@ -1033,6 +1074,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8136856065410661948">This will be used to create events in your Apple Calendar from Chrome and Google Lens.</translation>
 <translation id="8156478151976189188">Password Sync isn't working</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> accounts</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Your devices<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8197543752516192074">Translate page</translation>
 <translation id="8205564605687841303">Cancel</translation>
@@ -1060,6 +1102,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8393889347136007944">Tabs not used for <ph name="THRESHOLD" /> days</translation>
 <translation id="8407669440184693619">No passwords found for this site</translation>
 <translation id="842017693807136194">Signed in with</translation>
+<translation id="8425693829365242963">Your passwords are unique</translation>
 <translation id="8428045167754449968">City / Town</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8428634594422941299">Got it</translation>
@@ -1080,8 +1123,8 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8533670235862049797">Safe Browsing is on</translation>
 <translation id="8534481786647257214">Google+ post completed.</translation>
 <translation id="8548878600947630424">Find in page...</translation>
+<translation id="8556590991644167667">{count,plural, =1{You dismissed {count} warning}other{You dismissed {count} warnings}}</translation>
 <translation id="8558480467877843976">You can now use Chrome any time that you browse or tap links in messages, documents and other apps.</translation>
-<translation id="8585679456315406468">Notes can save up to 1,000 characters.</translation>
 <translation id="8588404856427128947">Off</translation>
 <translation id="8591976964826315682">Block third-party cookies in Incognito</translation>
 <translation id="8605219856220328675">Close tab.</translation>
@@ -1089,9 +1132,11 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8626393685701737946">You can change the default site view to desktop in Settings &gt; Content Settings</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8654802032646794042">Cancel</translation>
+<translation id="8663764600409216912">You’re using passwords that look hard to guess</translation>
 <translation id="8668210798914567634">This page has been saved to your Reading List.</translation>
 <translation id="8680787084697685621">Account sign-in details are out of date.</translation>
 <translation id="8693663554456874301">{count,plural, =1{Close tab}other{Close tabs}}</translation>
+<translation id="8703536910991780768">Your passwords look strong</translation>
 <translation id="8706588385081740091">Passwords</translation>
 <translation id="8717864919010420084">Copy link</translation>
 <translation id="8721297211384281569">Tools Menu</translation>
@@ -1107,6 +1152,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8764015330924122850">Unfollow <ph name="DOMAIN_NAME" /></translation>
 <translation id="8766790350274092814">Passwords for <ph name="WEBSITE" /> and <ph name="SECOND_WEBSITE" /> will be deleted. Your accounts won't be deleted.</translation>
 <translation id="8775144690796719618">Invalid URL</translation>
+<translation id="8780076847684176174">{count,plural, =1{Review the tab...}other{Review all tabs...}}</translation>
 <translation id="8787968206789828143">Search on web</translation>
 <translation id="8792626944327216835">microphone</translation>
 <translation id="8803639129939845298">Secure</translation>
@@ -1132,6 +1178,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="891658175948553296">Highlight text on a site</translation>
 <translation id="8917490105272468696">Yes, I'm in</translation>
 <translation id="8928133177108699615">Desktop</translation>
+<translation id="894191600409472540">Create strong passwords</translation>
 <translation id="8952559610785099500">Add password</translation>
 <translation id="8953046091948372197">You'll find your passwords here</translation>
 <translation id="895541991026785598">Report an Issue</translation>
@@ -1139,8 +1186,10 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8974714402877957201">1. Open iPad settings</translation>
 <translation id="8976382372951310360">Help</translation>
 <translation id="8976414606286374109">Cards are saved to your Google Account.</translation>
+<translation id="8978059030508051916">{count,plural, =0{No compromised passwords}=1{{count} compromised password}other{{count} compromised passwords}}</translation>
 <translation id="8981454092730389528">Google Activity Controls</translation>
 <translation id="8985320356172329008">Signed In to Google as</translation>
+<translation id="8998289560386111590">Not available on your device</translation>
 <translation id="9000089900434778519">Your search engine is <ph name="DSE_NAME" />. See their instructions for deleting your search history, if applicable.</translation>
 <translation id="9008201768610948239">Ignore</translation>
 <translation id="9034759925968272072">You won't be signed out of your Google Account. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -1168,6 +1217,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="9162432979321511934">Turn on Auto-fill passwords</translation>
 <translation id="9165320910061267720">To get notifications of price drop alerts, you'll need to turn on notifications in your iOS settings.</translation>
 <translation id="9177438225260810839">Search open tabs</translation>
+<translation id="9187853111759024059">Close 99+ inactive tabs?</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> d ago</translation>
 <translation id="9203116392574189331">Handoff</translation>

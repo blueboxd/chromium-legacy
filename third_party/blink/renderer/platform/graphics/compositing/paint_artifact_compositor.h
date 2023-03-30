@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -253,7 +254,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   size_t ApproximateUnsharedMemoryUsage() const;
 
-  void SetScrollbarNeedsDisplay(CompositorElementId element_id);
+  // Invalidates the scrollbar layer. Returns true if the scrollbar layer is
+  // found by `element_id`.
+  bool SetScrollbarNeedsDisplay(CompositorElementId element_id);
 
  private:
   // Collects the PaintChunks into groups which will end up in the same
@@ -306,6 +309,14 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) final;
 
+  bool NeedsCompositedScrolling(
+      const TransformPaintPropertyNode& scroll_translation) const final;
+  bool ComputeNeedsCompositedScrolling(
+      const PaintArtifact&,
+      Vector<PaintChunk>::const_iterator chunk_cursor) const;
+  PendingLayer::CompositingType ChunkCompositingType(const PaintArtifact&,
+                                                     const PaintChunk&) const;
+
   static void UpdateRenderSurfaceForEffects(
       cc::EffectTree&,
       const cc::LayerList&,
@@ -339,6 +350,11 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   using PendingLayers = Vector<PendingLayer, 0>;
   class OldPendingLayerMatcher;
   PendingLayers pending_layers_;
+
+  // ScrollTranslationNodes of the PaintArtifact that are painted.
+  // This member variable is only used in PaintArtifactCompositor::Update.
+  // The value indicates if the scroll should be composited.
+  HashMap<const TransformPaintPropertyNode*, bool> scroll_translation_nodes_;
 
   friend class StubChromeClientForCAP;
   friend class PaintArtifactCompositorTest;

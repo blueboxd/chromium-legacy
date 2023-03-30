@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -206,6 +207,8 @@ class MockDemuxer : public Demuxer {
                base::TimeDelta,
                TrackChangeCB),
               (override));
+
+  MOCK_METHOD(void, SetPlaybackRate, (double), (override));
 };
 
 class MockDemuxerStream : public DemuxerStream {
@@ -501,7 +504,8 @@ class MockAudioRenderer : public AudioRenderer {
   MOCK_METHOD1(SetWasPlayedWithUserActivation, void(bool));
 };
 
-class MockRenderer : public Renderer {
+class MockRenderer : public Renderer,
+                     public base::SupportsWeakPtr<MockRenderer> {
  public:
   MockRenderer();
 

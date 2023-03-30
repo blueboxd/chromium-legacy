@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">כדי לחזור אל <ph name="URL_OF_THE_CURRENT_TAB" />, יש להקיש כאן</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="2091887806945687916">צליל</translation>
+<translation id="2117655453726830283">לשקף הבא</translation>
 <translation id="2148716181193084225">היום</translation>
 <translation id="216989819110952009">אפילו שהרכיבו משקפיים ירוקות שהגנו על עיניהם, דורותי וחבריה נדהמו כשהגיעו לראשונה</translation>
 <translation id="2176704795966505152">הצגת האפשרות לשינוי מרחק התצוגה בתפריט הראשי</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">מורחב - יש ללחוץ כדי לכווץ.</translation>
 <translation id="2586657967955657006">לוח</translation>
 <translation id="2597457036804169544">אין להחיל עיצוב כהה על אתרים</translation>
+<translation id="2606760465469169465">אימות אוטומטי</translation>
 <translation id="2621115761605608342">‏אישור JavaScript לאתר ספציפי.</translation>
 <translation id="2653659639078652383">שליחה</translation>
 <translation id="2677748264148917807">יציאה</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">איפוס הרשאות</translation>
 <translation id="301521992641321250">נחסמה אוטומטית</translation>
 <translation id="3069226013421428034">אישור הכניסה של צד שלישי לאתר ספציפי.</translation>
+<translation id="310297983047869047">לשקף הקודם</translation>
 <translation id="3109724472072898302">מכווץ</translation>
 <translation id="3114012059975132928">נגן וידאו</translation>
 <translation id="3115898365077584848">הצגת פרטים</translation>
@@ -188,6 +191,7 @@
 <translation id="4440642537584213025">הרחבה של <ph name="TARGET_DESCRIPTION" /></translation>
 <translation id="4468959413250150279">השתקת צלילים באתר ספציפי.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{‏קובץ cookie אחד}one{‏# קובצי cookie}two{‏# קובצי cookie}other{‏# קובצי cookie}}</translation>
+<translation id="4478158430052450698">אפשרות פשוטה יותר להתאים אישית את מרחק התצוגה באתרים שונים</translation>
 <translation id="4479647676395637221">יש לשאול לפני שמאפשרים לאתרים להשתמש במצלמה שלך (מומלץ)</translation>
 <translation id="4505788138578415521">‏כתובת ה-URL הורחבה</translation>
 <translation id="4534723447064627427">‏כדי לאפשר ל-<ph name="APP_NAME" /> לגשת אל המיקרופון, צריך להפעיל את המיקרופון גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
@@ -218,11 +222,11 @@
 <translation id="509133520954049755">שליחת בקשה לתצוגה למחשב</translation>
 <translation id="5100237604440890931">מכווץ – יש ללחוץ כדי להרחיב.</translation>
 <translation id="5123685120097942451">כרטיסייה אנונימית</translation>
-<translation id="5134599672855298214">שליחת בקשה לתצוגה לנייד (מומלצת)</translation>
 <translation id="5186036860380548585">האפשרות זמינה בחלק העליון של המסך</translation>
 <translation id="5197729504361054390">אנשי הקשר שייבחרו ישותפו עם <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">הכניסה האחרונה בוצעה היום</translation>
 <translation id="5225463052809312700">הפעלת המצלמה</translation>
+<translation id="5229337741799419985">ההגדרה הזו פועלת ללא זיהוי שלך ובלי לתת לאתרים גישה להיסטוריית הגלישה</translation>
 <translation id="5234764350956374838">סגירה</translation>
 <translation id="5264323282659631142">הסרת '<ph name="CHIP_LABEL" />'</translation>
 <translation id="528192093759286357">כדי לצאת ממסך מלא, יש לגרור מלמעלה ולגעת בלחצן 'הקודם'.</translation>
@@ -309,6 +313,7 @@
 <translation id="6643016212128521049">ניקוי</translation>
 <translation id="6689172468748959065">תמונות פרופיל</translation>
 <translation id="6697925417670533197">הורדות פעילות</translation>
+<translation id="6701547804986694515">‏אתר כלשהו שמבקרים בו יכול לשמור פרטים ב-Chrome כדי לאמת שלא מדובר בבוט. במהלך הגלישה, אתרים אחרים יכולים לבדוק ב-Chrome ולאמת שסביר להניח שמדובר באדם אמיתי, לפי פרטים שנשמרו בביקור באתר קודם.</translation>
 <translation id="6722828510648505498">חסימה של בקשות כניסה משירותי זיהוי.</translation>
 <translation id="6746124502594467657">העברה למטה</translation>
 <translation id="6749077623962119521">לאפס את ההרשאות?</translation>
@@ -426,6 +431,7 @@
 <translation id="8751914237388039244">בחירת תמונה</translation>
 <translation id="8801436777607969138">‏חסימת JavaScript באתר ספציפי.</translation>
 <translation id="8803526663383843427">במצב מופעל</translation>
+<translation id="8805385115381080995">הגלישה מהירה יותר כי פחות סביר שאתרים יבקשו לאמת שמדובר באדם אמיתי</translation>
 <translation id="8816026460808729765">חסימת הגישה של אתרים אל חיישנים</translation>
 <translation id="8823559166155093873">‏חסימת קובצי cookie</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -449,5 +455,6 @@
 <translation id="9162462602695099906">הדף הזה מסוכן</translation>
 <translation id="9201023452444595544">המערכת תמחק את כל הנתונים שנשמרו במצב אופליין</translation>
 <translation id="930525582205581608">לשכוח את האתר הזה?</translation>
+<translation id="947156494302904893">אתרים שמבקרים בהם יכולים לאמת שמדובר באדם אמיתי ולא בבוט</translation>
 <translation id="967624055006145463">נפח הנתונים</translation>
 </translationbundle>

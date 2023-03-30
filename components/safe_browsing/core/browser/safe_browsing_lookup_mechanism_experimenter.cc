@@ -12,12 +12,17 @@
 #include "components/safe_browsing/core/browser/hash_realtime_mechanism.h"
 #include "components/safe_browsing/core/browser/safe_browsing_lookup_mechanism_runner.h"
 #include "components/safe_browsing/core/browser/url_realtime_mechanism.h"
+#include "components/safe_browsing/core/common/features.h"
 
 namespace safe_browsing {
 SafeBrowsingLookupMechanismExperimenter::
-    SafeBrowsingLookupMechanismExperimenter(bool is_prefetch) {
-  is_prefetch_ = is_prefetch;
-}
+    SafeBrowsingLookupMechanismExperimenter(
+        bool is_prefetch,
+        base::WeakPtr<PingManager> ping_manager_on_ui,
+        scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
+    : is_prefetch_(is_prefetch),
+      ping_manager_on_ui_(ping_manager_on_ui),
+      ui_task_runner_(ui_task_runner) {}
 SafeBrowsingLookupMechanismExperimenter::
     ~SafeBrowsingLookupMechanismExperimenter() = default;
 
@@ -34,25 +39,24 @@ SafeBrowsingLookupMechanismExperimenter::RunChecks(
     bool can_check_high_confidence_allowlist,
     std::string url_lookup_service_metric_suffix,
     const GURL& last_committed_url,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
     UrlRealTimeMechanism::WebUIDelegate* webui_delegate,
     base::WeakPtr<HashRealTimeService> hash_real_time_service_on_ui) {
   auto url_real_time_mechanism = std::make_unique<UrlRealTimeMechanism>(
       url, threat_types, request_destination, database_manager, can_check_db,
       can_check_high_confidence_allowlist, url_lookup_service_metric_suffix,
-      last_committed_url, ui_task_runner, url_lookup_service_on_ui,
+      last_committed_url, ui_task_runner_, url_lookup_service_on_ui,
       webui_delegate, MechanismExperimentHashDatabaseCache::kUrlRealTimeOnly);
   auto hash_database_mechanism = std::make_unique<HashDatabaseMechanism>(
       url, threat_types, database_manager, can_check_db,
       MechanismExperimentHashDatabaseCache::kHashDatabaseOnly);
   auto hash_real_time_mechanism = std::make_unique<HashRealTimeMechanism>(
-      url, threat_types, database_manager, can_check_db, ui_task_runner,
+      url, threat_types, database_manager, can_check_db, ui_task_runner_,
       hash_real_time_service_on_ui,
       MechanismExperimentHashDatabaseCache::kHashRealTimeOnly);
 
   return RunChecksInternal(
-      safe_browsing_url_checker_index, std::move(url_real_time_mechanism),
+      safe_browsing_url_checker_index, url, std::move(url_real_time_mechanism),
       std::move(hash_database_mechanism), std::move(hash_real_time_mechanism),
       std::move(url_real_time_result_callback));
 }
@@ -60,6 +64,7 @@ SafeBrowsingLookupMechanismExperimenter::RunChecks(
 SafeBrowsingLookupMechanism::StartCheckResult
 SafeBrowsingLookupMechanismExperimenter::RunChecksInternal(
     size_t safe_browsing_url_checker_index,
+    const GURL& url,
     std::unique_ptr<SafeBrowsingLookupMechanism> url_real_time_mechanism,
     std::unique_ptr<SafeBrowsingLookupMechanism> hash_database_mechanism,
     std::unique_ptr<SafeBrowsingLookupMechanism> hash_real_time_mechanism,
@@ -100,12 +105,16 @@ SafeBrowsingLookupMechanismExperimenter::RunChecksInternal(
       base::WrapRefCounted(this));
   // Start tracking this check
   checks_to_run_.push_back(std::make_unique<CheckToRun>(
-      std::move(url_real_time_runner), std::move(hash_database_runner),
+      url, std::move(url_real_time_runner), std::move(hash_database_runner),
       std::move(hash_real_time_runner),
       std::move(url_real_time_result_callback)));
   // Always run the URL real-time lookup, since we need to return its results.
-  auto url_real_time_result =
-      checks_to_run_.back()->url_real_time_details.runner->Run();
+  CheckToRun::RunDetails& url_real_time_check_to_run_details =
+      checks_to_run_.back()->url_real_time_details;
+  SafeBrowsingLookupMechanism::StartCheckResult url_real_time_result =
+      url_real_time_check_to_run_details.runner->Run();
+  url_real_time_check_to_run_details.matched_global_cache =
+      url_real_time_result.matched_high_confidence_allowlist;
   if (!first_check_start_time_.has_value()) {
     first_check_start_time_ = base::TimeTicks::Now();
   }
@@ -128,11 +137,17 @@ SafeBrowsingLookupMechanismExperimenter::RunChecksInternal(
 }
 
 void SafeBrowsingLookupMechanismExperimenter::RunNextHashDatabaseCheck() {
-  auto result = checks_to_run_[hash_database_check_index_]
-                    ->hash_database_details.runner->Run();
+  CheckToRun::RunDetails& check_to_run_details =
+      checks_to_run_[hash_database_check_index_]->hash_database_details;
+  SafeBrowsingLookupMechanism::StartCheckResult result =
+      check_to_run_details.runner->Run();
+  check_to_run_details.matched_global_cache =
+      result.matched_high_confidence_allowlist;
   if (result.is_safe_synchronously) {
-    OnHashDatabaseCheckCompleteInternal(/*timed_out=*/false,
-                                        SB_THREAT_TYPE_SAFE);
+    OnHashDatabaseCheckCompleteInternal(
+        /*timed_out=*/false, SB_THREAT_TYPE_SAFE,
+        /*locally_cached_results_threat_type=*/absl::nullopt,
+        /*real_time_request_failed=*/false);
     return;
     // NOTE: Calling |OnHashDatabaseCheckCompleteInternal| may result in the
     // synchronous destruction of this object, so there is nothing safe to do
@@ -140,8 +155,12 @@ void SafeBrowsingLookupMechanismExperimenter::RunNextHashDatabaseCheck() {
   }
 }
 void SafeBrowsingLookupMechanismExperimenter::RunNextHashRealTimeCheck() {
-  auto result = checks_to_run_[hash_real_time_check_index_]
-                    ->hash_real_time_details.runner->Run();
+  CheckToRun::RunDetails& check_to_run_details =
+      checks_to_run_[hash_real_time_check_index_]->hash_real_time_details;
+  SafeBrowsingLookupMechanism::StartCheckResult result =
+      check_to_run_details.runner->Run();
+  check_to_run_details.matched_global_cache =
+      result.matched_high_confidence_allowlist;
   DCHECK(!result.is_safe_synchronously);
 }
 void SafeBrowsingLookupMechanismExperimenter::OnWillProcessResponseReached(
@@ -163,10 +182,17 @@ void SafeBrowsingLookupMechanismExperimenter::OnUrlRealTimeCheckComplete(
   auto& check = checks_to_run_.back();
   auto threat_type = result.has_value() ? result.value()->threat_type
                                         : absl::optional<SBThreatType>();
+  auto locally_cached_results_threat_type =
+      result.has_value() ? result.value()->locally_cached_results_threat_type
+                         : absl::optional<SBThreatType>();
+  auto real_time_request_failed = result.has_value()
+                                      ? result.value()->real_time_request_failed
+                                      : absl::optional<bool>();
   auto& run_details = check->url_real_time_details;
   std::move(check->url_real_time_details.url_result_callback)
       .Run(timed_out, std::move(result));
-  StoreCheckResults(timed_out, threat_type, run_details);
+  StoreCheckResults(timed_out, threat_type, locally_cached_results_threat_type,
+                    real_time_request_failed, run_details);
   // NOTE: Calling |StoreCheckResults| may result in the synchronous
   // destruction of this object, so there is nothing safe to do here but return.
 }
@@ -176,8 +202,13 @@ void SafeBrowsingLookupMechanismExperimenter::OnHashDatabaseCheckComplete(
         std::unique_ptr<SafeBrowsingLookupMechanism::CompleteCheckResult>>
         result) {
   OnHashDatabaseCheckCompleteInternal(
-      timed_out, result.has_value() ? result.value()->threat_type
-                                    : absl::optional<SBThreatType>());
+      timed_out,
+      result.has_value() ? result.value()->threat_type
+                         : absl::optional<SBThreatType>(),
+      result.has_value() ? result.value()->locally_cached_results_threat_type
+                         : absl::optional<SBThreatType>(),
+      result.has_value() ? result.value()->real_time_request_failed
+                         : absl::optional<bool>());
   // NOTE: Calling |OnHashDatabaseCheckCompleteInternal| may result in the
   // synchronous destruction of this object, so there is nothing safe to do here
   // but return.
@@ -185,10 +216,13 @@ void SafeBrowsingLookupMechanismExperimenter::OnHashDatabaseCheckComplete(
 void SafeBrowsingLookupMechanismExperimenter::
     OnHashDatabaseCheckCompleteInternal(
         bool timed_out,
-        absl::optional<SBThreatType> threat_type) {
+        absl::optional<SBThreatType> threat_type,
+        absl::optional<SBThreatType> locally_cached_results_threat_type,
+        absl::optional<bool> real_time_request_failed) {
   auto weak_self = weak_factory_.GetWeakPtr();
   StoreCheckResults(
-      timed_out, threat_type,
+      timed_out, threat_type, locally_cached_results_threat_type,
+      real_time_request_failed,
       checks_to_run_[hash_database_check_index_]->hash_database_details);
   // NOTE: Calling |StoreCheckResults| may result in the synchronous
   // destruction of this object, so we confirm *this* still exists before
@@ -214,6 +248,10 @@ void SafeBrowsingLookupMechanismExperimenter::OnHashRealTimeCheckComplete(
       timed_out,
       result.has_value() ? result.value()->threat_type
                          : absl::optional<SBThreatType>(),
+      result.has_value() ? result.value()->locally_cached_results_threat_type
+                         : absl::optional<SBThreatType>(),
+      result.has_value() ? result.value()->real_time_request_failed
+                         : absl::optional<bool>(),
       checks_to_run_[hash_real_time_check_index_]->hash_real_time_details);
   // NOTE: Calling |StoreCheckResults| may result in the synchronous
   // destruction of this object, so we confirm *this* still exists before
@@ -228,6 +266,8 @@ void SafeBrowsingLookupMechanismExperimenter::OnHashRealTimeCheckComplete(
 void SafeBrowsingLookupMechanismExperimenter::StoreCheckResults(
     bool timed_out,
     absl::optional<SBThreatType> threat_type,
+    absl::optional<SBThreatType> locally_cached_results_threat_type,
+    absl::optional<bool> real_time_request_failed,
     CheckToRun::RunDetails& runner_and_results) {
   DCHECK_EQ(timed_out, !threat_type.has_value());
   base::TimeDelta time_taken = runner_and_results.runner->GetRunDuration();
@@ -236,8 +276,9 @@ void SafeBrowsingLookupMechanismExperimenter::StoreCheckResults(
                      threat_type == SBThreatType::SB_THREAT_TYPE_URL_MALWARE ||
                      threat_type == SBThreatType::SB_THREAT_TYPE_URL_UNWANTED ||
                      threat_type == SBThreatType::SB_THREAT_TYPE_BILLING);
-  runner_and_results.results =
-      MechanismResults(time_taken, had_warning, timed_out);
+  runner_and_results.results = MechanismResults(
+      time_taken, had_warning, timed_out, threat_type,
+      locally_cached_results_threat_type, real_time_request_failed);
   MaybeCompleteExperiment();
   // NOTE: Calling |MaybeCompleteExperiment| may result in the synchronous
   // destruction of this object, so there is nothing safe to do here but return.
@@ -297,6 +338,7 @@ void SafeBrowsingLookupMechanismExperimenter::LogExperimentResults() {
                          single_check->url_real_time_details.results.value(),
                          single_check->hash_database_details.results.value(),
                          single_check->hash_real_time_details.results.value());
+    MaybeLogUrlLevelResults();
   } else {
     auto url_real_time_results = AggregateRedirectInfo(base::BindRepeating(
         [](std::unique_ptr<CheckToRun>& check) -> MechanismResults& {
@@ -439,6 +481,137 @@ void SafeBrowsingLookupMechanismExperimenter::LogIndividualMechanismResult(
         delay_information.delayed_response_amount.value());
   }
 }
+void SafeBrowsingLookupMechanismExperimenter::MaybeLogUrlLevelResults() const {
+  if (!safe_browsing::kUrlLevelValidationForHprtExperimentEnabled.Get()) {
+    return;
+  }
+  if (checks_to_run_.size() != 1 ||
+      !checks_to_run_.back()->would_check_show_warning_if_unsafe.has_value()) {
+    DCHECK(false);
+    return;
+  }
+  const std::unique_ptr<CheckToRun>& check = checks_to_run_.back();
+  MechanismResults& url_real_time_results =
+      check->url_real_time_details.results.value();
+  MechanismResults& hash_database_results =
+      check->hash_database_details.results.value();
+  MechanismResults& hash_real_time_results =
+      check->hash_real_time_details.results.value();
+  if (url_real_time_results.timed_out || hash_real_time_results.timed_out ||
+      hash_database_results.timed_out) {
+    // Don't log results if any of the mechanisms timed out.
+    return;
+  }
+  if (url_real_time_results.real_time_request_failed.value() ||
+      hash_real_time_results.real_time_request_failed.value()) {
+    // Don't log results if either of the real-time mechanisms had
+    // backoff/unavailability/network error issues. Note that this does not
+    // check for similar hash-database issues due to them being sufficiently
+    // rare that it isn't worth the effort to implement that for this temporary
+    // debugging.
+    return;
+  }
+
+  using ExperimentThreatType = ClientSafeBrowsingReportRequest::
+      HashRealTimeExperimentDetails::ExperimentThreatType;
+  ExperimentThreatType hash_database_threat_type =
+      GetExperimentDetailsThreatType(hash_database_results.threat_type).value();
+  ExperimentThreatType url_realtime_threat_type =
+      GetExperimentDetailsThreatType(url_real_time_results.threat_type).value();
+  ExperimentThreatType hash_realtime_threat_type =
+      GetExperimentDetailsThreatType(hash_real_time_results.threat_type)
+          .value();
+  if (hash_database_threat_type == url_realtime_threat_type &&
+      url_realtime_threat_type == hash_realtime_threat_type) {
+    // If all 3 mechanisms agree on the response threat type, there is nothing
+    // useful to debug, so we don't send a report.
+    return;
+  }
+
+  // Create report:
+  auto report = std::make_unique<ClientSafeBrowsingReportRequest>();
+  // 1. Fill in base fields.
+  report->set_type(
+      ClientSafeBrowsingReportRequest::HASH_PREFIX_REAL_TIME_EXPERIMENT);
+  report->set_url(check->url.spec());
+  ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails
+      experiment_details;
+  // 2. Gather hash database details.
+  experiment_details.set_hash_database_threat_type(hash_database_threat_type);
+  // 3. Gather URL real-time details.
+  ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+      RealTimeDetails url_realtime_details;
+  url_realtime_details.set_threat_type(url_realtime_threat_type);
+  url_realtime_details.set_matched_global_cache(
+      check->url_real_time_details.matched_global_cache.value());
+  absl::optional<ExperimentThreatType>
+      url_realtime_locally_cached_results_threat_type =
+          GetExperimentDetailsThreatType(
+              url_real_time_results.locally_cached_results_threat_type);
+  if (url_realtime_locally_cached_results_threat_type.has_value()) {
+    url_realtime_details.set_locally_cached_results_threat_type(
+        url_realtime_locally_cached_results_threat_type.value());
+  }
+  *experiment_details.mutable_url_realtime_details() = url_realtime_details;
+  // 4. Gather hash real-time details.
+  ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+      RealTimeDetails hash_realtime_details;
+  hash_realtime_details.set_threat_type(hash_realtime_threat_type);
+  hash_realtime_details.set_matched_global_cache(
+      check->hash_real_time_details.matched_global_cache.value());
+  absl::optional<ExperimentThreatType>
+      hash_realtime_locally_cached_results_threat_type =
+          GetExperimentDetailsThreatType(
+              hash_real_time_results.locally_cached_results_threat_type);
+  if (hash_realtime_locally_cached_results_threat_type.has_value()) {
+    hash_realtime_details.set_locally_cached_results_threat_type(
+        hash_realtime_locally_cached_results_threat_type.value());
+  }
+  *experiment_details.mutable_hash_realtime_details() = hash_realtime_details;
+  // 5. Fill in experiment details.
+  *report->mutable_hash_real_time_experiment_details() = experiment_details;
+
+  // Send report:
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SafeBrowsingLookupMechanismExperimenter::
+                                    SendUrlLevelValidationReport,
+                                std::move(report), ping_manager_on_ui_));
+}
+// static:
+absl::optional<ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+                   ExperimentThreatType>
+SafeBrowsingLookupMechanismExperimenter::GetExperimentDetailsThreatType(
+    absl::optional<SBThreatType> threat_type) {
+  if (!threat_type.has_value()) {
+    return absl::nullopt;
+  }
+  switch (threat_type.value()) {
+    case SBThreatType::SB_THREAT_TYPE_URL_PHISHING:
+      return ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          PHISHING;
+    case SBThreatType::SB_THREAT_TYPE_URL_MALWARE:
+      return ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          MALWARE;
+    case SBThreatType::SB_THREAT_TYPE_URL_UNWANTED:
+      return ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          UNWANTED;
+    case SBThreatType::SB_THREAT_TYPE_BILLING:
+      return ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          BILLING;
+    default:
+      return ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          SAFE_OR_OTHER;
+  }
+}
+void SafeBrowsingLookupMechanismExperimenter::SendUrlLevelValidationReport(
+    std::unique_ptr<ClientSafeBrowsingReportRequest> report,
+    base::WeakPtr<PingManager> ping_manager_on_ui) {
+  if (ping_manager_on_ui) {
+    ping_manager_on_ui->ReportThreatDetails(std::move(report),
+                                            /*attach_default_data=*/false);
+  }
+}
+
 SafeBrowsingLookupMechanismExperimenter::DelayInformation
 SafeBrowsingLookupMechanismExperimenter::GetDelayInformation(
     MechanismResults& results) const {
@@ -490,7 +663,13 @@ SafeBrowsingLookupMechanismExperimenter::AggregateRedirectInfo(
     }
     time_taken += get_results.Run(check).time_taken;
   }
-  return MechanismResults(time_taken, had_warning, timed_out);
+  // |threat_type|, |locally_cached_results_threat_type|, and
+  // |real_time_request_failed| are unpopulated because these are only used for
+  // URL-level validation, which is not implemented for redirects.
+  return MechanismResults(time_taken, had_warning, timed_out,
+                          /*threat_type=*/absl::nullopt,
+                          /*locally_cached_results_threat_type=*/absl::nullopt,
+                          /*real_time_request_failed=*/absl::nullopt);
 }
 // static
 SafeBrowsingLookupMechanismExperimenter::ExperimentAllInOneResult
@@ -598,12 +777,14 @@ void SafeBrowsingLookupMechanismExperimenter::EndExperiment() {
 }
 
 SafeBrowsingLookupMechanismExperimenter::CheckToRun::CheckToRun(
+    const GURL& url,
     std::unique_ptr<SafeBrowsingLookupMechanismRunner> url_real_time_runner,
     std::unique_ptr<SafeBrowsingLookupMechanismRunner> hash_database_runner,
     std::unique_ptr<SafeBrowsingLookupMechanismRunner> hash_real_time_runner,
     SafeBrowsingLookupMechanismRunner::CompleteCheckCallbackWithTimeout
         url_real_time_result_callback)
-    : hash_database_details(RunDetails(std::move(hash_database_runner))),
+    : url(url),
+      hash_database_details(RunDetails(std::move(hash_database_runner))),
       hash_real_time_details(RunDetails(std::move(hash_real_time_runner))),
       url_real_time_details(
           UrlRealTimeRunDetails(std::move(url_real_time_runner),
@@ -612,8 +793,16 @@ SafeBrowsingLookupMechanismExperimenter::CheckToRun::~CheckToRun() = default;
 SafeBrowsingLookupMechanismExperimenter::MechanismResults::MechanismResults(
     base::TimeDelta time_taken,
     bool had_warning,
-    bool timed_out)
-    : time_taken(time_taken), had_warning(had_warning), timed_out(timed_out) {}
+    bool timed_out,
+    absl::optional<SBThreatType> threat_type,
+    absl::optional<SBThreatType> locally_cached_results_threat_type,
+    absl::optional<bool> real_time_request_failed)
+    : time_taken(time_taken),
+      had_warning(had_warning),
+      timed_out(timed_out),
+      threat_type(threat_type),
+      locally_cached_results_threat_type(locally_cached_results_threat_type),
+      real_time_request_failed(real_time_request_failed) {}
 SafeBrowsingLookupMechanismExperimenter::MechanismResults::~MechanismResults() =
     default;
 SafeBrowsingLookupMechanismExperimenter::CheckToRun::RunDetails::RunDetails(

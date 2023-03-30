@@ -9,8 +9,8 @@
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -96,7 +96,11 @@
                         forAxis:UILayoutConstraintAxisHorizontal];
 
   // Slashed cloud view
-  self.cloudSlashedView = bookmark_utils_ios::CloudSlashIcon();
+  // TODO(crbug.com/1422602) Check with EGTest the cloud appears when expected.
+  UIImage* cloudSlashedImage =
+      CustomSymbolWithPointSize(kCloudSlashSymbol, kCloudSlashSymbolPointSize);
+  self.cloudSlashedView = [[UIImageView alloc] initWithImage:cloudSlashedImage];
+  self.cloudSlashedView.tintColor = CloudSlashTintColor();
   self.cloudSlashedView.hidden = YES;
 
   // Container StackView.

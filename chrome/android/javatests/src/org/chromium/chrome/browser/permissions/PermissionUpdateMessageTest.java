@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.permissions;
 
 import android.Manifest;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
@@ -258,7 +258,7 @@ public class PermissionUpdateMessageTest {
     public void testMessageForMediaStreamCamera()
             throws IllegalArgumentException, TimeoutException, ExecutionException {
         runTest(MEDIASTREAM_PAGE, Manifest.permission.CAMERA,
-                "getUserMediaAndStop({video: true, audio: false});",
+                "getUserMediaAndStopLegacy({video: true, audio: false});",
                 ContentSettingsType.MEDIASTREAM_CAMERA, false /* switchContent */);
     }
 
@@ -269,7 +269,7 @@ public class PermissionUpdateMessageTest {
     public void testMessageForMediaStreamMicrophone()
             throws IllegalArgumentException, TimeoutException, ExecutionException {
         runTest(MEDIASTREAM_PAGE, Manifest.permission.RECORD_AUDIO,
-                "getUserMediaAndStop({video: false, audio: true});",
+                "getUserMediaAndStopLegacy({video: false, audio: true});",
                 ContentSettingsType.MEDIASTREAM_MIC, false /* switchContent */);
     }
 

@@ -531,7 +531,7 @@ PendingScript* ScriptLoader::PrepareScript(
   // <spec step="5">Let source text be el's child text content.</spec>
   //
   // Trusted Types additionally requires:
-  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#slot-value-verification
+  // https://w3c.github.io/trusted-types/dist/spec/#slot-value-verification
   // - Step 4: Execute the Prepare the script URL and text algorithm upon the
   //     script element. If that algorithm threw an error, then return. The
   //     script is not executed.
@@ -1011,22 +1011,23 @@ PendingScript* ScriptLoader::PrepareScript(
         // If the script’s result is not null, append it to the element’s node
         // document's list of speculation rule sets.
         DCHECK(RuntimeEnabledFeatures::SpeculationRulesEnabled(context_window));
-        String parse_error;
         auto* source = MakeGarbageCollected<SpeculationRuleSet::Source>(
             source_text, element_document);
-        if (auto* rule_set = SpeculationRuleSet::Parse(source, context_window,
-                                                       &parse_error)) {
-          speculation_rule_set_ = rule_set;
-          DocumentSpeculationRules::From(element_document).AddRuleSet(rule_set);
-        } else {
-          CountSpeculationRulesLoadOutcome(
-              SpeculationRulesLoadOutcome::kParseErrorInline);
-        }
-        if (!parse_error.IsNull()) {
+        speculation_rule_set_ =
+            SpeculationRuleSet::Parse(source, context_window);
+        CHECK(speculation_rule_set_);
+        DocumentSpeculationRules::From(element_document)
+            .AddRuleSet(speculation_rule_set_);
+        if (speculation_rule_set_->HasError()) {
+          if (speculation_rule_set_->ShouldReportUMAForError()) {
+            CountSpeculationRulesLoadOutcome(
+                SpeculationRulesLoadOutcome::kParseErrorInline);
+          }
           auto* console_message = MakeGarbageCollected<ConsoleMessage>(
               mojom::ConsoleMessageSource::kOther,
               mojom::ConsoleMessageLevel::kWarning,
-              "While parsing speculation rules: " + parse_error);
+              "While parsing speculation rules: " +
+                  speculation_rule_set_->error_message());
           console_message->SetNodes(element_document.GetFrame(),
                                     {element_->GetDOMNodeId()});
           element_document.AddConsoleMessage(console_message);
@@ -1423,9 +1424,9 @@ bool ScriptLoader::IsScriptForEventSupported() const {
 
 String ScriptLoader::GetScriptText() const {
   // Step 3 of
-  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#abstract-opdef-prepare-the-script-url-and-text
+  // https://w3c.github.io/trusted-types/dist/spec/#abstract-opdef-prepare-the-script-url-and-text
   // called from § 4.1.3.3, step 4 of
-  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#slot-value-verification
+  // https://w3c.github.io/trusted-types/dist/spec/#slot-value-verification
   // This will return the [[ScriptText]] internal slot value after that step,
   // or a null string if the the Trusted Type algorithm threw an error.
   String child_text_content = element_->ChildTextContent();

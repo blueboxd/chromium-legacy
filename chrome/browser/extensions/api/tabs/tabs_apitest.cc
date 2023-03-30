@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/back_forward_cache_util.h"
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, Size) {
   ASSERT_TRUE(RunExtensionTest("tabs/basics/tab_size")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabUpdate) {
+IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, Update) {
   ASSERT_TRUE(RunExtensionTest("tabs/basics/update")) << message_;
 }
 
@@ -203,7 +204,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, RemoveMultiple) {
   ASSERT_TRUE(RunExtensionTest("tabs/basics/remove_multiple")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabGetCurrent) {
+IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, GetCurrent) {
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
 }
 
@@ -211,7 +212,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, Connect) {
   ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabOnRemoved) {
+IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, OnRemoved) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
@@ -352,7 +353,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType,
                        IncognitoDisabledByPref) {
   IncognitoModePrefs::SetAvailability(
       browser()->profile()->GetPrefs(),
-      IncognitoModePrefs::Availability::kDisabled);
+      policy::IncognitoModeAvailability::kDisabled);
 
   // This makes sure that creating an incognito window fails due to pref
   // (policy) being set.

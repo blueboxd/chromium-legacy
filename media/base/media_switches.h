@@ -164,14 +164,15 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kCdmHostVerification);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCdmProcessSiteIsolation);
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kChromeWideEchoCancellation);
-MEDIA_EXPORT extern const base::FeatureParam<int>
-    kChromeWideEchoCancellationProcessingFifoSize;
 MEDIA_EXPORT extern const base::FeatureParam<bool>
     kChromeWideEchoCancellationMinimizeResampling;
 MEDIA_EXPORT extern const base::FeatureParam<double>
     kChromeWideEchoCancellationDynamicMixingTimeout;
 MEDIA_EXPORT extern const base::FeatureParam<bool>
     kChromeWideEchoCancellationAllowAllSampleRates;
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kDecreaseProcessingAudioFifoSize);
+MEDIA_EXPORT extern const base::FeatureParam<int>
+    kDecreaseProcessingAudioFifoSizeValue;
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSSystemAEC);
@@ -243,6 +244,8 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaLearningSmoothnessExperiment);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaOptimizer);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaPowerExperiment);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMemoryPressureBasedSourceBufferGC);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForHardwareVideo);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneSoftwareVideoSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOpenscreenCastStreamingSession);
@@ -296,7 +299,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVp9kSVCHWEncoding);
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVideoBlitColorAccuracy);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVp9kSVCHWDecoding);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kWakeLockOptimisationHiddenMuted);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kWebContentsCaptureHiDpi);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kWebrtcMediaCapabilitiesParameters);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kResolutionBasedDecoderPriority);
@@ -395,6 +397,10 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(
     kAllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled);
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kExposeOutOfProcessVideoDecodingToLacros);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseOutOfProcessVideoDecoding);
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -421,14 +427,13 @@ MEDIA_EXPORT std::string GetEffectiveAutoplayPolicy(
     const base::CommandLine& command_line);
 
 MEDIA_EXPORT bool IsChromeWideEchoCancellationEnabled();
+MEDIA_EXPORT int GetProcessingAudioFifoSize();
 MEDIA_EXPORT bool IsHardwareSecureDecryptionEnabled();
 MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
 
 #if BUILDFLAG(IS_WIN)
 MEDIA_EXPORT bool IsMediaFoundationD3D11VideoCaptureEnabled();
 #endif
-
-MEDIA_EXPORT bool IsUseMojoVideoDecoderForPepperEnabled();
 
 enum class kCrosGlobalMediaControlsPinOptions {
   kPin,

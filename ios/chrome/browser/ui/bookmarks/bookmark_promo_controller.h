@@ -23,6 +23,9 @@ class Browser;
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged;
 
+// Returns YES if the initial sync is running.
+- (BOOL)isPerformingInitialSync;
+
 @end
 
 // This controller manages the display of the promo cell through its delegate
@@ -37,9 +40,16 @@ class Browser;
 
 @property(nonatomic, readonly) SigninPromoViewMediator* signinPromoViewMediator;
 
+// See `-[BookmarkPromoController initWithBrowser:delegate:presenter:
+// baseViewController:]`.
+- (instancetype)init NS_UNAVAILABLE;
+// Designated initializer.
+// `baseViewController` is the view to present UI for sign-in.
 - (instancetype)initWithBrowser:(Browser*)browser
                        delegate:(id<BookmarkPromoControllerDelegate>)delegate
-                      presenter:(id<SigninPresenter>)presenter;
+                      presenter:(id<SigninPresenter>)presenter
+             baseViewController:(UIViewController*)baseViewController
+    NS_DESIGNATED_INITIALIZER;
 
 // Called before the instance is deallocated.
 - (void)shutdown;

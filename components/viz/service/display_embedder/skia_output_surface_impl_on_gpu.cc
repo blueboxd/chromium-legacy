@@ -615,9 +615,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
 
-  DLOG_IF(WARNING, !update_rect.IsEmpty())
-      << "FinishPaintRenderPass called with empty update_rect.";
-
   if (context_is_lost_)
     return;
 
@@ -665,10 +662,19 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   // create a raw pointer to it first for use within this function.
   gpu::SkiaImageRepresentation::ScopedWriteAccess* scoped_access =
       local_scoped_access.get();
-  if (is_overlay) {
+  // DComp only allows drawing to a single surface at a time and does not
+  // require us to keep the write accesses open through submit.
+  const bool is_dcomp_surface =
+      (local_scoped_access->representation()->usage() &
+       gpu::SHARED_IMAGE_USAGE_SCANOUT_DCOMP_SURFACE) != 0;
+  if (is_overlay && !is_dcomp_surface) {
     DCHECK(!overlay_pass_accesses_.contains(mailbox));
     overlay_pass_accesses_.emplace(mailbox, std::move(local_scoped_access));
   }
+
+  DLOG_IF(WARNING, update_rect.IsEmpty() && !skia_representation->IsCleared())
+      << "FinishPaintRenderPass called with empty update_rect on an "
+         "uninitialized backing.";
 
   SkSurface* surface = scoped_access->surface();
   DCHECK(surface);
@@ -849,7 +855,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
       std::vector<GrBackendSemaphore> end_semaphores;
 
       auto scoped_write = representation->BeginScopedWriteAccess(
-          /*final_msaa_count=*/1, surface_props, &begin_semaphores,
+          /*final_msaa_count=*/1, surface_props, gfx::Rect(), &begin_semaphores,
           &end_semaphores,
           gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
 
@@ -1444,7 +1450,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
       // TODO(https://crbug.com/1226672): Use BeginScopedReadAccess instead
       scoped_access = backing_representation->BeginScopedWriteAccess(
-          /*final_msaa_count=*/1, surface_props, &begin_semaphores,
+          /*final_msaa_count=*/1, surface_props, gfx::Rect(), &begin_semaphores,
           &end_semaphores,
           gpu::SharedImageRepresentation::AllowUnclearedAccess::kNo);
       surface = scoped_access->surface();
@@ -1759,7 +1765,6 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
             GetDidSwapBuffersCompleteCallback());
 #else   // !BUILDFLAG(IS_WIN)
         output_device_ = std::make_unique<SkiaOutputDeviceDCompPresenter>(
-            shared_image_factory_.get(),
             shared_image_representation_factory_.get(), context_state_.get(),
             presenter_, feature_info_, shared_gpu_deps_->memory_tracker(),
             GetDidSwapBuffersCompleteCallback());
@@ -1839,9 +1844,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 #if !BUILDFLAG(IS_WIN)
   std::unique_ptr<OutputPresenter> output_presenter;
 #if BUILDFLAG(IS_FUCHSIA)
-  output_presenter = OutputPresenterFuchsia::Create(
-      window_surface_.get(), dependency_, shared_image_factory_.get(),
-      shared_image_representation_factory_.get());
+  output_presenter =
+      OutputPresenterFuchsia::Create(window_surface_.get(), dependency_);
 #else
   presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(),
                                             gl::GLSurfaceFormat());
@@ -2355,7 +2359,8 @@ void SkiaOutputSurfaceImplOnGpu::CreateSharedImage(
   SharedImageFormat si_format = SharedImageFormat::SinglePlane(format);
   shared_image_factory_->CreateSharedImage(
       mailbox, si_format, size, color_space, kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, surface_handle, usage);
+      si_format.HasAlpha() ? kPremul_SkAlphaType : kOpaque_SkAlphaType,
+      surface_handle, usage);
   skia_representations_.emplace(mailbox, nullptr);
 }
 

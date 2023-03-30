@@ -63,6 +63,7 @@ base::Value::Dict GetDebugJSONDictForAnnotatedVisit(
                       ? ComputeURLForDeduping(visit.url_row.url()).spec()
                       : visit.content_annotations.search_normalized_url.spec());
   debug_visit.Set("visitSource", base::NumberToString(visit.source));
+  debug_visit.Set("isKnownToSync", visit.visit_row.is_known_to_sync);
 
   // Content annotations.
   base::Value::List debug_categories;
@@ -86,6 +87,8 @@ base::Value::Dict GetDebugJSONDictForAnnotatedVisit(
   debug_visit.Set("visibility",
                   visit.content_annotations.model_annotations.visibility_score);
   debug_visit.Set("searchTerms", visit.content_annotations.search_terms);
+  debug_visit.Set("hasUrlKeyedImage",
+                  visit.content_annotations.has_url_keyed_image);
   return debug_visit;
 }
 

@@ -574,11 +574,6 @@ config("compiler") {
     }
   }
 
-  # Rust compiler setup (for either clang or rustc).
-  if (enable_rust) {
-    defines += [ "RUST_ENABLED" ]
-  }
-
   # C11/C++11 compiler flags setup.
   # ---------------------------
   if (is_linux || is_chromeos || is_android || (is_nacl && is_clang) ||
@@ -705,14 +700,10 @@ config("compiler") {
       # of "all" which means number of hardware threads) is faster.
       ldflags += [ "-Wl,--thinlto-jobs=all" ]
       if (is_apple) {
-        _object_path_suffix = ""
-        if (is_ios) {
-          _object_path_suffix = ",persist"
-        }
         ldflags += [
           "-Wl,-cache_path_lto," +
               rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-          "-Wcrl,object_path_lto" + _object_path_suffix,
+          "-Wcrl,object_path_lto",
         ]
       } else {
         ldflags +=
@@ -900,12 +891,8 @@ config("compiler") {
   if (rust_abi_target != "") {
     rustflags += [ "--target=$rust_abi_target" ]
   }
-  if (!use_thin_lto || !use_chromium_rust_toolchain) {
-    # Don't include bitcode if it won't be used, or can't be used. When
-    # use_thin_lto is true, we will try to apply LTO to any objects that have
-    # the appropriate bitcode. But we have to use Chromium's toolchain in order
-    # to use LTO with rust code. Chromium's rustc will have an LLVM backend that
-    # matches the C++ clang compiler.
+  if (!use_thin_lto) {
+    # Don't include bitcode if it won't be used.
     rustflags += [ "-Cembed-bitcode=no" ]
   }
   if (is_official_build) {
@@ -2685,9 +2672,12 @@ if (is_chromeos_ash && is_chromeos_device) {
 if (is_android || (is_chromeos_ash && is_chromeos_device)) {
   # Use orderfile for linking Chrome on Android and Chrome OS.
   # This config enables using an orderfile for linking in LLD.
-  # TODO: Consider using call graph sort instead, at least on Android.
   config("chrome_orderfile_config") {
-    if (chrome_orderfile_path != "" && !enable_call_graph_profile_sort) {
+    # Don't try to use an orderfile with call graph sorting, except on Android,
+    # where we care about memory used by code, so we still want to mandate
+    # ordering.
+    if (chrome_orderfile_path != "" &&
+        (is_android || !enable_call_graph_profile_sort)) {
       assert(use_lld)
       _rebased_orderfile = rebase_path(chrome_orderfile_path, root_build_dir)
       ldflags = [

@@ -108,7 +108,7 @@ void KeepAliveURLLoader::OnReceiveEarlyHints(
   TRACE_EVENT1("loading", "KeepAliveURLLoader::OnReceiveEarlyHints",
                "request_id", request_id_);
 
-  if (forwarding_client_.is_bound() && forwarding_client_.is_connected()) {
+  if (forwarding_client_) {
     // The renderer is alive, forwards the action.
     forwarding_client_->OnReceiveEarlyHints(std::move(early_hints));
     return;
@@ -131,8 +131,12 @@ void KeepAliveURLLoader::OnReceiveResponse(
   // `forwarding_client_` can't finish response handling. Figure out a way to
   // negotiate shutdown timing via RenderFrameHostImpl::OnUnloadAck() and
   // invalidate `forwarding_client_`.
-  if (forwarding_client_.is_bound() && forwarding_client_.is_connected()) {
+  if (forwarding_client_) {
     // The renderer is alive, forwards the action.
+    if (observer_for_testing_) {
+      observer_for_testing_->OnReceiveResponseForwarded(this);
+    }
+
     // The receiver may fail to finish reading `response`, so response caching
     // is not guaranteed.
     forwarding_client_->OnReceiveResponse(std::move(response), std::move(body),
@@ -142,10 +146,15 @@ void KeepAliveURLLoader::OnReceiveResponse(
     return;
   }
 
+  if (observer_for_testing_) {
+    observer_for_testing_->OnReceiveResponseProcessed(this);
+  }
+
   // No need to wait for `OnComplete()`.
   // This loader should be deleted immediately to avoid hanged requests taking
   // up resources.
-  std::move(on_delete_callback_).Run();
+  DeleteSelf();
+  // DO NOT touch any members after this line. `this` is already deleted.
 }
 
 void KeepAliveURLLoader::OnReceiveRedirect(
@@ -160,7 +169,7 @@ void KeepAliveURLLoader::OnReceiveRedirect(
   // `forwarding_client_` can't finish response handling. Figure out a way to
   // negotiate shutdown timing via RenderFrameHostImpl::OnUnloadAck() and
   // invalidate `forwarding_client_`.
-  if (forwarding_client_.is_bound() && forwarding_client_.is_connected()) {
+  if (forwarding_client_) {
     // The renderer is alive, forwards the action.
     // Redirects must be handled by the renderer so that it know what URL the
     // response come from when parsing responses.
@@ -182,7 +191,7 @@ void KeepAliveURLLoader::OnUploadProgress(int64_t current_position,
   TRACE_EVENT1("loading", "KeepAliveURLLoader::OnUploadProgress", "request_id",
                request_id_);
 
-  if (forwarding_client_.is_bound() && forwarding_client_.is_connected()) {
+  if (forwarding_client_) {
     // The renderer is alive, forwards the action.
     forwarding_client_->OnUploadProgress(current_position, total_size,
                                          std::move(callback));
@@ -197,7 +206,7 @@ void KeepAliveURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   TRACE_EVENT1("loading", "KeepAliveURLLoader::OnTransferSizeUpdated",
                "request_id", request_id_);
 
-  if (forwarding_client_.is_bound() && forwarding_client_.is_connected()) {
+  if (forwarding_client_) {
     // The renderer is alive, forwards the action.
     forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
     return;
@@ -212,13 +221,25 @@ void KeepAliveURLLoader::OnComplete(
   TRACE_EVENT1("loading", "KeepAliveURLLoader::OnComplete", "request_id",
                request_id_);
 
-  if (forwarding_client_.is_bound() && forwarding_client_.is_connected()) {
+  if (forwarding_client_) {
     // The renderer is alive, forwards the action.
+    if (observer_for_testing_) {
+      observer_for_testing_->OnCompleteForwarded(this);
+    }
+
     forwarding_client_->OnComplete(completion_status);
+    DeleteSelf();
+    // DO NOT touch any members after this line. `this` is already deleted.
     return;
   }
 
   // TODO(crbug.com/1356128): Handle in the browser process.
+  if (observer_for_testing_) {
+    observer_for_testing_->OnCompleteProcessed(this);
+  }
+
+  DeleteSelf();
+  // DO NOT touch any members after this line. `this` is already deleted.
 }
 
 void KeepAliveURLLoader::OnNetworkConnectionError() {
@@ -238,7 +259,8 @@ void KeepAliveURLLoader::OnRendererConnectionError() {
 
   if (has_received_response_) {
     // No need to wait for `OnComplete()`.
-    std::move(on_delete_callback_).Run();
+    DeleteSelf();
+    // DO NOT touch any members after this line. `this` is already deleted.
     return;
   }
   // Otherwise, let this loader continue to handle responses.
@@ -246,6 +268,16 @@ void KeepAliveURLLoader::OnRendererConnectionError() {
   // TODO(crbug.com/1424731): When we reach here while the renderer is
   // processing a redirect, we should take over the redirect handling in the
   // browser process. See TODOs in `OnReceiveRedirect()`.
+}
+
+void KeepAliveURLLoader::DeleteSelf() {
+  CHECK(on_delete_callback_);
+  std::move(on_delete_callback_).Run();
+}
+
+void KeepAliveURLLoader::SetObserverForTesting(
+    scoped_refptr<TestObserver> observer) {
+  observer_for_testing_ = observer;
 }
 
 }  // namespace content

@@ -79,7 +79,8 @@ void SessionRestorationBrowserAgent::RemoveObserver(
 }
 
 bool SessionRestorationBrowserAgent::RestoreSessionWindow(
-    SessionWindowIOS* window) {
+    SessionWindowIOS* window,
+    SessionRestorationScope scope) {
   if (!window.sessions.count)
     return false;
   restoring_session_ = true;
@@ -89,31 +90,79 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
   }
 
   const int old_count = web_state_list_->count();
+  const int old_first_non_pinned =
+      web_state_list_->GetIndexOfFirstNonPinnedWebState();
   DCHECK_GE(old_count, 0);
 
   web_state_list_->PerformBatchOperation(
       base::BindOnce(^(WebStateList* web_state_list) {
         web::WebState::CreateParams create_params(browser_state_);
         DeserializeWebStateList(
-            web_state_list, window,
+            web_state_list, window, scope,
             base::BindRepeating(&web::WebState::CreateWithStorageSession,
                                 create_params));
       }));
 
   DCHECK_GT(web_state_list_->count(), old_count);
   int restored_count = web_state_list_->count() - old_count;
-  DCHECK_EQ(window.sessions.count, static_cast<NSUInteger>(restored_count));
+  int restored_pinned_count =
+      web_state_list_->GetIndexOfFirstNonPinnedWebState() -
+      old_first_non_pinned;
+
+  NSArray<CRWSessionStorage*>* restored_session_storages =
+      GetRestoredSessionStoragesForScope(scope, window.sessions,
+                                         restored_count);
+  DCHECK_EQ(restored_session_storages.count,
+            static_cast<NSUInteger>(restored_count));
 
   std::vector<web::WebState*> restored_web_states;
-  restored_web_states.reserve(window.sessions.count);
+  restored_web_states.reserve(restored_count);
 
   std::vector<web::WebState*> web_states_to_remove;
-  for (int index = old_count; index < web_state_list_->count(); ++index) {
+  web_states_to_remove.reserve(restored_count);
+
+  // Find restored pinned WebStates.
+  for (int index = old_first_non_pinned;
+       index < web_state_list_->GetIndexOfFirstNonPinnedWebState(); ++index) {
     web::WebState* web_state = web_state_list_->GetWebStateAt(index);
-    if (window.sessions[index - old_count].itemStorages.count == 0) {
+
+    const int session_index = index - old_first_non_pinned;
+    DCHECK_EQ(restored_session_storages[session_index].stableIdentifier,
+              web_state->GetStableIdentifier());
+
+    if (restored_session_storages[session_index].itemStorages.count > 0) {
+      restored_web_states.push_back(web_state);
+    } else {
       web_states_to_remove.push_back(web_state);
-      continue;
     }
+  }
+
+  // Find restored non-pinned WebStates.
+  for (int index = old_count + restored_pinned_count;
+       index < web_state_list_->count(); ++index) {
+    web::WebState* web_state = web_state_list_->GetWebStateAt(index);
+
+    const int session_index = index - old_count;
+    DCHECK_EQ(restored_session_storages[session_index].stableIdentifier,
+              web_state->GetStableIdentifier());
+
+    if (restored_session_storages[session_index].itemStorages.count > 0) {
+      restored_web_states.push_back(web_state);
+    } else {
+      web_states_to_remove.push_back(web_state);
+    }
+  }
+
+  // Do not count WebState that are going to be removed.
+  restored_count -= web_states_to_remove.size();
+
+  DCHECK_EQ(restored_web_states.size(),
+            static_cast<unsigned long>(restored_count));
+
+  // Iterating backwards to avoid messing up the indexes.
+  for (int index = restored_count - 1; index >= 0; --index) {
+    web::WebState* web_state = restored_web_states[index];
+
     const GURL& visible_url = web_state->GetVisibleURL();
 
     if (visible_url != kChromeUINewTabURL) {
@@ -125,8 +174,6 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
       favicon::WebFaviconDriver::FromWebState(web_state)->FetchFavicon(
           visible_url, /*is_same_document=*/false);
     }
-
-    restored_web_states.push_back(web_state);
   }
 
   for (web::WebState* web_state_to_remove : web_states_to_remove) {
@@ -178,7 +225,7 @@ bool SessionRestorationBrowserAgent::RestoreSession() {
     session_window = session.sessionWindows[0];
   }
 
-  return RestoreSessionWindow(session_window);
+  return RestoreSessionWindow(session_window, SessionRestorationScope::kAll);
 }
 
 bool SessionRestorationBrowserAgent::IsRestoringSession() {
@@ -201,6 +248,27 @@ void SessionRestorationBrowserAgent::SaveSession(bool immediately) {
     WebSessionStateTabHelper::FromWebState(web_state)
         ->SaveSessionStateIfStale();
   }
+}
+
+NSArray<CRWSessionStorage*>*
+SessionRestorationBrowserAgent::GetRestoredSessionStoragesForScope(
+    SessionRestorationScope scope,
+    NSArray<CRWSessionStorage*>* session_storages,
+    int restored_count) {
+  NSRange restored_sessions_range;
+
+  switch (scope) {
+    case SessionRestorationScope::kPinnedOnly:
+    case SessionRestorationScope::kAll:
+      restored_sessions_range = NSMakeRange(0, restored_count);
+      break;
+    case SessionRestorationScope::kRegularOnly:
+      restored_sessions_range =
+          NSMakeRange(session_storages.count - restored_count, restored_count);
+      break;
+  }
+
+  return [session_storages subarrayWithRange:restored_sessions_range];
 }
 
 bool SessionRestorationBrowserAgent::CanSaveSession() {

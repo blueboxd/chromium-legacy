@@ -100,6 +100,7 @@ class MockFileUploadDelegate : public FileUploadJob::Delegate {
               (int64_t total,
                int64_t uploaded,
                base::StringPiece session_token,
+               ScopedReservation scoped_reservation,
                base::OnceCallback<void(
                    StatusOr<std::pair<int64_t /*uploaded*/,
                                       std::string /*session_token*/>>)> cb),
@@ -112,6 +113,11 @@ class MockFileUploadDelegate : public FileUploadJob::Delegate {
        base::OnceCallback<void(StatusOr<std::string /*access_parameters*/>)>
            cb),
       (override));
+
+  MOCK_METHOD(void,
+              DoDeleteFile,
+              (base::StringPiece /*origin_path*/),
+              (override));
 };
 
 // Tests for generic events handling.
@@ -338,9 +344,10 @@ TEST_F(RecordHandlerUploadTest, SuccessfulNextStep) {
   test::TestEvent<CompletionResponse> responder_event;
 
   EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_, DoNextStep(Eq(300L), Eq(100L), StrEq("ABC"), _))
+  EXPECT_CALL(*delegate_, DoNextStep(Eq(300L), Eq(100L), StrEq("ABC"), _, _))
       .WillOnce(
           [](int64_t total, int64_t uploaded, base::StringPiece session_token,
+             ScopedReservation scoped_reservation,
              base::OnceCallback<void(
                  StatusOr<std::pair<int64_t /*uploaded*/,
                                     std::string /*session_token*/>>)> cb) {
@@ -470,9 +477,10 @@ TEST_F(RecordHandlerUploadTest, FailedProcessing) {
   test::TestEvent<CompletionResponse> responder_event;
 
   EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_, DoNextStep(Eq(300L), Eq(100L), StrEq("ABC"), _))
+  EXPECT_CALL(*delegate_, DoNextStep(Eq(300L), Eq(100L), StrEq("ABC"), _, _))
       .WillOnce(
           [](int64_t total, int64_t uploaded, base::StringPiece session_token,
+             ScopedReservation scoped_reservation,
              base::OnceCallback<void(
                  StatusOr<std::pair<int64_t /*uploaded*/,
                                     std::string /*session_token*/>>)> cb) {
@@ -528,19 +536,18 @@ TEST_F(RecordHandlerUploadTest, RepeatedInitiationAttempts) {
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
 
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
-      .WillOnce(
-          Invoke([](Priority priority, Record record,
-                    StorageModuleInterface::EnqueueCallback callback) {
-            EXPECT_TRUE(record.needs_local_unencrypted_copy());
-            LogUploadEvent log_upload_event;
-            EXPECT_TRUE(log_upload_event.ParseFromArray(record.data().data(),
-                                                        record.data().size()));
-            EXPECT_THAT(log_upload_event,
-                        AllOf(MatchSettings(),
-                              MatchTrackerInProgress(0L, 300L, "ABC")));
-            EXPECT_FALSE(log_upload_event.upload_tracker().has_status());
-            std::move(callback).Run(Status::StatusOK());
-          }));
+      .WillOnce(Invoke([](Priority priority, Record record,
+                          StorageModuleInterface::EnqueueCallback callback) {
+        EXPECT_TRUE(record.needs_local_unencrypted_copy());
+        LogUploadEvent log_upload_event;
+        EXPECT_TRUE(log_upload_event.ParseFromArray(record.data().data(),
+                                                    record.data().size()));
+        EXPECT_THAT(
+            log_upload_event,
+            AllOf(MatchSettings(), MatchTrackerInProgress(0L, 300L, "ABC")));
+        EXPECT_FALSE(log_upload_event.upload_tracker().has_status());
+        std::move(callback).Run(Status::StatusOK());
+      }));
 
   for (size_t i = 0; i < kNumTestRecords; ++i) {
     ScopedReservation record_reservation(init_encrypted_record.ByteSizeLong(),
@@ -577,9 +584,10 @@ TEST_F(RecordHandlerUploadTest, RepeatedNextStepAttempts) {
           std::move(ResponseBuilder().SetSuccess(true))));
 
   EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_, DoNextStep(Eq(300L), Eq(100L), StrEq("ABC"), _))
+  EXPECT_CALL(*delegate_, DoNextStep(Eq(300L), Eq(100L), StrEq("ABC"), _, _))
       .WillOnce(
           [](int64_t total, int64_t uploaded, base::StringPiece session_token,
+             ScopedReservation scoped_reservation,
              base::OnceCallback<void(
                  StatusOr<std::pair<int64_t /*uploaded*/,
                                     std::string /*session_token*/>>)> cb) {
@@ -589,19 +597,18 @@ TEST_F(RecordHandlerUploadTest, RepeatedNextStepAttempts) {
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
 
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
-      .WillOnce(
-          Invoke([](Priority priority, Record record,
-                    StorageModuleInterface::EnqueueCallback callback) {
-            EXPECT_TRUE(record.needs_local_unencrypted_copy());
-            LogUploadEvent log_upload_event;
-            EXPECT_TRUE(log_upload_event.ParseFromArray(record.data().data(),
-                                                        record.data().size()));
-            EXPECT_THAT(log_upload_event,
-                        AllOf(MatchSettings(),
-                              MatchTrackerInProgress(200L, 300L, "ABC")));
-            EXPECT_FALSE(log_upload_event.upload_tracker().has_status());
-            std::move(callback).Run(Status::StatusOK());
-          }));
+      .WillOnce(Invoke([](Priority priority, Record record,
+                          StorageModuleInterface::EnqueueCallback callback) {
+        EXPECT_TRUE(record.needs_local_unencrypted_copy());
+        LogUploadEvent log_upload_event;
+        EXPECT_TRUE(log_upload_event.ParseFromArray(record.data().data(),
+                                                    record.data().size()));
+        EXPECT_THAT(
+            log_upload_event,
+            AllOf(MatchSettings(), MatchTrackerInProgress(200L, 300L, "ABC")));
+        EXPECT_FALSE(log_upload_event.upload_tracker().has_status());
+        std::move(callback).Run(Status::StatusOK());
+      }));
 
   for (size_t i = 0; i < kNumTestRecords; ++i) {
     ScopedReservation record_reservation(

@@ -452,7 +452,8 @@ WebView* WebView::Create(
     bool is_hidden,
     bool is_prerendering,
     bool is_inside_portal,
-    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
+    absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+        fenced_frame_mode,
     bool compositing_enabled,
     bool widgets_never_composited,
     WebView* opener,
@@ -476,7 +477,8 @@ WebViewImpl* WebViewImpl::Create(
     mojom::blink::PageVisibilityState visibility,
     bool is_prerendering,
     bool is_inside_portal,
-    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
+    absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+        fenced_frame_mode,
     bool compositing_enabled,
     bool widgets_never_composited,
     WebViewImpl* opener,
@@ -551,7 +553,8 @@ WebViewImpl::WebViewImpl(
     mojom::blink::PageVisibilityState visibility,
     bool is_prerendering,
     bool is_inside_portal,
-    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
+    absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+        fenced_frame_mode,
     bool does_composite,
     bool widgets_never_composited,
     WebViewImpl* opener,
@@ -599,7 +602,7 @@ WebViewImpl::WebViewImpl(
 
   if (fenced_frame_mode && features::IsFencedFramesEnabled()) {
     page_->SetIsMainFrameFencedFrameRoot();
-    page_->SetFencedFrameMode(*fenced_frame_mode);
+    page_->SetDeprecatedFencedFrameMode(*fenced_frame_mode);
   } else {
     // `fenced_frame_mode` should only be set if creating an MPArch
     // fenced frame.
@@ -1712,6 +1715,10 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   settings->SetAccessibilityAlwaysShowFocus(prefs.always_show_focus);
   settings->SetAutoplayPolicy(prefs.autoplay_policy);
+  settings->SetRequireTransientActivationForGetDisplayMedia(
+      prefs.require_transient_activation_for_get_display_media);
+  settings->SetRequireTransientActivationForShowFileOrDirectoryPicker(
+      prefs.require_transient_activation_for_show_file_or_directory_picker);
   settings->SetViewportEnabled(prefs.viewport_enabled);
   settings->SetViewportMetaEnabled(prefs.viewport_meta_enabled);
   settings->SetViewportStyle(prefs.viewport_style);
@@ -3828,7 +3835,6 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
 
   if (args.page_scale_delta != 1) {
     double_tap_zoom_pending_ = false;
-    visual_viewport.UserDidChangeScale();
   }
 
   elastic_overscroll_ += args.elastic_overscroll_delta;

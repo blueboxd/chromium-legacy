@@ -25,7 +25,6 @@ source_set("reading_list") {
   ]
   deps = [
     ":reading_list_ui",
-    "resources:distillation_fail_new",
     "//base",
     "//components/favicon/core",
     "//components/feature_engagement",
@@ -48,13 +47,11 @@ source_set("reading_list") {
     "//ios/chrome/browser/shared/ui/table_view:styler",
     "//ios/chrome/browser/shared/ui/table_view/cells",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/incognito_reauth:incognito_reauth_scene_agent",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/menu",
-    "//ios/chrome/browser/ui/reading_list/resources:distillation_fail_new",
     "//ios/chrome/browser/ui/sharing",
     "//ios/chrome/browser/ui/sharing/activity_services",
     "//ios/chrome/browser/ui/side_swipe",
@@ -128,7 +125,6 @@ source_set("reading_list_ui") {
   deps = [
     ":reading_list_constants",
     "resources:reading_list_empty",
-    "resources:reading_list_empty_state",
     "//base",
     "//base:i18n",
     "//components/prefs",
@@ -142,14 +138,13 @@ source_set("reading_list_ui") {
     "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/shared/coordinator/alert",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/list_model",
     "//ios/chrome/browser/shared/ui/table_view",
     "//ios/chrome/browser/shared/ui/table_view:utils",
     "//ios/chrome/browser/shared/ui/table_view/cells",
-    "//ios/chrome/browser/shared/ui/table_view/cells/resources:table_view_cell_check_mark",
     "//ios/chrome/browser/shared/ui/util",
-    "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/common",
@@ -220,7 +215,6 @@ source_set("eg2_tests") {
     "//ios/chrome/common/ui/table_view:cells_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/common:features",
     "//ios/web/public/navigation:navigation",
     "//net",
@@ -263,6 +257,5 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//base",
     "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/third_party/earl_grey2:test_lib",
   ]
 }

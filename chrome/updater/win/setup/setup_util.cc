@@ -154,13 +154,13 @@ void AddInstallServerWorkItems(HKEY root,
 std::wstring GetTaskName(UpdaterScope scope) {
   scoped_refptr<TaskScheduler> task_scheduler =
       TaskScheduler::CreateInstance(scope);
-  DCHECK(task_scheduler);
+  CHECK(task_scheduler);
   return task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
 }
 
 void UnregisterWakeTask(UpdaterScope scope) {
   auto task_scheduler = TaskScheduler::CreateInstance(scope);
-  DCHECK(task_scheduler);
+  CHECK(task_scheduler);
 
   const std::wstring task_name = GetTaskName(scope);
   if (task_name.empty()) {
@@ -264,19 +264,23 @@ std::vector<CLSID> GetServers(bool is_internal, UpdaterScope scope) {
 void AddComServerWorkItems(const base::FilePath& com_server_path,
                            bool is_internal,
                            WorkItemList* list) {
-  DCHECK(list);
+  CHECK(list);
+  VLOG(1) << __func__ << ": " << com_server_path << ": " << is_internal;
+
   if (com_server_path.empty()) {
     LOG(DFATAL) << "com_server_path is invalid.";
     return;
   }
 
   for (const auto& clsid : GetServers(is_internal, UpdaterScope::kUser)) {
+    VLOG(1) << "Registering clsid: " << base::win::WStringFromGUID(clsid);
     AddInstallServerWorkItems(HKEY_CURRENT_USER, clsid, com_server_path,
                               is_internal, list);
     AddInstallComProgIdWorkItems(UpdaterScope::kUser, clsid, list);
   }
 
   for (const auto& iid : GetInterfaces(is_internal, UpdaterScope::kUser)) {
+    VLOG(1) << "Registering interface: " << base::win::WStringFromGUID(iid);
     AddInstallComInterfaceWorkItems(HKEY_CURRENT_USER, com_server_path, iid,
                                     list);
   }
@@ -285,7 +289,8 @@ void AddComServerWorkItems(const base::FilePath& com_server_path,
 void AddComServiceWorkItems(const base::FilePath& com_service_path,
                             bool internal_service,
                             WorkItemList* list) {
-  DCHECK(::IsUserAnAdmin());
+  CHECK(::IsUserAnAdmin());
+  VLOG(1) << __func__ << ": " << com_service_path << ": " << internal_service;
 
   if (com_service_path.empty()) {
     LOG(DFATAL) << "com_service_path is invalid.";
@@ -315,11 +320,13 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
       com_service_command, com_switch, UPDATER_KEY, clsids, {}));
 
   for (const auto& clsid : clsids) {
+    VLOG(1) << "Registering clsid: " << base::win::WStringFromGUID(clsid);
     AddInstallComProgIdWorkItems(UpdaterScope::kSystem, clsid, list);
   }
 
   for (const auto& iid :
        GetInterfaces(internal_service, UpdaterScope::kSystem)) {
+    VLOG(1) << "Registering interface: " << base::win::WStringFromGUID(iid);
     AddInstallComInterfaceWorkItems(HKEY_LOCAL_MACHINE, com_service_path, iid,
                                     list);
   }
@@ -415,7 +422,7 @@ std::wstring GetComTypeLibResourceIndex(REFIID iid) {
 void RegisterUserRunAtStartup(const std::wstring& run_value_name,
                               const base::CommandLine& command,
                               WorkItemList* list) {
-  DCHECK(list);
+  CHECK(list);
   VLOG(1) << __func__;
 
   list->AddSetRegValueWorkItem(HKEY_CURRENT_USER, REGSTR_PATH_RUN, 0,
@@ -440,7 +447,7 @@ RegisterWakeTaskWorkItem::~RegisterWakeTaskWorkItem() = default;
 bool RegisterWakeTaskWorkItem::DoImpl() {
   scoped_refptr<TaskScheduler> task_scheduler =
       TaskScheduler::CreateInstance(scope_);
-  DCHECK(task_scheduler);
+  CHECK(task_scheduler);
 
   // Task already exists.
   if (!GetTaskName(scope_).empty()) {
@@ -454,7 +461,7 @@ bool RegisterWakeTaskWorkItem::DoImpl() {
     return false;
   }
 
-  DCHECK(!task_scheduler->IsTaskRegistered(task_name.c_str()));
+  CHECK(!task_scheduler->IsTaskRegistered(task_name.c_str()));
 
   if (!task_scheduler->RegisterTask(
           task_name.c_str(), GetTaskDisplayName(scope_).c_str(), run_command_,
@@ -472,7 +479,7 @@ void RegisterWakeTaskWorkItem::RollbackImpl() {
   }
 
   auto task_scheduler = TaskScheduler::CreateInstance(scope_);
-  DCHECK(task_scheduler);
+  CHECK(task_scheduler);
   task_scheduler->DeleteTask(task_name_.c_str());
 }
 

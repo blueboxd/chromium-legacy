@@ -22,7 +22,6 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/vector_icons/vector_icons.h"
@@ -63,7 +62,6 @@ constexpr int kWeekRowHorizontalPadding =
     kContentHorizontalPadding - calendar_utils::kDateHorizontalPadding;
 constexpr int kExpandedCalendarPadding = 11;
 constexpr int kChevronPadding = calendar_utils::kColumnSetPadding - 1;
-constexpr int kEventListViewVerticalPadding = 6;
 constexpr int kMonthHeaderLabelTopPadding = 14;
 constexpr int kMonthHeaderLabelBottomPadding = 2;
 constexpr int kEventListViewHorizontalOffset = 1;
@@ -1391,6 +1389,10 @@ void CalendarView::ScrollUpOneMonth() {
   scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(), position);
 
   MaybeResetContentViewFocusBehavior();
+
+  if (current_month_->has_events()) {
+    calendar_view_controller_->EventsDisplayedToUser();
+  }
 }
 
 void CalendarView::ScrollDownOneMonth() {
@@ -1428,6 +1430,10 @@ void CalendarView::ScrollDownOneMonth() {
   scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(), position);
 
   MaybeResetContentViewFocusBehavior();
+
+  if (current_month_->has_events()) {
+    calendar_view_controller_->EventsDisplayedToUser();
+  }
 }
 
 void CalendarView::ScrollOneMonthAndAutoScroll(bool scroll_up) {
@@ -2035,9 +2041,9 @@ void CalendarView::SetCalendarSlidingSurfaceBounds(bool event_list_view_open) {
   const int x_position = scroll_view_->x() + kEventListViewHorizontalOffset;
   const int width = scroll_view_->GetVisibleRect().width() -
                     kEventListViewHorizontalOffset * 2;
-  const int event_list_view_height =
-      GetBoundsInScreen().bottom() - scroll_view_->GetBoundsInScreen().y() -
-      calendar_view_controller_->row_height() + kEventListViewVerticalPadding;
+  const int event_list_view_height = GetBoundsInScreen().bottom() -
+                                     scroll_view_->GetBoundsInScreen().y() -
+                                     calendar_view_controller_->row_height();
 
   // If the event list view is showing, position the calendar sliding surface
   // where the opened event list view will be.

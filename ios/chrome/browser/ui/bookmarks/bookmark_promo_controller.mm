@@ -6,6 +6,7 @@
 
 #import <memory>
 
+#import "components/bookmarks/common/bookmark_features.h"
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
@@ -44,12 +45,16 @@
 
 - (instancetype)initWithBrowser:(Browser*)browser
                        delegate:(id<BookmarkPromoControllerDelegate>)delegate
-                      presenter:(id<SigninPresenter>)presenter {
+                      presenter:(id<SigninPresenter>)presenter
+             baseViewController:(UIViewController*)baseViewController {
   DCHECK(browser);
   self = [super init];
   if (self) {
     _delegate = delegate;
-    ChromeBrowserState* browserState = browser->GetBrowserState();
+    ChromeBrowserState* browserState =
+        browser->GetBrowserState()->GetOriginalChromeBrowserState();
+    // TODO(crbug.com/1426262): Decide whether to show the signin promo in
+    // incognito mode and revisit this code.
     // Incognito browser can go away before this class is released (once the
     // last incognito winwdow is closed), this code avoids keeping a pointer to
     // it.
@@ -60,14 +65,18 @@
           new signin::IdentityManagerObserverBridge(
               IdentityManagerFactory::GetForBrowserState(browserState), self));
       _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-          initWithAccountManagerService:ChromeAccountManagerServiceFactory::
-                                            GetForBrowserState(browserState)
-                            authService:AuthenticationServiceFactory::
-                                            GetForBrowserState(browserState)
-                            prefService:browserState->GetPrefs()
-                            accessPoint:signin_metrics::AccessPoint::
-                                            ACCESS_POINT_BOOKMARK_MANAGER
-                              presenter:presenter];
+                initWithBrowser:browser
+          accountManagerService:ChromeAccountManagerServiceFactory::
+                                    GetForBrowserState(browserState)
+                    authService:AuthenticationServiceFactory::
+                                    GetForBrowserState(browserState)
+                    prefService:browserState->GetPrefs()
+                    accessPoint:signin_metrics::AccessPoint::
+                                    ACCESS_POINT_BOOKMARK_MANAGER
+                      presenter:presenter
+             baseViewController:baseViewController];
+      _signinPromoViewMediator.signInOnly = base::FeatureList::IsEnabled(
+          bookmarks::kEnableBookmarksAccountStorage);
       _signinPromoViewMediator.consumer = self;
     }
     [self updateShouldShowSigninPromo];
@@ -100,26 +109,46 @@
 }
 
 - (void)updateShouldShowSigninPromo {
-  self.shouldShowSigninPromo = NO;
   if (_isIncognito) {
+    self.shouldShowSigninPromo = NO;
     return;
   }
-
   DCHECK(_browser);
-  ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState =
+      _browser->GetBrowserState()->GetOriginalChromeBrowserState();
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
-  if ([SigninPromoViewMediator
+  if (![SigninPromoViewMediator
           shouldDisplaySigninPromoViewWithAccessPoint:
               signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER
                                 authenticationService:authenticationService
                                           prefService:browserState
                                                           ->GetPrefs()]) {
-    signin::IdentityManager* identityManager =
-        IdentityManagerFactory::GetForBrowserState(browserState);
-    self.shouldShowSigninPromo =
-        !identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+    self.shouldShowSigninPromo = NO;
+    return;
   }
+  signin::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(browserState);
+  if (!identityManager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
+    // If the user is not signed in, the promo should be visible.
+    self.shouldShowSigninPromo = YES;
+    return;
+  }
+  if (identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+    // If the user is already syncing, the promo should not be visible.
+    self.shouldShowSigninPromo = NO;
+    return;
+  }
+  if (!base::FeatureList::IsEnabled(
+          bookmarks::kEnableBookmarksAccountStorage)) {
+    // If the account storage feature is not available, the promo should be
+    // visible to show "Turn on Sync promo".
+    self.shouldShowSigninPromo = YES;
+  }
+  // if the account storage feature is available and the user is signed in only,
+  // the promo should be visible only if the first sync is not finished yet.
+  // This is show the activity indicator.
+  self.shouldShowSigninPromo = [self.delegate isPerformingInitialSync];
 }
 
 #pragma mark - IdentityManagerObserverBridgeDelegate

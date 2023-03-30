@@ -97,7 +97,8 @@ static ResourceId CreateResourceInLayerTree(
     bool is_overlay_candidate) {
   auto resource = TransferableResource::MakeGpu(
       gpu::Mailbox::GenerateForSharedImage(), GL_LINEAR, GL_TEXTURE_2D,
-      gpu::SyncToken(), size, RGBA_8888, is_overlay_candidate);
+      gpu::SyncToken(), size, SinglePlaneFormat::kRGBA_8888,
+      is_overlay_candidate);
 
   ResourceId resource_id =
       child_resource_provider->ImportResource(resource, base::DoNothing());
@@ -196,14 +197,34 @@ SkM44 GetIdentityColorMatrix() {
   return SkM44();
 }
 
-class DCLayerOverlayTest : public testing::Test {
+class DCLayerOverlayTest : public testing::Test,
+                           public testing::WithParamInterface<bool> {
+ public:
+  bool IsUsingDCompPresenter() const { return GetParam(); }
+
+  static const char* GetParamName(
+      const testing::TestParamInfo<ParamType>& info) {
+    return info.param ? "DCompPresenter" : "DirectCompositionChildSurfaceWin";
+  }
+
  protected:
   DCLayerOverlayTest() {
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
     // With DisableVideoOverlayIfMoving, videos are required to be stable for a
     // certain number of frames to be considered for overlay promotion. This
     // complicates tests since it adds behavior dependent on the number of times
     // |Process| is called.
-    feature_list_.InitAndDisableFeature(features::kDisableVideoOverlayIfMoving);
+    disabled_features.push_back(features::kDisableVideoOverlayIfMoving);
+
+    if (IsUsingDCompPresenter()) {
+      enabled_features.push_back(features::kDCompPresenter);
+    } else {
+      disabled_features.push_back(features::kDCompPresenter);
+    }
+
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   void SetUp() override {
@@ -225,6 +246,11 @@ class DCLayerOverlayTest : public testing::Test {
     overlay_processor_
         ->set_frames_since_last_qualified_multi_overlays_for_testing(5);
     EXPECT_TRUE(overlay_processor_->IsOverlaySupported());
+
+    if (IsUsingDCompPresenter()) {
+      output_surface_plane_ =
+          OverlayProcessorInterface::OutputSurfaceOverlayPlane();
+    }
   }
 
   void TearDown() override {
@@ -237,10 +263,23 @@ class DCLayerOverlayTest : public testing::Test {
     output_surface_ = nullptr;
   }
 
+  OverlayProcessorInterface::OutputSurfaceOverlayPlane*
+  GetOutputSurfacePlane() {
+    if (IsUsingDCompPresenter()) {
+      EXPECT_TRUE(output_surface_plane_.has_value());
+      return &output_surface_plane_.value();
+    } else {
+      EXPECT_FALSE(output_surface_plane_.has_value());
+      return nullptr;
+    }
+  }
+
   void TestRenderPassRootTransform(bool is_overlay);
 
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<MockDCLayerOutputSurface> output_surface_;
+  absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
+      output_surface_plane_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<DisplayResourceProviderSkia> resource_provider_;
   absl::optional<DisplayResourceProviderSkia::LockSetForExternalUse>
@@ -252,7 +291,7 @@ class DCLayerOverlayTest : public testing::Test {
   std::vector<gfx::Rect> content_bounds_;
 };
 
-TEST_F(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
+TEST_P(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
   auto ProcessForOverlaysSingleVideoRectWithOffset =
       [&](gfx::Vector2d video_rect_offset) {
         auto pass = CreateRenderPass();
@@ -273,8 +312,9 @@ TEST_F(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
 
         overlay_processor_->ProcessForOverlays(
             resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-            render_pass_filters, render_pass_backdrop_filters, {}, nullptr,
-            &dc_layer_list, &damage_rect_, &content_bounds_);
+            render_pass_filters, render_pass_backdrop_filters, {},
+            GetOutputSurfacePlane(), &dc_layer_list, &damage_rect_,
+            &content_bounds_);
 
         return dc_layer_list;
       };
@@ -307,7 +347,7 @@ TEST_F(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, Occluded) {
+TEST_P(DCLayerOverlayTest, Occluded) {
   {
     auto pass = CreateRenderPass();
     SharedQuadState* first_shared_state = pass->shared_quad_state_list.back();
@@ -350,8 +390,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
 
     EXPECT_EQ(2U, dc_layer_list.size());
     EXPECT_EQ(-1, dc_layer_list.front().plane_z_order);
@@ -400,8 +440,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
 
     EXPECT_EQ(2U, dc_layer_list.size());
     EXPECT_EQ(-1, dc_layer_list.front().plane_z_order);
@@ -414,7 +454,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
+TEST_P(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
   {
     auto pass = CreateRenderPass();
     SharedQuadState* shared_quad_state = pass->shared_quad_state_list.back();
@@ -451,8 +491,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(1U, dc_layer_list.size());
     EXPECT_EQ(-1, dc_layer_list.back().plane_z_order);
     // All rects must be redrawn at the first frame.
@@ -494,8 +534,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(1U, dc_layer_list.size());
     EXPECT_EQ(-1, dc_layer_list.back().plane_z_order);
     // Only the non-overlay damaged rect need to be drawn by the gl compositor
@@ -503,7 +543,7 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, DamageRect) {
+TEST_P(DCLayerOverlayTest, DamageRect) {
   for (int i = 0; i < 2; i++) {
     auto pass = CreateRenderPass();
     SharedQuadState* shared_quad_state = pass->shared_quad_state_list.back();
@@ -523,8 +563,8 @@ TEST_F(DCLayerOverlayTest, DamageRect) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(1U, dc_layer_list.size());
     EXPECT_EQ(1, dc_layer_list.back().plane_z_order);
     // Damage rect should be unchanged on initial frame because of resize, but
@@ -537,7 +577,7 @@ TEST_F(DCLayerOverlayTest, DamageRect) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, ClipRect) {
+TEST_P(DCLayerOverlayTest, ClipRect) {
   // Process twice. The second time through the overlay list shouldn't change,
   // which will allow the damage rect to reflect just the changes in that
   // frame.
@@ -570,8 +610,8 @@ TEST_F(DCLayerOverlayTest, ClipRect) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(1U, dc_layer_list.size());
     // Because of clip rects the overlay isn't occluded and shouldn't be an
     // underlay.
@@ -585,7 +625,7 @@ TEST_F(DCLayerOverlayTest, ClipRect) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, TransparentOnTop) {
+TEST_P(DCLayerOverlayTest, TransparentOnTop) {
   // Process twice. The second time through the overlay list shouldn't change,
   // which will allow the damage rect to reflect just the changes in that
   // frame.
@@ -608,8 +648,8 @@ TEST_F(DCLayerOverlayTest, TransparentOnTop) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(1U, dc_layer_list.size());
     EXPECT_EQ(1, dc_layer_list.back().plane_z_order);
     // Quad isn't opaque, so underlying damage must remain the same.
@@ -617,7 +657,7 @@ TEST_F(DCLayerOverlayTest, TransparentOnTop) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
+TEST_P(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
   for (int i = 0; i < 3; i++) {
     auto pass = CreateRenderPass();
     // Add a solid color quad on top
@@ -649,8 +689,8 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(1U, dc_layer_list.size());
     EXPECT_EQ(-1, dc_layer_list.back().plane_z_order);
     // Damage rect should be unchanged on initial frame, but should be reduced
@@ -665,7 +705,7 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
 }
 
 // Test whether quads with rounded corners are supported.
-TEST_F(DCLayerOverlayTest, RoundedCorners) {
+TEST_P(DCLayerOverlayTest, RoundedCorners) {
   // Frame #0
   {
     auto pass = CreateRenderPass();
@@ -694,8 +734,8 @@ TEST_F(DCLayerOverlayTest, RoundedCorners) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
 
     auto* root_pass = pass_list.back().get();
     auto* replaced_quad = root_pass->quad_list.back();
@@ -752,8 +792,8 @@ TEST_F(DCLayerOverlayTest, RoundedCorners) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
 
     auto* root_pass = pass_list.back().get();
     auto* replaced_quad = root_pass->quad_list.back();
@@ -810,8 +850,8 @@ TEST_F(DCLayerOverlayTest, RoundedCorners) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
 
     auto* root_pass = pass_list.back().get();
     auto* replaced_quad = root_pass->quad_list.back();
@@ -839,7 +879,7 @@ TEST_F(DCLayerOverlayTest, RoundedCorners) {
 
 // If there are multiple yuv overlay quad candidates, no overlay will be
 // promoted to save power.
-TEST_F(DCLayerOverlayTest, MultipleYUVOverlays) {
+TEST_P(DCLayerOverlayTest, MultipleYUVOverlays) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       features::kNoUndamagedOverlayPromotion);
@@ -879,8 +919,8 @@ TEST_F(DCLayerOverlayTest, MultipleYUVOverlays) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
 
     // Skip overlays.
     EXPECT_EQ(0U, dc_layer_list.size());
@@ -894,7 +934,7 @@ TEST_F(DCLayerOverlayTest, MultipleYUVOverlays) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, SetEnableDCLayers) {
+TEST_P(DCLayerOverlayTest, SetEnableDCLayers) {
   // Start without DC layers.
   overlay_processor_->set_using_dc_layers_for_testing(false);
 
@@ -919,16 +959,28 @@ TEST_F(DCLayerOverlayTest, SetEnableDCLayers) {
     const gfx::Rect expected_damage =
         (i == 0) ? pass_list.back()->output_rect : gfx::Rect();
 
-    if (i == 0)
-      EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(true)).Times(1);
-    else
+    if (IsUsingDCompPresenter()) {
       EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(_)).Times(0);
+    } else {
+      if (i == 0) {
+        EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(true)).Times(1);
+      } else {
+        EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(_)).Times(0);
+      }
+    }
 
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
+
+    if (IsUsingDCompPresenter() && i == 0) {
+      EXPECT_TRUE(pass_list.back()->needs_synchronous_dcomp_commit);
+      EXPECT_TRUE(pass_list.back()->has_transparent_background);
+      ASSERT_TRUE(output_surface_plane_.has_value());
+      EXPECT_TRUE(output_surface_plane_->enable_blending);
+    }
 
     EXPECT_EQ(1U, dc_layer_list.size());
     EXPECT_EQ(1, dc_layer_list.back().plane_z_order);
@@ -963,16 +1015,28 @@ TEST_F(DCLayerOverlayTest, SetEnableDCLayers) {
                                           ? pass_list.back()->output_rect
                                           : damage_rect_;
 
-    if (i + 1 == 60)
-      EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(false)).Times(1);
-    else
+    if (IsUsingDCompPresenter()) {
       EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(_)).Times(0);
+    } else {
+      if (i + 1 == 60) {
+        EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(false)).Times(1);
+      } else {
+        EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(_)).Times(0);
+      }
+    }
 
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
+
+    if (IsUsingDCompPresenter() && i + 1 == 60) {
+      EXPECT_FALSE(pass_list.back()->needs_synchronous_dcomp_commit);
+      EXPECT_FALSE(pass_list.back()->has_transparent_background);
+      ASSERT_TRUE(output_surface_plane_.has_value());
+      EXPECT_FALSE(output_surface_plane_->enable_blending);
+    }
 
     EXPECT_EQ(0u, dc_layer_list.size());
     EXPECT_EQ(damage_rect_, expected_damage);
@@ -983,7 +1047,7 @@ TEST_F(DCLayerOverlayTest, SetEnableDCLayers) {
 
 // Test that the video is forced to underlay if the expanded quad of pixel
 // moving foreground filter is on top.
-TEST_F(DCLayerOverlayTest, PixelMovingForegroundFilter) {
+TEST_P(DCLayerOverlayTest, PixelMovingForegroundFilter) {
   AggregatedRenderPassList pass_list;
 
   // Create a non-root render pass with a pixel-moving foreground filter.
@@ -1042,8 +1106,8 @@ TEST_F(DCLayerOverlayTest, PixelMovingForegroundFilter) {
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
       render_pass_filters, render_pass_backdrop_filters,
-      std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-      &damage_rect_, &content_bounds_);
+      std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+      &dc_layer_list, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(1U, dc_layer_list.size());
   // Make sure the video is in an underlay mode if the overlay quad intersects
@@ -1053,7 +1117,7 @@ TEST_F(DCLayerOverlayTest, PixelMovingForegroundFilter) {
 }
 
 // Test that the video is not promoted if a quad on top has backdrop filters.
-TEST_F(DCLayerOverlayTest, BackdropFilter) {
+TEST_P(DCLayerOverlayTest, BackdropFilter) {
   AggregatedRenderPassList pass_list;
 
   // Create a non-root render pass with a backdrop filter.
@@ -1114,8 +1178,8 @@ TEST_F(DCLayerOverlayTest, BackdropFilter) {
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
       render_pass_filters, render_pass_backdrop_filters,
-      std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-      &damage_rect_, &content_bounds_);
+      std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+      &dc_layer_list, &damage_rect_, &content_bounds_);
 
   // Make sure the video is not promoted if the overlay quad intersects
   // with the backdrop filter rpdq->rect.
@@ -1124,7 +1188,7 @@ TEST_F(DCLayerOverlayTest, BackdropFilter) {
 }
 
 // Test if overlay is not used when video capture is on.
-TEST_F(DCLayerOverlayTest, VideoCapture) {
+TEST_P(DCLayerOverlayTest, VideoCapture) {
   // Frame #0
   {
     auto pass = CreateRenderPass();
@@ -1156,8 +1220,8 @@ TEST_F(DCLayerOverlayTest, VideoCapture) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
 
     // Use overlay for the video quad.
     EXPECT_EQ(1U, dc_layer_list.size());
@@ -1195,8 +1259,8 @@ TEST_F(DCLayerOverlayTest, VideoCapture) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
 
     // Should not use overlay for the video when video capture is on.
     EXPECT_EQ(0U, dc_layer_list.size());
@@ -1209,11 +1273,11 @@ TEST_F(DCLayerOverlayTest, VideoCapture) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, RenderPassRootTransformOverlay) {
+TEST_P(DCLayerOverlayTest, RenderPassRootTransformOverlay) {
   TestRenderPassRootTransform(/*is_overlay*/ true);
 }
 
-TEST_F(DCLayerOverlayTest, RenderPassRootTransformUnderlay) {
+TEST_P(DCLayerOverlayTest, RenderPassRootTransformUnderlay) {
   TestRenderPassRootTransform(/*is_overlay*/ false);
 }
 
@@ -1261,8 +1325,8 @@ void DCLayerOverlayTest::TestRenderPassRootTransform(bool is_overlay) {
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters,
-        std::move(surface_damage_rect_list), nullptr, &dc_layer_list,
-        &damage_rect_, &content_bounds_);
+        std::move(surface_damage_rect_list), GetOutputSurfacePlane(),
+        &dc_layer_list, &damage_rect_, &content_bounds_);
     LOG(INFO) << damage_rect_.ToString();
 
     EXPECT_EQ(dc_layer_list.size(), 1u);
@@ -1291,6 +1355,11 @@ void DCLayerOverlayTest::TestRenderPassRootTransform(bool is_overlay) {
     }
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DCLayerOverlayTest,
+                         testing::Bool(),
+                         &DCLayerOverlayTest::GetParamName);
 
 }  // namespace
 }  // namespace viz

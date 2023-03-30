@@ -139,7 +139,7 @@ class WebApkInstallerRunner {
     GURL manifest_url("httsp://manifest.com");
 
     // WebApkInstaller owns itself.
-    WebApkInstaller::InstallForServiceAsyncForTesting(
+    WebApkInstaller::InstallWithProtoAsyncForTesting(
         installer.release(), std::move(serialized_webapk), short_name, source,
         SkBitmap(), false, manifest_url,
         base::BindOnce(&WebApkInstallerRunner::OnCompleted,
@@ -166,6 +166,7 @@ class WebApkInstallerRunner {
 
  private:
   void OnCompleted(webapps::WebApkInstallResult result,
+                   std::unique_ptr<std::string> serialized_webapk,
                    bool relax_updates,
                    const std::string& webapk_package) {
     result_ = result;

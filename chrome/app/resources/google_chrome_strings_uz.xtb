@@ -22,6 +22,7 @@
 <translation id="1399397803214730675">Bu kompyuterdagi Google Chrome brauzeri eskirgan, agar brauzer ishlamayotgan bo‘lsa, uni o‘chirib tashlang va qaytadan o‘rnating.</translation>
 <translation id="139993653570221430">Fikringiz oʻzgarsa, buni istalgan vaqt Chrome sozlamalari orqali oʻzgartirish mumkin. Sinovlar rejadagi reklama bilan bir vaqtda chiqadi, shu sababli oʻzgarishlar darhol koʻrinmaydi.</translation>
 <translation id="1434626383986940139">Chrome Canary ilovalari</translation>
+<translation id="1496905273983707119">{NUM_DEVICES,plural, =0{Google Chrome HID qurilmasiga ulangan}=1{Google Chrome HID qurilmasiga ulangan}other{Google Chrome HID qurilmalariga ulangan}}</translation>
 <translation id="1507198376417198979">Yangi Chrome profilini moslash</translation>
 <translation id="1516530951338665275">Google Chrome ulanishi uchun Bluetooth orqali kirish ruxsati 
  kerak. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
@@ -123,7 +124,6 @@
 <translation id="3140883423282498090">O‘zgartirishlar Google Chrome qaytadan ishga tushirilganda kuchga kiradi.</translation>
 <translation id="3149510190863420837">Chrome ilovalari</translation>
 <translation id="3169523567916669830">Sinov davrida saytlar reklamani chiqarish uchun ishlatadigan sizga qiziq mavzularni koʻrish va olib tashlash mumkin. Chrome siz ochgan saytlar asosida sizga qiziq boʻlishi mumkin mavzularni taxmin qiladi.</translation>
-<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{Google Chrome HID qurilmasiga ulangan}other{Google Chrome HID qurilmalariga ulangan}}</translation>
 <translation id="3245429137663807393">Shuningdek, Chrome foydalanish statistikasini ham ulashsangiz, bu hisobotlarga siz tashrif qilgan URL manzillar ham kiradi</translation>
 <translation id="3282568296779691940">Chrome hisobiga kirish</translation>
 <translation id="3286538390144397061">Hozir qaytadan ishga tushirish</translation>

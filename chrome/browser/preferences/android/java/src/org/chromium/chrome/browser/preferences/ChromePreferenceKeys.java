@@ -597,6 +597,16 @@ public final class ChromePreferenceKeys {
     public static final KeyPrefix OPTIMIZATION_GUIDE_PUSH_NOTIFICATION_CACHE =
             new KeyPrefix("Chrome.OptimizationGuide.PushNotificationCache.*");
 
+    /** The gaia email address Password Protection should protect. */
+    public static final String PASSWORD_PROTECTION_ACCOUNT = "Chrome.PasswordProtection.Account";
+
+    /** The hashed password associated with PASSWORD_PROTECTION_ACCOUNT. */
+    public static final String PASSWORD_PROTECTION_HASHED_PASSWORD =
+            "Chrome.PasswordProtection.HashedPassword";
+
+    /** The salt used to create PASSWORD_PROTECTION_HASHED_PASSWORD. */
+    public static final String PASSWORD_PROTECTION_SALT = "Chrome.PasswordProtection.Salt";
+
     /** The shared preference for the 'save card to device' checkbox status. */
     public static final String PAYMENTS_CHECK_SAVE_CARD_TO_DEVICE = "check_save_card_to_device";
 
@@ -736,16 +746,6 @@ public final class ChromePreferenceKeys {
     /**
      * Keys used to store user actions for behavioral targeting of showing Start surface on startup.
      */
-    public static final String START_SHOW_ON_STARTUP = "Chrome.StartSurface.ShownOnStartup";
-    public static final String START_NEXT_SHOW_ON_STARTUP_DECISION_MS =
-            "Chrome.StartSurface.ShownOnStartupDecisionMs";
-    public static final String TAP_MV_TILES_COUNT = "Chrome.StartSurface.TapMVTilesCount";
-    public static final String TAP_FEED_CARDS_COUNT = "Chrome.StartSurface.TapFeedCardsCount";
-    public static final String OPEN_NEW_TAB_PAGE_COUNT = "Chrome.StartSurface.OpenNewTabPageCount";
-    public static final String OPEN_HISTORY_COUNT = "Chrome.StartSurface.OpenHistoryCount";
-    public static final String OPEN_RECENT_TABS_COUNT = "Chrome.StartSurface.OpenRecentTabCount";
-    public static final String SHOW_START_SEGMENTATION_RESULT =
-            "Chrome.StartSurface.ShowSegmentationResult";
     public static final String START_RETURN_TIME_SEGMENTATION_RESULT_MS =
             "Chrome.StartSurface.StartReturnTimeSegmentationResultMs";
 
@@ -1087,10 +1087,10 @@ public final class ChromePreferenceKeys {
                 OFFLINE_MEASUREMENTS_SYSTEM_STATE_LIST,
                 OFFLINE_MEASUREMENTS_USER_AGENT_STRING,
                 OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO,
-                OPEN_HISTORY_COUNT,
-                OPEN_NEW_TAB_PAGE_COUNT,
-                OPEN_RECENT_TABS_COUNT,
                 OPTIMIZATION_GUIDE_PUSH_NOTIFICATION_CACHE.pattern(),
+                PASSWORD_PROTECTION_ACCOUNT,
+                PASSWORD_PROTECTION_HASHED_PASSWORD,
+                PASSWORD_PROTECTION_SALT,
                 PERSISTENT_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 PRICE_TRACKING_ANNOTATIONS_ENABLED_METRICS_TIMESTAMP,
                 PRICE_TRACKING_CHROME_MANAGED_NOTIFICATIONS_TIMESTAMPS,
@@ -1116,18 +1116,13 @@ public final class ChromePreferenceKeys {
                 SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,
-                SHOW_START_SEGMENTATION_RESULT,
                 START_RETURN_TIME_SEGMENTATION_RESULT_MS,
                 SYNC_PROMO_SHOW_COUNT.pattern(),
                 SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME,
                 SIGNIN_PROMO_NTP_LAST_SHOWN_TIME,
                 SYNC_PROMO_TOTAL_SHOW_COUNT,
-                START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
                 SEARCH_RESUMPTION_MODULE_COLLAPSE_ON_NTP,
-                START_SHOW_ON_STARTUP,
                 TABBED_ACTIVITY_LAST_VISIBLE_TIME_MS,
-                TAP_FEED_CARDS_COUNT,
-                TAP_MV_TILES_COUNT,
                 TWA_DISCLOSURE_SEEN_PACKAGES,
                 USB_NOTIFICATION_IDS,
                 USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY,

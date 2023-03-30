@@ -39,7 +39,7 @@ namespace mojo::core {
 
 namespace {
 
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 std::atomic<bool> g_mojo_ipcz_enabled{false};
 #else
 // Default to enabled even if InitFeatures() is never called.
@@ -77,9 +77,6 @@ void InitFeatures() {
 
   Channel::set_use_trivial_messages(
       base::FeatureList::IsEnabled(kMojoInlineMessagePayloads));
-
-  Core::set_avoid_random_pipe_id(
-      base::FeatureList::IsEnabled(kMojoAvoidRandomPipeId));
 
   if (base::FeatureList::IsEnabled(kMojoIpcz)) {
     EnableMojoIpcz();

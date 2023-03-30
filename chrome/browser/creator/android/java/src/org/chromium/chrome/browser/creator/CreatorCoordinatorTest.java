@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,6 +34,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.creator.CreatorCoordinator.ContentChangedListener;
 import org.chromium.chrome.browser.creator.test.R;
+import org.chromium.chrome.browser.feed.FeedActionDelegate;
 import org.chromium.chrome.browser.feed.FeedListContentManager.ExternalViewContent;
 import org.chromium.chrome.browser.feed.FeedListContentManager.FeedContent;
 import org.chromium.chrome.browser.feed.FeedListContentManager.NativeViewContent;
@@ -40,8 +42,10 @@ import org.chromium.chrome.browser.feed.FeedReliabilityLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.FeedServiceBridgeJni;
 import org.chromium.chrome.browser.feed.FeedStream;
+import org.chromium.chrome.browser.feed.FeedStreamJni;
 import org.chromium.chrome.browser.feed.SingleWebFeedEntryPoint;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -66,9 +70,9 @@ public class CreatorCoordinatorTest {
     @Mock
     private WebFeedBridge.Natives mWebFeedBridgeJniMock;
     @Mock
-    private CreatorApiBridge.Natives mCreatorBridgeJniMock;
-    @Mock
     private FeedServiceBridge.Natives mFeedServiceBridgeJniMock;
+    @Mock
+    private FeedStream.Natives mFeedStreamJniMock;
     @Mock
     private FeedReliabilityLoggingBridge.Natives mFeedReliabilityLoggingBridgeJniMock;
     @Mock
@@ -87,6 +91,10 @@ public class CreatorCoordinatorTest {
     private FeedStream mStreamMock;
     @Mock
     private SignInInterstitialInitiator mSignInInterstitialInitiator;
+    @Mock
+    private FeedActionDelegate mFeedActionDelegate;
+    @Mock
+    private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
 
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
@@ -106,8 +114,8 @@ public class CreatorCoordinatorTest {
     @Before
     public void setUpTest() {
         MockitoAnnotations.initMocks(this);
-        mJniMocker.mock(CreatorApiBridgeJni.TEST_HOOKS, mCreatorBridgeJniMock);
         mJniMocker.mock(FeedServiceBridgeJni.TEST_HOOKS, mFeedServiceBridgeJniMock);
+        mJniMocker.mock(FeedStreamJni.TEST_HOOKS, mFeedStreamJniMock);
         mJniMocker.mock(WebFeedBridge.getTestHooksForTesting(), mWebFeedBridgeJniMock);
         mJniMocker.mock(FeedReliabilityLoggingBridge.getTestHooksForTesting(),
                 mFeedReliabilityLoggingBridgeJniMock);
@@ -287,5 +295,37 @@ public class CreatorCoordinatorTest {
         creatorModel.set(CreatorProperties.IS_FOLLOWED_KEY, true);
         assertEquals(followButton.getVisibility(), View.GONE);
         assertEquals(followingButton.getVisibility(), View.VISIBLE);
+    }
+
+    @Test
+    public void testCreatorCoordinator_QueryFeed_nullUrl() {
+        CreatorCoordinator creatorCoordinator = newCreatorCoordinator(
+                null, mWebFeedIdDefault, mEntryPointDefault, mFollowingDefault);
+        PropertyModel creatorModel = creatorCoordinator.getCreatorModel();
+        creatorCoordinator.queryFeedStream(
+                mFeedActionDelegate, mHelpAndFeedbackLauncher, mShareDelegateSupplier);
+        verify(mWebFeedBridgeJniMock).queryWebFeedId(anyString(), any());
+    }
+
+    @Test
+    public void testCreatorCoordinator_QueryFeed_nullWebFeedId() {
+        CreatorCoordinator creatorCoordinator =
+                newCreatorCoordinator(mUrlDefault, null, mEntryPointDefault, mFollowingDefault);
+        PropertyModel creatorModel = creatorCoordinator.getCreatorModel();
+        creatorCoordinator.queryFeedStream(
+                mFeedActionDelegate, mHelpAndFeedbackLauncher, mShareDelegateSupplier);
+        verify(mWebFeedBridgeJniMock).queryWebFeed(anyString(), any());
+    }
+
+    @Test
+    public void testCreatorCoordinator_InitializeBottomSheetView() {
+        CreatorCoordinator creatorCoordinator = newCreatorCoordinator(
+                mUrlDefault, mWebFeedIdDefault, mEntryPointDefault, mFollowingDefault);
+        ViewGroup creatorViewGroup = creatorCoordinator.getView();
+        assertEquals(creatorViewGroup.getChildCount(), 2);
+        View contentPreviewsBottomSheet =
+                creatorViewGroup.findViewById(R.id.creator_content_preview_bottom_sheet);
+        assertNotNull(
+                "Content Previews Bottom Sheet is not initialized", contentPreviewsBottomSheet);
     }
 }

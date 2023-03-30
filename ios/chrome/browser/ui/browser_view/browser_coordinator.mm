@@ -44,6 +44,7 @@
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
+#import "ios/chrome/browser/shared/coordinator/alert/repost_form_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
@@ -53,11 +54,13 @@
 #import "ios/chrome/browser/shared/public/commands/load_query_commands.h"
 #import "ios/chrome/browser/shared/public/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
+#import "ios/chrome/browser/shared/public/commands/password_bottom_sheet_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_breach_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_protection_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_suggestion_commands.h"
 #import "ios/chrome/browser/shared/public/commands/passwords_account_storage_notice_commands.h"
 #import "ios/chrome/browser/shared/public/commands/policy_change_commands.h"
+#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
 #import "ios/chrome/browser/shared/public/commands/promos_manager_commands.h"
 #import "ios/chrome/browser/shared/public/commands/qr_generation_commands.h"
@@ -68,6 +71,7 @@
 #import "ios/chrome/browser/shared/public/commands/web_content_commands.h"
 #import "ios/chrome/browser/shared/public/commands/whats_new_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/page_animation_util.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -79,13 +83,11 @@
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_type.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_coordinator.h"
-#import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
@@ -94,6 +96,7 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
+#import "ios/chrome/browser/ui/browser_view/safe_area_provider.h"
 #import "ios/chrome/browser/ui/browser_view/tab_events_mediator.h"
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
@@ -111,7 +114,6 @@
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/download/safari_download_coordinator.h"
 #import "ios/chrome/browser/ui/download/vcard_coordinator.h"
-#import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/follow/first_follow_coordinator.h"
@@ -187,6 +189,8 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/find_in_page/find_in_page_api.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
+#import "ios/public/provider/chrome/browser/voice_search/voice_search_api.h"
+#import "ios/public/provider/chrome/browser/voice_search/voice_search_controller.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -280,10 +284,6 @@ enum class ToolbarKind {
 
 // Presents a QLPreviewController in order to display USDZ format 3D models.
 @property(nonatomic, strong) ARQuickLookCoordinator* ARQuickLookCoordinator;
-
-// Coordinator for the badge popup menu.
-@property(nonatomic, strong)
-    BadgePopupMenuCoordinator* badgePopupMenuCoordinator;
 
 // Coordinator-ish provider for context menus.
 @property(nonatomic, strong)
@@ -424,7 +424,6 @@ enum class ToolbarKind {
 @implementation BrowserCoordinator {
   BrowserViewControllerDependencies _viewControllerDependencies;
   KeyCommandsProvider* _keyCommandsProvider;
-  PrerenderService* _prerenderService;
   BubblePresenter* _bubblePresenter;
   ToolbarAccessoryPresenter* _toolbarAccessoryPresenter;
   LensCoordinator* _lensCoordinator;
@@ -438,17 +437,10 @@ enum class ToolbarKind {
   // The coordinator that shows the Send Tab To Self UI.
   SendTabToSelfCoordinator* _sendTabToSelfCoordinator;
   BookmarksCoordinator* _bookmarksCoordinator;
-  id<TextZoomCommands> _textZoomHandler;
-  id<HelpCommands> _helpHandler;
-  id<PopupMenuCommands> _popupMenuCommandsHandler;
-  id<SnackbarCommands> _snackbarCommandsHandler;
-  id<ApplicationCommands> _applicationCommandsHandler;
-  id<BrowserCoordinatorCommands> _browserCoordinatorCommandsHandler;
-  id<FindInPageCommands> _findInPageCommandsHandler;
-  id<ToolbarCommands> _toolbarCommandsHandler;
   absl::optional<ToolbarKind> _nextToolbarToPresent;
   CredentialProviderPromoCoordinator* _credentialProviderPromoCoordinator;
-  BOOL _isOffTheRecord;
+  // Used to display the Voice Search UI.  Nil if not visible.
+  id<VoiceSearchController> _voiceSearchController;
 }
 
 #pragma mark - ChromeCoordinator
@@ -502,6 +494,10 @@ enum class ToolbarKind {
 }
 
 #pragma mark - Public
+
+- (BOOL)isPlayingTTS {
+  return _voiceSearchController.audioPlaying;
+}
 
 - (void)setActive:(BOOL)active {
   DCHECK_EQ(_active, self.viewController.active);
@@ -581,14 +577,6 @@ enum class ToolbarKind {
 
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
-}
-
-- (void)displayPopupMenuWithBadgeItems:(NSArray<id<BadgeItem>>*)badgeItems {
-  self.badgePopupMenuCoordinator = [[BadgePopupMenuCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  [self.badgePopupMenuCoordinator setBadgeItemsToShow:badgeItems];
-  [self.badgePopupMenuCoordinator start];
 }
 
 #pragma mark - Private
@@ -681,6 +669,7 @@ enum class ToolbarKind {
     @protocol(FindInPageCommands),
     @protocol(NewTabPageCommands),
     @protocol(PageInfoCommands),
+    @protocol(PasswordBottomSheetCommands),
     @protocol(PasswordBreachCommands),
     @protocol(PasswordProtectionCommands),
     @protocol(PasswordSuggestionCommands),
@@ -709,10 +698,11 @@ enum class ToolbarKind {
   _keyCommandsProvider.browserCoordinatorCommandsHandler =
       HandlerForProtocol(_dispatcher, BrowserCoordinatorCommands);
 
-  _prerenderService = PrerenderServiceFactory::GetForBrowserState(browserState);
+  PrerenderService* prerenderService =
+      PrerenderServiceFactory::GetForBrowserState(browserState);
   if (!browserState->IsOffTheRecord()) {
-    DCHECK(_prerenderService);
-    _prerenderService->SetDelegate(self);
+    DCHECK(prerenderService);
+    prerenderService->SetDelegate(self);
   }
 
   _fullscreenController = FullscreenController::FromBrowser(self.browser);
@@ -754,7 +744,6 @@ enum class ToolbarKind {
       _primaryToolbarCoordinator;
   _sideSwipeController.secondaryToolbarSnapshotProvider =
       _secondaryToolbarCoordinator;
-  self.tabLifecycleMediator.sideSwipeController = _sideSwipeController;
 
   _bookmarksCoordinator =
       [[BookmarksCoordinator alloc] initWithBrowser:self.browser];
@@ -784,9 +773,6 @@ enum class ToolbarKind {
   // behavior but helps command handler setup below.
   [self.popupMenuCoordinator start];
 
-  _primaryToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
-  _secondaryToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
-
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     if (base::FeatureList::IsEnabled(kModernTabStrip)) {
       _tabStripCoordinator =
@@ -794,7 +780,6 @@ enum class ToolbarKind {
     } else {
       _legacyTabStripCoordinator =
           [[TabStripLegacyCoordinator alloc] initWithBrowser:self.browser];
-      _legacyTabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
       _legacyTabStripCoordinator.animationWaitDuration =
           kLegacyFullscreenControllerToolbarAnimationDuration.InSecondsF();
 
@@ -811,25 +796,19 @@ enum class ToolbarKind {
 
   _lensCoordinator = [[LensCoordinator alloc] initWithBrowser:self.browser];
 
-  _textZoomHandler = HandlerForProtocol(_dispatcher, TextZoomCommands);
-  _helpHandler = HandlerForProtocol(_dispatcher, HelpCommands);
-  _popupMenuCommandsHandler =
-      HandlerForProtocol(_dispatcher, PopupMenuCommands);
-  _applicationCommandsHandler =
-      HandlerForProtocol(_dispatcher, ApplicationCommands);
-  _browserCoordinatorCommandsHandler =
-      HandlerForProtocol(_dispatcher, BrowserCoordinatorCommands);
-  _findInPageCommandsHandler =
-      HandlerForProtocol(_dispatcher, FindInPageCommands);
-  _toolbarCommandsHandler = HandlerForProtocol(_dispatcher, ToolbarCommands);
-
-  // SnackbarCoordinator is not created yet and therefore not dispatching
-  // SnackbarCommands.
   // TODO(crbug.com/1413769) Typecast should be performed using
-  // HandlerForProtocol method.
-  _snackbarCommandsHandler = static_cast<id<SnackbarCommands>>(_dispatcher);
+  // HandlerForProtocol method. PrimaryToolbarCoordinator isn't started yet, so
+  // LocationBarCoordinator is not created at this point and therefore not
+  // dispatching LoadQueryCommands.
+  id<LoadQueryCommands> _loadQueryCommandsHandler =
+      static_cast<id<LoadQueryCommands>>(_dispatcher);
+  _voiceSearchController =
+      ios::provider::CreateVoiceSearchController(self.browser);
+  if (_primaryToolbarCoordinator) {
+    _voiceSearchController.dispatcher = _loadQueryCommandsHandler;
+  }
 
-  _viewControllerDependencies.prerenderService = _prerenderService;
+  _viewControllerDependencies.prerenderService = prerenderService;
   _viewControllerDependencies.bubblePresenter = _bubblePresenter;
   _viewControllerDependencies.toolbarAccessoryPresenter =
       _toolbarAccessoryPresenter;
@@ -846,23 +825,27 @@ enum class ToolbarKind {
   _viewControllerDependencies.sideSwipeController = _sideSwipeController;
   _viewControllerDependencies.bookmarksCoordinator = _bookmarksCoordinator;
   _viewControllerDependencies.fullscreenController = _fullscreenController;
-  _viewControllerDependencies.textZoomHandler = _textZoomHandler;
-  _viewControllerDependencies.helpHandler = _helpHandler;
+  _viewControllerDependencies.textZoomHandler =
+      HandlerForProtocol(_dispatcher, TextZoomCommands);
+  _viewControllerDependencies.helpHandler =
+      HandlerForProtocol(_dispatcher, HelpCommands);
   _viewControllerDependencies.popupMenuCommandsHandler =
-      _popupMenuCommandsHandler;
+      HandlerForProtocol(_dispatcher, PopupMenuCommands);
+  // TODO(crbug.com/1413769) SnackbarCoordinator is not created yet and
+  // therefore not dispatching SnackbarCommands. Typecast should be performed
+  // using HandlerForProtocol method.
   _viewControllerDependencies.snackbarCommandsHandler =
-      _snackbarCommandsHandler;
+      static_cast<id<SnackbarCommands>>(_dispatcher);
   _viewControllerDependencies.applicationCommandsHandler =
-      _applicationCommandsHandler;
+      HandlerForProtocol(_dispatcher, ApplicationCommands);
   _viewControllerDependencies.browserCoordinatorCommandsHandler =
-      _browserCoordinatorCommandsHandler;
+      HandlerForProtocol(_dispatcher, BrowserCoordinatorCommands);
   _viewControllerDependencies.findInPageCommandsHandler =
-      _findInPageCommandsHandler;
-  _viewControllerDependencies.toolbarCommandsHandler = _toolbarCommandsHandler;
-  // TODO(crbug.com/1413769) Typecast should be performed using
-  // HandlerForProtocol method.
+      HandlerForProtocol(_dispatcher, FindInPageCommands);
+  _viewControllerDependencies.toolbarCommandsHandler =
+      HandlerForProtocol(_dispatcher, ToolbarCommands);
   _viewControllerDependencies.loadQueryCommandsHandler =
-      static_cast<id<LoadQueryCommands>>(_dispatcher);
+      _loadQueryCommandsHandler;
   // TODO(crbug.com/1413769) Typecast should be performed using
   // HandlerForProtocol method.
   _viewControllerDependencies.omniboxCommandsHandler =
@@ -887,6 +870,13 @@ enum class ToolbarKind {
   _viewControllerDependencies.identityManager =
       IdentityManagerFactory::GetForBrowserState(
           self.browser->GetBrowserState());
+  _viewControllerDependencies.voiceSearchController = _voiceSearchController;
+  _viewControllerDependencies.secondaryToolbarContainerCoordinator =
+      [[ToolbarContainerCoordinator alloc]
+          initWithBrowser:self.browser
+                     type:ToolbarContainerType::kSecondary];
+  _viewControllerDependencies.safeAreaProvider =
+      [[SafeAreaProvider alloc] initWithBrowser:self.browser];
 }
 
 - (void)updateViewControllerDependencies {
@@ -946,12 +936,13 @@ enum class ToolbarKind {
   _viewControllerDependencies.omniboxCommandsHandler = nil;
   _viewControllerDependencies.readingModel = nil;
   _viewControllerDependencies.identityManager = nil;
+  _viewControllerDependencies.voiceSearchController = nil;
+  _viewControllerDependencies.secondaryToolbarContainerCoordinator = nil;
+  _viewControllerDependencies.safeAreaProvider = nil;
 
   [_bookmarksCoordinator shutdown];
   _bookmarksCoordinator = nil;
 
-  _textZoomHandler = nil;
-  _helpHandler = nil;
   _legacyTabStripCoordinator = nil;
   _tabStripCoordinator = nil;
   _sideSwipeController = nil;
@@ -964,7 +955,6 @@ enum class ToolbarKind {
   _bubblePresenter = nil;
   _toolbarAccessoryPresenter = nil;
 
-  _prerenderService = nil;
   _fullscreenController = nullptr;
 
   [self.popupMenuCoordinator stop];
@@ -1119,6 +1109,8 @@ enum class ToolbarKind {
         [[CredentialProviderPromoCoordinator alloc]
             initWithBaseViewController:self.viewController
                                browser:self.browser];
+    _credentialProviderPromoCoordinator.promosUIHandler =
+        _promosManagerCoordinator;
     [_credentialProviderPromoCoordinator start];
   }
   if (!IsOpenInActivitiesInShareButtonEnabled()) {
@@ -1388,6 +1380,13 @@ enum class ToolbarKind {
   [self.sharingCoordinator start];
 }
 
+#pragma mark - PasswordBottomSheetCommands
+
+- (void)showPasswordBottomSheet:(const autofill::FormActivityParams&)params {
+  // TODO(crbug.com/1422362): This will be implemented as soon as the
+  // Password Bottom Sheet's coordinator class lands.
+}
+
 #pragma mark - BrowserCoordinatorCommands
 
 - (void)printTabWithBaseViewController:(UIViewController*)baseViewController {
@@ -1520,10 +1519,6 @@ enum class ToolbarKind {
   _sendTabToSelfCoordinator = nil;
 }
 
-- (void)dismissBadgePopupMenu {
-  [self.badgePopupMenuCoordinator stop];
-}
-
 #if !defined(NDEBUG)
 - (void)viewSource {
   ViewSourceBrowserAgent* viewSourceAgent =
@@ -1594,6 +1589,12 @@ enum class ToolbarKind {
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   [self.spotlightDebuggerCoordinator start];
+}
+
+- (void)preloadVoiceSearch {
+  // Preload VoiceSearchController and views and view controllers needed
+  // for voice search.
+  [_voiceSearchController prepareToAppear];
 }
 
 #pragma mark - DefaultPromoCommands
@@ -1804,9 +1805,15 @@ enum class ToolbarKind {
     self.promosManagerCoordinator = [[PromosManagerCoordinator alloc]
         initWithBaseViewController:self.viewController
                            browser:self.browser];
-  }
+    // CredentialProviderPromoCoordinator is initialized earlier than this, so
+    // make sure to set its UI handler.
+    _credentialProviderPromoCoordinator.promosUIHandler =
+        self.promosManagerCoordinator;
 
-  [self.promosManagerCoordinator start];
+    [self.promosManagerCoordinator start];
+  } else {
+    [self.promosManagerCoordinator displayPromoIfAvailable];
+  }
 }
 
 - (void)requestAppStoreReview {
@@ -1815,11 +1822,17 @@ enum class ToolbarKind {
         [SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState()
             scene];
     [SKStoreReviewController requestReviewInScene:scene];
+
+    // Apple doesn't tell whether the app store review window will show or
+    // provide a callback for when it is dismissed, so alert the coordinator
+    // here so it can do any necessary cleanup.
+    [self.promosManagerCoordinator promoWasDismissed];
   }
 }
 
 - (void)showWhatsNewPromo {
   [self showWhatsNew];
+  self.whatsNewCoordinator.promosUIHandler = self.promosManagerCoordinator;
   self.whatsNewCoordinator.shouldShowBubblePromoOnDismiss = YES;
 }
 
@@ -1848,28 +1861,25 @@ enum class ToolbarKind {
 
 #pragma mark - FormInputAccessoryCoordinatorNavigator
 
-- (void)openPasswordSettings {
-  // TODO(crbug.com/1361357) Remove call to
-  // `showSavedPasswordsSettingsFromViewController` once `kIOSPasswordUISplit`
-  // is on by default.
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kIOSPasswordUISplit)) {
-    DCHECK(!self.passwordSettingsCoordinator);
+- (void)openPasswordManager {
+  [HandlerForProtocol(self.dispatcher, ApplicationCommands)
+      showSavedPasswordsSettingsFromViewController:self.viewController
+                                  showCancelButton:YES
+                                startPasswordCheck:NO];
+}
 
-    // Use main browser to open the password settings.
-    SceneState* sceneState =
-        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-    self.passwordSettingsCoordinator = [[PasswordSettingsCoordinator alloc]
-        initWithBaseViewController:self.viewController
-                           browser:sceneState.interfaceProvider.mainInterface
-                                       .browser];
-    self.passwordSettingsCoordinator.delegate = self;
-    [self.passwordSettingsCoordinator start];
-  } else {
-    [HandlerForProtocol(self.dispatcher, ApplicationCommands)
-        showSavedPasswordsSettingsFromViewController:self.viewController
-                                    showCancelButton:YES];
-  }
+- (void)openPasswordSettings {
+  CHECK(!self.passwordSettingsCoordinator);
+
+  // Use main browser to open the password settings.
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  self.passwordSettingsCoordinator = [[PasswordSettingsCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:sceneState.interfaceProvider.mainInterface
+                                     .browser];
+  self.passwordSettingsCoordinator.delegate = self;
+  [self.passwordSettingsCoordinator start];
 }
 
 - (void)openAddressSettings {
@@ -2316,7 +2326,7 @@ enum class ToolbarKind {
                   [[ShowSigninCommand alloc]
                       initWithOperation:AuthenticationOperationReauthenticate
                             accessPoint:signin_metrics::AccessPoint::
-                                            ACCESS_POINT_UNKNOWN]
+                                            ACCESS_POINT_REAUTH_INFO_BAR]
       baseViewController:self.viewController];
 }
 
@@ -2480,8 +2490,15 @@ enum class ToolbarKind {
 - (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
          baseViewForWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
-  if (NTPHelper && NTPHelper->IsActive())
-    return _NTPCoordinator.viewController.view;
+  if (NTPHelper && NTPHelper->IsActive()) {
+    // NTPCoordinator should be started at this point. If for some reason it is
+    // not, the DCHECK will let us know and we will fall back to using the
+    // webState's view.
+    DCHECK(_NTPCoordinator.started);
+    if (_NTPCoordinator.started) {
+      return _NTPCoordinator.viewController.view;
+    }
+  }
   return webState->GetView();
 }
 

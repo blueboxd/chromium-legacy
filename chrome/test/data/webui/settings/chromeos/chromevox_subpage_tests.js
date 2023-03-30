@@ -73,6 +73,20 @@ suite('ChromeVoxSubpageTests', function() {
       type: ControlType.TOGGLE,
     },
     {
+      id: 'brailleWordWrapToggle',
+      prefKey: 'settings.a11y.chromevox.braille_word_wrap',
+      defaultValue: true,
+      secondaryValue: false,
+      type: ControlType.TOGGLE,
+    },
+    {
+      id: 'menuBrailleCommandsToggle',
+      prefKey: 'settings.a11y.chromevox.menu_braille_commands',
+      defaultValue: false,
+      secondaryValue: true,
+      type: ControlType.TOGGLE,
+    },
+    {
       id: 'enableEarconLoggingToggle',
       prefKey: 'settings.a11y.chromevox.enable_earcon_logging',
       defaultValue: false,
@@ -124,6 +138,35 @@ suite('ChromeVoxSubpageTests', function() {
       // Make sure pref is set to secondary value.
       pref = page.getPref(prefKey);
       assertEquals(secondaryValue, pref.value);
+    });
+  });
+
+  test('event stream filter toggles sync to prefs', async () => {
+    // Enable event stream logging to allow enabling filter toggles.
+    const loggingToggle =
+        page.shadowRoot.querySelector('#enableEventStreamLoggingToggle');
+    loggingToggle.click();
+    await waitAfterNextRender(loggingToggle);
+
+    // Get all event stream filter prefs.
+    let pref = page.getPref('settings.a11y.chromevox.event_stream_filters');
+
+    // Toggle each filter, verify each pref is set.
+    page.eventStreamFilters_.forEach(filter => {
+      const toggle = page.shadowRoot.querySelector('#' + filter);
+
+      // Make sure toggle exists.
+      assertTrue(!!toggle);
+
+      // Make sure pref filter state is false or undefined (key is not present).
+      assertTrue([false, undefined].includes(pref.value[filter]));
+
+      // Enable event stream filter toggle.
+      toggle.click();
+
+      // Make sure event stream filter pref state is true.
+      pref = page.getPref('settings.a11y.chromevox.event_stream_filters');
+      assertTrue(pref.value[filter]);
     });
   });
 

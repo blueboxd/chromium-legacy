@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2091887806945687916">Audio</translation>
+<translation id="2117655453726830283">Diapositiva successiva</translation>
 <translation id="2148716181193084225">Oggi</translation>
 <translation id="216989819110952009">Nonostante gli occhiali verdi, i cinque rimasero ugualmente abbagliati dallo splendore</translation>
 <translation id="2176704795966505152">Mostra opzione zoom nel menu principale</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">Espanso. Fai clic per comprimere.</translation>
 <translation id="2586657967955657006">Appunti</translation>
 <translation id="2597457036804169544">Non applicare il tema scuro ai siti</translation>
+<translation id="2606760465469169465">Verifica automatica</translation>
 <translation id="2621115761605608342">Consenti JavaScript per un sito specifico.</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2677748264148917807">Esci</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">Reimposta le autorizzazioni</translation>
 <translation id="301521992641321250">Bloccata automaticamente</translation>
 <translation id="3069226013421428034">Consenti l'accesso di terze parti per un sito specifico.</translation>
+<translation id="310297983047869047">Diapositiva precedente</translation>
 <translation id="3109724472072898302">Compresso</translation>
 <translation id="3114012059975132928">Video player</translation>
 <translation id="3115898365077584848">Mostra informazioni</translation>
@@ -176,7 +179,7 @@
 <translation id="4200726100658658164">Apri Impostazioni di geolocalizzazione</translation>
 <translation id="4226663524361240545">Le notifiche possono far vibrare il dispositivo</translation>
 <translation id="4259722352634471385">Navigazione bloccata: <ph name="URL" /></translation>
-<translation id="4278390842282768270">Consentita</translation>
+<translation id="4278390842282768270">Autorizzazione consentita</translation>
 <translation id="429312253194641664">Un sito sta riproducendo contenuti multimediali</translation>
 <translation id="42981349822642051">Espandi</translation>
 <translation id="4336434711095810371">Cancella tutti i dati</translation>
@@ -219,11 +222,11 @@
 <translation id="509133520954049755">Richiedi visualizzazione desktop</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="5123685120097942451">Scheda di navigazione in incognito</translation>
-<translation id="5134599672855298214">Richiedi visualizzazione mobile (opzione consigliata)</translation>
 <translation id="5186036860380548585">Opzione disponibile nella parte superiore dello schermo</translation>
 <translation id="5197729504361054390">I contatti che selezioni verranno condivisi con <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Ultima visita: oggi</translation>
 <translation id="5225463052809312700">Attiva fotocamera</translation>
+<translation id="5229337741799419985">Questa impostazione funziona senza identificarti e senza consentire ai siti di accedere alla tua cronologia di navigazione</translation>
 <translation id="5234764350956374838">Ignora</translation>
 <translation id="5264323282659631142">Rimuovi "<ph name="CHIP_LABEL" />"</translation>
 <translation id="528192093759286357">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
@@ -250,7 +253,7 @@
 <translation id="5596627076506792578">Altre opzioni</translation>
 <translation id="5649053991847567735">Download automatici</translation>
 <translation id="5668404140385795438">Ignora la richiesta di un sito per evitare l'aumento dello zoom</translation>
-<translation id="5677928146339483299">Blocca</translation>
+<translation id="5677928146339483299">Autorizzazione bloccata</translation>
 <translation id="5689516760719285838">Posizione</translation>
 <translation id="5690795753582697420">La fotocamera è disattivata nelle impostazioni di Android</translation>
 <translation id="5706552988683188916">Vengono eliminati i cookie e altri dati dei siti per <ph name="WEBSITE" /></translation>
@@ -310,6 +313,7 @@
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6689172468748959065">Foto del profilo</translation>
 <translation id="6697925417670533197">Download attivi</translation>
+<translation id="6701547804986694515">Un sito che visiti può salvare su Chrome informazioni che confermano che non sei un bot. Mentre continui a navigare, i siti possono controllare su Chrome e verificare con un sito che hai visitato in precedenza che potresti essere una persona reale</translation>
 <translation id="6722828510648505498">Blocca le richieste di accesso da servizi di identità.</translation>
 <translation id="6746124502594467657">Sposta giù</translation>
 <translation id="6749077623962119521">Reimpostare le autorizzazioni?</translation>
@@ -427,6 +431,7 @@
 <translation id="8751914237388039244">Seleziona un'immagine</translation>
 <translation id="8801436777607969138">Blocca JavaScript per un sito specifico.</translation>
 <translation id="8803526663383843427">Quando attiva</translation>
+<translation id="8805385115381080995">La navigazione è più veloce perché è meno probabile che un sito ti chieda di verificare di essere una persona reale</translation>
 <translation id="8816026460808729765">Impedisci ai siti di accedere ai sensori</translation>
 <translation id="8823559166155093873">Blocca i cookie</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -450,5 +455,6 @@
 <translation id="9162462602695099906">Questa pagina è pericolosa</translation>
 <translation id="9201023452444595544">I dati offline verranno cancellati</translation>
 <translation id="930525582205581608">Vuoi eliminare questo sito?</translation>
+<translation id="947156494302904893">I siti che visiti possono verificare che sei una persona reale e non un bot</translation>
 <translation id="967624055006145463">Dati memorizzati</translation>
 </translationbundle>

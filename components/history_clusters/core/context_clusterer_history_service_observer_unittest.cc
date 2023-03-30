@@ -411,13 +411,16 @@ TEST_F(ContextClustererHistoryServiceObserverTest, ClusterTwoVisitsTiedByURL) {
 }
 
 TEST_F(ContextClustererHistoryServiceObserverTest,
-       ClusterTwoVisitsTiedBySearchURL) {
+       ClusterVisitsTiedBySearchURL) {
   VisitURL(GURL("http://default-engine.com/search?q=foo"), 1,
            base::Time::FromTimeT(123));
   VisitURL(GURL("http://default-engine.com/search?q=foo#whatever"), 2,
            base::Time::FromTimeT(123),
            /*opener_visit=*/history::kInvalidVisitID,
            /*referring_visit=*/history::kInvalidVisitID);
+  // Simulate a back-forward navigation.
+  VisitURL(GURL("http://default-engine.com/search?q=foo"), 3,
+           base::Time::FromTimeT(124));
 
   EXPECT_EQ(1, GetNumClustersCreated());
 }
@@ -513,6 +516,31 @@ TEST_F(ContextClustererHistoryServiceObserverTest,
       "History.Clusters.ContextClusterer.VisitProcessingLatency.UrlVisited", 1);
   histogram_tester.ExpectTotalCount(
       "History.Clusters.ContextClusterer.DbLatency.UpdateClusterVisit", 1);
+}
+
+TEST_F(ContextClustererHistoryServiceObserverTest,
+       SearchNormalizedUrlIsNotAdjusted) {
+  base::HistogramTester histogram_tester;
+
+  SetPersistenceExpectedConfig();
+
+  history::ClusterVisit updated_cluster_visit;
+  EXPECT_CALL(*history_service_,
+              UpdateClusterVisit(_, base::test::IsNotNullCallback(), _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&updated_cluster_visit),
+                Invoke(history_service_.get(),
+                       &MockHistoryService::RunUpdateClusterVisitCallback)));
+
+  VisitURL(GURL("http://default-engine.com/search?q=foo#abc"), 1,
+           base::Time::FromTimeT(123), history::kInvalidVisitID,
+           history::kInvalidVisitID,
+           /*is_synced_visit=*/true);
+
+  EXPECT_EQ(updated_cluster_visit.normalized_url,
+            GURL("http://default-engine.com/search?q=foo"));
+  EXPECT_EQ(updated_cluster_visit.url_for_deduping,
+            GURL("http://default-engine.com/search?q=foo"));
 }
 
 TEST_F(ContextClustererHistoryServiceObserverTest, SkipsBlocklistedHost) {

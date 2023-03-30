@@ -40,6 +40,9 @@ SaveAddressProfileModalRequestConfig::SaveAddressProfileModalRequestConfig(
   }
 
   current_address_profile_saved_ = infobar->accepted();
+  is_migration_to_account_ = delegate->IsMigrationToAccount();
+  syncing_user_email_ = delegate->SyncingUserEmail();
+  is_profile_an_account_profile_ = delegate->IsProfileAnAccountProfile();
 }
 
 SaveAddressProfileModalRequestConfig::~SaveAddressProfileModalRequestConfig() =

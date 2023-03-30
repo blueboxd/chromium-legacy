@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ContextUtils;
@@ -114,7 +115,7 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
         // Using OneshotSupplier as an alternative to a 2-step initialization process.
         OneshotSupplierImpl<BookmarkDelegate> bookmarkDelegateSupplier =
                 new OneshotSupplierImpl<>();
-        mBookmarkToolbarCoordinator = new BookmarkToolbarCoordinator(mSelectableListLayout,
+        mBookmarkToolbarCoordinator = new BookmarkToolbarCoordinator(context, mSelectableListLayout,
                 selectionDelegate, /*searchDelegate=*/this, bookmarkItemsAdapter, isDialogUi,
                 bookmarkDelegateSupplier, mBookmarkModel, mBookmarkOpener);
         mSelectableListLayout.configureWideDisplayStyle();
@@ -247,11 +248,19 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
             case ViewType.SECTION_HEADER:
                 return buildSectionHeaderView(parent);
             case ViewType.FOLDER:
-                return buildBookmarkFolderView(parent);
+                BookmarkFolderRow folderRow = buildBookmarkFolderView(parent);
+                folderRow.onDelegateInitialized(mMediator);
+                return folderRow;
             case ViewType.BOOKMARK:
-                return buildBookmarkItemView(parent);
+                BookmarkItemRow itemRow = buildBookmarkItemView(parent);
+                itemRow.onDelegateInitialized(mMediator);
+                return itemRow;
             case ViewType.SHOPPING_POWER_BOOKMARK:
-                return buildShoppingItemView(parent);
+                PowerBookmarkShoppingItemRow shoppingItemRow = buildShoppingItemView(parent);
+                shoppingItemRow.onDelegateInitialized(mMediator);
+                // TODO(https://crbug.com/1416611): Move init to view binding.
+                shoppingItemRow.init(mImageFetcher, mBookmarkModel, mSnackbarManager, mProfile);
+                return shoppingItemRow;
             case ViewType.DIVIDER:
                 return buildDividerView(parent);
             case ViewType.SHOPPING_FILTER:
@@ -308,20 +317,22 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
         return inflate(parent, org.chromium.chrome.R.layout.bookmark_section_header);
     }
 
-    private View buildBookmarkFolderView(ViewGroup parent) {
-        return inflateBookmarkRow(parent, org.chromium.chrome.R.layout.bookmark_folder_row);
+    @VisibleForTesting
+    static BookmarkFolderRow buildBookmarkFolderView(ViewGroup parent) {
+        return BookmarkFolderRow.buildView(
+                parent.getContext(), BookmarkFeatures.isBookmarksVisualRefreshEnabled());
     }
 
-    private View buildBookmarkItemView(ViewGroup parent) {
-        return inflateBookmarkRow(parent, org.chromium.chrome.R.layout.bookmark_item_row);
+    @VisibleForTesting
+    static BookmarkItemRow buildBookmarkItemView(ViewGroup parent) {
+        return BookmarkItemRow.buildView(
+                parent.getContext(), BookmarkFeatures.isBookmarksVisualRefreshEnabled());
     }
 
-    private View buildShoppingItemView(ViewGroup parent) {
-        PowerBookmarkShoppingItemRow row = (PowerBookmarkShoppingItemRow) inflateBookmarkRow(
-                parent, org.chromium.chrome.R.layout.power_bookmark_shopping_item_row);
-        // TODO(https://crbug.com/1416611): Move init to view binding.
-        row.init(mImageFetcher, mBookmarkModel, mSnackbarManager, mProfile);
-        return row;
+    @VisibleForTesting
+    static PowerBookmarkShoppingItemRow buildShoppingItemView(ViewGroup parent) {
+        return PowerBookmarkShoppingItemRow.buildView(
+                parent.getContext(), BookmarkFeatures.isBookmarksVisualRefreshEnabled());
     }
 
     private View buildDividerView(ViewGroup parent) {
@@ -337,14 +348,10 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
         return LayoutInflater.from(context).inflate(layoutId, parent, false);
     }
 
-    private View inflateBookmarkRow(ViewGroup parent, @LayoutRes int layoutId) {
-        BookmarkRow row = (BookmarkRow) inflate(parent, layoutId);
-        // TODO(https://crbug.com/1416611): Move onDelegateInitialized to view binding.
-        (row).onDelegateInitialized(/*delegate=*/mMediator);
-        return row;
-    }
-
     // Testing methods.
+    public BookmarkToolbarCoordinator getToolbarCoordinatorForTesting() {
+        return mBookmarkToolbarCoordinator;
+    }
 
     public BookmarkToolbar getToolbarForTesting() {
         return mBookmarkToolbarCoordinator.getToolbarForTesting(); // IN-TEST

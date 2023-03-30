@@ -5,7 +5,7 @@ from tests.support.pdf import assert_pdf
 from typing import Any, Mapping
 
 import pytest
-import webdriver
+import pytest_asyncio
 from webdriver.bidi.error import (
     InvalidArgumentException,
     NoSuchFrameException,
@@ -14,7 +14,7 @@ from webdriver.bidi.error import (
 from webdriver.bidi.modules.script import ContextTarget
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def add_preload_script(bidi_session):
     preload_scripts_ids = []
 
@@ -37,7 +37,7 @@ async def add_preload_script(bidi_session):
             pass
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def subscribe_events(bidi_session):
     subscriptions = [];
     async def subscribe_events(events, contexts = None):
@@ -55,7 +55,7 @@ async def subscribe_events(bidi_session):
             pass
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def new_tab(bidi_session):
     """Open and focus a new tab to run the test in a foreground tab."""
     new_tab = await bidi_session.browsing_context.create(type_hint='tab')
@@ -75,18 +75,25 @@ def send_blocking_command(bidi_session):
 
 @pytest.fixture
 def wait_for_event(bidi_session, event_loop):
-    """Wait until the BiDi session emits an event and resolve  the event data."""
+    """Wait until the BiDi session emits an event and resolve the event data."""
+    remove_listeners = []
     def wait_for_event(event_name: str):
         future = event_loop.create_future()
 
         async def on_event(method, data):
             remove_listener()
+            remove_listeners.remove(remove_listener)
             future.set_result(data)
 
         remove_listener = bidi_session.add_event_listener(event_name, on_event)
-
+        remove_listeners.append(remove_listener)
         return future
-    return wait_for_event
+
+    yield wait_for_event
+
+    # Cleanup any leftover callback for which no event was captured.
+    for remove_listener in remove_listeners:
+        remove_listener()
 
 @pytest.fixture
 def current_time(bidi_session, top_context):

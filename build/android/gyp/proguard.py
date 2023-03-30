@@ -391,6 +391,8 @@ def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors,
 
         # Found in: com/facebook/fbui/textlayoutbuilder/StaticLayoutHelper
         'android.text.StaticLayout.<init>',
+        # TODO(crbug/1426964): Remove once chrome builds with Android U SDK.
+        'android.adservices.measurement',
 
         # Explicictly guarded by try (NoClassDefFoundError) in Flogger's
         # PlatformProvider.
@@ -410,6 +412,10 @@ def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors,
         # Explicitly guarded by try (NoClassDefFoundError) in Firebase's
         # KotlinDetector: com.google.firebase.platforminfo.KotlinDetector.
         'kotlin.KotlinVersion',
+
+        # TODO(agrieve): Remove once we move to Android U SDK.
+        'android.window.BackEvent',
+        'android.window.OnBackAnimationCallback',
     ]
 
     had_unfiltered_items = '  ' in stderr
@@ -606,15 +612,8 @@ def _Run(options):
   dynamic_config_data = _CreateDynamicConfig(options)
 
   logging.debug('Looking for embedded configs')
-  libraries = []
-  for p in options.classpath:
-    # TODO(bjoyce): Remove filter once old android support libraries are gone.
-    # Fix for having Library class extend program class dependency problem.
-    if 'com_android_support' in p or 'android_support_test' in p:
-      continue
-    # If a jar is part of input no need to include it as library jar.
-    if p not in libraries and p not in options.input_paths:
-      libraries.append(p)
+  # If a jar is part of input no need to include it as library jar.
+  libraries = [p for p in options.classpath if p not in options.input_paths]
 
   embedded_configs = {}
   for jar_path in options.input_paths + libraries:
@@ -641,15 +640,6 @@ def _Run(options):
                      options.keep_rules_targets_regex,
                      options.keep_rules_output_path)
     return
-
-  # TODO(agrieve): Stop appending to dynamic_config_data once R8 natively
-  #     supports finding configs the "tools" directory.
-  #     https://issuetracker.google.com/227983179
-  tools_configs = {
-      k: v
-      for k, v in embedded_configs.items() if 'com.android.tools' in k
-  }
-  dynamic_config_data += '\n' + _CombineConfigs([], None, tools_configs)
 
   split_contexts_by_name = _OptimizeWithR8(options, options.proguard_configs,
                                            libraries, dynamic_config_data,

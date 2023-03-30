@@ -31,6 +31,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_priority_hint.h"
@@ -942,7 +943,8 @@ bool WaylandWindow::CommitOverlays(
             gfx::RectF(visual_size), gfx::RectF(),
             root_surface()->use_blending(), gfx::Rect(),
             root_surface()->opacity(), gfx::OverlayPriorityHint::kNone,
-            rounded_clip_bounds, gfx::ColorSpace::CreateSRGB(), absl::nullopt),
+            rounded_clip_bounds.value_or(gfx::RRectF()),
+            gfx::ColorSpace::CreateSRGB(), absl::nullopt),
         nullptr, root_surface()->buffer_id(), buffer_scale);
   }
 
@@ -1085,7 +1087,14 @@ void WaylandWindow::RequestState(PlatformWindowDelegate::State state,
     if (!in_flight_requests_.empty()) {
       req.serial = std::max(req.serial, in_flight_requests_.back().serial);
     }
-    in_flight_requests_.push_back(req);
+
+    if (!in_flight_requests_.empty() && !in_flight_requests_.back().applied) {
+      // If the last request has not been applied yet, overwrite it since
+      // there's no point in requesting an old state.
+      in_flight_requests_.back() = req;
+    } else {
+      in_flight_requests_.push_back(req);
+    }
   }
 
   MaybeApplyLatestStateRequest(force);
@@ -1103,10 +1112,11 @@ void WaylandWindow::ProcessSequencePoint(int64_t viz_seq) {
   for (auto i = in_flight_requests_.begin(); i != in_flight_requests_.end();
        ++i) {
     // The sequence number of each request should strictly monotonically
-    // increase, since each request needs to produce a new sequence point. Any
-    // requests that don't have a sequence id (-1) will be treated as done if
-    // they have been applied. To latch a request, our sequence number must
-    // be greater than or equal to the request's sequence number.
+    // increase, since each request needs to produce a new sequence point.
+    // Any requests that don't have a sequence id (-1) will be treated as
+    // done if they have been applied. To latch a request, our sequence
+    // number must be greater than or equal to the request's sequence
+    // number.
     if (i->viz_seq > viz_seq && i->viz_seq != -1) {
       break;
     }

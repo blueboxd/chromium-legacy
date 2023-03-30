@@ -24,6 +24,7 @@
 #include "chromeos/ui/frame/multitask_menu/split_button_view.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_switches.h"
 #include "ui/wm/core/window_util.h"
 
@@ -90,13 +91,11 @@ class TabletModeMultitaskMenuEventHandlerTest : public AshTestBase {
   void PressPartialSecondary(const aura::Window& window) {
     ShowMultitaskMenu(window);
     DCHECK(GetMultitaskMenu());
-    gfx::Rect partial_bounds(GetMultitaskMenuView(GetMultitaskMenu())
-                                 ->partial_button()
-                                 ->GetBoundsInScreen());
-    gfx::Point secondary_center(
-        gfx::Point(partial_bounds.x() + partial_bounds.width() * 0.67f,
-                   partial_bounds.y() + partial_bounds.y() * 0.5f));
-    GetEventGenerator()->GestureTapAt(secondary_center);
+    GetEventGenerator()->GestureTapAt(GetMultitaskMenuView(GetMultitaskMenu())
+                                          ->partial_button()
+                                          ->GetRightBottomButton()
+                                          ->GetBoundsInScreen()
+                                          .CenterPoint());
   }
 
   TabletModeMultitaskMenuEventHandler* GetMultitaskMenuEventHandler() {
@@ -114,11 +113,11 @@ class TabletModeMultitaskMenuEventHandlerTest : public AshTestBase {
 
   chromeos::MultitaskMenuView* GetMultitaskMenuView(
       TabletModeMultitaskMenu* multitask_menu) const {
-    views::View* multitask_menu_view =
+    chromeos::MultitaskMenuView* multitask_menu_view =
         multitask_menu->GetMultitaskMenuViewForTesting();
     EXPECT_EQ(chromeos::MultitaskMenuView::kViewClassName,
               multitask_menu_view->GetClassName());
-    return static_cast<chromeos::MultitaskMenuView*>(multitask_menu_view);
+    return multitask_menu_view;
   }
 
  protected:
@@ -190,6 +189,22 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeDownTargetArea) {
   // Swipe up outside the menu. Verify we close the menu.
   GenerateScroll(window->bounds().CenterPoint().x(), 300, 200);
   ASSERT_FALSE(GetMultitaskMenu());
+}
+
+// Tests that a slight touch moved in the menu will trigger a button press.
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, PressMoveAndReleaseTouch) {
+  auto window = CreateAppWindow(gfx::Rect(800, 600));
+  ShowMultitaskMenu(*window);
+
+  // Press and move the touch slightly to mimic a real tap.
+  auto* half_button =
+      GetMultitaskMenuView(GetMultitaskMenu())->half_button_for_testing();
+  GetEventGenerator()->set_current_screen_location(
+      half_button->GetBoundsInScreen().left_center());
+  GetEventGenerator()->PressMoveAndReleaseTouchBy(0, 3);
+
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            WindowState::Get(window.get())->GetStateType());
 }
 
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeDownInSplitView) {
@@ -384,7 +399,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, PartialButtonFunctionality) {
   const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   const int divider_delta = kSplitviewDividerShortSideLength / 2;
-  EXPECT_EQ(work_area_bounds.width() * 0.67f,
+  EXPECT_EQ(std::round(work_area_bounds.width() * chromeos::kTwoThirdSnapRatio),
             window->bounds().width() + divider_delta);
   ASSERT_FALSE(GetMultitaskMenu());
   histogram_tester_.ExpectBucketCount(
@@ -395,7 +410,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, PartialButtonFunctionality) {
   PressPartialSecondary(*window);
   ASSERT_EQ(chromeos::WindowStateType::kSecondarySnapped,
             WindowState::Get(window.get())->GetStateType());
-  EXPECT_EQ(work_area_bounds.width() * 0.33f,
+  EXPECT_EQ(std::round(work_area_bounds.width() * chromeos::kOneThirdSnapRatio),
             window->bounds().width() + divider_delta);
   ASSERT_FALSE(GetMultitaskMenu());
   histogram_tester_.ExpectBucketCount(
@@ -419,7 +434,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, AdjustedMenuBounds) {
   // Test that the menu fits on the 1/3 window on the right.
   const gfx::Rect work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  EXPECT_EQ(work_area.width() * 0.33f,
+  EXPECT_EQ(std::round(work_area.width() * chromeos::kOneThirdSnapRatio),
             window2->bounds().width() + kSplitviewDividerShortSideLength / 2);
   ShowMultitaskMenu(*window2);
   ASSERT_TRUE(GetMultitaskMenu());
@@ -604,6 +619,20 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest,
   auto* multitask_menu_view = GetMultitaskMenuView(GetMultitaskMenu());
   ASSERT_TRUE(multitask_menu_view);
   ASSERT_TRUE(bounds.Contains(multitask_menu_view->GetBoundsInScreen()));
+}
+
+// Tests that when we exit tablet mode with the multitask menu open, there is no
+// crash. Regression test for b/273835755.
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, NoCrashWhenExitingTabletMode) {
+  // We need to use a non zero duration otherwise the fade out animation will
+  // complete immediately and destroy the multitask menu before the tablet mode
+  // window manager gets destroyed, which is not what happens on a real device.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  auto window = CreateAppWindow();
+  ShowMultitaskMenu(*window);
+  TabletModeControllerTestApi().LeaveTabletMode();
 }
 
 }  // namespace ash

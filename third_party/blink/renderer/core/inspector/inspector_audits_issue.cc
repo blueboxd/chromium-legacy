@@ -116,6 +116,10 @@ protocol::Audits::GenericIssueErrorType GenericIssueErrorTypeToProtocol(
         kFormLabelForMatchesNonExistingIdError:
       return protocol::Audits::GenericIssueErrorTypeEnum::
           FormLabelForMatchesNonExistingIdError;
+    case mojom::blink::GenericIssueErrorType::
+        kFormInputHasWrongButWellIntendedAutocompleteValueError:
+      return protocol::Audits::GenericIssueErrorTypeEnum::
+          FormInputHasWrongButWellIntendedAutocompleteValueError;
   }
 }
 
@@ -631,6 +635,30 @@ void AuditsIssue::ReportGenericIssue(
       protocol::Audits::GenericIssueDetails::create()
           .setErrorType(GenericIssueErrorTypeToProtocol(error_type))
           .setViolatingNodeId(violating_node_id)
+          .build();
+
+  auto issue =
+      protocol::Audits::InspectorIssue::create()
+          .setCode(protocol::Audits::InspectorIssueCodeEnum::GenericIssue)
+          .setDetails(
+              protocol::Audits::InspectorIssueDetails::create()
+                  .setGenericIssueDetails(std::move(audits_issue_details))
+                  .build())
+          .build();
+
+  frame->DomWindow()->AddInspectorIssue(AuditsIssue(std::move(issue)));
+}
+
+void AuditsIssue::ReportGenericIssue(
+    LocalFrame* frame,
+    mojom::blink::GenericIssueErrorType error_type,
+    int violating_node_id,
+    const String& violating_node_attribute) {
+  auto audits_issue_details =
+      protocol::Audits::GenericIssueDetails::create()
+          .setErrorType(GenericIssueErrorTypeToProtocol(error_type))
+          .setViolatingNodeId(violating_node_id)
+          .setViolatingNodeAttribute(violating_node_attribute)
           .build();
 
   auto issue =

@@ -425,15 +425,6 @@ BASE_FEATURE(kChromeWideEchoCancellation,
 #endif
              );
 
-// If non-zero, audio processing is done on a dedicated processing thread which
-// receives audio from the audio capture thread via a fifo of a specified size.
-// Zero fifo size means the usage of such processing thread is disabled and
-// processing is done on the audio capture thread itself.
-const base::FeatureParam<int> kChromeWideEchoCancellationProcessingFifoSize{
-    &kChromeWideEchoCancellation, "processing_fifo_size",
-    110  // Default value for the enabled feature.
-};
-
 // When audio processing is done in the audio process, at the renderer side IPC
 // is set up to receive audio at the processing sample rate. This is a
 // kill-switch to fallback to receiving audio at the default sample rate of the
@@ -457,6 +448,27 @@ const base::FeatureParam<double>
 // https://crbug.com/1332484.
 const base::FeatureParam<bool> kChromeWideEchoCancellationAllowAllSampleRates{
     &kChromeWideEchoCancellation, "allow_all_sample_rates", true};
+
+// https://crbug.com/1420568
+// Applicable only if kChromeWideEchoCancellation is enabled.
+// If disabled, the ProcessingAudioFifo size defaults to 110.
+// If enabled, the ProcessingAudioFifo size is set to the value of the fifo_size
+// parameter.
+//
+// If the ProcessingAudioFifo size is non-zero, audio processing is done on a
+// dedicated processing thread which receives audio from the audio capture
+// thread via a fifo of a specified size.
+// If the ProcessingAudioFifo size is zero, the usage of this processing thread
+// is disabled and processing is done on the audio capture thread itself.
+BASE_FEATURE(kDecreaseProcessingAudioFifoSize,
+             "DecreaseProcessingAudioFifoSize",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kDecreaseProcessingAudioFifoSizeValue{
+    &kDecreaseProcessingAudioFifoSize, "fifo_size",
+    110  // Default value for the enabled feature.
+};
+
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -506,6 +518,18 @@ BASE_FEATURE(kCrOSDspBasedAgcAllowed,
 // releasing stale data from MSE buffers.
 BASE_FEATURE(kMemoryPressureBasedSourceBufferGC,
              "MemoryPressureBasedSourceBufferGC",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables creating single shared image and mailbox for multi-planar formats for
+// hardware video decoders.
+BASE_FEATURE(kUseMultiPlaneFormatForHardwareVideo,
+             "UseMultiPlaneFormatForHardwareVideo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables creating single shared image and mailbox for multi-planar formats for
+// software video decoders.
+BASE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo,
+             "UseMultiPlaneFormatForSoftwareVideo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables binding software video NV12/P010 GMBs as separate shared images.
@@ -885,10 +909,6 @@ const base::FeatureParam<bool>
     kHardwareSecureDecryptionFallbackOnHardwareContextReset{
         &kHardwareSecureDecryptionFallback, "on_hardware_context_reset", true};
 
-BASE_FEATURE(kWakeLockOptimisationHiddenMuted,
-             "kWakeLockOptimisationHiddenMuted",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If active, enable HiDPI mode that increases the display scale factor
 // while capturing a low-resolution tab.
 BASE_FEATURE(kWebContentsCaptureHiDpi,
@@ -1198,6 +1218,14 @@ BASE_FEATURE(kAllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Expose the out-of-process video decoding feature from ash-chrome to
+// lacros-chrome through the crosapi.
+const base::Feature MEDIA_EXPORT kExposeOutOfProcessVideoDecodingToLacros{
+    "ExposeOutOfProcessVideoDecodingToLacros",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // Spawn utility processes to perform hardware decode acceleration instead of
 // using the GPU process.
@@ -1422,6 +1450,20 @@ bool IsChromeWideEchoCancellationEnabled() {
 #endif
 }
 
+int GetProcessingAudioFifoSize() {
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  if (!IsChromeWideEchoCancellationEnabled()) {
+    return 0;
+  }
+  if (base::FeatureList::IsEnabled(media::kDecreaseProcessingAudioFifoSize)) {
+    return media::kDecreaseProcessingAudioFifoSizeValue.Get();
+  }
+  return 110;
+#else
+  return 0;
+#endif
+}
+
 bool IsHardwareSecureDecryptionEnabled() {
   return base::FeatureList::IsEnabled(kHardwareSecureDecryption) ||
          base::FeatureList::IsEnabled(kHardwareSecureDecryptionExperiment);
@@ -1448,19 +1490,6 @@ bool IsMediaFoundationD3D11VideoCaptureEnabled() {
   return base::FeatureList::IsEnabled(kMediaFoundationD3D11VideoCapture);
 }
 #endif
-
-bool IsUseMojoVideoDecoderForPepperEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableUseMojoVideoDecoderForPepper)) {
-    LOG(WARNING) << "UseMojoVideoDecoderForPepper: Disabled by policy";
-    return false;
-  }
-
-  auto enabled = base::FeatureList::IsEnabled(kUseMojoVideoDecoderForPepper);
-  LOG(WARNING) << "UseMojoVideoDecoderForPepper: feature controlled: "
-               << enabled;
-  return enabled;
-}
 
 // Return bitmask of audio formats supported by EDID.
 uint32_t GetPassthroughAudioFormats() {

@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/instance.h"
@@ -87,15 +88,15 @@ class FamilyUserAppMetricsTest
     EXPECT_LT(base::TimeDelta(), forward_by);
     task_environment()->AdvanceClock(forward_by);
 
-    ExtensionServiceInitParams params = CreateDefaultInitParams();
+    ExtensionServiceInitParams params;
     params.profile_is_supervised = IsFamilyLink();
     InitializeExtensionService(params);
 
     EXPECT_EQ(IsFamilyLink(), profile()->IsChild());
 
     supervised_user_service()->Init();
-    supervised_user_service()
-        ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(true);
+    supervised_user_test_util::
+        SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), true);
 
     family_user_app_metrics_ =
         std::make_unique<FamilyUserAppMetricsDerivedForTest>(profile());

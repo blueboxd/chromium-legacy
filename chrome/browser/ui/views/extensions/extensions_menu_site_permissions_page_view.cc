@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_site_permissions_page_view.h"
 
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/controls/hover_button.h"
@@ -19,6 +20,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -26,15 +28,22 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_types.h"
+#include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/view_class_properties.h"
+
+std::u16string GetShowRequestsToggleAccessibleName(bool is_toggle_on) {
+  int label_id =
+      is_toggle_on
+          ? IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SHOW_REQUESTS_TOGGLE_ON
+          : IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SHOW_REQUESTS_TOGGLE_OFF;
+  return l10n_util::GetStringUTF16(label_id);
+}
 
 ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
     Browser* browser,
-    std::u16string extension_name,
-    ui::ImageModel extension_icon,
     extensions::ExtensionId extension_id,
     ExtensionsMenuNavigationHandler* navigation_handler)
-    : extension_id_(extension_id) {
+    : browser_(browser), extension_id_(extension_id) {
   // TODO(crbug.com/1390952): Same stretch specification as
   // ExtensionsMenuMainPageView. Move to a shared file.
   views::FlexSpecification stretch_specification =
@@ -76,10 +85,11 @@ ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
                       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
                       .SetProperty(views::kFlexBehaviorKey,
                                    stretch_specification)
-                      .AddChildren(views::Builder<views::ImageView>().SetImage(
-                                       extension_icon),
-                                   views::Builder<views::Label>().SetText(
-                                       extension_name)),
+                      .AddChildren(
+                          views::Builder<views::ImageView>().CopyAddressTo(
+                              &extension_icon_),
+                          views::Builder<views::Label>().CopyAddressTo(
+                              &extension_name_)),
                   // Close button.
                   views::Builder<views::Button>(
                       views::BubbleFrameView::CreateCloseButton(
@@ -90,6 +100,22 @@ ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
           views::Builder<views::BoxLayoutView>()
               .SetOrientation(views::BoxLayout::Orientation::kVertical)
               .AddChildren(
+                  // Requests in toolbar toggle.
+                  views::Builder<views::Separator>(),
+                  views::Builder<views::FlexLayoutView>()
+                      .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+                      .SetProperty(views::kFlexBehaviorKey,
+                                   stretch_specification)
+                      .AddChildren(
+                          views::Builder<views::Label>().SetText(
+                              l10n_util::GetStringUTF16(
+                                  IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SHOW_REQUESTS_LABEL)),
+                          views::Builder<views::ToggleButton>()
+                              .CopyAddressTo(&show_requests_toggle_)
+                              .SetCallback(base::BindRepeating(
+                                  &ExtensionsMenuSitePermissionsPageView::
+                                      OnShowRequestsTogglePressed,
+                                  base::Unretained(this)))),
                   // Settings button.
                   views::Builder<views::Separator>(),
                   views::Builder<HoverButton>(std::make_unique<HoverButton>(
@@ -98,7 +124,7 @@ ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
                              extensions::ExtensionId extension_id) {
                             chrome::ShowExtensions(browser, extension_id);
                           },
-                          browser, extension_id),
+                          browser, extension_id_),
                       /*icon_view=*/nullptr,
                       l10n_util::GetStringUTF16(
                           IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SETTINGS_BUTTON),
@@ -109,6 +135,29 @@ ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
                               ui::kColorIconSecondary))))))
 
       .BuildChildren();
+}
+
+void ExtensionsMenuSitePermissionsPageView::Update(
+    const std::u16string& extension_name,
+    const ui::ImageModel& extension_icon,
+    bool is_show_requests_toggle_on) {
+  extension_icon_->SetImage(extension_icon);
+  extension_name_->SetText(extension_name);
+
+  UpdateShowRequestsToggle(is_show_requests_toggle_on);
+}
+
+void ExtensionsMenuSitePermissionsPageView::UpdateShowRequestsToggle(
+    bool is_on) {
+  show_requests_toggle_->SetIsOn(is_on);
+  show_requests_toggle_->SetAccessibleName(
+      GetShowRequestsToggleAccessibleName(is_on));
+}
+
+void ExtensionsMenuSitePermissionsPageView::OnShowRequestsTogglePressed() {
+  extensions::SitePermissionsHelper(browser_->profile())
+      .SetShowAccessRequestsInToolbar(extension_id_,
+                                      show_requests_toggle_->GetIsOn());
 }
 
 // TODO(crbug.com/1390952): Update content once content is added to this page.

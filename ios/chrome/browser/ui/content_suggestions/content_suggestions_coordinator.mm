@@ -26,7 +26,9 @@
 #import "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -36,7 +38,6 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -138,6 +139,8 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   ReadingListModel* readingListModel =
       ReadingListModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
+  PromosManager* promosManager =
+      PromosManagerFactory::GetForBrowserState(self.browser->GetBrowserState());
 
   BOOL isGoogleDefaultSearchProvider =
       [self.ntpDelegate isGoogleDefaultSearchEngine];
@@ -151,6 +154,7 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
       isGoogleDefaultSearchProvider:isGoogleDefaultSearchProvider
                             browser:self.browser];
   self.contentSuggestionsMediator.feedDelegate = self.feedDelegate;
+  self.contentSuggestionsMediator.promosManager = promosManager;
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.contentSuggestionsMediator.dispatcher =
@@ -204,8 +208,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 #pragma mark - ContentSuggestionsViewControllerAudience
 
 - (void)viewWillDisappear {
-  // Start no longer showing
-  self.contentSuggestionsMediator.showingStartSurface = NO;
   DiscoverFeedServiceFactory::GetForBrowserState(
       self.browser->GetBrowserState())
       ->SetIsShownOnStartSurface(false);
@@ -333,11 +335,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
     return;
   }
 
-  // Shouldn't be calling this if start has already been configured.
-  DCHECK(!self.contentSuggestionsMediator.showingStartSurface);
-
-  // Update Mediator property to signal the NTP is currently showing Start.
-  self.contentSuggestionsMediator.showingStartSurface = YES;
   if (ShouldShowReturnToMostRecentTabForStartSurface()) {
     web::WebState* most_recent_tab =
         StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)

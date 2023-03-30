@@ -8,6 +8,7 @@
 #import "ios/chrome/app/spotlight/base_spotlight_manager.h"
 
 @class AppStartupParameters;
+@class SpotlightInterface;
 
 namespace spotlight {
 

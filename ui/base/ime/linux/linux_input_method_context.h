@@ -47,13 +47,15 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContext {
 
   // Tells the system IME the surrounding text around the cursor location.
   virtual void SetSurroundingText(const std::u16string& text,
+                                  const gfx::Range& text_range,
                                   const gfx::Range& selection_range) = 0;
 
   // Tells the system IME the content type of the text input client is changed.
   virtual void SetContentType(TextInputType type,
                               TextInputMode mode,
                               uint32_t flags,
-                              bool should_do_learning) = 0;
+                              bool should_do_learning,
+                              bool can_compose_inline) = 0;
 
   // Sets grammar fragment at the cursor position. If not exists, sends a
   // fragment with empty range.

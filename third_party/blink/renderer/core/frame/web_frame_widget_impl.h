@@ -328,6 +328,9 @@ class CORE_EXPORT WebFrameWidgetImpl
   void ReportLongAnimationFrameTiming(AnimationFrameTimingInfo* info) override;
   bool ShouldReportLongAnimationFrameTiming() const override;
   bool RequestedMainFramePending() override;
+  ukm::UkmRecorder* MainFrameUkmRecorder() override;
+  ukm::SourceId MainFrameUkmSourceId() override;
+  bool IsMainFrameFullyLoaded() const override;
 
   // WebFrameWidget overrides.
   void InitializeNonCompositing(WebNonCompositedWidgetClient* client) override;
@@ -511,6 +514,12 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Pause all rendering (main and compositor thread) in the compositor.
   [[nodiscard]] std::unique_ptr<cc::ScopedPauseRendering> PauseRendering();
 
+  // Returns the maximum bounds for buffers allocated for rasterization and
+  // compositing. This is is max texture size for GPU compositing and a browser
+  // chosen limit in software mode.
+  // Returns null if the compositing stack has not been initialized yet.
+  absl::optional<int> GetMaxRenderBufferBounds() const;
+
   // Prevents any updates to the input for the layer tree, and the layer tree
   // itself, and the layer tree from becoming visible.
   std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate();
@@ -664,6 +673,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   // WebFrameWidget overrides.
   cc::LayerTreeHost* LayerTreeHost() override;
 
+  // Determines whether the drag source is currently dragging.
   bool doing_drag_and_drop_ = false;
 
  private:
@@ -842,7 +852,8 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   void SendOverscrollEventFromImplSide(const gfx::Vector2dF& overscroll_delta,
                                        cc::ElementId scroll_latched_element_id);
-  void SendScrollEndEventFromImplSide(cc::ElementId scroll_latched_element_id);
+  void SendScrollEndEventFromImplSide(bool affects_outer_viewport,
+                                      cc::ElementId scroll_latched_element_id);
 
   void RecordManipulationTypeCounts(cc::ManipulationInfo info);
 
@@ -850,11 +861,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Consolidate some common code between starting a drag over a target and
   // updating a drag over a target. If we're starting a drag, |isEntering|
   // should be true.
-  ui::mojom::blink::DragOperation DragTargetDragEnterOrOver(
-      const gfx::PointF& point_in_viewport,
-      const gfx::PointF& screen_point,
-      DragAction,
-      uint32_t key_modifiers);
+  void DragTargetDragEnterOrOver(const gfx::PointF& point_in_viewport,
+                                 const gfx::PointF& screen_point,
+                                 DragAction,
+                                 uint32_t key_modifiers);
 
   // Helper function to call VisualViewport::viewportToRootFrame().
   gfx::PointF ViewportToRootFrame(const gfx::PointF& point_in_viewport) const;

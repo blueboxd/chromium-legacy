@@ -38,7 +38,6 @@
 <translation id="208586643495776849">Дахин оролдоно уу</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 хоног}other{# хоног}}</translation>
 <translation id="2148716181193084225">Өнөөдөр</translation>
-<translation id="2161656808144014275">Текст</translation>
 <translation id="2168039046890040389">Хуудас дээшлүүлэх</translation>
 <translation id="2190355936436201913">(Хоосон)</translation>
 <translation id="2192232475740621500">Бага нягтралыг ашиглах</translation>
@@ -90,7 +89,6 @@
 <translation id="3622035490309591977">Түр санах ойн түүх</translation>
 <translation id="364720409959344976">Татаж оруулах хавтсыг сонгох</translation>
 <translation id="3660179305079774227">Дээш заасан сум</translation>
-<translation id="3670030362669914947">Тоо</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/с</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
@@ -110,6 +108,7 @@
 <translation id="4565377596337484307">Нууц үгийг нуух</translation>
 <translation id="4588090240171750605">Баруун тийш гүйлгэх</translation>
 <translation id="4724120544754982507">Мэдэгдлийн төв, <ph name="UNREAD_NOTIFICATION_COUNT" /> уншаагүй мэдэгдэл</translation>
+<translation id="4729257764711776855">дугаар</translation>
 <translation id="4746179598275229723">Өргөтгөлийг бэхэлснийг болиулсан</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 сар үлдсэн}other{# сар үлдсэн}}</translation>
 <translation id="4888938634149558681">Дуудлага хийх</translation>
@@ -121,6 +120,7 @@
 <translation id="5278860589123563674">Илгээж чадсангүй</translation>
 <translation id="528468243742722775">Төгсгөл</translation>
 <translation id="5329858601952122676">&amp;Устгах</translation>
+<translation id="5361107212971249203">текст</translation>
 <translation id="5463830097259460683">Эможи, дүрс тэмдэг</translation>
 <translation id="5528053674512161860">Хөгжүүлэгчийн UI-н модуль (dev_ui)-ийг суулгаагүй учир хуудсыг ачаалж чадсангүй</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> систем</translation>

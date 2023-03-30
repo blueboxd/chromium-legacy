@@ -337,7 +337,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="2908243544703713905">Unread stories ready</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
 <translation id="2912296070571964914">Manage the topics that you're interested in</translation>
-<translation id="2912345083818861431">Use screen lock to see open incognito tabs</translation>
+<translation id="2912345083818861431">Use screen lock to see open Incognito tabs</translation>
 <translation id="2922568440285376746">Search inside image with Google <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="2923908459366352541">Name is invalid</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> storage</translation>
@@ -477,6 +477,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="3587596251841506391">Help improve security on the web</translation>
 <translation id="3597179440835065298">Get better suggestions</translation>
 <translation id="3602290021589620013">Preview</translation>
+<translation id="360901359071773787">Delete last 15 minutes?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Manage windows</translation>
 <translation id="3631987586758005671">Sharing to <ph name="DEVICE_NAME" /></translation>
@@ -526,7 +527,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="3934366560681368531">'</translation>
 <translation id="393697183122708255">No enabled voice search available</translation>
 <translation id="395377504920307820">Use without an account</translation>
-<translation id="3958287878205277013">To clear Incognito browsing history from your device, close all incognito tabs.</translation>
+<translation id="3958287878205277013">To clear Incognito browsing history from your device, close all Incognito tabs.</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome will load your page when ready}other{Chrome will load your pages when ready}}</translation>
 <translation id="3962119236270174787">Standard protection against websites, downloads and extensions that are known to be dangerous</translation>
 <translation id="3963007978381181125">Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you'll need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
@@ -591,7 +592,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="4269820728363426813">Copy link address</translation>
 <translation id="4283102315569707115">Request desktop sites by default?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Turn on screen lock in Android settings<ph name="END_LINK" /></translation>
-<translation id="4296252229500326964">New incognito tab</translation>
+<translation id="4296252229500326964">New Incognito tab</translation>
 <translation id="4298388696830689168">Linked sites</translation>
 <translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="4307992518367153382">Basics</translation>
@@ -793,6 +794,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5342314432463739672">Permission requests</translation>
 <translation id="53537532693258630">Sites that you removed will appear here</translation>
 <translation id="5355191726083956201">Enhanced protection is on</translation>
+<translation id="5361107212971249203">text</translation>
 <translation id="5368227114232678694">To browse privately on this device, try out Incognito</translation>
 <translation id="5375577065097716013">Search image with Google Lens <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">To continue, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> will share your name, email address and profile picture with this site.</translation>
@@ -822,6 +824,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5517095782334947753">You have bookmarks, history, passwords and other settings from <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">When trials are on and if Chrome has randomly placed you in an active trial, your browsing history affects the ads that you see and the interests as estimated below. To protect your privacy, Chrome deletes your interests on a rolling basis each month.</translation>
 <translation id="5524843473235508879">Redirect blocked.</translation>
+<translation id="554297709083131118">Following data from the last 15 minutes will be deleted</translation>
 <translation id="5548606607480005320">Safety check</translation>
 <translation id="5555525474779371165">Choose your Safe Browsing protection</translation>
 <translation id="5556459405103347317">Reload</translation>
@@ -1076,6 +1079,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6824899148643461612"><ph name="TAB_TITLE" /> tab, selected</translation>
 <translation id="6828070228333235514">Stop tracking price</translation>
 <translation id="6830728435402077660">Not secure</translation>
+<translation id="6831043979455480757">Translate</translation>
 <translation id="6833996806551876956">Privacy sandbox trial</translation>
 <translation id="6836206421467243968">Restore tab group <ph name="TITLE_OF_GROUP" /> as a new background tab group.</translation>
 <translation id="6846298663435243399">Loading…</translation>
@@ -1085,7 +1089,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="686366188661646310">Delete password?</translation>
 <translation id="6864459304226931083">Download image</translation>
 <translation id="6865313869410766144">Auto-fill form data</translation>
-<translation id="6867400383614725881">New incognito tab</translation>
+<translation id="6867400383614725881">New Incognito tab</translation>
 <translation id="6869056123412990582">computer</translation>
 <translation id="6882836635272038266">Standard protection against websites, downloads and extensions that are known to be dangerous.</translation>
 <translation id="6883204995689174413">Share</translation>
@@ -1262,6 +1266,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="78270725016672455">Your computer wants to register this device for signing in to a site</translation>
 <translation id="7844171778363018843">No data selected to sync</translation>
 <translation id="7846296061357476882">Google services</translation>
+<translation id="7847228556075070294">Deleted history, cookies and other data</translation>
 <translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other devices</translation>
 <translation id="7853202427316060426">Activity</translation>
@@ -1316,6 +1321,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8058746566562539958">Open in new Chrome tab</translation>
 <translation id="8062594758852531064">Extended preloading:</translation>
 <translation id="8063895661287329888">Failed to add bookmark.</translation>
+<translation id="8066816452984416180">Quickly bookmark this page. To edit this shortcut, touch and hold.</translation>
 <translation id="806745655614357130">Keep my data separate</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8076492880354921740">Tabs</translation>
@@ -1347,6 +1353,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8216351761227087153">Watch</translation>
 <translation id="8218622182176210845">Manage your account</translation>
 <translation id="8223642481677794647">Feed card menu</translation>
+<translation id="8236097722223016103">Add to bookmarks</translation>
 <translation id="8250920743982581267">Documents</translation>
 <translation id="8255617931166444521">Sites can only use your cookies to see your browsing activity only on their own site</translation>
 <translation id="8259179246279078674">Because the preloaded pages are encrypted, Google will not learn anything about the preloaded page content. Google servers will learn which sites are privately preloaded. This information is only used to preload the pages and is not linked to other information from your Google Account.</translation>
@@ -1407,7 +1414,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8526855376374973824">Notification permission flow</translation>
 <translation id="8540136935098276800">Enter a correctly formatted URL</translation>
 <translation id="854522910157234410">Open this page:</translation>
-<translation id="8551513938758868521">Lock incognito tabs when you leave Chrome</translation>
+<translation id="8551513938758868521">Lock Incognito tabs when you leave Chrome</translation>
 <translation id="8559961053328923750">Chrome limits the total amount of data that sites can share through the browser to measure ad performance</translation>
 <translation id="8559990750235505898">Offer to translate pages in other languages</translation>
 <translation id="8560602726703398413">Find your reading list in Bookmarks</translation>
@@ -1441,6 +1448,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8699120352855309748">Don’t offer to translate these languages</translation>
 <translation id="8712637175834984815">Got it</translation>
+<translation id="8723453889042591629">Quickly translate this page. To edit this shortcut, touch and hold.</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8746155870861185046">Share highlight</translation>
 <translation id="874726034427945498">To see better suggestions in your address bar, sync your tabs and history</translation>
@@ -1483,7 +1491,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8942627711005830162">Open in other window</translation>
 <translation id="8945143127965743188"><ph name="LANG" /> – This language couldn't be downloaded. Try again later.</translation>
 <translation id="8955719471735800169">Back to top</translation>
-<translation id="8964479563882643397">To open a new incognito tab, open the menu</translation>
+<translation id="8964479563882643397">To open a new Incognito tab, open the menu</translation>
 <translation id="8965591936373831584">pending</translation>
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{<ph name="INCOGNITO_TAB_COUNT" /> incognito and <ph name="TAB_COUNT_ONE" /> more tab will be closed}other{<ph name="INCOGNITO_TAB_COUNT" /> incognito and <ph name="TAB_COUNT_MANY" /> more tabs will be closed}}</translation>
 <translation id="8970887620466824814">Something went wrong.</translation>
@@ -1493,6 +1501,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8989968390305463310">Your browsing history affects the ads that you see and the interests as estimated below. To protect your privacy, Chrome auto-deletes your interests on a rolling basis each month. Interests can refresh unless you remove them.</translation>
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8996847606757455498">Choose another provider</translation>
+<translation id="8998289560386111590">Not available on your device</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
 <translation id="9022774213089566801">Frequently visited</translation>
 <translation id="9022871169049522985">Sites and advertisers can measure the performance of their ads</translation>

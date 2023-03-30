@@ -12,7 +12,9 @@
 #include "base/check_op.h"
 #include "base/cxx17_backports.h"
 #include "base/guid.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "components/attribution_reporting/source_type.mojom.h"
@@ -24,10 +26,19 @@
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
 namespace {
+
+const base::FeatureParam<base::TimeDelta> kAggregateReportMinDelay{
+    &blink::features::kConversionMeasurement, "aggregate_report_min_delay",
+    AttributionConfig::AggregateLimit::kDefaultMinDelay};
+
+const base::FeatureParam<base::TimeDelta> kAggregateReportDelaySpan{
+    &blink::features::kConversionMeasurement, "aggregate_report_delay_span",
+    AttributionConfig::AggregateLimit::kDefaultDelaySpan};
 
 base::Time GetClampedTime(base::TimeDelta time_delta, base::Time source_time) {
   constexpr base::TimeDelta kMinDeltaTime = base::Days(1);
@@ -52,7 +63,25 @@ AttributionStorageDelegateImpl::AttributionStorageDelegateImpl(
     AttributionDelayMode delay_mode)
     : AttributionStorageDelegateImpl(noise_mode,
                                      delay_mode,
-                                     AttributionConfig()) {}
+                                     AttributionConfig()) {
+  if (base::TimeDelta min_delay = kAggregateReportMinDelay.Get();
+      !min_delay.is_negative()) {
+    config_.aggregate_limit.min_delay = min_delay;
+  } else {
+    LOG(WARNING) << "Minimum aggregate delay declared negative, "
+                 << "using default value: "
+                 << AttributionConfig::AggregateLimit::kDefaultMinDelay;
+  }
+
+  if (base::TimeDelta delay_span = kAggregateReportDelaySpan.Get();
+      !delay_span.is_negative()) {
+    config_.aggregate_limit.delay_span = delay_span;
+  } else {
+    LOG(WARNING) << "Aggregate delay span declared negative, "
+                 << "using default value: "
+                 << AttributionConfig::AggregateLimit::kDefaultDelaySpan;
+  }
+}
 
 AttributionStorageDelegateImpl::AttributionStorageDelegateImpl(
     AttributionNoiseMode noise_mode,

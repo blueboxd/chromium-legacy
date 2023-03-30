@@ -139,7 +139,8 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       std::unique_ptr<SourceLocation> source_location,
       mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
           initiator_policy_container_keep_alive_handle,
-      bool is_container_initiated) override;
+      bool is_container_initiated,
+      bool is_fullscreen_requested) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
@@ -188,8 +189,8 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
 
   RemoteFrame* CreateFencedFrame(
       HTMLFencedFrameElement*,
-      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>,
-      mojom::blink::FencedFrameMode) override;
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>)
+      override;
 
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,

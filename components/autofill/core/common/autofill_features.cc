@@ -40,6 +40,14 @@ BASE_FEATURE(kAutofillAccountProfilesUnionView,
 const base::FeatureParam<bool> kAutofillEnableSilentUpdatesForAccountProfiles{
     &kAutofillAccountProfilesUnionView, "enable_silent_updates", true};
 
+// When enabled, creating new kAccount profiles becomes possible for eligible
+// users. Moreover, users are prompted to migrate existing kLocalOrSyncable
+// profiles to the kAccount storage.
+// TODO(crbug.com/1423319): Remove once launched.
+BASE_FEATURE(kAutofillAccountProfileStorage,
+             "AutofillAccountProfileStorage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
 // When enabled, address profile save problem will contain a dropdown for
@@ -171,6 +179,12 @@ const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoost{
 const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoostHalfLife{
     &kAutofillEnableRankingFormulaCreditCards,
     "autofill_ranking_formula_virtual_card_boost_half_life", 15};
+
+// When enabled, autofill will fill <selectmenu> elements.
+// TODO(crbug.com/1427153) Remove once autofilling <selectmenu> is launched.
+BASE_FEATURE(kAutofillEnableSelectMenu,
+             "AutofillEnableSelectMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls if the heuristic field parsing utilizes shared labels.
 // TODO(crbug.com/1165780): Remove once shared labels are launched.

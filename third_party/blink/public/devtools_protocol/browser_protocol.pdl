@@ -756,6 +756,7 @@ experimental domain Audits
       FormInputAssignedAutocompleteValueToIdOrNameAttributeError
       FormLabelHasNeitherForNorNestedInput
       FormLabelForMatchesNonExistingIdError
+      FormInputHasWrongButWellIntendedAutocompleteValueError
 
   # Depending on the concrete errorType, different properties are set.
   type GenericIssueDetails extends object
@@ -764,6 +765,7 @@ experimental domain Audits
       GenericIssueErrorType errorType
       optional Page.FrameId frameId
       optional DOM.BackendNodeId violatingNodeId
+      optional string violatingNodeAttribute
 
   # This issue tracks information needed to print a deprecation message.
   # https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/third_party/blink/renderer/core/frame/deprecation/README.md
@@ -1409,6 +1411,8 @@ experimental domain CSS
       optional StyleSheetId styleSheetId
       # Rule selector data.
       SelectorList selectorList
+      # Array of selectors from ancestor style rules, sorted by distance from the current rule.
+      experimental optional array of string nestingSelectors
       # Parent stylesheet's origin.
       StyleSheetOrigin origin
       # Associated style declaration.
@@ -1666,6 +1670,24 @@ experimental domain CSS
       # Available variation settings (a.k.a. "axes").
       optional array of FontVariationAxis fontVariationAxes
 
+  # CSS try rule representation.
+  type CSSTryRule extends object
+    properties
+      # The css style sheet identifier (absent for user agent stylesheet and user-specified
+      # stylesheet rules) this rule came from.
+      optional StyleSheetId styleSheetId
+      # Parent stylesheet's origin.
+      StyleSheetOrigin origin
+      # Associated style declaration.
+      optional CSSStyle style
+
+  # CSS position-fallback rule representation.
+  type CSSPositionFallbackRule extends object
+    properties
+      Value name
+      # List of keyframes.
+      array of CSSTryRule tryRules
+
   # CSS keyframes rule representation.
   type CSSKeyframesRule extends object
     properties
@@ -1799,6 +1821,8 @@ experimental domain CSS
       optional array of InheritedPseudoElementMatches inheritedPseudoElements
       # A list of CSS keyframed animations matching this node.
       optional array of CSSKeyframesRule cssKeyframesRules
+      # A list of CSS position fallbacks matching this node.
+      optional array of CSSPositionFallbackRule cssPositionFallbackRules
       # Id of the first parent element that does not have display: contents.
       experimental optional DOM.NodeId parentLayoutNodeId
 
@@ -8981,6 +9005,7 @@ experimental domain Storage
       cache_storage
       interest_groups
       shared_storage
+      storage_buckets
       all
       other
 
@@ -9115,6 +9140,23 @@ experimental domain Storage
       # Present only for SharedStorageAccessType.documentSet and
       # SharedStorageAccessType.workletSet.
       optional boolean ignoreIfPresent
+
+  type StorageBucketsDurability extends string
+    enum
+      relaxed
+      strict
+
+  type StorageBucketInfo extends object
+    properties
+      SerializedStorageKey storageKey
+      string id
+      string name
+      boolean isDefault
+      Network.TimeSinceEpoch expiration
+      # Storage quota (bytes).
+      number quota
+      boolean persistent
+      StorageBucketsDurability durability
 
   # Returns a storage key given a frame id.
   command getStorageKeyForFrame
@@ -9312,6 +9354,18 @@ experimental domain Storage
     parameters
       boolean enable
 
+  # Set tracking for a storage key's buckets.
+  experimental command setStorageBucketTracking
+    parameters
+      string storageKey
+      boolean enable
+
+  # Deletes the Storage Bucket with the given storage key and bucket name.
+  experimental command deleteStorageBucket
+    parameters
+      string storageKey
+      string bucketName
+
   # A cache's contents have been modified.
   event cacheStorageContentUpdated
     parameters
@@ -9373,6 +9427,14 @@ experimental domain Storage
       # The sub-parameters warapped by `params` are all optional and their
       # presence/absence depends on `type`.
       SharedStorageAccessParams params
+
+  event storageBucketCreatedOrUpdated
+    parameters
+      StorageBucketInfo bucket
+
+  event storageBucketDeleted
+    parameters
+      string bucketId
 
 # The SystemInfo domain defines methods and events for querying low-level system information.
 experimental domain SystemInfo
@@ -10745,6 +10807,16 @@ experimental domain Preload
       # - https://wicg.github.io/nav-speculation/speculation-rules.html
       # - https://github.com/WICG/nav-speculation/blob/main/triggers.md
       string sourceText
+      # Error information
+      # `errorMessage` is null iff `errorType` is null.
+      optional RuleSetErrorType errorType
+      # TODO(https://crbug.com/1425354): Replace this property with structured error.
+      deprecated optional string errorMessage
+
+  type RuleSetErrorType extends string
+    enum
+      SourceIsNotJsonObject
+      InvalidRulesSkipped
 
   # The type of preloading attempted. It corresponds to
   # mojom::SpeculationAction (although PrefetchWithSubresources is omitted as it
@@ -10840,11 +10912,10 @@ experimental domain Preload
       InactivePageRestriction
       StartFailed
       TimeoutBackgrounded
-      CrossSiteRedirect
-      CrossSiteNavigation
-      SameSiteCrossOriginRedirect
-      SameSiteCrossOriginRedirectNotOptIn
-      SameSiteCrossOriginNavigationNotOptIn
+      CrossSiteRedirectInInitialNavigation
+      CrossSiteNavigationInInitialNavigation
+      SameSiteCrossOriginRedirectNotOptInInInitialNavigation
+      SameSiteCrossOriginNavigationNotOptInInInitialNavigation
       ActivationNavigationParameterMismatch
       ActivatedInBackground
       EmbedderHostDisallowed
@@ -10858,10 +10929,15 @@ experimental domain Preload
       BatterySaverEnabled
       ActivatedDuringMainFrameNavigation
       PreloadingUnsupportedByWebContents
+      CrossSiteRedirectInMainFrameNavigation
+      CrossSiteNavigationInMainFrameNavigation
+      SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation
+      SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation
 
   # Fired when a prerender attempt is completed.
   event prerenderAttemptCompleted
     parameters
+      PreloadingAttemptKey key
       # The frame id of the frame initiating prerendering.
       Page.FrameId initiatingFrameId
       string prerenderingUrl
@@ -10885,6 +10961,7 @@ experimental domain Preload
   # Fired when a prefetch attempt is updated.
   event prefetchStatusUpdated
     parameters
+      PreloadingAttemptKey key
       # The frame id of the frame initiating prefetch.
       Page.FrameId initiatingFrameId
       string prefetchUrl
@@ -10893,14 +10970,16 @@ experimental domain Preload
   # Fired when a prerender attempt is updated.
   event prerenderStatusUpdated
     parameters
+      PreloadingAttemptKey key
       # The frame id of the frame initiating prerender.
       Page.FrameId initiatingFrameId
       string prerenderingUrl
       PreloadingStatus status
 
-  # Send a list of sources for all preloading attempts.
+  # Send a list of sources for all preloading attempts in a document.
   event preloadingAttemptSourcesUpdated
     parameters
+      Network.LoaderId loaderId
       array of PreloadingAttemptSource preloadingAttemptSources
 
 # This domain allows interacting with the FedCM dialog.
@@ -10931,8 +11010,18 @@ experimental domain FedCm
     parameters
       string dialogId
       array of Account accounts
+      # These exist primarily so that the caller can verify the
+      # RP context was used appropriately.
+      string title
+      optional string subtitle
 
   command enable
+    parameters
+      # Allows callers to disable the promise rejection delay that would
+      # normally happen, if this is unimportant to what's being tested.
+      # (step 4 of https://fedidcg.github.io/FedCM/#browser-api-rp-sign-in)
+      optional boolean disableRejectionDelay
+
   command disable
 
   command selectAccount
@@ -10943,3 +11032,9 @@ experimental domain FedCm
   command dismissDialog
     parameters
       string dialogId
+      optional boolean triggerCooldown
+
+  # Resets the cooldown time, if any, to allow the next FedCM call to show
+  # a dialog even if one was recently dismissed by the user.
+  command resetCooldown
+

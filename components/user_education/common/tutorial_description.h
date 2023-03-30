@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
+#include "components/user_education/common/help_bubble.h"
 #include "components/user_education/common/help_bubble_params.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -125,6 +126,8 @@ struct TutorialDescription {
   using NameElementsCallback =
       base::RepeatingCallback<bool(ui::InteractionSequence*,
                                    ui::TrackedElement*)>;
+  using NextButtonCallback =
+      base::RepeatingCallback<void(ui::TrackedElement* current_anchor)>;
 
   TutorialDescription();
   ~TutorialDescription();
@@ -132,9 +135,15 @@ struct TutorialDescription {
   TutorialDescription& operator=(TutorialDescription&& other);
 
   using ContextMode = ui::InteractionSequence::ContextMode;
+  using ElementSpecifier = absl::variant<ui::ElementIdentifier, std::string>;
 
   struct Step {
     Step();
+    explicit Step(
+        ElementSpecifier element_specifier,
+        ui::InteractionSequence::StepType step_type_ =
+            ui::InteractionSequence::StepType::kShown,
+        ui::CustomElementEventType event_type_ = ui::CustomElementEventType());
     Step(int title_text_id_,
          int body_text_id_,
          ui::InteractionSequence::StepType step_type_,
@@ -150,24 +159,25 @@ struct TutorialDescription {
     Step& operator=(const Step& other);
     ~Step();
 
-    // The title text to be populated in the bubble.
-    int title_text_id = 0;
-
-    // The body text to be populated in the bubble.
-    int body_text_id = 0;
-
-    // The step type for InteractionSequence::Step.
-    ui::InteractionSequence::StepType step_type;
-
-    // The event type for the step if `step_type` is kCustomEvent.
-    ui::CustomElementEventType event_type;
-
     // The element used by interaction sequence to observe and attach a bubble.
     ui::ElementIdentifier element_id;
 
     // The element, referred to by name, used by the interaction sequence
     // to observe and potentially attach a bubble. must be non-empty.
     std::string element_name;
+
+    // The step type for InteractionSequence::Step.
+    ui::InteractionSequence::StepType step_type =
+        ui::InteractionSequence::StepType::kShown;
+
+    // The event type for the step if `step_type` is kCustomEvent.
+    ui::CustomElementEventType event_type = ui::CustomElementEventType();
+
+    // The title text to be populated in the bubble.
+    int title_text_id = 0;
+
+    // The body text to be populated in the bubble.
+    int body_text_id = 0;
 
     // The positioning of the bubble arrow.
     HelpBubbleArrow arrow = HelpBubbleArrow::kTopRight;
@@ -177,12 +187,17 @@ struct TutorialDescription {
     // steps on the same element. if left empty the interaction sequence will
     // decide what its value should be based on the generated
     // InteractionSequence::StepBuilder
-    absl::optional<bool> must_remain_visible;
+    absl::optional<bool> must_remain_visible = absl::nullopt;
 
     // Should the step only be completed when an event like shown or hidden only
     // happens during current step. for more information on the implementation
     // take a look at transition_only_on_event in InteractionSequence::Step
     bool transition_only_on_event = false;
+
+    // If set, determines whether the element in question must be visible at the
+    // start of the step. If left empty the interaction sequence will choose a
+    // reasonable default.
+    absl::optional<bool> must_be_visible;
 
     // lambda which is called on the start callback of the InteractionSequence
     // which provides the interaction sequence and the current element that
@@ -192,16 +207,213 @@ struct TutorialDescription {
     // element for naming. The return value is a boolean which controls whether
     // the Interaction Sequence should continue or not. If false is returned
     // the tutorial will abort
-    NameElementsCallback name_elements_callback;
+    NameElementsCallback name_elements_callback = NameElementsCallback();
 
     // Where to search for the step's target element. Default is the context the
     // tutorial started in.
     ContextMode context_mode = ContextMode::kInitial;
 
+    // Lambda which is called when the "Next" button is clicked in the help
+    // bubble associated with this step. Note that a "Next" button won't render:
+    // 1. if `next_button_callback` is null
+    // 2. if this step is the last step of a tutorial
+    NextButtonCallback next_button_callback = NextButtonCallback();
+
     // returns true iff all of the required parameters exist to display a
     // bubble.
     bool ShouldShowBubble() const;
+
+    Step& AbortIfVisibilityLost(bool must_remain_visible_) {
+      must_remain_visible = must_remain_visible_;
+      return *this;
+    }
+
+    Step& AbortIfNotVisible() {
+      must_be_visible = true;
+      return *this;
+    }
+
+    Step& NameElement(const char name_[]) {
+      name_elements_callback = base::BindRepeating(
+          [](const char name[], ui::InteractionSequence* sequence,
+             ui::TrackedElement* element) {
+            sequence->NameElement(element, base::StringPiece(name));
+            return true;
+          },
+          name_);
+      return *this;
+    }
+
+    Step& InAnyContext() {
+      context_mode = ContextMode::kAny;
+      return *this;
+    }
+
+    Step& InSameContext() {
+      context_mode = ContextMode::kFromPreviousStep;
+      return *this;
+    }
   };
+
+  // TutorialDescription::BubbleStep
+  // A bubble step is a step which shows a bubble anchored to an element
+  // This requires that the anchor element be visible, so this is always
+  // a kShown step.
+  //
+  // - A bubble step must be passed an element_id or an element_name
+  struct BubbleStep : public Step {
+    // TutorialDescription::BubbleStep(element_id_)
+    // TutorialDescription::BubbleStep(element_name_)
+    explicit BubbleStep(ElementSpecifier element_specifier)
+        : Step(element_specifier, ui::InteractionSequence::StepType::kShown) {}
+
+    BubbleStep& SetBubbleTitleText(int title_text_) {
+      title_text_id = title_text_;
+      return *this;
+    }
+
+    BubbleStep& SetBubbleBodyText(int body_text_) {
+      body_text_id = body_text_;
+      return *this;
+    }
+
+    BubbleStep& SetBubbleArrow(HelpBubbleArrow arrow_) {
+      arrow = arrow_;
+      return *this;
+    }
+
+    BubbleStep& AddDefaultNextButton() {
+      return AddCustomNextButton(
+          base::BindRepeating([](ui::TrackedElement* current_anchor) {
+            ui::ElementTracker::GetFrameworkDelegate()->NotifyCustomEvent(
+                current_anchor, kHelpBubbleNextButtonClickedEvent);
+          }));
+    }
+
+    BubbleStep& AddCustomNextButton(NextButtonCallback next_button_callback_) {
+      next_button_callback = std::move(next_button_callback_);
+      return *this;
+    }
+  };
+
+  // TutorialDescription::HiddenStep
+  // A hidden step has no bubble and waits for a UI event to occur on
+  // a particular element.
+  //
+  // - A hidden step must be passed an element_id or an element_name
+  struct HiddenStep : public Step {
+    // HiddenStep::WaitForShowEvent(element_id_)
+    // HiddenStep::WaitForShowEvent(element_name_)
+    // Transition to the next step after a show event occurs
+    static HiddenStep WaitForShowEvent(ElementSpecifier element_specifier) {
+      HiddenStep step(element_specifier,
+                      ui::InteractionSequence::StepType::kShown);
+      step.transition_only_on_event = true;
+      return step;
+    }
+
+    // HiddenStep::WaitForHideEvent(element_id_)
+    // HiddenStep::WaitForHideEvent(element_name_)
+    // Transition to the next step after a hide event occurs
+    static HiddenStep WaitForHideEvent(ElementSpecifier element_specifier) {
+      HiddenStep step(element_specifier,
+                      ui::InteractionSequence::StepType::kHidden);
+      step.transition_only_on_event = true;
+      return step;
+    }
+
+    // HiddenStep::WaitForActivateEvent(element_id_)
+    // HiddenStep::WaitForActivateEvent(element_name_)
+    // Transition to the next step after an activation event occurs
+    static HiddenStep WaitForActivateEvent(ElementSpecifier element_specifier) {
+      HiddenStep step(element_specifier,
+                      ui::InteractionSequence::StepType::kActivated);
+      step.transition_only_on_event = true;
+      return step;
+    }
+
+    // HiddenStep::WaitForShown(element_id_)
+    // HiddenStep::WaitForShown(element_name_)
+    // Transition to the next step if anchor is, or becomes, visible
+    static HiddenStep WaitForShown(ElementSpecifier element_specifier) {
+      HiddenStep step(element_specifier,
+                      ui::InteractionSequence::StepType::kShown);
+      step.transition_only_on_event = false;
+      return step;
+    }
+
+    // HiddenStep::WaitForHidden(element_id_)
+    // HiddenStep::WaitForHidden(element_name_)
+    // Transition to the next step if anchor is, or becomes, hidden
+    static HiddenStep WaitForHidden(ElementSpecifier element_specifier) {
+      HiddenStep step(element_specifier,
+                      ui::InteractionSequence::StepType::kHidden);
+      step.transition_only_on_event = false;
+      return step;
+    }
+
+    // HiddenStep::WaitForActivated(element_id_)
+    // HiddenStep::WaitForActivated(element_name_)
+    // Transition to the next step if anchor is, or becomes, activated
+    static HiddenStep WaitForActivated(ElementSpecifier element_specifier) {
+      HiddenStep step(element_specifier,
+                      ui::InteractionSequence::StepType::kActivated);
+      step.transition_only_on_event = false;
+      return step;
+    }
+
+   private:
+    explicit HiddenStep(ElementSpecifier element_specifier,
+                        ui::InteractionSequence::StepType step_type)
+        : Step(element_specifier, step_type) {}
+  };
+
+  // TutorialDescription::EventStep
+  // An event step is a special case of a HiddenStep that waits for
+  // a custom event to be fired programmatically.
+  //
+  // - This step must be passed an event_id
+  // - Additionally, you can also pass an element_id or element_name if
+  // the event should occur specifically on a given element
+  struct EventStep : public Step {
+    // TutorialDescription::EventStep(event_id_)
+    explicit EventStep(ui::CustomElementEventType event_type_)
+        : Step(ui::ElementIdentifier(),
+               ui::InteractionSequence::StepType::kCustomEvent,
+               event_type_) {}
+
+    // TutorialDescription::EventStep(event_id_, element_id_)
+    // TutorialDescription::EventStep(event_id_, element_name_)
+    EventStep(ui::CustomElementEventType event_type_,
+              ElementSpecifier element_specifier)
+        : Step(element_specifier,
+               ui::InteractionSequence::StepType::kCustomEvent,
+               event_type_) {}
+  };
+
+  // TutorialDescription::Create<"Prefix">(step1, step2, ...)
+  //
+  // Create a tutorial description with the given steps
+  // This will also generate the histograms with the given prefix
+  template <const char histogram_name[], typename... Args>
+  static TutorialDescription Create(Args&&... steps) {
+    TutorialDescription description;
+    description.steps = Steps(steps...);
+    description.histograms =
+        user_education::MakeTutorialHistograms<histogram_name>(
+            description.steps.size());
+    return description;
+  }
+
+  // TutorialDescription::Steps(step1, step2, {step3, step4}, ...)
+  //
+  // Turn steps and step vectors into a flattened vector of steps
+  template <typename... Args>
+  static std::vector<TutorialDescription::Step> Steps(Args&&... steps) {
+    std::vector<TutorialDescription::Step> flat_steps = {};
+    (AddStep(flat_steps, std::forward<Args>(steps)), ...);
+    return flat_steps;
+  }
 
   // the list of TutorialDescription steps
   std::vector<Step> steps;
@@ -215,6 +427,16 @@ struct TutorialDescription {
   // cases this flag should be set to false so that the restart tutorial button
   // is not displayed.
   bool can_be_restarted = false;
+
+ private:
+  static void AddStep(std::vector<Step>& dest, Step step) {
+    dest.emplace_back(step);
+  }
+  static void AddStep(std::vector<Step>& dest, const std::vector<Step>& src) {
+    for (auto& step : src) {
+      dest.emplace_back(step);
+    }
+  }
 };
 
 }  // namespace user_education

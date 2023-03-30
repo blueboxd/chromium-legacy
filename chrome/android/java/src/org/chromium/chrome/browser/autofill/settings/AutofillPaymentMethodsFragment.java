@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.autofill.settings;
 
+import static org.chromium.chrome.browser.autofill.AutofillUiUtils.getCardIcon;
+import static org.chromium.chrome.browser.autofill.AutofillUiUtils.getSettingsPageIconHeightId;
+import static org.chromium.chrome.browser.autofill.AutofillUiUtils.getSettingsPageIconWidthId;
+
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -22,13 +26,12 @@ import androidx.preference.PreferenceScreen;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillEditorBase;
-import org.chromium.chrome.browser.autofill.AutofillUiUtils;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
+import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
@@ -39,9 +42,12 @@ import org.chromium.components.payments.AndroidPaymentAppFactory;
  * Autofill credit cards fragment, which allows the user to edit credit cards and control
  * payment apps.
  */
-public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
-        implements PersonalDataManager.PersonalDataManagerObserver {
+public class AutofillPaymentMethodsFragment
+        extends PreferenceFragmentCompat implements PersonalDataManager.PersonalDataManagerObserver,
+                                                    FragmentHelpAndFeedbackLauncher {
     private static final String PREF_PAYMENT_APPS = "payment_apps";
+
+    private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -66,9 +72,8 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            HelpAndFeedbackLauncherImpl.getForProfile(Profile.getLastUsedRegularProfile())
-                    .show(getActivity(), getActivity().getString(R.string.help_context_autofill),
-                            null);
+            mHelpAndFeedbackLauncher.show(
+                    getActivity(), getActivity().getString(R.string.help_context_autofill), null);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -148,8 +153,8 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
             }
 
             // Set card icon. It can be either a custom card art or a network icon.
-            card_pref.setIcon(AutofillUiUtils.getCardIcon(getStyledContext(), card,
-                    R.dimen.settings_page_card_icon_width, R.dimen.settings_page_card_icon_height));
+            card_pref.setIcon(getCardIcon(getStyledContext(), card, getSettingsPageIconWidthId(),
+                    getSettingsPageIconHeightId()));
 
             if (card.getIsLocal()) {
                 card_pref.setFragment(AutofillLocalCardEditor.class.getName());
@@ -261,5 +266,10 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
     public void onDestroyView() {
         PersonalDataManager.getInstance().unregisterDataObserver(this);
         super.onDestroyView();
+    }
+
+    @Override
+    public void setHelpAndFeedbackLauncher(HelpAndFeedbackLauncher helpAndFeedbackLauncher) {
+        mHelpAndFeedbackLauncher = helpAndFeedbackLauncher;
     }
 }

@@ -84,7 +84,12 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   USING_PRE_FINALIZER(ScrollableArea, Dispose);
 
  public:
-  using ScrollCallback = base::OnceClosure;
+  // This enum indicates whether a scroll animation was
+  // interrupted by another scroll animation. We use this to decide
+  // whether or not to fire scrollend.
+  enum class ScrollCompletionMode { kFinished, kInterruptedByScroll };
+  using ScrollCallback =
+      base::OnceCallback<void(ScrollableArea::ScrollCompletionMode)>;
 
   ScrollableArea(const ScrollableArea&) = delete;
   ScrollableArea& operator=(const ScrollableArea&) = delete;
@@ -149,7 +154,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Register a callback that will be invoked when the next scroll completes -
   // this includes the scroll animation time.
   void RegisterScrollCompleteCallback(ScrollCallback callback);
-  void RunScrollCompleteCallbacks();
+  void RunScrollCompleteCallbacks(ScrollCompletionMode);
 
   void ContentAreaWillPaint() const;
   void MouseEnteredContentArea() const;
@@ -476,7 +481,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return mojom::blink::ScrollBehavior::kInstant;
   }
 
-  virtual mojom::blink::ColorScheme UsedColorScheme() const = 0;
+  virtual mojom::blink::ColorScheme UsedColorSchemeScrollbars() const = 0;
 
   // Subtracts space occupied by this ScrollableArea's scrollbars.
   // Does nothing if overlay scrollbars are enabled.
@@ -533,7 +538,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollbarTheme& GetPageScrollbarTheme() const = 0;
 
-  void OnScrollFinished();
+  void OnScrollFinished(bool enqueue_scrollend);
 
   float ScrollStep(ui::ScrollGranularity, ScrollbarOrientation) const;
 

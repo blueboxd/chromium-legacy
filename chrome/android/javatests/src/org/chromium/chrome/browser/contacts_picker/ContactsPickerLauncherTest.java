@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.contacts_picker;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 
 import org.junit.After;
@@ -15,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ContactsPicker;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -64,7 +63,7 @@ public class ContactsPickerLauncherTest {
                 mNativeLoaded.set(true);
             }
         };
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+        PostTask.postTask(TaskTraits.UI_DEFAULT, () -> {
             ChromeBrowserInitializer.getInstance().handlePreNativeStartupAndLoadLibraries(parts);
             ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
         });

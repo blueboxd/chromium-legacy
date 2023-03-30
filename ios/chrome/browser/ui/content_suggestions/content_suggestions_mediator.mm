@@ -28,6 +28,7 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -56,7 +57,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/content_suggestions/start_suggest_service_factory.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/feed_delegate.h"
@@ -264,11 +264,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   self.NTPMetrics.webState = self.webState;
 }
 
-- (void)setShowingStartSurface:(BOOL)showingStartSurface {
-  _showingStartSurface = showingStartSurface;
-  self.NTPMetrics.showingStartSurface = showingStartSurface;
-}
-
 + (NSUInteger)maxSitesShown {
   return kMaxNumMostVisitedTiles;
 }
@@ -342,7 +337,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
         [self.dispatcher showHistory];
         break;
       case NTPCollectionShortcutTypeWhatsNew:
-        SetWhatsNewUsed();
+        SetWhatsNewUsed(self.promosManager);
         base::RecordAction(base::UserMetricsAction("MobileNTPShowWhatsNew"));
         [self.dispatcher showWhatsNew];
         break;
@@ -617,11 +612,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   // Fetch Trending Queries
   TemplateURLRef::SearchTermsArgs args;
   args.request_source = RequestSource::NTP_MODULE;
+  BOOL isShowingStartSurface = NewTabPageTabHelper::FromWebState(self.webState)
+                                   ->ShouldShowStartSurface();
   _startSuggestService->FetchSuggestions(
       args,
       base::BindOnce(&StartSuggestServiceResponseBridge::OnSuggestionsReceived,
                      _startSuggestServiceResponseBridge->AsWeakPtr()),
-      self.showingStartSurface);
+      isShowingStartSurface);
 }
 
 - (NSString*)constructReturnToRecentTabSubtitleWithPageTitle:

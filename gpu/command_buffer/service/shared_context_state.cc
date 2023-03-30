@@ -189,15 +189,6 @@ SharedContextState::SharedContextState(
         use_virtualized_gl_contexts_ = false;
       }
       break;
-    case GrContextType::kMetal:
-      if (metal_context_provider_) {
-#if BUILDFLAG(IS_APPLE)
-        gr_context_ = metal_context_provider_->GetGrContext();
-#endif
-        use_virtualized_gl_contexts_ = false;
-        DCHECK(gr_context_);
-      }
-      break;
     case GrContextType::kDawn:
       if (dawn_context_provider_) {
 #if BUILDFLAG(SKIA_USE_DAWN)
@@ -254,6 +245,16 @@ SharedContextState::~SharedContextState() {
   // Delete the GrContext. This will either do cleanup if the context is
   // current, or the GrContext was already abandoned if the GLContext was lost.
   owned_gr_context_.reset();
+
+  // |surface_| needs to be destroyed while there is a current GL context if
+  // using GL, as some implementations make calls to the GL bindings. Any such
+  // implementations will themselves ensure that the context is current in their
+  // destructor (we cannot blindly make the context current here, as there are
+  // other implementations that crash if the context is made current at this
+  // point :\). However, we drop our reference to |surface_| before releasing
+  // the context below so that the release has the intended effect.
+  last_current_surface_ = nullptr;
+  surface_.reset();
 
   if (context_->IsCurrent(nullptr))
     context_->ReleaseCurrent(nullptr);

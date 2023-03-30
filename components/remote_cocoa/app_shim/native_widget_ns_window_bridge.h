@@ -5,18 +5,17 @@
 #ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_BRIDGE_H_
 #define COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_BRIDGE_H_
 
-#include "base/memory/raw_ptr.h"
-
 #import <Cocoa/Cocoa.h>
 
 #include <memory>
 #include <vector>
 
 #import "base/mac/scoped_nsobject.h"
-#import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
-
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/remote_cocoa/app_shim/immersive_mode_controller.h"
 #include "components/remote_cocoa/app_shim/immersive_mode_tabbed_controller.h"
+#import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_fullscreen_controller.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
@@ -30,7 +29,6 @@
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/cocoa/command_dispatcher.h"
-#include "ui/base/cocoa/weak_ptr_nsobject.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
@@ -42,13 +40,12 @@
 @class NativeWidgetMacNSWindow;
 @class ViewsNSWindowDelegate;
 
-namespace views {
-namespace test {
+namespace views::test {
 class BridgedNativeWidgetTestApi;
-}  // namespace test
-}  // namespace views
+}  // namespace views::test
 
 namespace remote_cocoa {
+
 namespace mojom {
 class NativeWidgetNSWindowHost;
 class TextInputHost;
@@ -308,6 +305,17 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   void MoveChildrenTo(NativeWidgetNSWindowBridge* target,
                       bool anchored_only = false);
 
+  // Is immersive fullscreen enabled. True will be returned at the start of the
+  // fullscreen transition.
+  bool ImmersiveFullscreenIsEnabled();
+
+  // Returns true if kImmersiveFullscreenTabs is being used.
+  bool ImmersiveFullscreenIsTabbed();
+
+  // Returns the last style set with `UpdateToolbarVisibility()`. Defaults to
+  // kAlways.
+  mojom::ToolbarVisibilityStyle ImmersiveFullscreenLastUsedStyle();
+
  private:
   friend class views::test::BridgedNativeWidgetTestApi;
 
@@ -432,8 +440,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   struct HeadlessModeWindow {
     bool visibility_state = false;
     bool fullscreen_state = false;
-    bool initial_bounds_set = false;
-    gfx::Rect bounds;
   };
 
   // This is present iff the window has been created in headless mode.
@@ -453,7 +459,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // immersive_mode_controller_ resets.
   int immersive_fullscreen_reveal_lock_count_ = 0;
 
-  ui::WeakPtrNSObjectFactory<NativeWidgetNSWindowBridge> ns_weak_factory_;
+  base::WeakPtrFactory<NativeWidgetNSWindowBridge> factory_{this};
 };
 
 }  // namespace remote_cocoa

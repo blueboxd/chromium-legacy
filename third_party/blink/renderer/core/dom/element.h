@@ -66,6 +66,7 @@ class Vector2dF;
 namespace blink {
 
 class AccessibleNode;
+class AnchorElementObserver;
 class AnchorScrollData;
 class AriaNotificationOptions;
 class Attr;
@@ -89,7 +90,7 @@ class EditContext;
 class ElementAnimations;
 class ElementInternals;
 class ElementIntersectionObserverData;
-class ElementRareDataBase;
+class ElementRareDataVector;
 class ExceptionState;
 class FocusOptions;
 class GetInnerHTMLOptions;
@@ -1150,8 +1151,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool AffectedByMultipleHas() const;
   void SetAffectedByMultipleHas();
 
-  void SaveIntrinsicSize(ResizeObserverSize* size);
-  const ResizeObserverSize* LastIntrinsicSize() const;
+  // This is meant to be used by document's resize observer to notify that the
+  // size has changed.
+  void LastRememberedSizeChanged(ResizeObserverSize* size);
+
+  void SetLastRememberedInlineSize(absl::optional<LayoutUnit>);
+  void SetLastRememberedBlockSize(absl::optional<LayoutUnit>);
+  absl::optional<LayoutUnit> LastRememberedInlineSize() const;
+  absl::optional<LayoutUnit> LastRememberedBlockSize() const;
 
   // Returns a unique pseudo element for the given |pseudo_id| and
   // |view_transition_name| originating from this DOM element.
@@ -1191,10 +1198,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void RemoveAnchorScrollData();
   AnchorScrollData* GetAnchorScrollData() const;
 
-  // Returns true if any popover is anchored to this element.
-  bool HasAnchoredPopover() const;
-  void DecrementAnchoredPopoverCount();
-  void IncrementAnchoredPopoverCount();
+  // Returns true if any element is implicitly anchored to this element.
+  bool HasImplicitlyAnchoredElement() const;
+  void DecrementImplicitlyAnchoredElementCount();
+  void IncrementImplicitlyAnchoredElementCount();
+
+  AnchorElementObserver& EnsureAnchorElementObserver();
+  AnchorElementObserver* GetAnchorElementObserver() const;
 
   // https://drafts.csswg.org/css-anchor-1/#implicit-anchor-element
   Element* ImplicitAnchorElement();
@@ -1535,8 +1545,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                             bool include_shadow_roots,
                             ExceptionState&);
 
-  ElementRareDataBase* GetElementRareData() const;
-  ElementRareDataBase& EnsureElementRareData();
+  ElementRareDataVector* GetElementRareData() const;
+  ElementRareDataVector& EnsureElementRareData();
 
   void RemoveAttrNodeList();
   void DetachAllAttrNodesFromElement();
@@ -1602,6 +1612,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void PseudoStateChanged(CSSSelector::PseudoType pseudo,
                           AffectedByPseudoStateChange&&);
+
+  void ProcessContainIntrinsicSizeChanges();
+
+  bool ShouldUpdateLastRememberedBlockSize() const;
+  bool ShouldUpdateLastRememberedInlineSize() const;
 
   enum class HighlightRecalc {
     // No highlight recalc is needed.

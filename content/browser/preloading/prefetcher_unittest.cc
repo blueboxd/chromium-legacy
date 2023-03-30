@@ -28,9 +28,7 @@ class MockSpeculationHostDelegate : public SpeculationHostDelegate {
   ~MockSpeculationHostDelegate() override = default;
 
   void ProcessCandidates(
-      std::vector<blink::mojom::SpeculationCandidatePtr>& candidates,
-      base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer)
-      override {
+      std::vector<blink::mojom::SpeculationCandidatePtr>& candidates) override {
     for (auto&& candidate : candidates) {
       candidates_.push_back(std::move(candidate));
     }
@@ -168,7 +166,8 @@ TEST_F(PrefetcherTest, ProcessCandidatesForPrefetch) {
   candidate1->referrer = blink::mojom::Referrer::New();
   candidates.push_back(std::move(candidate1));
 
-  prefetcher.ProcessCandidatesForPrefetch(candidates);
+  prefetcher.ProcessCandidatesForPrefetch(base::UnguessableToken::Create(),
+                                          candidates);
   EXPECT_TRUE(delegate->Candidates().empty());
   EXPECT_EQ(1u, GetPrefetchService()->prefetches_.size());
 
@@ -236,7 +235,8 @@ TEST_F(PrefetcherTest, MockPrefetcher) {
   candidate1->referrer = blink::mojom::Referrer::New();
   candidates.push_back(std::move(candidate1));
 
-  prefetcher.ProcessCandidatesForPrefetch(candidates);
+  prefetcher.ProcessCandidatesForPrefetch(base::UnguessableToken::Create(),
+                                          candidates);
   EXPECT_TRUE(delegate->Candidates().empty());
   EXPECT_EQ(1u, GetPrefetchService()->prefetches_.size());
 

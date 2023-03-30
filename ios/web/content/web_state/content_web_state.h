@@ -13,8 +13,11 @@
 
 #import "base/observer_list.h"
 #import "build/blink_buildflags.h"
+#import "content/public/browser/web_contents_observer.h"
 #import "ios/web/content/js_messaging/content_web_frames_manager.h"
 #import "ios/web/content/navigation/content_navigation_manager.h"
+#import "ios/web/public/favicon/favicon_status.h"
+#import "ios/web/public/session/session_certificate_policy_cache.h"
 
 @class CRWWebViewProxy;
 
@@ -22,12 +25,24 @@
 #error File can only be included when USE_BLINK is true
 #endif
 
+namespace content {
+class NavigationEntry;
+class NavigationHandle;
+class RenderFrameHost;
+class WebContents;
+}  // namespace content
+
 namespace web {
 
 // ContentWebState is an implementation of WebState that's based on WebContents.
-class ContentWebState : public WebState {
+class ContentWebState : public WebState, public content::WebContentsObserver {
  public:
   explicit ContentWebState(const CreateParams& params);
+
+  // Constructor for ContentWebState created for deserialized sessions
+  ContentWebState(const CreateParams& params,
+                  CRWSessionStorage* session_storage);
+
   ~ContentWebState() override;
 
   // WebState implementation.
@@ -71,6 +86,7 @@ class ContentWebState : public WebState {
   const std::u16string& GetTitle() const override;
   bool IsLoading() const override;
   double GetLoadingProgress() const override;
+  void SetLoadingProgress(double progress);
   bool IsVisible() const override;
   bool IsCrashed() const override;
   bool IsEvicted() const override;
@@ -89,8 +105,6 @@ class ContentWebState : public WebState {
   void CloseWebState() override;
   bool SetSessionStateData(NSData* data) override;
   NSData* SessionStateData() override;
-  void SetSwipeRecognizerProvider(
-      id<CRWSwipeRecognizerProvider> delegate) override;
   PermissionState GetStateForPermission(Permission permission) const override
       API_AVAILABLE(ios(15.0));
   void SetStateForPermission(PermissionState state,
@@ -117,14 +131,48 @@ class ContentWebState : public WebState {
   void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback) override;
   void CloseMediaPresentations() override;
 
+ protected:
+  // WebContentsObserver
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidRedirectNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  void LoadProgressChanged(double progress) override;
+
+  void TitleWasSet(content::NavigationEntry* entry) override;
+
+  void DidUpdateFaviconURL(
+      content::RenderFrameHost* render_frame_host,
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
+
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void DocumentOnLoadCompletedInPrimaryMainFrame() override;
+  void RenderFrameHostStateChanged(
+      content::RenderFrameHost* render_frame_host,
+      content::RenderFrameHost::LifecycleState old_state,
+      content::RenderFrameHost::LifecycleState new_state) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
+
  private:
   UIScrollView* web_view_;
+  CRWSessionStorage* session_storage_;
+  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<web::SessionCertificatePolicyCache> certificate_policy_cache_;
   id<CRWWebViewProxy> web_view_proxy_;
   NSString* UUID_;
   base::ObserverList<WebStatePolicyDecider, true> policy_deciders_;
   base::ObserverList<WebStateObserver, true> observers_;
   std::unique_ptr<ContentNavigationManager> navigation_manager_;
   std::unique_ptr<ContentWebFramesManager> web_frames_manager_;
+  FaviconStatus favicon_status_;
+
+  base::WeakPtrFactory<ContentWebState> weak_factory_{this};
 };
 
 }  // namespace web

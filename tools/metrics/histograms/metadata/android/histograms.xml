@@ -231,7 +231,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.SettingsToggle.Changed"
-    enum="BooleanEnabled" expires_after="2023-07-16">
+    enum="BooleanEnabled" expires_after="2023-09-24">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -1650,7 +1650,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.IncognitoReauth.AuthResult"
-    enum="DeviceAuthFinalResult" expires_after="M115">
+    enum="DeviceAuthFinalResult" expires_after="2023-09-24">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1689,6 +1689,17 @@ chromium-metrics-reviews@google.com.
     clicks on &quot;Turn on Incognito lock&quot; (gated on successful
     re-authentication) and a &quot;No thanks&quot; value is emitted when the
     user clicks on &quot;No thanks&quot;.
+  </summary>
+</histogram>
+
+<histogram name="Android.IncognitoReauth.PromoImpressionAfterActionCount"
+    units="count" expires_after="M119">
+  <owner>arabm@google.com</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    Records the number of impressions of the Incognito re-auth promo card when
+    user clicks accept or dismiss or when the promo expires after the max number
+    of impressions.
   </summary>
 </histogram>
 
@@ -1907,46 +1918,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.ManageSpace.ActionTaken"
-    enum="AndroidManageSpaceButton" expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    Recorded when the user presses a button in the 'Manage Space' screen for
-    Chrome. Note: the 'Clear App Data' option is likely incorrect, as the result
-    of that button disables UMA recording (as we factory reset the app).
-  </summary>
-</histogram>
-
-<histogram name="Android.ManageSpace.ClearUnimportantTime" units="ms"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    Records the time it takes to delete all unimportant sites when the user
-    initiates the 'Clear Unimportant Sites' action in the 'Manage Space' screen
-    for Chrome.
-  </summary>
-</histogram>
-
-<histogram name="Android.ManageSpace.TotalDiskUsageMB" units="MB"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    Recorded when the user opens the 'Manage Space' screen for Chrome, after the
-    disk usage is calculated. The disk usage value represents the accumulated
-    disk usage by websites.
-  </summary>
-</histogram>
-
-<histogram name="Android.ManageSpace.UnimportantDiskUsageMB" units="MB"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    Recorded when the user opens the 'Manage Space' screen for Chrome, after the
-    disk usage is calculated. The disk usage value represents the accumulated
-    disk usage by websites that are not considered 'important'.
-  </summary>
-</histogram>
-
 <histogram name="Android.MediaPickerShown" enum="MediaPickerShown"
     expires_after="2023-08-08">
   <owner>finnur@chromium.org</owner>
@@ -2054,7 +2025,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Stacking" enum="StackingAnimationType"
-    expires_after="2023-09-10">
+    expires_after="2023-09-24">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -3316,7 +3287,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Survey.DownloadAttemptsBeforeAccepted" units="units"
-    expires_after="2023-04-30">
+    expires_after="2023-08-27">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -3361,37 +3332,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Survey.InfoBarClosingState"
-    enum="InfoBarClosingStates" expires_after="2023-04-23">
-  <obsolete>
-    Deprecated in December 2022 as part of survey message post-launch cleanup
-    since the messages system records dismissal reasons using
-    Android.Messages.Dismissed.ChromeSurvey.
-  </obsolete>
-  <owner>twellington@chromium.org</owner>
-  <owner>wenyufu@chromium.org</owner>
-  <owner>clank-app-team@google.com</owner>
-  <summary>
-    If the infobar was visible when it was closed and if it was closed directly
-    or not.
-  </summary>
-</histogram>
-
-<histogram name="Android.Survey.ShowSurvey" enum="BooleanSuccess"
-    expires_after="2022-08-07">
-  <obsolete>
-    Deprecated in March 2022. Data available in Android.Survey.ShowSurveyStatus.
-  </obsolete>
-  <owner>twellington@chromium.org</owner>
-  <owner>wenyufu@chromium.org</owner>
-  <owner>clank-app-team@google.com</owner>
-  <summary>
-    Whether or not the survey was successfully shown after its download.
-  </summary>
-</histogram>
-
 <histogram name="Android.Survey.ShowSurveyStatus"
-    enum="SurveyPresentationStatusCode" expires_after="2023-08-08">
+    enum="SurveyPresentationStatusCode" expires_after="2023-08-27">
   <owner>aishwaryarj@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -3406,7 +3348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Survey.SurveyCompleted" enum="BooleanCompleted"
-    expires_after="2022-06-01">
+    expires_after="2023-08-27">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -3625,7 +3567,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.SetupRecyclerView.Time" units="ms"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>skavuluru@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -3733,7 +3675,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Toolbar.BitmapCapture" enum="ToolbarCaptureType"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>skym@chromium.org</owner>
   <owner>seacow@google.com</owner>
   <summary>

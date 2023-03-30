@@ -56,6 +56,7 @@
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> sahifasiga qaytish uchun bosing</translation>
 <translation id="2079545284768500474">Bekor qilish</translation>
 <translation id="2091887806945687916">Tovush</translation>
+<translation id="2117655453726830283">Keyingi slayd</translation>
 <translation id="2148716181193084225">Bugun</translation>
 <translation id="216989819110952009">Doroti va uning doʻstlari boshida hatto himoya koʻzoynagi bilan ham koʻra olmas edi</translation>
 <translation id="2176704795966505152">Asosiy menyuda masshtabni koʻrsatish</translation>
@@ -114,6 +115,7 @@
 <translation id="3008272652534848354">Ruxsatlarni qasliga qaytarish</translation>
 <translation id="301521992641321250">Avtomatik bloklangan</translation>
 <translation id="3069226013421428034">Muayyan sayt uchun tashqi xizmatga kirishga ruxsat bering.</translation>
+<translation id="310297983047869047">Avvalgi slaydi</translation>
 <translation id="3109724472072898302">Yig‘ilgan</translation>
 <translation id="3114012059975132928">Video pleyer</translation>
 <translation id="3115898365077584848">Ma’lumotlarni ko‘rsatish</translation>
@@ -189,6 +191,7 @@
 <translation id="4440642537584213025">Yoyish: <ph name="TARGET_DESCRIPTION" /></translation>
 <translation id="4468959413250150279">Muayyan saytdagi ovozni o‘chirish.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# ta cookie}other{# ta cookie}}</translation>
+<translation id="4478158430052450698">Foydalanuvchilarga turli saytlar masshtabini oʻzgartirishni osonlashtirish</translation>
 <translation id="4479647676395637221">Kameradan foydalanishga ruxsat so‘ralsin (tavsiya etiladi)</translation>
 <translation id="4505788138578415521">URL manzil yoyildi</translation>
 <translation id="4534723447064627427"><ph name="APP_NAME" /> mikrofondan foydalanishiga ruxsat berish uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali mikrofonni yoqing.</translation>
@@ -219,7 +222,6 @@
 <translation id="509133520954049755">Kompyuter versiyasi</translation>
 <translation id="5100237604440890931">Yig‘ilgan - Kengaytirish uchun bosing</translation>
 <translation id="5123685120097942451">Inkognito varaq</translation>
-<translation id="5134599672855298214">Mobil versiyasi (tavsiya etiladi)</translation>
 <translation id="5186036860380548585">Parametr ekranning yuqoriroq qismida joylashgan</translation>
 <translation id="5197729504361054390">Tanlangan kontaktlar <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saytiga ulashiladi.</translation>
 <translation id="5216942107514965959">Oxirgi tashrif: bugun</translation>

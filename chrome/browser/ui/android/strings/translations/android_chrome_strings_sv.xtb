@@ -283,6 +283,7 @@ Med förtroendetoken förbättras integriteten på webben. De kan inte användas
 <translation id="2581165646603367611">Det här alternativet rensar cookies, cacheminnet och annan data från webbplatser som bedöms vara oviktiga.</translation>
 <translation id="2587052924345400782">Det finns en nyare version</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2603212228005142861">Logga in för att hantera inställningarna.</translation>
 <translation id="2604446170045642109">Du kan stänga av mörkt tema för webbplatser i inställningarna.</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
 <translation id="2625189173221582860">Lösenordet har kopierats</translation>
@@ -476,6 +477,7 @@ Med förtroendetoken förbättras integriteten på webben. De kan inte användas
 <translation id="3587596251841506391">Förbättra säkerheten på webben</translation>
 <translation id="3597179440835065298">Få bättre förslag</translation>
 <translation id="3602290021589620013">Förhandsgranskning</translation>
+<translation id="360901359071773787">Vill du radera senaste 15 minuterna?</translation>
 <translation id="3616113530831147358">Ljud</translation>
 <translation id="3622349720008044802">Hantera fönster</translation>
 <translation id="3631987586758005671">Delas med <ph name="DEVICE_NAME" /></translation>
@@ -822,6 +824,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5517095782334947753">Du har bokmärken, historik, lösenord och andra inställningar från <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Om provfunktioner är aktiverade och du slumpmässigt har valts ut för en aktiv provfunktion påverkar webbhistoriken vilka annonser som visas och vilka intressen som du uppskattas ha. Av integritetsskäl raderas dina intressen från Chrome löpande varje månad.</translation>
 <translation id="5524843473235508879">Omdirigeringen blockerades.</translation>
+<translation id="554297709083131118">Följande data från de senaste 15 minuterna raderas</translation>
 <translation id="5548606607480005320">Säkerhetskontroll</translation>
 <translation id="5555525474779371165">Välj ditt skydd med Säker webbsökning</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
@@ -1076,6 +1079,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, flik, vald</translation>
 <translation id="6828070228333235514">Avbryt bevakningen av priset</translation>
 <translation id="6830728435402077660">Inte säkert</translation>
+<translation id="6831043979455480757">Översätt</translation>
 <translation id="6833996806551876956">Privacy Sandbox – provperiod</translation>
 <translation id="6836206421467243968">Återställ flikgruppen <ph name="TITLE_OF_GROUP" /> som en ny flikgrupp i bakgrunden.</translation>
 <translation id="6846298663435243399">Läser in …</translation>
@@ -1243,6 +1247,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7707922173985738739">Mobildata används</translation>
 <translation id="7709094866268987903">Intressen du har tagit bort visas här</translation>
 <translation id="7709918231054955894">Få alla dina flikar</translation>
+<translation id="772434085369393266">Uppgradera anslutningar till HTTPS och visa en varning innan webbplatser som saknar stöd för HTTPS läses in. Det går inte att ändra den här inställningen eftersom Avancerat skydd är aktiverat.</translation>
 <translation id="7725024127233776428">Sidor som infogats som bokmärke visas här</translation>
 <translation id="7757787379047923882">Texten delades från <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD-kort <ph name="SD_CARD_NUMBER" /></translation>
@@ -1261,6 +1266,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="78270725016672455">Datorn vill registrera den här enheten för att logga in på en webbplats</translation>
 <translation id="7844171778363018843">Du har inte valt någon data att synkronisera</translation>
 <translation id="7846296061357476882">Googles tjänster</translation>
+<translation id="7847228556075070294">Raderad historik, cookies och annan data</translation>
 <translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7851858861565204677">Andra enheter</translation>
 <translation id="7853202427316060426">Aktivitet</translation>
@@ -1315,6 +1321,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8058746566562539958">Öppna på ny flik i Chrome</translation>
 <translation id="8062594758852531064">Utökad förinläsning:</translation>
 <translation id="8063895661287329888">Det gick inte att lägga till bokmärket.</translation>
+<translation id="8066816452984416180">Infoga snabbt ett bokmärke för den här sidan. Tryck länge om du vill ändra det här kortkommandot.</translation>
 <translation id="806745655614357130">Håll min data separat</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8076492880354921740">Flikar</translation>
@@ -1346,6 +1353,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8216351761227087153">Titta</translation>
 <translation id="8218622182176210845">Hantera kontot</translation>
 <translation id="8223642481677794647">Menyn med flödeskort</translation>
+<translation id="8236097722223016103">Lägg till i bokmärken</translation>
 <translation id="8250920743982581267">Dokument</translation>
 <translation id="8255617931166444521">Webbplatser får endast se din webbaktivitet på den aktuella webbplatsen med hjälp av cookies</translation>
 <translation id="8259179246279078674">Eftersom förinlästa sidor är krypterade får Google ingen information om innehållet på dem. Googles servrar lär sig vilka webbplatser som läses in privat i förväg. Den här informationen används endast för att läsa in sidor i förväg och är inte länkar till andra uppgifter från ditt Google-konto.</translation>
@@ -1440,6 +1448,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="869891660844655955">Utgångsdatum</translation>
 <translation id="8699120352855309748">Erbjud inte att översätta dessa språk</translation>
 <translation id="8712637175834984815">Uppfattat</translation>
+<translation id="8723453889042591629">Översätt sidan snabbt. Tryck länge om du vill ändra det här kortkommandot.</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8746155870861185046">Dela markering</translation>
 <translation id="874726034427945498">Synkronisera flikar och historik för att få bättre förslag i adressfältet</translation>
@@ -1492,6 +1501,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8989968390305463310">Webbhistoriken påverkar vilka annonser som visas och vilka intressen som du uppskattas ha. Av integritetsskäl raderas dina intressen automatiskt och löpande varje månad. Intressen kan förnyas om du inte tar bort dem.</translation>
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
 <translation id="8996847606757455498">Välj en annan leverantör</translation>
+<translation id="8998289560386111590">Inte tillgängligt på din enhet</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9022774213089566801">Mest besökta</translation>
 <translation id="9022871169049522985">Webbplatser och annonsörer kan mäta annonsernas resultat</translation>

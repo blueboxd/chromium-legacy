@@ -290,6 +290,7 @@ All changes to this list should go through Blink's feature review process: http:
     overflow-wrap
     overflow-x
     overflow-y
+    overlay
     overscroll-behavior-block
     overscroll-behavior-inline
     overscroll-behavior-x
@@ -390,7 +391,6 @@ All changes to this list should go through Blink's feature review process: http:
     toggle-trigger
     toggle-visibility
     top
-    top-layer
     touch-action
     transform
     transform-box
@@ -462,6 +462,8 @@ All changes to this list should go through Blink's feature review process: http:
         animation-iteration-count
         animation-name
         animation-play-state
+        animation-range-end
+        animation-range-start
         animation-timeline
         animation-timing-function
     animation-delay

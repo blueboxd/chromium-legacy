@@ -58,6 +58,8 @@ static_library("test_support") {
     "../browser/attribution_reporting/attribution_test_utils.h",
     "../browser/attribution_reporting/test/configurable_storage_delegate.cc",
     "../browser/attribution_reporting/test/configurable_storage_delegate.h",
+    "../browser/attribution_reporting/test/mock_attribution_data_host_manager.cc",
+    "../browser/attribution_reporting/test/mock_attribution_data_host_manager.h",
     "../browser/attribution_reporting/test/mock_attribution_host.cc",
     "../browser/attribution_reporting/test/mock_attribution_host.h",
     "../browser/attribution_reporting/test/mock_attribution_manager.cc",
@@ -85,10 +87,6 @@ static_library("test_support") {
     "../browser/browsing_data/browsing_data_test_utils.h",
     "../browser/browsing_topics/test_util.cc",
     "../browser/browsing_topics/test_util.h",
-    "../browser/file_system_access/fake_file_system_access_permission_context.cc",
-    "../browser/file_system_access/fake_file_system_access_permission_context.h",
-    "../browser/file_system_access/file_system_chooser_test_helpers.cc",
-    "../browser/file_system_access/file_system_chooser_test_helpers.h",
     "../browser/file_system_access/mock_file_system_access_permission_context.cc",
     "../browser/file_system_access/mock_file_system_access_permission_context.h",
     "../browser/file_system_access/mock_file_system_access_permission_grant.cc",
@@ -148,6 +146,8 @@ static_library("test_support") {
     "../public/test/background_color_change_waiter.h",
     "../public/test/background_sync_test_util.cc",
     "../public/test/background_sync_test_util.h",
+    "../public/test/background_tracing_test_support.cc",
+    "../public/test/background_tracing_test_support.h",
     "../public/test/blink_test_environment.cc",
     "../public/test/blink_test_environment.h",
     "../public/test/bluetooth_test_utils.cc",
@@ -177,6 +177,8 @@ static_library("test_support") {
     "../public/test/embedded_worker_instance_test_harness.h",
     "../public/test/fake_download_item.cc",
     "../public/test/fake_download_item.h",
+    "../public/test/fake_file_system_access_permission_context.cc",
+    "../public/test/fake_file_system_access_permission_context.h",
     "../public/test/fake_frame_widget.cc",
     "../public/test/fake_frame_widget.h",
     "../public/test/fake_local_frame.cc",
@@ -191,6 +193,8 @@ static_library("test_support") {
     "../public/test/fake_speech_recognition_manager.h",
     "../public/test/fenced_frame_test_util.cc",
     "../public/test/fenced_frame_test_util.h",
+    "../public/test/file_system_chooser_test_helpers.cc",
+    "../public/test/file_system_chooser_test_helpers.h",
     "../public/test/find_test_utils.cc",
     "../public/test/find_test_utils.h",
     "../public/test/focus_changed_observer.cc",
@@ -778,6 +782,13 @@ static_library("test_support") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "../browser/smart_card/mock_smart_card_context_factory.cc",
+      "../browser/smart_card/mock_smart_card_context_factory.h",
+    ]
+  }
+
   if (is_fuchsia) {
     public_deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec:fuchsia.mediacodec_hlcpp" ]
   }
@@ -1336,12 +1347,14 @@ test("content_browsertests") {
     "../browser/loader/cross_site_document_blocking_browsertest.cc",
     "../browser/loader/derived_origin_in_fetch_browsertest.cc",
     "../browser/loader/file_url_loader_factory_browsertest.cc",
+    "../browser/loader/keep_alive_url_browsertest.cc",
     "../browser/loader/loader_browsertest.cc",
     "../browser/loader/navigation_early_hints_browsertest.cc",
     "../browser/loader/prefetch_browsertest.cc",
     "../browser/loader/prefetch_browsertest_base.cc",
     "../browser/loader/prefetch_browsertest_base.h",
     "../browser/loader/reload_cache_control_browsertest.cc",
+    "../browser/loader/resource_cache_browsertest.cc",
     "../browser/loader/resource_scheduler_browsertest.cc",
     "../browser/loader/web_transport_browsertest.cc",
     "../browser/locks/lock_manager_browsertest.cc",
@@ -2315,6 +2328,7 @@ test("content_unittests") {
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.cc",
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h",
     "../browser/interest_group/ad_auction_service_impl_unittest.cc",
+    "../browser/interest_group/auction_metrics_recorder_unittest.cc",
     "../browser/interest_group/auction_process_manager_unittest.cc",
     "../browser/interest_group/auction_runner_unittest.cc",
     "../browser/interest_group/auction_url_loader_factory_proxy_unittest.cc",
@@ -2328,6 +2342,7 @@ test("content_unittests") {
     "../browser/interest_group/interest_group_storage_unittest.cc",
     "../browser/interest_group/mock_auction_process_manager.cc",
     "../browser/interest_group/mock_auction_process_manager.h",
+    "../browser/interest_group/noiser_and_bucketer_unittest.cc",
     "../browser/interest_group/subresource_url_authorizations_unittest.cc",
     "../browser/interest_group/subresource_url_builder_unittest.cc",
     "../browser/interest_group/test_interest_group_manager_impl.cc",
@@ -2937,7 +2952,10 @@ test("content_unittests") {
   }
 
   if (is_fuchsia) {
-    deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics:fuchsia.accessibility.semantics_hlcpp" ]
+    deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics:fuchsia.accessibility.semantics_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics:fuchsia.accessibility.semantics_hlcpp",
+    ]
   }
 
   if (enable_printing) {
@@ -3140,6 +3158,10 @@ test("content_unittests") {
         "//chromeos/dbus/u2f",
       ]
     }
+  }
+
+  if (is_chromeos) {
+    sources += [ "../browser/smart_card/smart_card_reader_tracker_unittest.cc" ]
   }
 
   if (use_aura) {

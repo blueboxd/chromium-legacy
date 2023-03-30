@@ -5,10 +5,13 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/video_conference/bubble/bubble_view_ids.h"
 #include "ash/system/video_conference/bubble/return_to_app_panel.h"
 #include "ash/system/video_conference/video_conference_tray.h"
+#include "ash/system/video_conference/video_conference_tray_controller.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -31,12 +34,16 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/test/button_test_api.h"
 
 namespace ash::video_conference {
 
+constexpr char kVideoConferenceTrayUseWhileDisabledToastId[] =
+    "video_conference_tray_toast_ids.use_while_disable";
 const char16_t kTitle1[] = u"Title1";
+const char16_t kTitle2[] = u"Title2";
 
 // Periodically checks the condition and move on with the rest of the code when
 // the condition becomes true. Please tell me this is something you have been
@@ -93,6 +100,8 @@ class VideoConferenceIntegrationTest : public WebRtcTestBase {
     camera_bt_ = GetVcTray()->camera_icon();
     mic_bt_ = GetVcTray()->audio_icon();
     share_bt_ = GetVcTray()->screen_share_icon();
+
+    toast_manager_ = Shell::Get()->toast_manager();
   }
 
   // Navigate to the url in a new tab.
@@ -118,24 +127,36 @@ class VideoConferenceIntegrationTest : public WebRtcTestBase {
   }
 
   void StartCamera(content::WebContents* web_contents) {
+    // Foreground is required for multiple tabs cases.
+    web_contents->GetDelegate()->ActivateContents(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents, "startVideo();"));
   }
 
   void StopCamera(content::WebContents* web_contents) {
+    // Foreground is required for multiple tabs cases.
+    web_contents->GetDelegate()->ActivateContents(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents, "stopVideo();"));
   }
 
   void StartMicrophone(content::WebContents* web_contents) {
+    // Foreground is required for multiple tabs cases.
+    web_contents->GetDelegate()->ActivateContents(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents, "startAudio();"));
   }
   void StopMicrophone(content::WebContents* web_contents) {
+    // Foreground is required for multiple tabs cases.
+    web_contents->GetDelegate()->ActivateContents(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents, "stopAudio();"));
   }
 
   void StartScreenSharing(content::WebContents* web_contents) {
+    // Foreground is required for multiple tabs cases.
+    web_contents->GetDelegate()->ActivateContents(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents, "startScreenSharing();"));
   }
   void StopScreenSharing(content::WebContents* web_contents) {
+    // Foreground is required for multiple tabs cases.
+    web_contents->GetDelegate()->ActivateContents(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents, "stopScreenSharing();"));
   }
 
@@ -164,10 +185,26 @@ class VideoConferenceIntegrationTest : public WebRtcTestBase {
     return output;
   }
 
+  // Returns the ReturnToAppButton with the given `title`.
+  ReturnToAppButton* FindReturnToAppButtonByTitle(const std::u16string& title) {
+    for (auto* bt : GetReturnToAppButtons()) {
+      if (bt->label()->GetText() == title) {
+        return bt;
+      }
+    }
+
+    return nullptr;
+  }
+  const std::u16string GetCurrentToastText() {
+    return toast_manager_->GetCurrentOverlayForTesting()->GetText();
+  }
+
  protected:
   VideoConferenceTrayButton* camera_bt_ = nullptr;
   VideoConferenceTrayButton* mic_bt_ = nullptr;
   VideoConferenceTrayButton* share_bt_ = nullptr;
+
+  ToastManagerImpl* toast_manager_ = nullptr;
 
   base::test::ScopedFeatureList scoped_feature_list_{
       ash::features::kVideoConference};
@@ -206,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(VideoConferenceIntegrationTest,
 
   // Stop camera and wait for is_capturing to populate.
   StopCamera(web_contents);
-  WAIT_FOR_CONDITION(!GetVcTray()->camera_icon()->is_capturing());
+  WAIT_FOR_CONDITION(!camera_bt_->is_capturing());
 
   // camera_icon should be visible without green_dot.
   EXPECT_TRUE(camera_bt_->GetVisible());
@@ -255,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(VideoConferenceIntegrationTest,
 
   // Stop microphone and wait for is_capturing to populate.
   StopMicrophone(web_contents);
-  WAIT_FOR_CONDITION(!GetVcTray()->audio_icon()->is_capturing());
+  WAIT_FOR_CONDITION(!mic_bt_->is_capturing());
 
   // audio_icon should be visible without green_dot.
   EXPECT_TRUE(mic_bt_->GetVisible());
@@ -304,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(VideoConferenceIntegrationTest,
 
   // Stop microphone and wait for is_capturing to populate.
   StopScreenSharing(web_contents);
-  WAIT_FOR_CONDITION(!GetVcTray()->screen_share_icon()->is_capturing());
+  WAIT_FOR_CONDITION(!share_bt_->is_capturing());
 
   EXPECT_FALSE(share_bt_->GetVisible());
   EXPECT_FALSE(share_bt_->is_capturing());
@@ -538,6 +575,191 @@ IN_PROC_BROWSER_TEST_F(VideoConferenceIntegrationTest, OneTabReturnToApp) {
   ClickButton(GetReturnToAppButtons()[0]);
   WAIT_FOR_CONDITION(web_contents->GetVisibility() ==
                      content::Visibility::VISIBLE);
+}
+
+IN_PROC_BROWSER_TEST_F(VideoConferenceIntegrationTest, UseWhileDisabled) {
+  // Open a tab.
+  content::WebContents* web_contents =
+      NavigateTo("/video_conference_demo.html");
+  // Set permissions as allow.
+  SetPermission(web_contents, ContentSettingsType::MEDIASTREAM_CAMERA,
+                CONTENT_SETTING_ALLOW);
+  SetPermission(web_contents, ContentSettingsType::MEDIASTREAM_MIC,
+                CONTENT_SETTING_ALLOW);
+
+  // Change title.
+  SetTitle(web_contents, kTitle1);
+
+  // Start accessing microphone and wait for the VcTray to show.
+  StartMicrophone(web_contents);
+  WAIT_FOR_CONDITION(GetVcTray()->GetVisible());
+
+  // Stop microphone and wait for is_capturing to populate.
+  StopMicrophone(web_contents);
+  WAIT_FOR_CONDITION(!mic_bt_->is_capturing());
+
+  // Clicking on the mic icon should mute it.
+  ClickButton(mic_bt_);
+  WAIT_FOR_CONDITION(mic_bt_->toggled());
+
+  // Start accessing microphone should trigger UseWhileDisabled.
+  StartMicrophone(web_contents);
+  WAIT_FOR_CONDITION(
+      toast_manager_->IsRunning(kVideoConferenceTrayUseWhileDisabledToastId));
+
+  // Check the toast message is as expected.
+  EXPECT_EQ(
+      GetCurrentToastText(),
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED, kTitle1,
+          l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_MICROPHONE_NAME)));
+
+  // Remove current toast for the next step.
+  toast_manager_->Cancel(kVideoConferenceTrayUseWhileDisabledToastId);
+  WAIT_FOR_CONDITION(
+      !toast_manager_->IsRunning(kVideoConferenceTrayUseWhileDisabledToastId));
+
+  // Clicking on the camera icon should mute it.
+  ClickButton(camera_bt_);
+  WAIT_FOR_CONDITION(camera_bt_->toggled());
+
+  // Start accessing camera should trigger UseWhileDisabled.
+  StartCamera(web_contents);
+  WAIT_FOR_CONDITION(
+      toast_manager_->IsRunning(kVideoConferenceTrayUseWhileDisabledToastId));
+
+  // Check the toast message is as expected.
+  EXPECT_EQ(
+      GetCurrentToastText(),
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED, kTitle1,
+          l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_CAMERA_NAME)));
+}
+
+IN_PROC_BROWSER_TEST_F(VideoConferenceIntegrationTest,
+                       TwoTabsButtonInformation) {
+  // Open a tab.
+  content::WebContents* web_contents_1 =
+      NavigateTo("/video_conference_demo.html");
+  // Set permissions as allow.
+  SetPermission(web_contents_1, ContentSettingsType::MEDIASTREAM_CAMERA,
+                CONTENT_SETTING_ALLOW);
+  SetPermission(web_contents_1, ContentSettingsType::MEDIASTREAM_MIC,
+                CONTENT_SETTING_ALLOW);
+  // Set title.
+  SetTitle(web_contents_1, kTitle1);
+
+  // Open second tab.
+  content::WebContents* web_contents_2 =
+      NavigateTo("/video_conference_demo.html");
+  // Set title.
+  SetTitle(web_contents_2, kTitle2);
+
+  StartMicrophone(web_contents_1);
+  StartMicrophone(web_contents_2);
+  WAIT_FOR_CONDITION(GetVcTray()->GetVisible());
+
+  // Get the ReturnToApp Panel.
+  ClickButton(GetVcTray()->toggle_bubble_button());
+  WAIT_FOR_CONDITION(GetVcTray()->GetBubbleView()->GetVisible());
+
+  // There should be three buttons, the first one is the summary button.
+  auto buttons = GetReturnToAppButtons();
+  EXPECT_EQ(buttons.size(), 3u);
+
+  // Button[0] is the summary button.
+  EXPECT_FALSE(buttons[0]->is_capturing_camera());
+  EXPECT_TRUE(buttons[0]->is_capturing_microphone());
+  EXPECT_FALSE(buttons[0]->is_capturing_screen());
+  EXPECT_EQ(buttons[0]->label()->GetText(), u"Used by 2 apps");
+
+  // Check information of the button for web_contents_1.
+  const auto* bt_1 = FindReturnToAppButtonByTitle(kTitle1);
+  EXPECT_FALSE(bt_1->is_capturing_camera());
+  EXPECT_TRUE(bt_1->is_capturing_microphone());
+  EXPECT_FALSE(bt_1->is_capturing_screen());
+
+  // Check information of the button for web_contents_2.
+  const auto* bt_2 = FindReturnToAppButtonByTitle(kTitle2);
+  EXPECT_FALSE(bt_2->is_capturing_camera());
+  EXPECT_TRUE(bt_2->is_capturing_microphone());
+  EXPECT_FALSE(bt_2->is_capturing_screen());
+
+  // We want to close the panel and open it every time.
+  GetVcTray()->CloseBubble();
+  StartCamera(web_contents_1);
+  StartScreenSharing(web_contents_2);
+
+  // Wait for signals to populate.
+  WAIT_FOR_CONDITION(camera_bt_->show_privacy_indicator());
+  WAIT_FOR_CONDITION(share_bt_->show_privacy_indicator());
+
+  // Get the ReturnToApp Panel.
+  ClickButton(GetVcTray()->toggle_bubble_button());
+  WAIT_FOR_CONDITION(GetVcTray()->GetBubbleView()->GetVisible());
+
+  // There should be three buttons, the first one is the summary button.
+  buttons = GetReturnToAppButtons();
+  EXPECT_EQ(buttons.size(), 3u);
+
+  // Button[0] is the summary button.
+  EXPECT_TRUE(buttons[0]->is_capturing_camera());
+  EXPECT_TRUE(buttons[0]->is_capturing_microphone());
+  EXPECT_TRUE(buttons[0]->is_capturing_screen());
+  EXPECT_EQ(buttons[0]->label()->GetText(), u"Used by 2 apps");
+
+  // Check information of the button for web_contents_1.
+  bt_1 = FindReturnToAppButtonByTitle(kTitle1);
+  EXPECT_TRUE(bt_1->is_capturing_camera());
+  EXPECT_TRUE(bt_1->is_capturing_microphone());
+  EXPECT_FALSE(bt_1->is_capturing_screen());
+
+  // Check information of the button for web_contents_2.
+  bt_2 = FindReturnToAppButtonByTitle(kTitle2);
+  EXPECT_FALSE(bt_2->is_capturing_camera());
+  EXPECT_TRUE(bt_2->is_capturing_microphone());
+  EXPECT_TRUE(bt_2->is_capturing_screen());
+}
+
+IN_PROC_BROWSER_TEST_F(VideoConferenceIntegrationTest, TwoTabsReturnToApp) {
+  // Open a tab.
+  content::WebContents* web_contents_1 =
+      NavigateTo("/video_conference_demo.html");
+  // Set permissions as allow.
+  SetPermission(web_contents_1, ContentSettingsType::MEDIASTREAM_CAMERA,
+                CONTENT_SETTING_ALLOW);
+  SetPermission(web_contents_1, ContentSettingsType::MEDIASTREAM_MIC,
+                CONTENT_SETTING_ALLOW);
+  // Set title.
+  SetTitle(web_contents_1, kTitle1);
+
+  // Open second tab.
+  content::WebContents* web_contents_2 =
+      NavigateTo("/video_conference_demo.html");
+  // Set title.
+  SetTitle(web_contents_2, kTitle2);
+
+  StartMicrophone(web_contents_1);
+  StartMicrophone(web_contents_2);
+  WAIT_FOR_CONDITION(GetVcTray()->GetVisible());
+
+  // Get the ReturnToApp Panel.
+  ClickButton(GetVcTray()->toggle_bubble_button());
+  WAIT_FOR_CONDITION(GetVcTray()->GetBubbleView()->GetVisible());
+
+  auto buttons = GetReturnToAppButtons();
+  EXPECT_EQ(buttons.size(), 3u);
+
+  // Verify that web_contents_2 is foregrounded and web_contents_1 is
+  // backgrounded.
+  EXPECT_EQ(web_contents_2->GetVisibility(), content::Visibility::VISIBLE);
+  EXPECT_NE(web_contents_1->GetVisibility(), content::Visibility::VISIBLE);
+
+  // Click on web_contents_1 and expect the visibility to change.
+  ClickButton(FindReturnToAppButtonByTitle(kTitle1));
+  WAIT_FOR_CONDITION(web_contents_1->GetVisibility() ==
+                     content::Visibility::VISIBLE);
+  EXPECT_NE(web_contents_2->GetVisibility(), content::Visibility::VISIBLE);
 }
 
 }  // namespace ash::video_conference

@@ -876,6 +876,15 @@ StyleRuleCharset* CSSParserImpl::ConsumeCharsetRule(
   return MakeGarbageCollected<StyleRuleCharset>();
 }
 
+// We need the token offsets for MediaQueryParser, so re-parse the prelude.
+static CSSParserTokenOffsets ReparseForOffsets(
+    const StringView prelude,
+    const CSSParserTokenRange range) {
+  Vector<wtf_size_t, 32> raw_offsets =
+      CSSTokenizer(prelude).TokenizeToEOFWithOffsets().second;
+  return {range.RemainingSpan(), std::move(raw_offsets), prelude};
+}
+
 StyleRuleImport* CSSParserImpl::ConsumeImportRule(
     const AtomicString& uri,
     CSSParserTokenStream& stream) {
@@ -889,6 +898,11 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
   if (uri.IsNull()) {
     return nullptr;  // Parse error, expected string or URI
   }
+
+  CSSParserTokenOffsets offsets = ReparseForOffsets(
+      stream.StringRangeAt(prelude_offset_start,
+                           prelude_offset_end - prelude_offset_start),
+      prelude);
 
   StyleRuleBase::LayerName layer;
   if (prelude.Peek().GetType() == kIdentToken &&
@@ -921,7 +935,7 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
 
   return MakeGarbageCollected<StyleRuleImport>(
       uri, std::move(layer),
-      MediaQueryParser::ParseMediaQuerySet(prelude,
+      MediaQueryParser::ParseMediaQuerySet(prelude, offsets,
                                            context_->GetExecutionContext()),
       context_->IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
 }
@@ -988,7 +1002,9 @@ StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(
           .StringRangeAt(prelude_offset_start,
                          prelude_offset_end - prelude_offset_start)
           .ToString();
-  const MediaQuerySet* media = CachedMediaQuerySet(prelude_string, prelude);
+  CSSParserTokenOffsets offsets = ReparseForOffsets(prelude_string, prelude);
+  const MediaQuerySet* media =
+      CachedMediaQuerySet(prelude_string, prelude, offsets);
   DCHECK(media);
 
   if (RuntimeEnabledFeatures::CSSNestingEnabled() &&
@@ -1571,8 +1587,8 @@ StyleRuleBase* CSSParserImpl::ConsumeScopeRule(CSSParserTokenStream& stream) {
   }
 
   HeapVector<Member<StyleRuleBase>> rules;
-  ConsumeRuleList(stream, kRegularRuleList, CSSNestingType::kNone,
-                  /*parent_rule_for_nesting=*/nullptr,
+  ConsumeRuleList(stream, kRegularRuleList, CSSNestingType::kScope,
+                  style_scope->RuleForNesting(),
                   [&rules](StyleRuleBase* rule) { rules.push_back(rule); });
 
   if (observer_) {
@@ -1601,6 +1617,11 @@ StyleRuleContainer* CSSParserImpl::ConsumeContainerRule(
 
   ContainerQueryParser query_parser(*context_);
 
+  CSSParserTokenOffsets offsets = ReparseForOffsets(
+      stream.StringRangeAt(prelude_offset_start,
+                           prelude_offset_end - prelude_offset_start),
+      prelude);
+
   // <container-name>
   AtomicString name;
   if (prelude.Peek().GetType() == kIdentToken) {
@@ -1611,7 +1632,8 @@ StyleRuleContainer* CSSParserImpl::ConsumeContainerRule(
     }
   }
 
-  const MediaQueryExpNode* query = query_parser.ParseCondition(prelude);
+  const MediaQueryExpNode* query =
+      query_parser.ParseCondition(prelude, offsets);
   if (!query) {
     return nullptr;
   }
@@ -1865,11 +1887,11 @@ static bool MayContainNestedRules(const String& text,
 StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream,
                                            CSSNestingType nesting_type,
                                            StyleRule* parent_rule_for_nesting) {
-  if (parent_rule_for_nesting == nullptr) {
+  if (!in_nested_style_rule_) {
     DCHECK_EQ(0u, arena_.size());
   }
   auto func_clear_arena = [&](HeapVector<CSSSelector>* arena) {
-    if (parent_rule_for_nesting == nullptr) {
+    if (!in_nested_style_rule_) {
       arena->resize(0);  // See class comment on CSSSelectorParser.
     }
   };
@@ -2024,21 +2046,6 @@ void CSSParserImpl::ConsumeDeclarationList(
       case kSemicolonToken:
         stream.UncheckedConsume();
         break;
-      case kIdentToken: {
-        {
-          CSSParserTokenStream::Boundary boundary(stream, kSemicolonToken);
-          ConsumeDeclaration(stream, rule_type);
-          // Consume the remainder of the declaration (if any) for error
-          // recovery.
-          stream.ConsumeUntilPeekedTypeIs<>();
-        }
-
-        if (!stream.AtEnd()) {
-          stream.UncheckedConsume();  // kSemicolonToken
-        }
-
-        break;
-      }
       case kAtKeywordToken:
         if (RuntimeEnabledFeatures::CSSNestingEnabled()) {
           CSSParserToken name_token = stream.ConsumeIncludingWhitespace();
@@ -2057,6 +2064,33 @@ void CSSParserImpl::ConsumeDeclarationList(
         // for error recovery, once the syntax has settled.
         ConsumeErroneousAtRule(stream);
         break;
+      case kIdentToken: {
+        wtf_size_t state = stream.Save();
+        bool consumed_declaration = false;
+        {
+          CSSParserTokenStream::Boundary boundary(stream, kSemicolonToken);
+          consumed_declaration = ConsumeDeclaration(stream, rule_type);
+        }
+        if (consumed_declaration) {
+          if (!stream.AtEnd()) {
+            DCHECK_EQ(stream.UncheckedPeek().GetType(), kSemicolonToken);
+            stream.UncheckedConsume();  // kSemicolonToken
+          }
+          break;
+        } else if (!RuntimeEnabledFeatures::CSSNestingIdentEnabled() ||
+                   use_observer) {
+          // TODO(crbug.com/1427259): Support restart with inspector attached.
+          // Error recovery.
+          stream.ConsumeUntilPeekedTypeIs<kSemicolonToken>();
+          if (!stream.AtEnd()) {
+            stream.UncheckedConsume();  // kSemicolonToken
+          }
+          break;
+        }
+        // Retry as nested rule.
+        stream.Restore(state);
+        [[fallthrough]];
+      }
       default:
         if (RuntimeEnabledFeatures::CSSNestingEnabled() &&
             parent_rule_for_nesting != nullptr) {  // [1] (see function comment)
@@ -2110,6 +2144,8 @@ StyleRuleBase* CSSParserImpl::ConsumeNestedRule(
   swap(parsed_properties_, outer_parsed_properties);
   StyleRuleBase* child;
   if (!id.has_value()) {
+    base::AutoReset<bool> reset_in_nested_style_rule(&in_nested_style_rule_,
+                                                     true);
     child = ConsumeStyleRule(stream, nesting_type, parent_rule_for_nesting);
   } else {
     child = ConsumeAtRuleContents(*id, stream, kConditionalGroupRules,
@@ -2120,14 +2156,14 @@ StyleRuleBase* CSSParserImpl::ConsumeNestedRule(
   return child;
 }
 
-void CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
+bool CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
                                        StyleRule::RuleType rule_type) {
   const wtf_size_t decl_offset_start = stream.Offset();
 
   DCHECK_EQ(stream.Peek().GetType(), kIdentToken);
   const CSSParserToken& lhs = stream.ConsumeIncludingWhitespace();
   if (stream.Peek().GetType() != kColonToken) {
-    return;  // Parse error.
+    return false;  // Parse error.
   }
 
   stream.UncheckedConsume();  // kColonToken
@@ -2145,7 +2181,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
       rule_type == StyleRule::kProperty ||
       rule_type == StyleRule::kCounterStyle) {
     if (important) {  // Invalid
-      return;
+      return false;
     }
     atrule_id = lhs.ParseAsAtRuleDescriptorID();
     AtRuleDescriptorParser::ParseAtRule(rule_type, atrule_id, tokenized_value,
@@ -2158,12 +2194,12 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
   // @rules other than FontFace still handled with legacy code.
   if (important &&
       (rule_type == StyleRule::kKeyframe || rule_type == StyleRule::kTry)) {
-    return;
+    return false;
   }
 
   if (unresolved_property == CSSPropertyID::kVariable) {
     if (rule_type != StyleRule::kStyle && rule_type != StyleRule::kKeyframe) {
-      return;
+      return false;
     }
     AtomicString variable_name = lhs.Value().ToAtomicString();
     bool is_animation_tainted = rule_type == StyleRule::kKeyframe;
@@ -2175,13 +2211,16 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
   }
 
   if (observer_ &&
-      (rule_type == StyleRule::kStyle || rule_type == StyleRule::kKeyframe)) {
+      (rule_type == StyleRule::kStyle || rule_type == StyleRule::kKeyframe ||
+       rule_type == StyleRule::kTry)) {
     // The end offset is the offset of the terminating token, which is peeked
     // but not yet consumed.
     observer_->ObserveProperty(decl_offset_start, stream.LookAheadOffset(),
                                important,
                                parsed_properties_.size() != properties_count);
   }
+
+  return parsed_properties_.size() != properties_count;
 }
 
 void CSSParserImpl::ConsumeVariableValue(
@@ -2313,12 +2352,13 @@ std::unique_ptr<Vector<KeyframeOffset>> CSSParserImpl::ConsumeKeyframeKeyList(
 
 const MediaQuerySet* CSSParserImpl::CachedMediaQuerySet(
     String prelude_string,
-    CSSParserTokenRange prelude) {
+    CSSParserTokenRange prelude,
+    const CSSParserTokenOffsets& offsets) {
   Member<const MediaQuerySet>& media =
       media_query_cache_.insert(prelude_string, nullptr).stored_value->value;
   if (!media) {
     media = MediaQueryParser::ParseMediaQuerySet(
-        prelude, context_->GetExecutionContext());
+        prelude, offsets, context_->GetExecutionContext());
   }
   DCHECK(media);
   return media.Get();

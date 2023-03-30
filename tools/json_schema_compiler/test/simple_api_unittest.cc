@@ -38,7 +38,7 @@ void GetManifestParseError(base::StringPiece manifest_json,
   simple_api::ManifestKeys manifest_keys;
   std::u16string error_16;
   bool result = simple_api::ManifestKeys::ParseFromDictionary(
-      manifest->GetDict(), &manifest_keys, &error_16);
+      manifest->GetDict(), manifest_keys, error_16);
 
   ASSERT_FALSE(result);
   *error = base::UTF16ToASCII(error_16);
@@ -51,7 +51,7 @@ void PopulateManifestKeys(base::StringPiece manifest_json,
 
   std::u16string error_16;
   bool result = simple_api::ManifestKeys::ParseFromDictionary(
-      manifest->GetDict(), manifest_keys, &error_16);
+      manifest->GetDict(), *manifest_keys, error_16);
 
   ASSERT_TRUE(result) << error_16;
   ASSERT_TRUE(error_16.empty()) << error_16;
@@ -153,32 +153,30 @@ TEST(JsonSchemaCompilerSimpleTest, NoParamsResultCreate) {
 
 TEST(JsonSchemaCompilerSimpleTest, TestTypePopulate) {
   {
-    auto test_type = std::make_unique<simple_api::TestType>();
-    base::Value value(CreateTestTypeDictionary());
-    EXPECT_TRUE(simple_api::TestType::Populate(value, test_type.get()));
-    EXPECT_EQ("bling", test_type->string);
-    EXPECT_EQ(1.1, test_type->number);
-    EXPECT_EQ(4, test_type->integer);
-    EXPECT_EQ(true, test_type->boolean);
-    EXPECT_EQ(value, test_type->ToValue());
+    simple_api::TestType test_type;
+    base::Value::Dict value = CreateTestTypeDictionary();
+    EXPECT_TRUE(simple_api::TestType::Populate(value, test_type));
+    EXPECT_EQ("bling", test_type.string);
+    EXPECT_EQ(1.1, test_type.number);
+    EXPECT_EQ(4, test_type.integer);
+    EXPECT_EQ(true, test_type.boolean);
+    EXPECT_EQ(value, test_type.ToValue());
   }
   {
-    auto test_type = std::make_unique<simple_api::TestType>();
+    simple_api::TestType test_type;
     base::Value::Dict value = CreateTestTypeDictionary();
     value.Remove("number");
-    EXPECT_FALSE(simple_api::TestType::Populate(base::Value(std::move(value)),
-                                                test_type.get()));
+    EXPECT_FALSE(simple_api::TestType::Populate(std::move(value), test_type));
   }
 }
 
 TEST(JsonSchemaCompilerSimpleTest, GetTestType) {
   {
     base::Value::Dict value = CreateTestTypeDictionary();
-    auto test_type = std::make_unique<simple_api::TestType>();
-    EXPECT_TRUE(simple_api::TestType::Populate(base::Value(value.Clone()),
-                                               test_type.get()));
+    simple_api::TestType test_type;
+    EXPECT_TRUE(simple_api::TestType::Populate(value.Clone(), test_type));
     base::Value::List results =
-        simple_api::GetTestType::Results::Create(*test_type);
+        simple_api::GetTestType::Results::Create(test_type);
     ASSERT_EQ(1u, results.size());
     EXPECT_EQ(results[0], value);
   }

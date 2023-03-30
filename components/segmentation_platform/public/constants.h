@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/segmentation_platform/public/proto/output_config.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 
 namespace segmentation_platform {
@@ -77,6 +78,15 @@ const char kResumeHeavyUserUmaName[] = "ResumeHeavyUser";
 const char kDeviceSwitcherKey[] = "device_switcher";
 const char kDeviceSwitcherUmaName[] = "DeviceSwitcher";
 
+// The key is used to decide whether the user is categorised as tablet
+// productivity or not.
+const char kTabletProductivityUserKey[] = "tablet_productivity_user";
+const char kTabletProductivityUserUmaName[] = "TabletProductivityUser";
+
+// Key for segment that tells in which tier the device used by the user belongs.
+const char kDeviceTierKey[] = "device_tier";
+const char kDeviceTierUmaName[] = "DeviceTier";
+
 // The key provide a list of segment IDs, separated by commas, whose ML model
 // execution results are allowed to be uploaded through UKM.
 const char kSegmentIdsAllowedForReportingKey[] =
@@ -108,12 +118,18 @@ std::string SegmentIdToHistogramVariant(proto::SegmentId segment_id);
 // Returns Subsegment key for the given `segmentation_key`.
 std::string GetSubsegmentKey(const std::string& segmentation_key);
 
+// Returns PredictorType for the given `segmentation_key`
+proto::Predictor::PredictorTypeCase GetClassifierType(
+    const std::string& segmentation_key);
+
 // TODO(shaktisahu): Move these to a nicer location.
 
 // Labels for adaptive toolbar model.
-const char kAdaptiveToolbarModelLabelNewTab[] = "newtab";
-const char kAdaptiveToolbarModelLabelShare[] = "share";
-const char kAdaptiveToolbarModelLabelVoice[] = "voice";
+const char kAdaptiveToolbarModelLabelNewTab[] = "NewTab";
+const char kAdaptiveToolbarModelLabelShare[] = "Share";
+const char kAdaptiveToolbarModelLabelVoice[] = "Voice";
+const char kAdaptiveToolbarModelLabelTranslate[] = "Translate";
+const char kAdaptiveToolbarModelLabelAddToBookmarks[] = "AddToBookmarks";
 
 // Labels for contextual page actions model.
 const char kContextualPageActionModelLabelPriceTracking[] = "price_tracking";
@@ -126,6 +142,14 @@ const char kSearchUserModelLabelNone[] = "None";
 const char kSearchUserModelLabelLow[] = "Low";
 const char kSearchUserModelLabelMedium[] = "Medium";
 const char kSearchUserModelLabelHigh[] = "High";
+
+// Labels for device tier model.
+// Any updates to these strings need to also update the field trials allowlist
+// in go/segmentation-field-trials-map.;
+const char kDeviceTierSegmentLabelNone[] = "None";
+const char kDeviceTierSegmentLabelLow[] = "Low";
+const char kDeviceTierSegmentLabelMedium[] = "Medium";
+const char kDeviceTierSegmentLabelHigh[] = "High";
 
 // Custom inputs for contextual page actions model.
 const char kContextualPageActionModelInputPriceTracking[] = "can_track_price";

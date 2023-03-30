@@ -1164,7 +1164,8 @@ std::vector<WebFormControlElement> ForEachMatchingFormFieldCommon(
     }
 
     // Check if we should autofill/preview/clear a select element or leave it.
-    if (IsSelectElement(element) && element.UserHasEditedTheField() &&
+    if (IsSelectOrSelectMenuElement(element) &&
+        element.UserHasEditedTheField() &&
         !SanitizedFieldIsEmpty(current_element_value) &&
         !data.fields[i].force_override) {
       continue;
@@ -1305,6 +1306,7 @@ void PreviewFormField(const FormFieldData& data,
   } else if (IsTextAreaElement(*field) || IsSelectElement(*field)) {
     field->SetSuggestedValue(blink::WebString::FromUTF16(data.value));
   }
+  // TODO(crbug.com/1336051): Support preview for selectmenu.
 
   if (is_initiating_node &&
       (IsTextInput(input_element) || IsTextAreaElement(*field))) {
@@ -1388,7 +1390,7 @@ void EmitDevtoolsIssueForLabelWithoutControl(
     // should be linked to element ids.
     label.GetDocument().GetFrame()->AddGenericIssue(
         GenericIssueErrorType::kFormLabelForMatchesNonExistingIdError,
-        label.GetDevToolsNodeId());
+        label.GetDevToolsNodeId(), WebString("for"));
   } else {
     // Add a DevTools issue informing the developer that the `label`'s for-
     // attribute is pointing to the name of a field, even though the ID should
@@ -1396,7 +1398,7 @@ void EmitDevtoolsIssueForLabelWithoutControl(
     // TODO(crbug.com/1339277): Use `root` once the feature is launched.
     label.GetDocument().GetFrame()->AddGenericIssue(
         GenericIssueErrorType::kFormLabelForNameError,
-        label.GetDevToolsNodeId());
+        label.GetDevToolsNodeId(), WebString("for"));
   }
 }
 
@@ -1501,34 +1503,8 @@ void MaybeEmitDuplicateIdForInputIssue(
         id_count[element.GetIdAttribute()] > 1) {
       element.GetDocument().GetFrame()->AddGenericIssue(
           GenericIssueErrorType::kFormDuplicateIdForInputError,
-          element.GetDevToolsNodeId());
+          element.GetDevToolsNodeId(), WebString("id"));
     }
-  }
-}
-
-// Emits a devtools issue if an input tag has no associated label, meaning
-// neither a label tag, nor an aria-label attribute nor an aria-labelledby
-// attribute.
-void MaybeEmitInputWithNoLabelIssue(
-    const WebVector<WebFormControlElement>& control_elements,
-    FormData* form,
-    const std::vector<bool>& fields_extracted) {
-  for (size_t element_index = 0, field_index = 0;
-       element_index < control_elements.size(); ++element_index) {
-    if (!fields_extracted[element_index]) {
-      continue;
-    }
-
-    FormFieldData& field = form->fields[field_index++];
-    if (!field.label.empty() || !field.aria_label.empty()) {
-      continue;
-    }
-
-    const WebFormControlElement& control_element =
-        control_elements[element_index];
-    control_element.GetDocument().GetFrame()->AddGenericIssue(
-        GenericIssueErrorType::kFormInputWithNoLabelError,
-        control_element.GetDevToolsNodeId());
   }
 }
 
@@ -1572,14 +1548,20 @@ void MaybeEmitInputAssignedAutocompleteValueToIdOrNameAttributesIssue(
       };
 
   static base::NoDestructor<WebString> kName("name");
-  if (ParsedHtmlAttributeValueToAutocompleteHasFieldType(
-          element.GetAttribute(*kName).Utf8()) ||
+  bool name_attr_matches_autocomplete =
       ParsedHtmlAttributeValueToAutocompleteHasFieldType(
-          element.GetIdAttribute().Utf8())) {
+          element.GetAttribute(*kName).Utf8());
+  bool id_attr_matches_autocomplete =
+      ParsedHtmlAttributeValueToAutocompleteHasFieldType(
+          element.GetIdAttribute().Utf8());
+
+  if (name_attr_matches_autocomplete || id_attr_matches_autocomplete) {
+    WebString violatingAttr =
+        id_attr_matches_autocomplete ? WebString("id") : WebString("name");
     element.GetDocument().GetFrame()->AddGenericIssue(
         GenericIssueErrorType::
             kFormInputAssignedAutocompleteValueToIdOrNameAttributeError,
-        element.GetDevToolsNodeId());
+        element.GetDevToolsNodeId(), violatingAttr);
     return;
   }
 }
@@ -1716,10 +1698,6 @@ bool FormOrFieldsetsToFormData(
       for (const WebElement& fieldset : fieldsets)
         MatchLabelsAndFields(fieldset, field_set);
     }
-  }
-
-  if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
-    MaybeEmitInputWithNoLabelIssue(control_elements, form, fields_extracted);
   }
 
   // Infers field labels from other tags or <labels> without for="...".
@@ -1860,7 +1838,16 @@ void ValidateAutocompleteAttributeForElement(const WebElement& element) {
     element.GetDocument().GetFrame()->AddGenericIssue(
         blink::mojom::GenericIssueErrorType::
             kFormAutocompleteAttributeEmptyError,
-        element.GetDevToolsNodeId());
+        element.GetDevToolsNodeId(), WebString("autocomplete"));
+  }
+
+  const WebInputElement input_element = element.DynamicTo<WebInputElement>();
+
+  if (IsAutocompleteTypeWrongButWellIntended(autocomplete_attribute)) {
+    element.GetDocument().GetFrame()->AddGenericIssue(
+        blink::mojom::GenericIssueErrorType::
+            kFormInputHasWrongButWellIntendedAutocompleteValueError,
+        element.GetDevToolsNodeId(), WebString("autocomplete"));
   }
 }
 
@@ -2107,7 +2094,13 @@ bool IsAutofillableInputElement(const WebInputElement& element) {
 bool IsAutofillableElement(const WebFormControlElement& element) {
   const WebInputElement input_element = element.DynamicTo<WebInputElement>();
   return IsAutofillableInputElement(input_element) ||
-         IsSelectElement(element) || IsTextAreaElement(element);
+         IsSelectElement(element) || IsTextAreaElement(element) ||
+         (IsSelectMenuElement(element) &&
+          base::FeatureList::IsEnabled(features::kAutofillEnableSelectMenu));
+}
+
+bool IsElementEditable(const WebInputElement& element) {
+  return element.IsEnabled() && !element.IsReadOnly();
 }
 
 bool IsWebElementFocusable(const blink::WebElement& element) {
@@ -2201,13 +2194,13 @@ void WebFormControlElementToFormField(
   field->max_length =
       IsTextInput(input_element) ? input_element.MaxLength() : 0;
   field->autocomplete_attribute = GetAutocompleteAttribute(element);
+  field->parsed_autocomplete = ParseAutocompleteAttribute(
+      field->autocomplete_attribute, field->max_length);
 
   if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
     ValidateAutocompleteAttributeForElement(element);
   }
 
-  field->parsed_autocomplete = ParseAutocompleteAttribute(
-      field->autocomplete_attribute, field->max_length);
   if (base::EqualsCaseInsensitiveASCII(element.GetAttribute(*kRole).Utf16(),
                                        "presentation")) {
     field->role = FormFieldData::RoleAttribute::kPresentation;
@@ -2270,13 +2263,16 @@ void WebFormControlElementToFormField(
     return;
 
   if (IsAutofillableInputElement(input_element) || IsTextAreaElement(element) ||
-      IsSelectElement(element)) {
+      IsSelectOrSelectMenuElement(element)) {
     // The browser doesn't need to differentiate between preview and autofill.
     field->is_autofilled = element.IsAutofilled();
     field->is_focusable = IsWebElementFocusable(element);
     field->is_visible = IsWebElementVisible(element);
-    field->should_autocomplete = element.AutoComplete();
-
+    field->should_autocomplete =
+        element.AutoComplete() &&
+        !(field->parsed_autocomplete.has_value() &&
+          field->parsed_autocomplete.value().field_type ==
+              HtmlFieldType::kOneTimeCode);
     field->text_direction = GetTextDirectionForElement(element);
     field->is_enabled = element.IsEnabled();
     field->is_readonly = element.IsReadOnly();
@@ -2825,7 +2821,7 @@ void MaybeEmitAriaLabelledByDevtoolsIssue(const WebElement& element,
           [](const WebElement& node) { return node.IsNull(); })) {
     element.GetDocument().GetFrame()->AddGenericIssue(
         blink::mojom::GenericIssueErrorType::kFormAriaLabelledByToNonExistingId,
-        element.GetDevToolsNodeId());
+        element.GetDevToolsNodeId(), WebString("aria-labelledby"));
   }
 }
 

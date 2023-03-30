@@ -304,30 +304,6 @@ class UserAddingScreenIndicator : public views::View {
 
 }  // namespace
 
-class LockContentsView::AutoLoginUserActivityHandler
-    : public ui::UserActivityObserver {
- public:
-  AutoLoginUserActivityHandler() {
-    observation_.Observe(ui::UserActivityDetector::Get());
-  }
-
-  AutoLoginUserActivityHandler(const AutoLoginUserActivityHandler&) = delete;
-  AutoLoginUserActivityHandler& operator=(const AutoLoginUserActivityHandler&) =
-      delete;
-
-  ~AutoLoginUserActivityHandler() override = default;
-
-  void OnUserActivity(const ui::Event* event) override {
-    if (Shell::Get()->login_screen_controller()) {
-      Shell::Get()->login_screen_controller()->NotifyUserActivity();
-    }
-  }
-
- private:
-  base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
-      observation_{this};
-};
-
 // static
 const int LockContentsView::kLoginAttemptsBeforeGaiaDialog = 4;
 
@@ -340,11 +316,6 @@ LockContentsView::LockContentsView(
       screen_type_(screen_type),
       data_dispatcher_(data_dispatcher),
       detachable_base_model_(std::move(detachable_base_model)) {
-  if (screen_type == LockScreen::ScreenType::kLogin) {
-    auto_login_user_activity_handler_ =
-        std::make_unique<AutoLoginUserActivityHandler>();
-  }
-
   data_dispatcher_->AddObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
@@ -2242,21 +2213,6 @@ void LockContentsView::OnEasyUnlockIconHovered() {
   }
 }
 
-void LockContentsView::OnEasyUnlockIconTapped() {
-  UserState* state = FindStateForUser(
-      CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id);
-  DCHECK(state);
-  DCHECK(state->easy_unlock_icon_info);
-
-  if (state->easy_unlock_icon_info->hardlock_on_click) {
-    AccountId user =
-        CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id;
-    Shell::Get()->login_screen_controller()->HardlockPod(user);
-    // TODO(jdufault): This should get called as a result of HardlockPod.
-    OnTapToUnlockEnabledForUserChanged(user, false /*enabled*/);
-  }
-}
-
 void LockContentsView::OnParentAccessValidationFinished(
     const AccountId& account_id,
     bool access_granted) {
@@ -2343,8 +2299,6 @@ std::unique_ptr<LoginBigUserView> LockContentsView::AllocateLoginBigUserView(
       &LockContentsView::RemoveUser, base::Unretained(this), is_primary);
   auth_user_callbacks.on_easy_unlock_icon_hovered = base::BindRepeating(
       &LockContentsView::OnEasyUnlockIconHovered, base::Unretained(this));
-  auth_user_callbacks.on_easy_unlock_icon_tapped = base::BindRepeating(
-      &LockContentsView::OnEasyUnlockIconTapped, base::Unretained(this));
   auth_user_callbacks.on_auth_factor_is_hiding_password_changed =
       base::BindRepeating(
           &LockContentsView::OnAuthFactorIsHidingPasswordChanged,

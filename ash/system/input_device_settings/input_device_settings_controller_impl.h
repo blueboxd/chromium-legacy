@@ -12,6 +12,8 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/system/input_device_settings/input_device_notifier.h"
+#include "ash/system/input_device_settings/input_device_settings_metrics_manager.h"
+#include "ash/system/input_device_settings/input_device_settings_policy_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/keyboard_pref_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/mouse_pref_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/pointing_stick_pref_handler.h"
@@ -35,14 +37,15 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       std::unique_ptr<KeyboardPrefHandler> keyboard_pref_handler,
       std::unique_ptr<TouchpadPrefHandler> touchpad_pref_handler,
       std::unique_ptr<MousePrefHandler> mouse_pref_handler,
-      std::unique_ptr<PointingStickPrefHandler> pointing_stick_pref_handler);
+      std::unique_ptr<PointingStickPrefHandler> pointing_stick_pref_handler,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   InputDeviceSettingsControllerImpl(const InputDeviceSettingsControllerImpl&) =
       delete;
   InputDeviceSettingsControllerImpl& operator=(
       const InputDeviceSettingsControllerImpl&) = delete;
   ~InputDeviceSettingsControllerImpl() override;
 
-  static void RegisterProfilePrefs(PrefRegistrySimple* pref_rCegistry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* pref_registry);
 
   // InputDeviceSettingsController:
   std::vector<mojom::KeyboardPtr> GetConnectedKeyboards() override;
@@ -78,11 +81,10 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
-  void SetPrefHandlersForTesting(
-      std::unique_ptr<KeyboardPrefHandler> keyboard_pref_handler);
-
  private:
   void Init();
+
+  void RefreshAllDeviceSettings();
 
   void DispatchKeyboardConnected(DeviceId id);
   void DispatchKeyboardDisconnectedAndEraseFromList(DeviceId id);
@@ -100,12 +102,18 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void DispatchPointingStickDisconnectedAndEraseFromList(DeviceId id);
   void DispatchPointingStickSettingsChanged(DeviceId id);
 
+  void InitializePolicyHandler();
+  void OnKeyboardPoliciesChanged();
+
   base::ObserverList<InputDeviceSettingsController::Observer> observers_;
+
+  std::unique_ptr<InputDeviceSettingsPolicyHandler> policy_handler_;
 
   std::unique_ptr<KeyboardPrefHandler> keyboard_pref_handler_;
   std::unique_ptr<TouchpadPrefHandler> touchpad_pref_handler_;
   std::unique_ptr<MousePrefHandler> mouse_pref_handler_;
   std::unique_ptr<PointingStickPrefHandler> pointing_stick_pref_handler_;
+  std::unique_ptr<InputDeviceSettingsMetricsManager> metrics_manager_;
 
   base::flat_map<DeviceId, mojom::KeyboardPtr> keyboards_;
   base::flat_map<DeviceId, mojom::TouchpadPtr> touchpads_;
@@ -121,6 +129,14 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       pointing_stick_notifier_;
 
   raw_ptr<PrefService> active_pref_service_ = nullptr;  // Not owned.
+
+  // Boolean which notes whether or not there is a settings update in progress.
+  bool settings_refresh_pending_ = false;
+
+  // Task runner where settings refreshes are scheduled to run.
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+  base::WeakPtrFactory<InputDeviceSettingsControllerImpl> weak_ptr_factory_{
+      this};
 };
 
 }  // namespace ash

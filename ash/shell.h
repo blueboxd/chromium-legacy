@@ -14,6 +14,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
+#include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/system_sounds_delegate.h"
@@ -88,6 +89,7 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorControllerImpl;
+class AcceleratorKeycodeLookupCache;
 class AcceleratorTracker;
 class AccessibilityControllerImpl;
 class AccessibilityDelegate;
@@ -114,6 +116,7 @@ class BrightnessControlDelegate;
 class CalendarController;
 class CameraEffectsController;
 class CaptureModeController;
+class ColorPaletteController;
 class ControlVHistogramRecorder;
 class CrosDisplayConfig;
 class DarkLightModeControllerImpl;
@@ -150,6 +153,7 @@ class HoldingSpaceController;
 class HumanPresenceOrientationController;
 class ImeControllerImpl;
 class InputDeviceSettingsControllerImpl;
+class InputDeviceSettingsDispatcher;
 class InputDeviceTracker;
 class WebAuthNDialogControllerImpl;
 class KeyAccessibilityEnabler;
@@ -201,6 +205,7 @@ class RefreshRateThrottleController;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
+class SavedDeskController;
 class SavedDeskDelegate;
 class ScreenLayoutObserver;
 class ScreenOrientationController;
@@ -426,6 +431,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   CameraEffectsController* camera_effects_controller() {
     return camera_effects_controller_.get();
   }
+  ColorPaletteController* color_palette_controller() {
+    return color_palette_controller_.get();
+  }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
   }
@@ -439,6 +447,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   DesksController* desks_controller() { return desks_controller_.get(); }
   PersistentDesksBarController* persistent_desks_bar_controller() {
     return persistent_desks_bar_controller_.get();
+  }
+  SavedDeskController* saved_desk_controller() {
+    return saved_desk_controller_.get();
   }
   SavedDeskDelegate* saved_desk_delegate() {
     return saved_desk_delegate_.get();
@@ -876,7 +887,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<EventRewriterControllerImpl> event_rewriter_controller_;
   std::unique_ptr<InputDeviceSettingsControllerImpl>
       input_device_settings_controller_;
-
+  std::unique_ptr<InputDeviceSettingsDispatcher>
+      input_device_settings_dispatcher_;
   std::unique_ptr<InputDeviceTracker> input_device_tracker_;
   std::unique_ptr<KeyboardModifierMetricsRecorder>
       keyboard_modifier_metrics_recorder_;
@@ -884,6 +896,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<AshAcceleratorConfiguration> ash_accelerator_configuration_;
   std::unique_ptr<AcceleratorControllerImpl> accelerator_controller_;
+  std::unique_ptr<AcceleratorKeycodeLookupCache>
+      accelerator_keycode_lookup_cache_;
   std::unique_ptr<AccessibilityControllerImpl> accessibility_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<AccessibilityFocusRingControllerImpl>
@@ -902,11 +916,13 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CalendarController> calendar_controller_;
   std::unique_ptr<CameraEffectsController> camera_effects_controller_;
+  std::unique_ptr<ColorPaletteController> color_palette_controller_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   std::unique_ptr<curtain::SecurityCurtainController>
       security_curtain_controller_;
   std::unique_ptr<DarkLightModeControllerImpl> dark_light_mode_controller_;
   std::unique_ptr<DesksController> desks_controller_;
+  std::unique_ptr<SavedDeskController> saved_desk_controller_;
   std::unique_ptr<SavedDeskDelegate> saved_desk_delegate_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>

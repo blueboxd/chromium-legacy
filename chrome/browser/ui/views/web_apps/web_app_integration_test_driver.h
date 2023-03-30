@@ -45,6 +45,10 @@ namespace base {
 class CommandLine;
 }  // namespace base
 
+namespace content {
+class TestWebUI;
+}
+
 namespace web_app::integration_tests {
 
 // Enumerations used by the integration tests framework actions. These are C++
@@ -252,8 +256,10 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CloseCustomToolbar();
   void ClosePwa();
   void MaybeClosePwa();
-  void DisableRunOnOsLogin(Site site);
-  void EnableRunOnOsLogin(Site site);
+  void DisableRunOnOsLoginFromAppSettings(Site site);
+  void DisableRunOnOsLoginFromAppHome(Site site);
+  void EnableRunOnOsLoginFromAppSettings(Site site);
+  void EnableRunOnOsLoginFromAppHome(Site site);
   void DisableFileHandling(Site site);
   void EnableFileHandling(Site site);
   void DisableWindowControlsOverlay(Site site);
@@ -301,8 +307,10 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void ManifestUpdateDisplay(Site site, Display display);
   void ManifestUpdateScopeTo(Site app, Site scope);
   void OpenInChrome();
-  void SetOpenInTab(Site site);
-  void SetOpenInWindow(Site site);
+  void SetOpenInTabFromAppHome(Site site);
+  void SetOpenInTabFromAppSettings(Site site);
+  void SetOpenInWindowFromAppHome(Site site);
+  void SetOpenInWindowFromAppSettings(Site site);
   void SwitchIncognitoProfile();
   void SwitchProfileClients(ProfileClient client);
   void SwitchActiveProfile(ProfileName profile_name);
@@ -348,7 +356,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckRunOnOsLoginDisabled(Site site);
   void CheckSiteHandlesFile(Site site, FileExtension file_extension);
   void CheckSiteNotHandlesFile(Site site, FileExtension file_extension);
-  void CheckUserCannotSetRunOnOsLogin(Site site);
+  void CheckUserCannotSetRunOnOsLoginAppSettings(Site site);
+  void CheckUserCannotSetRunOnOsLoginAppHome(Site site);
   void CheckUserDisplayModeInternal(mojom::UserDisplayMode user_display_mode);
   void CheckWindowClosed();
   void CheckWindowCreated();
@@ -427,11 +436,11 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void SetFileHandlingEnabled(Site site, bool enabled);
   void LaunchFile(Site site, FilesOptions files_options);
 
-  void SetRunOnOsLoginMode(Site site, apps::RunOnOsLoginMode login_mode);
-
   void LaunchAppStartupBrowserCreator(const AppId& app_id);
 #if BUILDFLAG(IS_MAC)
-  void LaunchFromAppShim(Site site, const std::vector<GURL>& urls);
+  bool LaunchFromAppShim(Site site,
+                         const std::vector<GURL>& urls,
+                         bool wait_for_complete_launch);
 #endif
 
   void CheckAppSettingsAppState(Profile* profile, const AppState& app_state);
@@ -452,7 +461,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   const net::EmbeddedTestServer& GetTestServerForSiteMode(Site site_mode) const;
 
 #if !BUILDFLAG(IS_CHROMEOS)
-  webapps::AppHomePageHandler GetTestAppHomePageHandler();
+  webapps::AppHomePageHandler GetTestAppHomePageHandler(
+      content::TestWebUI* web_ui);
 #endif
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -498,6 +508,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   base::flat_set<Site> site_remember_deny_open_file_;
   base::AutoReset<absl::optional<web_app::AppIdentityUpdate>>
       update_dialog_scope_;
+
+  base::TimeTicks start_time_ = base::TimeTicks::Now();
 };
 
 // Simple base browsertest class usable by all non-sync web app integration

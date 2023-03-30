@@ -40,8 +40,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.Stage;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -58,9 +56,11 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSession;
 import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
+import androidx.test.runner.lifecycle.Stage;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -82,6 +82,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -143,7 +144,6 @@ import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.ClickUtils;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -1552,7 +1552,7 @@ public class CustomTabActivityTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> ApplicationStatus.registerStateListenerForAllActivities(listener));
 
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+        PostTask.runOrPostTask(TaskTraits.UI_DEFAULT, () -> {
             TabTestUtils.openNewTab(cctActivity.getActivityTab(), new GURL("about:blank"), null,
                     null, WindowOpenDisposition.OFF_THE_RECORD, false);
         });

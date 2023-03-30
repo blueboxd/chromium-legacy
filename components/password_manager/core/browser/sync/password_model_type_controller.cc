@@ -15,7 +15,9 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/model/model_type_controller_delegate.h"
@@ -24,25 +26,15 @@ namespace password_manager {
 
 namespace {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class ClearedOnStartup {
-  kOptedInSoNoNeedToClear = 0,
-  kNotOptedInAndWasAlreadyEmpty = 1,
-  kNotOptedInAndHadToClear = 2,
-  kMaxValue = kNotOptedInAndHadToClear
-};
-
-void RecordClearedOnStartup(ClearedOnStartup state) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.AccountStorage.ClearedOnStartup2", state);
-}
-
-void PasswordStoreClearDone(bool cleared) {
-  RecordClearedOnStartup(cleared
-                             ? ClearedOnStartup::kNotOptedInAndHadToClear
-                             : ClearedOnStartup::kNotOptedInAndWasAlreadyEmpty);
-}
+#if BUILDFLAG(IS_IOS)
+// Master kill switch that can be used to disable enabling PASSWORDS transport
+// mode for users using non-standard encryption passphrase types (explicit
+// passphrase or kTrustedVaultPassphrase). Note that this is necessary but not
+// sufficient to enable PASSWORDS in transport mode.
+BASE_FEATURE(kSyncAllowTransportModeWithNonStandardEncryption,
+             "SyncAllowTransportModeWithNonStandardEncryption",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_IOS)
 
 }  // namespace
 
@@ -68,19 +60,6 @@ PasswordModelTypeController::PasswordModelTypeController(
               &PasswordModelTypeController::OnOptInStateMaybeChanged,
               base::Unretained(this))) {
   identity_manager_observation_.Observe(identity_manager_);
-
-  if (account_password_store_for_cleanup) {
-    DCHECK(
-        base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
-    // Note: Right now, we're still in the middle of SyncService initialization,
-    // so we can't check IsOptedInForAccountStorage() yet (SyncService might not
-    // have determined the syncing account yet). Post a task do to it after the
-    // initialization is complete.
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(&PasswordModelTypeController::MaybeClearStore,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  account_password_store_for_cleanup));
-  }
 }
 
 PasswordModelTypeController::~PasswordModelTypeController() = default;
@@ -94,7 +73,7 @@ void PasswordModelTypeController::LoadModels(
   ModelTypeController::LoadModels(configure_context, model_load_callback);
 }
 
-void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
+void PasswordModelTypeController::Stop(syncer::SyncStopMetadataFate fate,
                                        StopCallback callback) {
   DCHECK(CalledOnValidThread());
   sync_service_observation_.Reset();
@@ -104,16 +83,9 @@ void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
   // want to end up with two copies of the passwords (one in the profile DB, one
   // in the account DB).
   if (sync_mode_ == syncer::SyncMode::kTransportOnly) {
-    switch (shutdown_reason) {
-      case syncer::ShutdownReason::STOP_SYNC_AND_KEEP_DATA:
-        shutdown_reason = syncer::ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA;
-        break;
-      case syncer::ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA:
-      case syncer::ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA:
-        break;
-    }
+    fate = syncer::SyncStopMetadataFate::CLEAR_METADATA;
   }
-  ModelTypeController::Stop(shutdown_reason, std::move(callback));
+  ModelTypeController::Stop(fate, std::move(callback));
 }
 
 syncer::DataTypeController::PreconditionState
@@ -142,9 +114,27 @@ bool PasswordModelTypeController::ShouldRunInTransportOnlyMode() const {
   if (!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
     return false;
   }
+#if BUILDFLAG(IS_IOS)
+  // Non-standard passphrase types require UI support to deal with error cases.
+  // On iOS, these UI changes (for transport mode) are guarded behind
+  // kIndicateAccountStorageErrorInAccountCell.
+  if (sync_service_->GetUserSettings()->IsUsingExplicitPassphrase() ||
+      sync_service_->GetUserSettings()->GetPassphraseType() ==
+          syncer::PassphraseType::kTrustedVaultPassphrase) {
+    if (!base::FeatureList::IsEnabled(
+            syncer::kIndicateAccountStorageErrorInAccountCell) ||
+        !base::FeatureList::IsEnabled(
+            kSyncAllowTransportModeWithNonStandardEncryption)) {
+      return false;
+    }
+  }
+#else
+  // Outside iOS, passphrase errors aren't reported in the UI, so it doesn't
+  // make sense to enable this datatype.
   if (sync_service_->GetUserSettings()->IsUsingExplicitPassphrase()) {
     return false;
   }
+#endif  // BUILDFLAG(IS_IOS)
   return true;
 }
 
@@ -205,18 +195,6 @@ void PasswordModelTypeController::OnOptInStateMaybeChanged() {
   // when the opt-in state changes, but DataTypePreconditionChanged() is cheap
   // if nothing actually changed, so some spurious calls don't hurt.
   sync_service_->DataTypePreconditionChanged(syncer::PASSWORDS);
-}
-
-void PasswordModelTypeController::MaybeClearStore(
-    scoped_refptr<PasswordStoreInterface> account_password_store_for_cleanup) {
-  DCHECK(account_password_store_for_cleanup);
-  if (features_util::IsOptedInForAccountStorage(pref_service_, sync_service_)) {
-    RecordClearedOnStartup(ClearedOnStartup::kOptedInSoNoNeedToClear);
-  } else {
-    account_password_store_for_cleanup->RemoveLoginsCreatedBetween(
-        base::Time(), base::Time::Max(),
-        base::BindOnce(&PasswordStoreClearDone));
-  }
 }
 
 }  // namespace password_manager

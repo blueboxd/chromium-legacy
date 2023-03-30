@@ -283,6 +283,7 @@
 <translation id="2581165646603367611">‏این کار کوکی‌ها، حافظه پنهان و داده‌های دیگر سایت‌ها را که از نظر Chrome مهم نیست پاک می‌کند.</translation>
 <translation id="2587052924345400782">نسخه جدیدتری در دسترس است</translation>
 <translation id="2593272815202181319">قلم‌های با عرض ثابت</translation>
+<translation id="2603212228005142861">برای مدیریت اولویت‌هایتان، به سیستم وارد شوید</translation>
 <translation id="2604446170045642109">در تنظیمات، می‌توانید زمینه تیره را برای سایت‌ها خاموش کنید.</translation>
 <translation id="2612676031748830579">شماره کارت</translation>
 <translation id="2625189173221582860">گذرواژه کپی شد</translation>
@@ -476,6 +477,7 @@
 <translation id="3587596251841506391">به بهبود امنیت وب کمک کنید</translation>
 <translation id="3597179440835065298">دریافت پیشنهادهای بهتر</translation>
 <translation id="3602290021589620013">پیش‌نمایش</translation>
+<translation id="360901359071773787">۱۵ دقیقه آخر حذف شود؟</translation>
 <translation id="3616113530831147358">صوتی</translation>
 <translation id="3622349720008044802">مدیریت پنجره‌ها</translation>
 <translation id="3631987586758005671">درحال هم‌رسانی با <ph name="DEVICE_NAME" /></translation>
@@ -623,7 +625,7 @@
 <translation id="4504667196171871375">‏ازطریق Wi-Fi و داده تلفن همراه</translation>
 <translation id="4508528996305412043">منوی کارت فید باز شد</translation>
 <translation id="4508642716788467538">زبانتان را انتخاب کنید</translation>
-<translation id="4509501256689523862">درحین مرور، شخصی شدن یا نشدن آگهی‌هایی که می‌بینید به موارد زیر بستگی دارد»: این تنظیم، <ph name="BEGIN_LINK_1" />موضوع‌های آگهی<ph name="END_LINK_1" />، <ph name="BEGIN_LINK_2" />تنظیمات کوکی<ph name="END_LINK_2" /> شما، و اینکه آیا سایتی که مشاهده می‌کنید آگهی‌ها را شخصی‌سازی می‌کند یا نه</translation>
+<translation id="4509501256689523862">درحین مرور، شخصی شدن یا نشدن آگهی‌هایی که می‌بینید به این تنظیم بستگی دارد»: <ph name="BEGIN_LINK_1" />موضوع‌های آگهی<ph name="END_LINK_1" />، <ph name="BEGIN_LINK_2" />تنظیمات کوکی<ph name="END_LINK_2" /> شما، و اینکه آیا سایتی که مشاهده می‌کنید آگهی‌ها را شخصی‌سازی می‌کند یا نه</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{۱ روز قبل}one{#  روز قبل}other{#  روز قبل}}</translation>
 <translation id="451872707440238414">جستجوی نشانک‌های شما</translation>
 <translation id="4521489764227272523">‏داده‌های انتخاب‌‌شده از Chrome و دستگاه‌های همگام‌سازی‌شده شما حذف شدند.
@@ -792,6 +794,7 @@
 <translation id="5342314432463739672">درخواست‌های مجوز</translation>
 <translation id="53537532693258630">سایت‌هایی که برداشته‌اید در اینجا نشان داده خواهد شد</translation>
 <translation id="5355191726083956201">«محافظت بهبودیافته» روشن است</translation>
+<translation id="5361107212971249203">نوشتار</translation>
 <translation id="5368227114232678694">برای مرور خصوصی در این دستگاه،‌ حالت «ناشناس» را امتحان کنید</translation>
 <translation id="5375577065097716013">‏جستجوی تصویر با «لنز Google» <ph name="BEGIN_NEW" />جدید<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">برای ادامه دادن، <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> نام، نشانی ایمیل، و عکس نمایه‌تان را با این سایت هم‌رسانی خواهد کرد.</translation>
@@ -821,6 +824,7 @@
 <translation id="5517095782334947753">نشانک، سابقه، گذرواژه و تنظیمات دیگری از <ph name="FROM_ACCOUNT" /> دارید.</translation>
 <translation id="5524761631371622910">‏اگر نسخه آزمایشی روشن باشد و Chrome به‌طور تصادفی نسخه آزمایشی را برایتان فعال کرده باشد، سابقه مرورتان بر آگهی‌هایی که می‌بینید و علایقتان که در زیر برآورد شده است تأثیر می‌گذارد. برای محافظت از حریم خصوصی شما، Chrome علایقتان را هر ماه به‌طور چرخشی حذف می‌کند.</translation>
 <translation id="5524843473235508879">هدایت کردن مسدود شد.</translation>
+<translation id="554297709083131118">این داده‌های مربوط به ۱۵ دقیقه گذشته حذف خواهد شد</translation>
 <translation id="5548606607480005320">بررسی ایمنی</translation>
 <translation id="5555525474779371165">انتخاب ویژگی حفاظتی «مرور ایمن»</translation>
 <translation id="5556459405103347317">بار کردن مجدد</translation>
@@ -865,7 +869,7 @@
 <translation id="5780792035410621042">برای کپی کردن گذرواژه‌ها، ابتدا در دستگاهتان قفل صفحه تنظیم کنید</translation>
 <translation id="5793665092639000975">درحال استفاده از <ph name="SPACE_USED" /> از <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5795872532621730126">جستجو و مرور</translation>
-<translation id="5797949256525811424">موضوع مسدود شد</translation>
+<translation id="5797949256525811424">موضوع مسدود‌شده</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="5810288467834065221">‏حق نشر <ph name="YEAR" /> Google LLC.‎ کلیه حقوق محفوظ است.</translation>
 <translation id="5813552293717797987">این مرورگر را <ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" /> مدیریت می‌کنند.</translation>
@@ -1075,6 +1079,7 @@
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />، برگه، انتخاب‌شده</translation>
 <translation id="6828070228333235514">توقف پیگیری قیمت</translation>
 <translation id="6830728435402077660">امن نیست</translation>
+<translation id="6831043979455480757">ترجمه</translation>
 <translation id="6833996806551876956">دوره آزمایشی «جعبه ایمنی حریم خصوصی»</translation>
 <translation id="6836206421467243968">بازیابی گروه برگه <ph name="TITLE_OF_GROUP" /> به‌عنوان گروه برگه جدید پس‌زمینه.</translation>
 <translation id="6846298663435243399">درحال بارگیری…</translation>
@@ -1261,6 +1266,7 @@
 <translation id="78270725016672455">رایانه‌تان می‌خواهد این دستگاه را برای ورود به سیستم یک سایت ثبت کند</translation>
 <translation id="7844171778363018843">هیچ داده‌ای برای همگام‌سازی انتخاب نشده است</translation>
 <translation id="7846296061357476882">‏سرویس‌های Google</translation>
+<translation id="7847228556075070294">سابقه، کوکی‌ها، و داده‌های دیگر حذف شدند</translation>
 <translation id="784934925303690534">محدوده زمانی</translation>
 <translation id="7851858861565204677">دستگاه‌های دیگر</translation>
 <translation id="7853202427316060426">فعالیت</translation>
@@ -1315,6 +1321,7 @@
 <translation id="8058746566562539958">‏باز کردن در برگه جدید Chrome</translation>
 <translation id="8062594758852531064">پیش‌بارگذاری گسترده:</translation>
 <translation id="8063895661287329888">نشانک اضافه نشد.</translation>
+<translation id="8066816452984416180">به‌سرعت برای این صفحه نشانک بگذارید. برای ویرایش این میان‌بر، لمس کنید و نگه دارید.</translation>
 <translation id="806745655614357130">داده‌های من مجزا باشد</translation>
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="8076492880354921740">برگه‌ها</translation>
@@ -1346,6 +1353,7 @@
 <translation id="8216351761227087153">تماشا</translation>
 <translation id="8218622182176210845">مدیریت حساب</translation>
 <translation id="8223642481677794647">منوی کارت فید</translation>
+<translation id="8236097722223016103">افزودن به نشانک‌ها</translation>
 <translation id="8250920743982581267">اسناد</translation>
 <translation id="8255617931166444521">سایت‌ها فقط می‌توانند از کوکی‌هایتان برای دیدن فعالیت مرورتان در سایت خودشان استفاده کنند</translation>
 <translation id="8259179246279078674">‏ازآنجایی‌که صفحات پیش‌بارگیری‌شده رمزگذاری شده‌اند، Google هیچ اطلاعاتی درباره محتوای صفحه پیش‌بارگیری‌شده دریافت نخواهد کرد. سرورهای Google مطلع خواهد شد که کدام سایت‌ها خصوصی پیش‌بارگیری می‌شوند. از این اطلاعات فقط برای پیش‌بارگیری صفحات استفاده می‌شود و با سایر اطلاعات «حساب Google» شما پیوند داده نمی‌شود.</translation>
@@ -1440,6 +1448,7 @@
 <translation id="869891660844655955">تاریخ انقضا</translation>
 <translation id="8699120352855309748">ترجمه این زبان‌ها پیشنهاد نشود</translation>
 <translation id="8712637175834984815">متوجه شدم</translation>
+<translation id="8723453889042591629">به‌سرعت این صفحه را ترجمه کنید. برای ویرایش این میان‌بر، لمس کنید و نگه دارید.</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8746155870861185046">هم‌رسانی مورد برجسته</translation>
 <translation id="874726034427945498">برای دیدن پیشنهادهای بهتر در نوار نشانی، برگه‌ها و سابقه را همگام‌سازی کنید</translation>
@@ -1492,6 +1501,7 @@
 <translation id="8989968390305463310">‏سابقه مرور شما بر آگهی‌هایی که می‌بینید و علایقتان که در زیر برآورد شده است تأثیر می‌گذارد. برای محافظت از حریم خصوصی شما، Chrome علایقتان را هر ماه به‌طور خودکار و چرخشی حذف می‌کند. ممکن است علایق بازآوری شود، مگر اینکه آن‌ها را بردارید.</translation>
 <translation id="8993760627012879038">باز کردن برگه جدیدی در حالت ناشناس</translation>
 <translation id="8996847606757455498">انتخاب ارائه‌دهنده دیگر</translation>
+<translation id="8998289560386111590">در دستگاهتان دردسترس نیست</translation>
 <translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="9022774213089566801">اغلب از آن‌ها بازدید شده است</translation>
 <translation id="9022871169049522985">سایت‌ها و تبلیغ‌کنندگان می‌توانند عملکرد آگهی‌هایشان را بسنجند</translation>

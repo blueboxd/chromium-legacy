@@ -13,6 +13,7 @@
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_element_draw_quad.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -275,6 +276,12 @@ RenderPassBuilder& RenderPassBuilder::SetMaskFilter(
   return *this;
 }
 
+RenderPassBuilder& RenderPassBuilder::SetQuadLayerId(uint32_t layer_id) {
+  auto* sqs = GetLastQuadSharedQuadState();
+  sqs->layer_id = layer_id;
+  return *this;
+}
+
 SharedQuadState* RenderPassBuilder::AppendDefaultSharedQuadState(
     const gfx::Rect rect,
     const gfx::Rect visible_rect) {
@@ -511,7 +518,8 @@ void PopulateTransferableResources(CompositorFrame& frame) {
         // Adds a TransferableResource the first time seeing a ResourceId.
         if (resources_added.insert(resource_id).second) {
           frame.resource_list.push_back(TransferableResource::MakeSoftware(
-              SharedBitmap::GenerateId(), quad->rect.size(), RGBA_8888));
+              SharedBitmap::GenerateId(), quad->rect.size(),
+              SinglePlaneFormat::kRGBA_8888));
           frame.resource_list.back().id = resource_id;
         }
       }

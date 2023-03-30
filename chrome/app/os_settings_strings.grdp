@@ -159,6 +159,9 @@
   <message name="IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE" desc="The stable label in the message about current channel.">
     stable
   </message>
+  <message name="IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_LTC" desc="The LTC (long-term support candidate) label in the message about current channel.">
+    long-term support candidate
+  </message>
   <message name="IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_LTS" desc="The LTS (long-term support) label in the message about current channel.">
     long-term support
   </message>
@@ -259,6 +262,23 @@
     Keep updates
   </message>
 
+ <!-- ChromeOS End Of Life Incentive -->
+  <message name="IDS_SETTINGS_END_OF_LIFE_INCENTIVE_OFFER_TITLE" desc="The title of the end of life incentive which informs the user of an offer with a dollar amount they can get save when upgrading to a new Chromebook.">
+    Save &#36;50 or more on a new Chromebook, when you upgrade today
+  </message>
+  <message name="IDS_SETTINGS_END_OF_LIFE_INCENTIVE_NO_OFFER_TITLE" desc="The title of the end of life incentive which informs the user that they should upgrade their device to continue getting software updates.">
+    Upgrade to a new Chromebook for the latest security and software
+  </message>
+  <message name="IDS_SETTINGS_END_OF_LIFE_INCENTIVE_OFFER_MESSAGE" desc="The message of the end of life incentive which informs the user that their device will no longer get updates, and to upgrade the device for the latest features, using an offer.">
+    Your Chromebook is no longer receiving security and software updates. Upgrade your device for the latest security and new features. Offer terms apply.
+  </message>
+  <message name="IDS_SETTINGS_END_OF_LIFE_INCENTIVE_NO_OFFER_MESSAGE" desc="The message of the end of life incentive which informs the user that their device will no longer get updates, and they should get a new Chromebook.">
+    Your Chromebook is no longer receiving security and software updates. Get a new Chromebook for the best experience.
+  </message>
+  <message name="IDS_SETTINGS_END_OF_LIFE_INCENTIVE_OFFER_BUTTON" desc="The button label for the end of life incentive offer which will take the user to a URL to shop for a new device.">
+    Shop Now
+  </message>
+
   <!-- People (OS settings) -->
   <message name="IDS_OS_SETTINGS_PROFILE_NAME" desc="Label with device account first name, showing which user is currently signed in.">
     Currently signed in as <ph name="NAME">$1<ex>John</ex></ph>
@@ -276,12 +296,12 @@
   </message>
   <if expr="reven">
     <message name="IDS_OS_SETTINGS_SYNC_FEATURE_LABEL" desc="Label describing the OS sync feature.">
-      Your apps and settings will sync across all ChromeOS Flex devices where you are signed in with your Google account. For browser sync options, go to <ph name="LINK_BEGIN">&lt;a&gt;</ph>Chrome settings<ph name="LINK_END">&lt;/a&gt;</ph>.
+      Your apps and settings will sync across all ChromeOS Flex devices where you are signed in with your Google account. For browser sync options, go to <ph name="LINK_BEGIN">&lt;a href='#'&gt;</ph>Chrome settings<ph name="LINK_END">&lt;/a&gt;</ph>.
     </message>
   </if>
   <if expr="not reven">
     <message name="IDS_OS_SETTINGS_SYNC_FEATURE_LABEL" desc="Label describing the OS sync feature.">
-      Your apps and settings will sync across all ChromeOS devices where you are signed in with your Google account. For browser sync options, go to <ph name="LINK_BEGIN">&lt;a&gt;</ph>Chrome settings<ph name="LINK_END">&lt;/a&gt;</ph>.
+      Your apps and settings will sync across all ChromeOS devices where you are signed in with your Google account. For browser sync options, go to <ph name="LINK_BEGIN">&lt;a href='#'&gt;</ph>Chrome settings<ph name="LINK_END">&lt;/a&gt;</ph>.
     </message>
   </if>
   <message name="IDS_OS_SETTINGS_SYNC_APPS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of apps across devices.">
@@ -877,8 +897,11 @@
   <message name="IDS_SETTINGS_GOOGLE_DRIVE_DISCONNECT" translateable="false" desc="Action to disconnect from Google Drive in Settings: Files: Google Drive.">
     Disconnect
   </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_CONNECT" translateable="false" desc="Action to connect Google Drive in Settings: Files: Google Drive.">
+    Connect
+  </message>
   <message name="IDS_SETTINGS_GOOGLE_DRIVE_SIGNED_IN_AS" translateable="false" desc="Label indicating account signed in with Google Drive in Settings: Files: Google Drive.">
-    Signed in as
+    Signed in as: <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DRIVE_ACCOUNT_EMAIL">$1<ex>john@google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_TITLE" translateable="false" desc="Title for the everything offline feature in Settings: Files: Google Drive.">
     Keep your files available when you're offline
@@ -1142,6 +1165,12 @@
   <message name="IDS_SETTINGS_CHROMEVOX_TTS_SETTINGS_DESCRIPTION" desc="In the ChromeVox settings subpage, the description sub-label for the link to the Text-to-Speech settings page, used to illustrate the keyboard shortcut for the Text-to-Speech settings page, and a description telling users that they can use the Text-to-speech settings page to Install, Manage, and Customize their text-to-speech voices.">
     Search + O, then S. Use to install, manage, and customize voices.
   </message>
+  <message name="IDS_SETTINGS_CHROMEVOX_EVENT_LOG_LINK" desc="In the ChromeVox settings subpage, the label for the link to show the ChromeVox Event Log page.">
+    Show Log
+  </message>
+  <message name="IDS_SETTINGS_CHROMEVOX_EVENT_LOG_DESCRIPTION" desc="In the ChromeVox settings subpage, the description sub-label for the link to show the ChromeVox Event Log page, used to illustrate the keyboard shortcut to open the ChromeVox Event Log page: Search + O, then W.">
+    Search + O, then W
+  </message>
   <message name="IDS_SETTINGS_CHROMEVOX_LANGUAGE_SWITCHING" desc="In the ChromeVox settings subpage, the label for the toggle to enable ChromeVox language switching.">
     Automatically switch ChromeVox voice based on language
   </message>
@@ -1156,6 +1185,12 @@
   </message>
   <message name="IDS_SETTINGS_CHROMEVOX_MENU_ENABLE_EVENT_STREAM_LOGGING" desc="In the ChromeVox settings subpage, under developer options the label for the toggle that enables event stream logging.">
     Enable event stream logging
+  </message>
+  <message name="IDS_SETTINGS_CHROMEVOX_BRAILLE_WORD_WRAP" desc="In the ChromeVox settings subpage, the label for the toggle that enables wrapping of words if a whole line doesn't fit on a braille display. When this option is enabled, an effort is made to keep the characters of words together on the display. Otherwise, as many characters as possible are put on each braille display line, possible splitting words between lines.">
+    Enable word wrap
+  </message>
+  <message name="IDS_SETTINGS_CHROMEVOX_MENU_BRAILLE_COMMANDS" desc="In the ChromeVox settings subpage, the label for the toggle that enables displaying Perkins Brailler commands in the ChromeVox menus.">
+    Show braille commands in the ChromeVox menus
   </message>
   <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL" desc="Label for checkbox which enables the fullscreen magnifier">
     Full-screen magnifier
@@ -2693,13 +2728,13 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_MOUSE_TITLE" desc="In Device Settings, the title of the mouse settings subpage.">
     Mouse
   </message>
-  <message name="IDS_SETTINGS_BUILT_IN_POINTING_STICK_NAME" translateable="false" desc="In Device Settings, the name of the built-in/internal pointing stick device within the settings app.">
+  <message name="IDS_SETTINGS_BUILT_IN_POINTING_STICK_NAME" desc="In Device Settings, the name of the built-in/internal pointing stick device within the settings app.">
     Built-in TrackPoint
   </message>
   <message name="IDS_SETTINGS_POINTING_STICK_TITLE" desc="In Device Settings, the title of the pointing stick settings subpage. In most cases this will just be 'TrackPoint', the brand name of the pointing sticks used on Chromebooks.">
     TrackPoint
   </message>
-  <message name="IDS_SETTINGS_BUILT_IN_TOUCHPAD_NAME" translateable="false" desc="In Device Settings, the name of the built-in/internal touchpad device within the settings app.">
+  <message name="IDS_SETTINGS_BUILT_IN_TOUCHPAD_NAME" desc="In Device Settings, the name of the built-in/internal touchpad device within the settings app.">
     Built-in Touchpad
   </message>
   <message name="IDS_SETTINGS_TOUCHPAD_TITLE" desc="In Device Settings, the title of the touchpad settings subpage.">
@@ -3596,6 +3631,30 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_INTERNET_ESIM_PROFILE_LIMIT_REACHED_ERROR_TOAST" desc="Message in toast displayed when user tries to set up an eSIM profile when they have reached the maximum number of allowed eSIM profiles installed.">
     You can install up to <ph name="PROFILE_LIMIT">$1<ex>5</ex></ph> eSIM profiles on this device. To add another profile, first remove an existing profile.
+  </message>
+  <message name="IDS_SETTINGS_DEVICE_INFO_POPUP_MENU_ITEM_TITLE" desc="Title for the dropdown menu entry in network settings subpage that shows the network device info dialog.">
+    Device network info
+  </message>
+  <message name="IDS_SETTINGS_MOBILE_DEVICE_INFO_POPUP_TITLE" desc="Title for the Mobile network device info popup dialog that shows mobile network device information.">
+    Device mobile network info
+  </message>
+  <message name="IDS_SETTINGS_MOBILE_DEVICE_INFO_POPUP_DESCRIPTION" desc="Description text in the Mobile network device info popup dialog that tells user about the details that are shown.">
+    These numbers can be used to help activate service
+  </message>
+  <message name="IDS_SETTINGS_DEVICE_INFO_EID_LABEL" desc="Label for the EID number of the device shown in the network device info popup dialog.">
+    EID
+  </message>
+  <message name="IDS_SETTINGS_DEVICE_INFO_IMEI_LABEL" desc="Label for the IMEI number of the device shown in the network device info popup dialog.">
+    IMEI
+  </message>
+  <message name="IDS_SETTINGS_DEVICE_INFO_A11Y_LABEL_EID" desc="A11y label for the network device info popup dialog that's read out when only EID is displayed.">
+    Your device EID is <ph name="EID_NUMBER">$1<ex>123456789</ex></ph>. This number can be used to help activate service.
+  </message>
+  <message name="IDS_SETTINGS_DEVICE_INFO_A11Y_LABEL_IMEI" desc="A11y label for the network device info popup dialog that's read out when only IMEI is displayed.">
+    Your device IMEI is <ph name="IMEI_NUMBER">$1<ex>123456789</ex></ph>. This number can be used to help activate service.
+  </message>
+  <message name="IDS_SETTINGS_DEVICE_INFO_A11Y_LABEL_EID_AND_IMEI" desc="A11y label for the network device info popup dialog that's read out when both EID and IMEI is displayed.">
+    Your device EID is <ph name="EID_NUMBER">$1<ex>123456789</ex></ph> and device IMEI is <ph name="IMEI_NUMBER">$1<ex>123456789</ex></ph>. These numbers can be used to help activate service.
   </message>
 
   <!-- Users Page (OS Settings) -->
@@ -4602,38 +4661,39 @@ Press an assigned switch or key to remove assignment.
   </message>
 
   <!-- Per Device Keyboard page (OS settings) -->
-  <message name="IDS_SETTINGS_PER_DEVICE_KEYBOARD_TITLE" translateable="false" desc="In Device Settings, the title of the new Per-device keyboard settings subpage.">
-    Per-device Keyboard
-  </message>
-  <message name="IDS_SETTINGS_BUILT_IN_KEYBOARD_NAME" translateable="false" desc="In Device Settings, the name of the built-in/internal keyboard device within the settings app.">
+  <message name="IDS_SETTINGS_BUILT_IN_KEYBOARD_NAME" desc="In Device Settings, the name of the built-in/internal keyboard device within the settings app.">
     Built-in Keyboard
   </message>
-  <message name="IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_LABEL" translateable="false" desc="In per-device keyboard Settings, the label of the Remap Keyboard Keys row.">
+  <message name="IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_LABEL" desc="In per-device keyboard Settings, the label of the Remap Keyboard Keys row.">
     Remap keyboard keys
   </message>
-  <message name="IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_SUB_LABEL" translateable="false" desc="Sub-label with number of remapped keys for the Remap Keyboard Keys row.">
+  <message name="IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_SUB_LABEL" desc="Sub-label with number of remapped keys for the Remap Keyboard Keys row.">
     {COUNT, plural,
      =1 {1 remapped key}
      other {{COUNT} remapped keys}}
   </message>
-  <message name="IDS_SETTINGS_KEYBOARD_REMAP_KEYS_DESCRIPTION" translateable="false" desc="In Keyboard remap keys subpage, the description label above remapping keys to describe the actions user can perform.">
+  <message name="IDS_SETTINGS_KEYBOARD_REMAP_KEYS_DESCRIPTION" desc="In Keyboard remap keys subpage, the description label above remapping keys to describe the actions user can perform.">
     For each key listed below, choose the action you want it to perform
   </message>
-  <message name="IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS" translateable="false" desc="In Device Settings, the inverted checkbox label for interpreting the top-row keys as function keys instead.">
+  <message name="IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS" desc="In Device Settings, the inverted checkbox label for interpreting the top-row keys as function keys instead.">
     Convert F keys to ChromeOS top-row keys
   </message>
-  <message name="IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS_DESCRIPTION" translateable="false" desc="In Device Settings, the inverted label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
+  <message name="IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS_DESCRIPTION" desc="In Device Settings, the inverted label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
     Change the behavior of F keys to ChromeOS top-row actions
   </message>
-  <message name="IDS_SETTINGS_KEYBOARD_BLOCK_META_FUNCTION_KEY_REWRITES" translateable="false" desc="In Device Settings, the checkbox label to enable the meta key to switch the behavior of the top-row keys.">
+  <message name="IDS_SETTINGS_KEYBOARD_BLOCK_META_FUNCTION_KEY_REWRITES" desc="In Device Settings, the checkbox label to enable the meta key to switch the behavior of the top-row keys.">
     Enable System/Launcher key to switch the behavior of the top-row keys
   </message>
-  <message name="IDS_SETTINGS_KEYBOARD_BLOCK_META_FUNCTION_KEY_REWRITES_DESCRIPTION" translateable="false" desc="In Device Settings, the label describing how to use the meta key to switch the behavior of the top-row keys.">
+  <message name="IDS_SETTINGS_KEYBOARD_BLOCK_META_FUNCTION_KEY_REWRITES_DESCRIPTION" desc="In Device Settings, the label describing how to use the meta key to switch the behavior of the top-row keys.">
     Hold the key to switch between F keys and ChromeOS actions
   </message>
-  <message name="IDS_SETTINGS_KEYBOARD_REMAP_RESTORE_BUTTON_LABEL" translateable="false" desc="In Keyboard remap keys subpage, the restore defaults button label.">
+  <message name="IDS_SETTINGS_KEYBOARD_REMAP_RESTORE_BUTTON_LABEL" desc="In Keyboard remap keys subpage, the restore defaults button label.">
     Restore defaults
   </message>
+  <message name="IDS_SETTINGS_KEYBOARD_NO_KEYBOARDS_HELP_MESSAGE" desc="In Keyboard remap keys subpage, the message that notifies users that no keyboards are connected.">
+    No keyboard detected
+  </message>
+
   <!-- Device Keyboard page (OS settings) -->
   <message name="IDS_SETTINGS_KEYBOARD_TITLE" desc="In Device Settings, the title of the keyboard settings subpage.">
     Keyboard

@@ -32,23 +32,6 @@ class AttributionManager;
 class PrivateAggregationManager;
 class RenderFrameHostImpl;
 
-struct CONTENT_EXPORT AutomaticBeaconInfo {
-  AutomaticBeaconInfo(
-      const std::string& data,
-      const std::vector<blink::FencedFrame::ReportingDestination>& destination);
-
-  AutomaticBeaconInfo(const AutomaticBeaconInfo&);
-  AutomaticBeaconInfo(AutomaticBeaconInfo&&);
-
-  AutomaticBeaconInfo& operator=(const AutomaticBeaconInfo&);
-  AutomaticBeaconInfo& operator=(AutomaticBeaconInfo&&);
-
-  ~AutomaticBeaconInfo();
-
-  std::string data;
-  std::vector<blink::FencedFrame::ReportingDestination> destination;
-};
-
 // Class that receives report events from fenced frames, and uses a
 // per-destination-type maps of events to URLs to send reports. The maps may be
 // received after the report event calls, in which case the reports will be
@@ -187,12 +170,6 @@ class CONTENT_EXPORT FencedFrameReporter
   // need to be sent after this is called.
   void SendPrivateAggregationRequestsForEvent(const std::string& pa_event_type);
 
-  // Stores the payload that will be sent as part of the
-  // `reserved.top_navigation` automatic beacon.
-  void UpdateAutomaticBeaconData(
-      const std::string& event_data,
-      const std::vector<blink::FencedFrame::ReportingDestination>& destination);
-
   // Returns a copy of the internal reporting metadata, so it can be validated
   // in tests. Only includes maps for which maps have been received - i.e., if
   // wait for OnUrlMappingReady() to be invoked for a reporting destination, it
@@ -209,19 +186,21 @@ class CONTENT_EXPORT FencedFrameReporter
   std::map<std::string, PrivateAggregationRequests>
   GetPrivateAggregationEventMapForTesting();
 
-  const absl::optional<AutomaticBeaconInfo>& automatic_beacon_info() {
-    return automatic_beacon_info_;
-  }
-
  private:
   friend class base::RefCounted<FencedFrameReporter>;
   friend class FencedFrameURLMappingTestPeer;
 
+  struct AttributionReportingData {
+    BeaconId beacon_id;
+    bool is_automatic_beacon;
+  };
+
   struct PendingEvent {
-    PendingEvent(const std::string& type,
-                 const std::string& data,
-                 const url::Origin& request_initiator,
-                 BeaconId beacon_id);
+    PendingEvent(
+        const std::string& type,
+        const std::string& data,
+        const url::Origin& request_initiator,
+        absl::optional<AttributionReportingData> attribution_reporting_data);
 
     PendingEvent(const PendingEvent&);
     PendingEvent(PendingEvent&&);
@@ -234,7 +213,9 @@ class CONTENT_EXPORT FencedFrameReporter
     std::string type;
     std::string data;
     url::Origin request_initiator;
-    BeaconId beacon_id;
+    // The data necessary for attribution reporting. Will be `absl::nullopt` if
+    // attribution reporting is disallowed in the initiator frame.
+    absl::optional<AttributionReportingData> attribution_reporting_data;
   };
 
   // The per-blink::FencedFrame::ReportingDestination reporting information.
@@ -266,7 +247,8 @@ class CONTENT_EXPORT FencedFrameReporter
       const std::string& event_data,
       blink::FencedFrame::ReportingDestination reporting_destination,
       const url::Origin& request_initiator,
-      BeaconId beacon_id,
+      const absl::optional<AttributionReportingData>&
+          attribution_reporting_data,
       std::string& error_message);
 
   // Helper to send private aggregation requests in
@@ -285,6 +267,12 @@ class CONTENT_EXPORT FencedFrameReporter
   reporting_metadata() const {
     return reporting_metadata_;
   }
+
+  // Helper to notify `AttributionDataHostManager` if the report failed to be
+  // sent.
+  void NotifyFencedFrameReportingBeaconFailed(
+      const absl::optional<AttributionReportingData>&
+          attribution_reporting_data);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -326,15 +314,6 @@ class CONTENT_EXPORT FencedFrameReporter
   std::set<std::string> received_pa_events_;
 
   mojo::Remote<blink::mojom::PrivateAggregationHost> private_aggregation_host_;
-
-  // Stores data registered by one of the documents in a FencedFrame using
-  // the `Fence.setReportEventDataForAutomaticBeacons` API.
-  //
-  // Currently, only the `reserved.top_navigation` event exists.
-  //
-  // The data will be sent directly to the network, without going back to any
-  // renderer process, so they are not made part of the redacted properties.
-  absl::optional<AutomaticBeaconInfo> automatic_beacon_info_;
 };
 
 }  // namespace content

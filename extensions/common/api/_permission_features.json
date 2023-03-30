@@ -501,13 +501,17 @@
   "offscreen": {
     "channel": "stable",
     "extension_types": ["extension"],
-    "min_manifest_version": 3,
-    "feature_flag": "ExtensionsOffscreenDocuments"
+    "min_manifest_version": 3
   },
-  "power": {
+  "power": [{
     "channel": "stable",
     "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ]
   },
+  {
+    "channel": "stable",
+    "dependencies": ["behavior:imprivata_login_screen_extension"],
+    "extension_types": ["login_screen_extension"]
+  }],
   "printerProvider": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app" ]

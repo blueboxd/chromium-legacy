@@ -758,7 +758,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mHandler.removeCallbacks(mClearTabListRunnable);
         boolean quick = false;
         if (!mTabModelSelector.isTabStateInitialized()) return quick;
-        if (TabUiFeatureUtilities.isTabToGtsAnimationEnabled()) {
+        if (TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mContext)) {
             quick = mResetHandler.resetWithTabList(
                     mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false,
                     mShowTabsInMruOrder);
@@ -795,7 +795,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             if (mTabModelSelector.isTabStateInitialized()) {
                 mResetHandler.resetWithTabList(
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
-                        TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
+                        TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mContext),
+                        mShowTabsInMruOrder);
                 // When |mTabModelSelector.isTabStateInitialized| is false and INSTANT_START is
                 // enabled, the scrolling request is already processed in
                 // TabModelObserver#restoreCompleted. Therefore, we only need to handle the case
@@ -807,7 +808,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                     allTabs = PseudoTab.getAllPseudoTabsFromStateFile(mContext);
                 }
                 mResetHandler.resetWithTabs(allTabs,
-                        TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
+                        TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mContext),
+                        mShowTabsInMruOrder);
             }
         }
 
@@ -968,6 +970,12 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     @Override
     public void addCustomView(@NonNull View customView, @Nullable Runnable backPressRunnable) {
         assert mCustomView == null : "Only one client at a time is supported to add a custom view.";
+
+        // Hide any tab grid dialog before we add the custom view.
+        if (mTabGridDialogControllerSupplier != null
+                && mTabGridDialogControllerSupplier.hasValue()) {
+            mTabGridDialogControllerSupplier.get().hideDialog(false);
+        }
 
         // The grid tab switcher for tablets translates up over top of the browser controls, causing
         // the custom view to do the same.

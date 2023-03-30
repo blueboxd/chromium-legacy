@@ -22,6 +22,9 @@ import {eventToPromise, isVisible} from '../test_util.js';
 /** @type {string} */
 const fakeImageUrl = 'chrome://os_feedback/app_icon_48.png';
 
+/**
+ * @suppress {missingProperties} for test.skip is not defined in mocha-2.5.js
+ */
 export function shareDataPageTestSuite() {
   /** @type {?ShareDataPageElement} */
   let page = null;
@@ -863,6 +866,25 @@ export function shareDataPageTestSuite() {
     assertEquals(1, feedbackServiceProvider.getOpenSystemInfoDialogCallCount());
     verifyRecordPreSubmitActionCallCount(
         1, FeedbackAppPreSubmitAction.kViewedSystemAndAppInfo);
+  });
+
+  /**
+   * Test that openAutofillDialog and recordPreSubmitAction are called when
+   * #autofillMetadataUrl ("autofill metadata") link is clicked.
+   */
+  // TODO(crbug.com/1401615): Flaky.
+  test.skip('openAutofillDialog', async () => {
+    await initializePage();
+
+    assertEquals(0, feedbackServiceProvider.getOpenAutofillDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        0, FeedbackAppPreSubmitAction.kViewedAutofillMetadata);
+
+    getElement('#autofillMetadataUrl').click();
+
+    assertEquals(1, feedbackServiceProvider.getOpenAutofillDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        1, FeedbackAppPreSubmitAction.kViewedAutofillMetadata);
   });
 
   /**

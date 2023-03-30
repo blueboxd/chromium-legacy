@@ -12,12 +12,17 @@
 
 namespace apps {
 
-// Enumeration of possible app launch sources.
-// This should be kept in sync with metadata/apps/histograms.xml,
-// LaunchSource in enums.xml, as well as ApplicationLaunchSource in
-// //components/services/app_service/public/protos/app_types.proto. Note the
-// enumeration is used in UMA histogram so entries should not be re-ordered or
-// removed. New entries should be added at the bottom.
+// Enumeration of possible app launch sources. When adding a new entry to this
+// enum:
+// - Update DefaultAppLaunchSource in metadata/apps/histograms.xml
+// - Update LaunchSource in enums.xml
+// - Update ApplicationLaunchSource in
+//   //components/services/app_service/public/protos/app_types.proto.
+// - Email chromeos-data-team@google.com to request a corresponding change to
+//   backend enums.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class LaunchSource {
   kUnknown = 0,
   kFromAppListGrid = 1,              // Grid of apps, not the search box.
@@ -59,10 +64,11 @@ enum class LaunchSource {
   kFromReparenting = 34,               // Moving content into an app.
   kFromProfileMenu =
       35,  // Profile menu of installable chrome://password-manager WebUI.
+  kFromSysTrayCalendar = 36,  // Launches from the system tray Calendar.
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kFromProfileMenu,
+  kMaxValue = kFromSysTrayCalendar,
 };
 
 // Don't remove items or change the order of this enum.  It's used in

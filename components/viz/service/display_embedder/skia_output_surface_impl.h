@@ -12,6 +12,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -116,6 +117,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                  const gfx::Size& surface_size,
                                  ResourceFormat format,
                                  bool mipmap,
+                                 bool scanout_dcomp_surface,
                                  sk_sp<SkColorSpace> color_space,
                                  bool is_overlay,
                                  const gpu::Mailbox& mailbox) override;
@@ -188,14 +190,20 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   bool Initialize();
   void InitializeOnGpuThread(GpuVSyncCallback vsync_callback_runner,
                              bool* result);
-  SkSurfaceCharacterization CreateSkSurfaceCharacterization(
+  SkSurfaceCharacterization CreateSkSurfaceCharacterizationRenderPass(
       const gfx::Size& surface_size,
       SkColorType color_type,
       SkAlphaType alpha_type,
       bool mipmap,
       sk_sp<SkColorSpace> color_space,
-      bool is_root_render_pass,
-      bool is_overlay);
+      bool is_overlay,
+      bool scanout_dcomp_surface) const;
+  SkSurfaceCharacterization CreateSkSurfaceCharacterizationCurrentFrame(
+      const gfx::Size& surface_size,
+      SkColorType color_type,
+      SkAlphaType alpha_type,
+      bool mipmap,
+      sk_sp<SkColorSpace> color_space) const;
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
                               const gfx::Size& pixel_size,
                               gfx::GpuFenceHandle release_fence);
@@ -271,7 +279,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
    private:
     // This is recorder being used for current paint
-    SkDeferredDisplayListRecorder* recorder_;
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #union
+    RAW_PTR_EXCLUSION SkDeferredDisplayListRecorder* recorder_;
     // If we need new recorder for this Paint (i.e. it's not root render pass),
     // it's stored here
     absl::optional<SkDeferredDisplayListRecorder> recorder_storage_;

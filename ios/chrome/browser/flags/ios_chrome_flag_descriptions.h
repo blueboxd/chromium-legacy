@@ -205,6 +205,11 @@ extern const char kDefaultBrowserFullscreenPromoExperimentDescription[];
 extern const char kDefaultBrowserIntentsShowSettingsName[];
 extern const char kDefaultBrowserIntentsShowSettingsDescription[];
 
+// Title and description for the flag to allow the fullscreen default browser
+// promos to be added to the promo manager.
+extern const char kDefaultBrowserRefactoringPromoManagerName[];
+extern const char kDefaultBrowserRefactoringPromoManagerDescription[];
+
 // Title and description for the flag to control if a crash report is generated
 // on main thread freeze.
 extern const char kDetectMainThreadFreezeName[];
@@ -330,9 +335,14 @@ extern const char kEnablePreferencesAccountStorageDescription[];
 extern const char kEnablePinnedTabsName[];
 extern const char kEnablePinnedTabsDescription[];
 
-// Title and description for the flag to enable pinned tabs on iPad.
-extern const char kEnablePinnedTabsIpadName[];
-extern const char kEnablePinnedTabsIpadDescription[];
+// Title and description for the flag to enable the account storage.
+extern const char kEnableReadingListAccountStorageName[];
+extern const char kEnableReadingListAccountStorageDescription[];
+
+// Title and description for the flag to enable the sign-in promo in the reading
+// list screen.
+extern const char kEnableReadingListSignInPromoName[];
+extern const char kEnableReadingListSignInPromoDescription[];
 
 // Title and description for the flag to enable refining data source reload
 // reporting when having a very short attention log.
@@ -365,9 +375,10 @@ extern const char kFeedBackgroundRefreshDescription[];
 extern const char kFeedExperimentTaggingName[];
 extern const char kFeedExperimentTaggingDescription[];
 
-// Title and description for the flag to enable feed foreground refresh.
-extern const char kFeedForegroundRefreshName[];
-extern const char kFeedForegroundRefreshDescription[];
+// Title and description for the flag to enable feed invisible foreground
+// refresh.
+extern const char kFeedInvisibleForegroundRefreshName[];
+extern const char kFeedInvisibleForegroundRefreshDescription[];
 
 // Title and description for the flag to enable filling across affiliated
 // websites.
@@ -410,10 +421,20 @@ extern const char kIncognitoNtpRevampDescription[];
 extern const char kIndicateAccountStorageErrorInAccountCellName[];
 extern const char kIndicateAccountStorageErrorInAccountCellDescription[];
 
+// Title and description for the flag to indicate the identity error in
+// the overflow menu.
+extern const char kIndicateIdentityErrorInOverflowMenuName[];
+extern const char kIndicateIdentityErrorInOverflowMenuDescription[];
+
 // Title and description for the flag to enable feature_engagement::Tracker
 // demo mode.
 extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
+
+// Title and description for the flag to enable metrics collection for edit
+// menu.
+extern const char kIOSBrowserEditMenuMetricsName[];
+extern const char kIOSBrowserEditMenuMetricsDescription[];
 
 // Title and description for the flag to enable new API for browser edit menu.
 extern const char kIOSCustomBrowserEditMenuName[];
@@ -442,6 +463,10 @@ extern const char kIOSPasswordCheckupDescription[];
 // management into two separate UIs.
 extern const char kIOSPasswordUISplitName[];
 extern const char kIOSPasswordUISplitDescription[];
+
+// Title and description for the flag to display the Set Up List.
+extern const char kIOSSetUpListName[];
+extern const char kIOSSetUpListDescription[];
 
 // Title and description for the flag to enable password saving and
 // filling in cross-origin iframes on IOS.
@@ -703,9 +728,6 @@ extern const char kRestoreSessionFromCacheDescription[];
 extern const char kRecordSnapshotSizeName[];
 extern const char kRecordSnapshotSizeDescription[];
 
-extern const char kRemoveCrashInfobarName[];
-extern const char kRemoveCrashInfobarDescription[];
-
 // Title and description for the flag to remove excess NTP tabs that don't have
 // navigation history.
 extern const char kRemoveExcessNTPsExperimentName[];
@@ -840,6 +862,10 @@ extern const char kEnableLensContextMenuAltTextDescription[];
 // copied images in the omnibox.
 extern const char kEnableLensInOmniboxCopiedImageName[];
 extern const char kEnableLensInOmniboxCopiedImageDescription[];
+
+// Title and description for the flag to enable the follow up of the SF Symbols.
+extern const char kSFSymbolsFollowUpName[];
+extern const char kSFSymbolsFollowUpDescription[];
 
 // Title and description for the flag to sort the tab by recency in the TabGrid.
 extern const char kTabGridRecencySortName[];

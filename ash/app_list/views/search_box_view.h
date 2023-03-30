@@ -14,6 +14,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_box_model_observer.h"
+#include "ash/app_list/views/launcher_search_iph_view.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/search_box/search_box_view_base.h"
@@ -39,7 +40,8 @@ class SearchResultBaseView;
 // contents and selection model of the Textfield.
 class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
                                  public AppListModelProvider::Observer,
-                                 public SearchBoxModelObserver {
+                                 public SearchBoxModelObserver,
+                                 public LauncherSearchIphView::Delegate {
  public:
   enum class PlaceholderTextType {
     kShortcuts = 0,
@@ -84,7 +86,6 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
                          bool initiated_by_user) override;
   void UpdatePlaceholderTextStyle() override;
   void UpdateSearchBoxBorder() override;
-  void RecordSearchBoxActivationHistogram(ui::EventType event_type) override;
   void OnSearchBoxActiveChanged(bool active) override;
   void UpdateSearchBoxFocusPaint() override;
 
@@ -101,6 +102,10 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void OnThemeChanged() override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void AddedToWidget() override;
+
+  // LauncherSearchIphView::Delegate:
+  void RunLauncherSearchQuery(const std::u16string& query) override;
+  void OpenAssistantPage() override;
 
   // Updates the search box's background corner radius and color based on the
   // state of AppListModel.
@@ -161,6 +166,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   int GetSearchBoxIconSize();
   int GetSearchBoxButtonSize();
 
+  // Sets whether an IPH can be shown now or not.
+  void SetIsIphAllowed(bool iph_allowed);
+
  private:
   class FocusRingLayer;
 
@@ -182,6 +190,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Updates the search box placeholder text and accessible name.
   void UpdatePlaceholderTextAndAccessibleName();
+
+  // Updates the visibility of an IPH view.
+  void UpdateIphViewVisibility();
 
   // Notifies SearchBoxViewDelegate that the autocomplete text is valid.
   void AcceptAutocompleteText();
@@ -209,6 +220,7 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Overridden from SearchBoxModelObserver:
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;
+  void OnWouldTriggerIphChanged() override;
 
   // Updates search_box() for the |selected_result|. Should be called when the
   // selected search result changes.
@@ -249,6 +261,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // The corner radius of the search box background.
   int corner_radius_ = 0;
+
+  // Whether an IPH is allowed to be shown or not.
+  bool is_iph_allowed_ = false;
 
   // Set by SearchResultPageView when the accessibility selection moves to a
   // search result view - the value is the ID of the currently selected result

@@ -703,6 +703,8 @@ blink_core_sources_css = [
   "vision_deficiency.h",
   "white_space.h",
   "zoom_adjusted_pixel_value.h",
+  "css_style_sheet_ids.cc",
+  "css_style_sheet_ids.h",
 ]
 
 blink_core_tests_css = [
@@ -818,6 +820,7 @@ blink_core_tests_css = [
   "rule_feature_set_test.cc",
   "rule_set_test.cc",
   "selector_checker_test.cc",
+  "selector_filter_test.cc",
   "selector_query_test.cc",
   "style_element_test.cc",
   "style_engine_test.cc",
@@ -834,4 +837,5 @@ blink_core_tests_css = [
   "threaded/filter_operation_resolver_threaded_test.cc",
   "threaded/font_object_threaded_test.cc",
   "threaded/text_renderer_threaded_test.cc",
+  "white_space_test.cc",
 ]

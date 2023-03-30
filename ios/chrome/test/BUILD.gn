@@ -96,7 +96,6 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//base",
     "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/third_party/earl_grey2:test_lib",
   ]
   frameworks = [ "XCTest.framework" ]
   all_dependent_configs = [ "//third_party/protobuf:protobuf_config" ]
@@ -201,6 +200,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/complex_tasks:unit_tests",
     "//ios/chrome/browser/crash_report:unit_tests",
     "//ios/chrome/browser/crash_report/breadcrumbs:unit_tests",
+    "//ios/chrome/browser/default_browser:unit_tests",
     "//ios/chrome/browser/device_sharing:unit_tests",
     "//ios/chrome/browser/download:unit_tests",
     "//ios/chrome/browser/download/background_service:unit_tests",
@@ -253,7 +253,9 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/segmentation_platform:unit_tests",
     "//ios/chrome/browser/send_tab_to_self:unit_tests",
     "//ios/chrome/browser/sessions:unit_tests",
+    "//ios/chrome/browser/shared/coordinator/alert:unit_tests",
     "//ios/chrome/browser/shared/public/commands:unit_tests",
+    "//ios/chrome/browser/shared/ui/elements:unit_tests",
     "//ios/chrome/browser/shared/ui/list_model:unit_tests",
     "//ios/chrome/browser/shared/ui/table_view:unit_tests",
     "//ios/chrome/browser/shared/ui/table_view/cells:unit_tests",
@@ -269,7 +271,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/tabs/inactive_tabs:unit_tests",
     "//ios/chrome/browser/tabs_search:unit_tests",
     "//ios/chrome/browser/translate:unit_tests",
-    "//ios/chrome/browser/ui/alert_coordinator:unit_tests",
     "//ios/chrome/browser/ui/alert_view:unit_tests",
     "//ios/chrome/browser/ui/app_store_rating:unit_tests",
     "//ios/chrome/browser/ui/authentication:unit_tests",
@@ -292,6 +293,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/bookmarks/cells:unit_tests",
     "//ios/chrome/browser/ui/bookmarks/editor:unit_tests",
     "//ios/chrome/browser/ui/bookmarks/home:unit_tests",
+    "//ios/chrome/browser/ui/bring_android_tabs:unit_tests",
     "//ios/chrome/browser/ui/broadcaster:unit_tests",
     "//ios/chrome/browser/ui/browser_container:unit_tests",
     "//ios/chrome/browser/ui/browser_view:unit_tests",
@@ -302,10 +304,10 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/context_menu:unit_tests",
     "//ios/chrome/browser/ui/credential_provider_promo:unit_tests",
     "//ios/chrome/browser/ui/default_promo:unit_tests",
+    "//ios/chrome/browser/ui/default_promo/promo_handler:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests_internal",
     "//ios/chrome/browser/ui/download:unit_tests",
-    "//ios/chrome/browser/ui/elements:unit_tests",
     "//ios/chrome/browser/ui/first_run:unit_tests",
     "//ios/chrome/browser/ui/first_run:unit_tests",
     "//ios/chrome/browser/ui/first_run/tos:unit_tests",

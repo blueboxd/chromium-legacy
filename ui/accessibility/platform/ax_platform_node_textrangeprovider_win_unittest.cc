@@ -5233,6 +5233,39 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_EQ(end_offset, selection.focus_offset);
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestScrollIntoViewOnOnscreenElement) {
+  TestAXTreeUpdate update(std::string(R"HTML(
+    ++1 kRootWebArea
+    ++++2 kGenericContainer
+    ++++++3 kTextField
+  )HTML"));
+  update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 200, 200);
+  update.nodes[1].relative_bounds.bounds = gfx::RectF(0, 0, 100, 100);
+  update.nodes[2].SetValue("hello world test");
+  update.nodes[2].relative_bounds.bounds = gfx::RectF(50, 50, 20, 20);
+  update.nodes[2].relative_bounds.offset_container_id = 1;
+
+  Init(update);
+  AXNode* root_node = GetRoot();
+
+  AXNode* gc = root_node->children()[0];
+  AXNode* text_field = gc->children()[0];
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, text_field);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->ScrollIntoView(/* align_to_top */ true));
+  base::win::ScopedSafearray rectangles;
+  text_range_provider->GetBoundingRectangles(rectangles.Receive());
+
+  // Element was already fully onscreen, so there should be no change
+  // to its location.
+  std::vector<double> expected_rect = {50, 50, 20, 20};
+  EXPECT_UIA_SAFEARRAY_EQ(rectangles.Get(), expected_rect);
+  EXPECT_EQ(50, text_field->data().relative_bounds.bounds.y());
+}
+
 // TODO(crbug.com/1124051): Remove this test once this crbug is fixed.
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderSelectListMarker) {
@@ -5385,6 +5418,66 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ASSERT_TRUE(GetEnd(text_range_provider_win.Get())->IsTextPosition());
   EXPECT_EQ(8, GetEnd(text_range_provider_win.Get())->anchor_id());
   EXPECT_EQ(3, GetEnd(text_range_provider_win.Get())->text_offset());
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestTextRangeProviderWinUnfocusableNodeForSelection) {
+  TestAXTreeUpdate update(std::string(R"HTML(
+    ++1 kRootWebArea
+    ++++2 kTextField states=kFocusable
+    ++++++3 kGenericContainer state=kEditable
+    ++++++++4 kStaticText state=kEditable
+    ++++++++++5 kInlineTextBox state=kEditable
+  )HTML"));
+
+  update.nodes[1].SetName("Hello World");
+  update.nodes[3].SetName("Hello World");
+  update.nodes[4].SetName("Hello World");
+
+  AXTree* tree = Init(update);
+
+  AXNode* input_node = GetNodeFromTree(tree->GetAXTreeID(), 2);
+
+  AXPlatformNodeWin* input_platform_node =
+      static_cast<AXPlatformNodeWin*>(AXPlatformNodeFromNode(input_node));
+
+  AXPlatformNodeWin* root = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNodeFromNode(GetNodeFromTree(tree->GetAXTreeID(), 1)));
+
+  input_platform_node->SetFocus();
+
+  // start: TextPosition, anchor_id=2, text_offset=0, annotated_text=<h>ello
+  // world end  : TextPosition, anchor_id=2, text_offset=0,
+  // annotated_text=<h>ello world
+  ComPtr<AXPlatformNodeTextRangeProviderWin> text_range_provider;
+  CreateTextRangeProviderWin(
+      text_range_provider, input_platform_node,
+      /*start_anchor=*/input_node, /*start_offset=*/0,
+      /*start_affinity*/ ax::mojom::TextAffinity::kDownstream,
+      /*end_anchor=*/input_node, /*end_offset=*/0,
+      /*end_affinity*/ ax::mojom::TextAffinity::kDownstream);
+
+  text_range_provider->Select();
+
+  // start: TextPosition, anchor_id=5, text_offset=6, annotated_text=hello
+  // <w>orld end  : TextPosition, anchor_id=5, text_offset=6,
+  // annotated_text=hello <w>orld
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Word,
+      /*count*/ 1,
+      /*expected_text*/ L"",
+      /*expected_count*/ 1);
+
+  text_range_provider->Select();
+  // Verify selection.
+  AXSelection unignored_selection =
+      root->GetDelegate()->GetUnignoredSelection();
+  EXPECT_EQ(5, unignored_selection.anchor_object_id);
+  EXPECT_EQ(5, unignored_selection.focus_object_id);
+  // Before patch that added this test, code this scenario would result in
+  // us focusing the root of the document, which is incorrect behavior.
+  EXPECT_FALSE(root->IsFocused());
+  EXPECT_TRUE(input_platform_node->IsFocused());
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

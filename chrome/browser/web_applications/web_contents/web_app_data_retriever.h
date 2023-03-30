@@ -11,8 +11,8 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_contents/web_app_icon_downloader.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_params.h"
 #include "components/webapps/common/web_page_metadata.mojom-forward.h"
@@ -37,7 +37,7 @@ namespace web_app {
 
 enum class IconsDownloadedResult;
 
-// Class used by WebAppInstallTask to retrieve the necessary information to
+// Class used by the WebApp system to retrieve the necessary information to
 // install an app. Should only be called from the UI thread.
 class WebAppDataRetriever : content::WebContentsObserver {
  public:

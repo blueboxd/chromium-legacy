@@ -47,6 +47,8 @@ source_set("crosapi") {
     "browser_action.h",
     "browser_data_back_migrator.cc",
     "browser_data_back_migrator.h",
+    "browser_data_back_migrator_metrics.cc",
+    "browser_data_back_migrator_metrics.h",
     "browser_data_migrator.cc",
     "browser_data_migrator.h",
     "browser_data_migrator_util.cc",
@@ -336,6 +338,7 @@ source_set("crosapi") {
     "//extensions/browser/api/audio",
     "//extensions/browser/api/automation_internal",
     "//extensions/browser/api/networking_private",
+    "//extensions/browser/api/power",
     "//extensions/common",
     "//media/mojo/mojom/stable:stable_video_decoder",
     "//printing/backend",
@@ -387,6 +390,8 @@ source_set("test_support") {
     "test_controller_ash.h",
     "test_crosapi_dependency_registry.cc",
     "test_crosapi_dependency_registry.h",
+    "test_crosapi_environment.cc",
+    "test_crosapi_environment.h",
   ]
   allow_circular_includes_from = [ "//chrome/test:test_support" ]
   deps = [
@@ -410,6 +415,7 @@ source_set("unit_tests") {
 
   sources = [
     "audio_service_ash_unittest.cc",
+    "browser_data_back_migrator_metrics_unittest.cc",
     "browser_data_back_migrator_unittest.cc",
     "browser_data_migrator_unittest.cc",
     "browser_data_migrator_util_unittest.cc",

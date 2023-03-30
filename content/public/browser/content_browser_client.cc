@@ -305,10 +305,6 @@ bool ContentBrowserClient::EnforceSystemAudioEchoCancellation() {
   return false;
 }
 
-bool ContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
-  return true;
-}
-
 std::vector<url::Origin>
 ContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
   return std::vector<url::Origin>();
@@ -399,6 +395,12 @@ AllowServiceWorkerResult ContentBrowserClient::AllowServiceWorker(
     const GURL& script_url,
     BrowserContext* context) {
   return AllowServiceWorkerResult::Yes();
+}
+
+bool ContentBrowserClient::MayDeleteServiceWorkerRegistration(
+    const GURL& scope,
+    BrowserContext* browser_context) {
+  return true;
 }
 
 void ContentBrowserClient::UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
@@ -1445,6 +1447,17 @@ bool ContentBrowserClient::IsThirdPartyStoragePartitioningAllowed(
     content::BrowserContext*,
     const url::Origin&) {
   return true;
+}
+
+bool ContentBrowserClient::
+    IsTransientActivationRequiredForShowFileOrDirectoryPicker(
+        WebContents* web_contents) {
+  return true;
+}
+
+bool ContentBrowserClient::ShouldUseFirstPartyStorageKey(
+    const url::Origin& origin) {
+  return false;
 }
 
 }  // namespace content

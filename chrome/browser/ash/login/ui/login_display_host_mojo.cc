@@ -595,10 +595,6 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithChallengeResponse(
                      std::move(callback)));
 }
 
-void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
-  user_selection_screen_->HardLockPod(account_id);
-}
-
 void LoginDisplayHostMojo::HandleOnFocusPod(const AccountId& account_id) {
   user_selection_screen_->HandleFocusPod(account_id);
   WallpaperControllerClientImpl::Get()->ShowUserWallpaper(account_id);
@@ -809,7 +805,6 @@ void LoginDisplayHostMojo::StopObservingOobeUI() {
 
 void LoginDisplayHostMojo::CreateExistingUserController() {
   existing_user_controller_ = std::make_unique<ExistingUserController>();
-  login_display_->set_delegate(existing_user_controller_.get());
 
   // We need auth attempt results to notify views-based login screen.
   existing_user_controller_->AddLoginStatusConsumer(this);

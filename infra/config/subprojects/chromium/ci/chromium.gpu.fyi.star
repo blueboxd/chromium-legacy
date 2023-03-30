@@ -340,13 +340,49 @@ ci.gpu.linux_builder(
         ),
         run_tests_serially = True,
         skylab_upload_location = builder_config.skylab_upload_location(
-            gs_bucket = "lacros-arm64-generic-rel-skylab-try",
+            gs_bucket = "chromium-ci-skylab",
             gs_extra = "chromeos_gpu",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
         category = "ChromeOS|ARM",
         short_name = "kvn",
+    ),
+    # Given the capacity constraints, the default 6 hour timeout is not
+    # sufficient.
+    execution_timeout = 12 * time.hour,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+)
+
+ci.gpu.linux_builder(
+    name = "Lacros FYI Release (octopus)",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                "checkout_lacros_sdk",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.CHROMEOS,
+            target_cros_boards = [
+                "amd64-generic",
+                "octopus",
+            ],
+        ),
+        run_tests_serially = True,
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Lacros|Intel",
+        short_name = "oct",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )

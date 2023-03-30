@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
-#include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 
 #include <memory>
 
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
@@ -34,40 +34,54 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 
-@interface WindowAppleScript(WindowAppleScriptPrivateMethods)
+@interface WindowAppleScript ()
+
 // The NSWindow that corresponds to this window.
-- (NSWindow*)nativeHandle;
+@property(readonly) NSWindow* nativeHandle;
+
 @end
 
-@implementation WindowAppleScript
+@implementation WindowAppleScript {
+  // A note about lifetimes: It's not expected that this object will ever be
+  // deleted behind the back of this class. AppleScript does not hold onto
+  // objects between script runs; it will retain the object specifier, and if
+  // needed again, AppleScript will re-iterate over the objects, and look for
+  // the specified object. However, there's no hard guarantee that a race
+  // couldn't be made to happen, and in tests things are torn down at odd times,
+  // so it's best to use a real weak pointer.
+  base::WeakPtr<Browser> _browser;
+}
 
 - (instancetype)init {
   // Check which mode to open a new window.
   NSScriptCommand* command = [NSScriptCommand currentCommand];
-  NSString* mode = [command evaluatedArguments][@"KeyDictionary"][@"mode"];
+  NSString* mode = command.evaluatedArguments[@"KeyDictionary"][@"mode"];
   AppController* appDelegate =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+      base::mac::ObjCCastStrict<AppController>(NSApp.delegate);
 
-  Profile* lastProfile = [appDelegate lastProfile];
+  Profile* lastProfile = appDelegate.lastProfile;
 
   if (!lastProfile) {
-    AppleScript::SetError(AppleScript::errGetProfile);
+    AppleScript::SetError(AppleScript::Error::kGetProfile);
     return nil;
+  } else {
+    // Ensure that the profile is a non-OTR profile, so that it's possible to
+    // create a non-OTR window, below.
+    lastProfile = lastProfile->GetOriginalProfile();
   }
 
   Profile* profile;
   if ([mode isEqualToString:AppleScript::kIncognitoWindowMode]) {
     profile = lastProfile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-  }
-  else if ([mode isEqualToString:AppleScript::kNormalWindowMode] || !mode) {
+  } else if ([mode isEqualToString:AppleScript::kNormalWindowMode] || !mode) {
     profile = lastProfile;
   } else {
-    // Mode cannot be anything else
-    AppleScript::SetError(AppleScript::errInvalidMode);
+    // Mode cannot be anything else.
+    AppleScript::SetError(AppleScript::Error::kInvalidMode);
     return nil;
   }
   // Set the mode to nil, to ensure that it is not set once more.
-  [[command evaluatedArguments][@"KeyDictionary"] setValue:nil forKey:@"mode"];
+  [command.evaluatedArguments[@"KeyDictionary"] setValue:nil forKey:@"mode"];
   return [self initWithProfile:profile];
 }
 
@@ -86,36 +100,42 @@
       [self release];
       return nil;
     }
-    _browser = Browser::Create(Browser::CreateParams(aProfile, false));
-    chrome::NewTab(_browser);
-    _browser->window()->Show();
-    base::scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc] initWithInt:_browser->session_id().id()]);
-    [self setUniqueID:numID];
+
+    Browser* browser = Browser::Create(
+        Browser::CreateParams(aProfile, /*user_gesture=*/false));
+    chrome::NewTab(browser);
+    browser->window()->Show();
+
+    _browser = browser->AsWeakPtr();
+    self.uniqueID =
+        [NSString stringWithFormat:@"%d", _browser->session_id().id()];
   }
   return self;
 }
 
-- (instancetype)initWithBrowser:(Browser*)aBrowser {
-  if (!aBrowser) {
+- (instancetype)initWithBrowser:(Browser*)browser {
+  if (!browser) {
     [self release];
     return nil;
   }
 
   if ((self = [super init])) {
     // It is safe to be weak, if a window goes away (eg user closing a window)
-    // the applescript runtime calls appleScriptWindows in
+    // the AppleScript runtime calls appleScriptWindows in
     // BrowserCrApplication and this particular window is never returned.
-    _browser = aBrowser;
-    base::scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc] initWithInt:_browser->session_id().id()]);
-    [self setUniqueID:numID];
+    _browser = browser->AsWeakPtr();
+    self.uniqueID =
+        [NSString stringWithFormat:@"%d", _browser->session_id().id()];
   }
   return self;
 }
 
 - (NSWindow*)nativeHandle {
-  // window() can be NULL during startup.
+  if (!_browser) {
+    return nil;
+  }
+
+  // window() can be null during startup.
   if (_browser->window()) {
     return _browser->window()->GetNativeWindow().GetNativeNSWindow();
   }
@@ -123,7 +143,11 @@
 }
 
 - (NSNumber*)activeTabIndex {
-  // Note: applescript is 1-based, that is lists begin with index 1.
+  if (!_browser) {
+    return nil;
+  }
+
+  // Note: AppleScript is 1-based, that is lists begin with index 1.
   int activeTabIndex = _browser->tab_strip_model()->active_index() + 1;
   if (!activeTabIndex) {
     return nil;
@@ -132,25 +156,42 @@
 }
 
 - (void)setActiveTabIndex:(NSNumber*)anActiveTabIndex {
-  // Note: applescript is 1-based, that is lists begin with index 1.
-  int atIndex = [anActiveTabIndex intValue] - 1;
+  if (!_browser) {
+    return;
+  }
+
+  // Note: AppleScript is 1-based, that is lists begin with index 1.
+  int atIndex = anActiveTabIndex.intValue - 1;
   if (atIndex >= 0 && atIndex < _browser->tab_strip_model()->count()) {
     _browser->tab_strip_model()->ActivateTabAt(
         atIndex, TabStripUserGestureDetails(
                      TabStripUserGestureDetails::GestureType::kOther));
-  } else
-    AppleScript::SetError(AppleScript::errInvalidTabIndex);
+  } else {
+    AppleScript::SetError(AppleScript::Error::kInvalidTabIndex);
+  }
 }
 
 - (NSString*)givenName {
+  if (!_browser) {
+    return nil;
+  }
+
   return base::SysUTF8ToNSString(_browser->user_title());
 }
 
 - (void)setGivenName:(NSString*)name {
+  if (!_browser) {
+    return;
+  }
+
   _browser->SetWindowUserTitle(base::SysNSStringToUTF8(name));
 }
 
 - (NSString*)mode {
+  if (!_browser) {
+    return nil;
+  }
+
   Profile* profile = _browser->profile();
   if (profile->IsOffTheRecord()) {
     return AppleScript::kIncognitoWindowMode;
@@ -159,13 +200,17 @@
 }
 
 - (void)setMode:(NSString*)theMode {
-  // cannot set mode after window is created.
+  // Cannot set mode after window is created.
   if (theMode) {
-    AppleScript::SetError(AppleScript::errSetMode);
+    AppleScript::SetError(AppleScript::Error::kSetMode);
   }
 }
 
 - (TabAppleScript*)activeTab {
+  if (!_browser) {
+    return nil;
+  }
+
   TabAppleScript* currentTab =
       [[[TabAppleScript alloc] initWithWebContents:
           _browser->tab_strip_model()->GetActiveWebContents()] autorelease];
@@ -174,7 +219,11 @@
   return currentTab;
 }
 
-- (NSArray*)tabs {
+- (NSArray<TabAppleScript*>*)tabs {
+  if (!_browser) {
+    return nil;
+  }
+
   TabStripModel* tabStrip = _browser->tab_strip_model();
   NSMutableArray* tabs = [NSMutableArray arrayWithCapacity:tabStrip->count()];
 
@@ -195,6 +244,10 @@
 }
 
 - (void)insertInTabs:(TabAppleScript*)aTab {
+  if (!_browser) {
+    return;
+  }
+
   // This method gets called when a new tab is created so
   // the container and property are set here.
   [aTab setContainer:self
@@ -203,8 +256,7 @@
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
   content::WebContents* contents = chrome::AddSelectedTabWithURL(
-      _browser,
-      GURL(chrome::kChromeUINewTabURL),
+      _browser.get(), GURL(chrome::kChromeUINewTabURL),
       ui::PAGE_TRANSITION_TYPED);
   CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
   core_tab_helper->set_new_tab_start_time(newTabStartTime);
@@ -212,6 +264,10 @@
 }
 
 - (void)insertInTabs:(TabAppleScript*)aTab atIndex:(int)index {
+  if (!_browser) {
+    return;
+  }
+
   // This method gets called when a new tab is created so
   // the container and property are set here.
   [aTab setContainer:self
@@ -219,7 +275,7 @@
 
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
-  NavigateParams params(_browser, GURL(chrome::kChromeUINewTabURL),
+  NavigateParams params(_browser.get(), GURL(chrome::kChromeUINewTabURL),
                         ui::PAGE_TRANSITION_TYPED);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
@@ -232,6 +288,10 @@
 }
 
 - (void)removeFromTabsAtIndex:(int)index {
+  if (!_browser) {
+    return;
+  }
+
   if (index < 0 || index >= _browser->tab_strip_model()->count()) {
     return;
   }
@@ -240,42 +300,33 @@
 }
 
 - (NSNumber*)orderedIndex {
-  return [NSNumber numberWithInt:[[self nativeHandle] orderedIndex]];
+  return @(self.nativeHandle.orderedIndex);
 }
 
 - (void)setOrderedIndex:(NSNumber*)anIndex {
-  int index = [anIndex intValue] - 1;
+  int index = anIndex.intValue - 1;
   if (index < 0 || index >= static_cast<int>(chrome::GetTotalBrowserCount())) {
-    AppleScript::SetError(AppleScript::errWrongIndex);
+    AppleScript::SetError(AppleScript::Error::kWrongIndex);
     return;
   }
-  [[self nativeHandle] setOrderedIndex:index];
-}
-
-- (NSComparisonResult)windowComparator:(WindowAppleScript*)otherWindow {
-  int thisIndex = [[self orderedIndex] intValue];
-  int otherIndex = [[otherWindow orderedIndex] intValue];
-  if (thisIndex < otherIndex) {
-    return NSOrderedAscending;
-  } else if (thisIndex > otherIndex) {
-    return NSOrderedDescending;
-  }
-  // Indexes can never be same.
-  NOTREACHED();
-  return NSOrderedSame;
+  self.nativeHandle.orderedIndex = index;
 }
 
 // Get and set values from the associated NSWindow.
 - (id)valueForUndefinedKey:(NSString*)key {
-  return [[self nativeHandle] valueForKey:key];
+  return [self.nativeHandle valueForKey:key];
 }
 
 - (void)setValue:(id)value forUndefinedKey:(NSString*)key {
-  [[self nativeHandle] setValue:value forKey:key];
+  [self.nativeHandle setValue:value forKey:key];
 }
 
 - (void)handlesCloseScriptCommand:(NSCloseCommand*)command {
-  // window() can be NULL during startup.
+  if (!_browser) {
+    return;
+  }
+
+  // window() can be null during startup.
   if (_browser->window()) {
     _browser->window()->Close();
   }

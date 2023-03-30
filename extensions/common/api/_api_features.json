@@ -254,6 +254,15 @@
         "chrome://password-change/*",
         "chrome://lock-reauth/*"
       ]
+    }, {
+      // This feature is used by the Controlled Frame API and is specifically
+      // enabled by //chrome.
+      "internal": true,
+      "channel": "dev",
+      "contexts": ["web_page"],
+      // This feature is only enabled if the embedder's delegated check returns
+      // true.
+      "requires_delegated_availability_check": true
     }
   ],
   "hid": {
@@ -479,6 +488,9 @@
     "dependencies": ["permission:power"],
     "contexts": ["blessed_extension"]
   },
+  "power.reportActivity": {
+    "platforms": ["chromeos", "lacros"]
+  },
   "printerProvider": {
     "dependencies": ["permission:printerProvider"],
     "contexts": ["blessed_extension"]
@@ -539,6 +551,12 @@
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
     "contexts": ["blessed_extension"]
+  },
+  "runtime.getContexts": {
+    "min_manifest_version": 3,
+    "contexts": ["blessed_extension"],
+    "channel": "trunk",
+    "feature_flag": "ApiRuntimeGetContexts"
   },
   "runtime.getURL": {
     "contexts": [
@@ -773,6 +791,15 @@
       "chrome://password-change/*",
       "chrome://lock-reauth/*"
     ]
+  }, {
+    // This feature is used by the Controlled Frame API and is specifically
+    // enabled by //chrome.
+    "internal": true,
+    "channel": "dev",
+    "contexts": ["web_page"],
+    // This feature is only enabled if the embedder's delegated check returns
+    // true.
+    "requires_delegated_availability_check": true
   }],
   "webViewInternal": [{
     "internal": true,
@@ -795,6 +822,15 @@
       "chrome://password-change/*",
       "chrome://lock-reauth/*"
     ]
+  }, {
+    // This feature is used by the Controlled Frame API and is specifically
+    // enabled by //chrome.
+    "internal": true,
+    "channel": "dev",
+    "contexts": ["web_page"],
+    // This feature is only enabled if the embedder's delegated check returns
+    // true.
+    "requires_delegated_availability_check": true
   }],
   "webViewRequest": [{
     "dependencies": ["permission:webview"],

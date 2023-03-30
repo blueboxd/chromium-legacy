@@ -34,10 +34,11 @@ import {RelaunchMixin, RestartType} from '../relaunch_mixin.js';
 
 import {getTemplate} from './about_page.html.js';
 import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus, UpdateStatusChangedEvent} from './about_page_browser_proxy.js';
+// clang-format off
 // <if expr="_google_chrome and is_macosx">
 import {PromoteUpdaterStatus} from './about_page_browser_proxy.js';
-
 // </if>
+// clang-format on
 
 const SettingsAboutPageElementBase =
     RelaunchMixin(WebUiListenerMixin(I18nMixin(PolymerElement)));
@@ -73,6 +74,18 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
           return loadTimeData.getBoolean('isManaged');
         },
       },
+
+      // <if expr="_google_chrome">
+      /**
+       * Whether to show the "Get the most out of Chrome" section.
+       */
+      showGetTheMostOutOfChromeSection_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('showGetTheMostOutOfChromeSection');
+        },
+      },
+      // </if>
 
       // <if expr="_google_chrome and is_macosx">
       promoteUpdaterStatus_: Object,
@@ -117,6 +130,10 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
 
   private currentUpdateStatusEvent_: UpdateStatusChangedEvent|null;
   private isManaged_: boolean;
+
+  // <if expr="_google_chrome">
+  private showGetTheMostOutOfChromeSection_: boolean;
+  // </if>
 
   // <if expr="_google_chrome and is_macosx">
   private promoteUpdaterStatus_: PromoteUpdaterStatus;
@@ -338,6 +355,10 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
   // <if expr="_google_chrome">
   private onReportIssueTap_() {
     this.aboutBrowserProxy_.openFeedbackDialog();
+  }
+
+  private onGetTheMostOutOfChromeTap_() {
+    // TODO(crbug.com/1423278): implement.
   }
   // </if>
 

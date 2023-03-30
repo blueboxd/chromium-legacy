@@ -891,7 +891,7 @@
     },
     {
       name: "animation-range-start",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       style_builder_template: "animation",
       style_builder_template_args: {
         attribute: "RangeStart",
@@ -904,7 +904,7 @@
     },
     {
       name: "animation-range-end",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       style_builder_template: "animation",
       style_builder_template_args: {
         attribute: "RangeEnd",
@@ -1820,6 +1820,7 @@
     },
     {
       name: "background-repeat-x",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       style_builder_template: "background_layer",
       style_builder_template_args: {
         fill_type: "RepeatX",
@@ -1832,6 +1833,7 @@
     },
     {
       name: "background-repeat-y",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       style_builder_template: "background_layer",
       style_builder_template_args: {
         fill_type: "RepeatY",
@@ -3606,7 +3608,6 @@
       field_template: "primitive",
       default_value: "0",
       type_name: "int",
-      computed_style_custom_functions: ["setter"],
       typedom_types: ["Number"],
     },
     {
@@ -4999,12 +5000,12 @@
       valid_for_position_fallback: true,
     },
     {
-      name: "top-layer",
+      name: "overlay",
       runtime_flag: "CSSTopLayerForTransitions",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
-      keywords: ["none", "browser"],
+      keywords: ["none", "auto"],
       default_value: "none",
       typedom_types: ["Keyword"],
     },
@@ -5893,24 +5894,54 @@
       inherited: true,
       // This property is "keyword" but use "primitive" to use `EWhiteSpace` defined manually.
       field_template: "primitive",
-      field_size: 4,  // Ensure this is in sync with `kEWhiteSpaceBits`.
+      // The values are stored in `white-space-collapse` and `text-wrap` by
+      // `computed_style_custom_functions` even when `CSSWhiteSpaceShorthand`
+      // is off, but give 1 bit to it because `field_size` can't be zero.
+      field_size: 1,
       include_paths: ["third_party/blink/renderer/core/css/white_space.h"],
       keywords: [
         "normal", "pre", "pre-wrap", "pre-line", "nowrap", "break-spaces"
       ],
-      style_builder_custom_functions: ["initial", "inherit", "value"],
+      computed_style_custom_functions: ["getter", "setter", "resetter"],
       typedom_types: ["Keyword"],
       default_value: "EWhiteSpace::kNormal",
       valid_for_cue: true,
       valid_for_marker: true,
     },
     {
+      name: "-alternative-white-space",
+      alternative_of: "white-space",
+      longhands: [
+        "white-space-collapse", "text-wrap"
+      ],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      runtime_flag: "CSSWhiteSpaceShorthand",
+    },
+    {
+      name: "white-space-collapse",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      field_template: "primitive",
+      field_size: 2,  // Ensure this is in sync with `kWhiteSpaceCollapseBits`.
+      type_name: "WhiteSpaceCollapse",
+      keywords: ["collapse", "preserve", "preserve-breaks", "break-spaces"],
+      default_value: "WhiteSpaceCollapse::kCollapse",
+      include_paths: ["third_party/blink/renderer/core/css/white_space.h"],
+      typedom_types: ["Keyword"],
+      valid_for_cue: true,
+      valid_for_marker: true,
+      runtime_flag: "CSSWhiteSpaceShorthand",
+    },
+    {
       name: "text-wrap",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
-      field_template: "keyword",
-      keywords: ["wrap", "balance"],
-      default_value: "wrap",
+      field_template: "primitive",
+      field_size: 2,  // Ensure this is in sync with `kTextWrapBits`.
+      keywords: ["wrap", "nowrap", "balance"],
+      type_name: "TextWrap",
+      default_value: "TextWrap::kWrap",
+      include_paths: ["third_party/blink/renderer/core/css/white_space.h"],
       typedom_types: ["Keyword"],
       valid_for_cue: true,
       valid_for_marker: true,
@@ -6606,14 +6637,14 @@
     },
     {
       // Variant of the "animation" shorthand which includes the
-      // animation-timeline longhand.
+      // animation-timeline and animation-range-* longhands.
       name: "-alternative-animation-with-timeline",
       alternative_of: "animation",
       longhands: [
         "animation-duration", "animation-timing-function",
         "animation-delay", "animation-iteration-count", "animation-direction",
         "animation-fill-mode", "animation-play-state", "animation-name",
-        "animation-timeline"
+        "animation-timeline", "animation-range-start", "animation-range-end"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       valid_for_keyframe: false,
@@ -6629,7 +6660,7 @@
         "animation-delay-start", "animation-delay-end",
         "animation-iteration-count", "animation-direction",
         "animation-fill-mode", "animation-play-state", "animation-name",
-        "animation-timeline"
+        "animation-timeline", "animation-range-start", "animation-range-end"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       valid_for_keyframe: false,

@@ -206,20 +206,6 @@ NSDictionary* attributeToMethodNameMap = nil;
 // VoiceOver uses -1 to mean "no limit" for AXResultsLimit.
 const int kAXResultsLimitNoLimit = -1;
 
-// The following are private accessibility APIs required for cursor navigation
-// and text selection. VoiceOver started relying on them in Mac OS X 10.11.
-// They are public as of the 12.0 SDK.
-#if !defined(MAC_OS_VERSION_12_0) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_VERSION_12_0
-using AXTextMarkerRangeRef = CFTypeRef;
-using AXTextMarkerRef = CFTypeRef;
-extern "C" {
-AXTextMarkerRangeRef AXTextMarkerRangeCreate(CFAllocatorRef,
-                                             AXTextMarkerRef start,
-                                             AXTextMarkerRef end);
-}  // extern "C"
-#endif
-
 AXRange CreateAXRange(const BrowserAccessibility& start_object,
                       int start_offset,
                       ax::mojom::TextAffinity start_affinity,
@@ -1598,7 +1584,12 @@ bool content::IsNSRange(id value) {
     // CHECK() but caused too many crashes, with unknown cause.
     return nil;
   }
-  CHECK(root_manager->GetParentView());
+  if (!root_manager->GetParentView()) {
+    // TODO(crbug.com/1425682) Find out why this happens, there should always be
+    // a parent view. This used to be a CHECK() but caused too many crashes.
+    // Repro steps are available in the bug.
+    return nil;
+  }
   return root_manager->GetWindow();  // Can be null for inactive tabs.
 }
 

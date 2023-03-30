@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/dom/css_toggle_map.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
-#include "third_party/blink/renderer/core/dom/element_rare_data_base.h"
 #include "third_party/blink/renderer/core/dom/has_invalidation_flags.h"
 #include "third_party/blink/renderer/core/dom/named_node_map.h"
 #include "third_party/blink/renderer/core/dom/names_map.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/editing/ime/edit_context.h"
+#include "third_party/blink/renderer/core/html/anchor_element_observer.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -36,7 +36,7 @@
 namespace blink {
 
 ElementRareDataVector::ElementRareDataVector(NodeData* node_layout_data)
-    : ElementRareDataBase(node_layout_data) {}
+    : NodeRareData(ClassType::kElementRareData, std::move(*node_layout_data)) {}
 
 ElementRareDataVector::~ElementRareDataVector() {
   DCHECK(!GetField(FieldId::kPseudoElementData));
@@ -339,12 +339,22 @@ CustomElementDefinition* ElementRareDataVector::GetCustomElementDefinition()
       GetField(FieldId::kCustomElementDefinition));
 }
 
-void ElementRareDataVector::SaveLastIntrinsicSize(ResizeObserverSize* size) {
-  SetField(FieldId::kLastIntrinsicSize, size);
+void ElementRareDataVector::SetLastRememberedBlockSize(
+    absl::optional<LayoutUnit> size) {
+  SetOptionalField(FieldId::kLastRememberedBlockSize, size);
 }
-const ResizeObserverSize* ElementRareDataVector::LastIntrinsicSize() const {
-  return static_cast<ResizeObserverSize*>(
-      GetField(FieldId::kLastIntrinsicSize));
+void ElementRareDataVector::SetLastRememberedInlineSize(
+    absl::optional<LayoutUnit> size) {
+  SetOptionalField(FieldId::kLastRememberedInlineSize, size);
+}
+
+absl::optional<LayoutUnit> ElementRareDataVector::LastRememberedBlockSize()
+    const {
+  return GetOptionalField<LayoutUnit>(FieldId::kLastRememberedBlockSize);
+}
+absl::optional<LayoutUnit> ElementRareDataVector::LastRememberedInlineSize()
+    const {
+  return GetOptionalField<LayoutUnit>(FieldId::kLastRememberedInlineSize);
 }
 
 PopoverData* ElementRareDataVector::GetPopoverData() const {
@@ -379,25 +389,37 @@ AnchorScrollData& ElementRareDataVector::EnsureAnchorScrollData(
                                        owner_element);
 }
 
-void ElementRareDataVector::IncrementAnchoredPopoverCount() {
-  EnsureWrappedField<wtf_size_t>(FieldId::kAnchoredPopoverCount)++;
+AnchorElementObserver& ElementRareDataVector::EnsureAnchorElementObserver(
+    HTMLElement* element) {
+  DCHECK(!GetAnchorElementObserver() ||
+         GetAnchorElementObserver()->GetElement() == element);
+  return EnsureField<AnchorElementObserver>(FieldId::kAnchorElementObserver,
+                                            element);
 }
-void ElementRareDataVector::DecrementAnchoredPopoverCount() {
-  wtf_size_t& popover_count =
-      EnsureWrappedField<wtf_size_t>(FieldId::kAnchoredPopoverCount);
-  DCHECK(popover_count);
-  popover_count--;
+
+AnchorElementObserver* ElementRareDataVector::GetAnchorElementObserver() const {
+  return static_cast<AnchorElementObserver*>(
+      GetField(FieldId::kAnchorElementObserver));
 }
-bool ElementRareDataVector::HasAnchoredPopover() const {
-  wtf_size_t* popover_count =
-      GetWrappedField<wtf_size_t>(FieldId::kAnchoredPopoverCount);
-  return popover_count ? *popover_count : false;
+
+void ElementRareDataVector::IncrementImplicitlyAnchoredElementCount() {
+  EnsureWrappedField<wtf_size_t>(FieldId::kImplicitlyAnchoredElementCount)++;
+}
+void ElementRareDataVector::DecrementImplicitlyAnchoredElementCount() {
+  wtf_size_t& anchored_element_count =
+      EnsureWrappedField<wtf_size_t>(FieldId::kImplicitlyAnchoredElementCount);
+  DCHECK(anchored_element_count);
+  anchored_element_count--;
+}
+bool ElementRareDataVector::HasImplicitlyAnchoredElement() const {
+  wtf_size_t* anchored_element_count =
+      GetWrappedField<wtf_size_t>(FieldId::kImplicitlyAnchoredElementCount);
+  return anchored_element_count ? *anchored_element_count : false;
 }
 
 void ElementRareDataVector::Trace(blink::Visitor* visitor) const {
   visitor->Trace(fields_);
   NodeRareData::Trace(visitor);
-  ElementRareDataBase::Trace(visitor);
 }
 
 }  // namespace blink

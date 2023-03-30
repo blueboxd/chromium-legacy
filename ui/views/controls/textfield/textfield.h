@@ -26,6 +26,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/pointer/touch_editing_controller.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/font_list.h"
@@ -58,7 +59,6 @@ class ScopedPasswordInputEnabler;
 
 namespace views {
 
-class Label;
 class MenuRunner;
 class TextfieldController;
 class ViewsTextServicesContextMenu;
@@ -302,12 +302,6 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Clears Edit history.
   void ClearEditHistory();
-
-  // If the accessible name should be the same as the labelling view's text,
-  // use this. It will set the accessible label relationship and copy the
-  // accessible name from the labelling views's accessible name. Any view with
-  // an accessible name can be used, typically a Label, StyledLabel or Link.
-  void SetAssociatedLabel(View* labelling_view);
 
   // Set extra spacing placed between glyphs; used for obscured text styling.
   void SetObscuredGlyphSpacing(int spacing);
@@ -656,20 +650,20 @@ class VIEWS_EXPORT Textfield : public View,
   void OnEnabledChanged();
 
   // Drops the dragged text.
-  void DropDraggedText(const ui::DropTargetEvent& event,
-                       ui::mojom::DragOperation& output_drag_op);
+  void DropDraggedText(
+      const ui::DropTargetEvent& event,
+      ui::mojom::DragOperation& output_drag_op,
+      std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner);
 
   // Returns the corner radius of the text field.
   float GetCornerRadius();
 
-#if BUILDFLAG(IS_CHROMEOS)
   // Checks and updates the selection dragging state for the upcoming scroll
   // sequence, if required. If the scroll sequence starts while long pressing,
   // it will be used for adjusting the text selection. Otherwise, if the scroll
   // begins horizontally it will be used for cursor placement. Otherwise, the
   // scroll sequence won't be used for selection dragging.
   void MaybeStartSelectionDragging(ui::GestureEvent* event);
-#endif
 
   // The text model.
   std::unique_ptr<TextfieldModel> model_;

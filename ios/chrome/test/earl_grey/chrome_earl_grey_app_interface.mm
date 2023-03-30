@@ -33,6 +33,8 @@
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/default_browser/utils.h"
+#import "ios/chrome/browser/default_browser/utils_test_support.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -43,8 +45,6 @@
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils_test_support.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
@@ -809,6 +809,10 @@ NSString* SerializedValue(const base::Value* value) {
   chrome_test_util::AddTypedURLToFakeSyncServer(base::SysNSStringToUTF8(URL));
 }
 
++ (void)addFakeSyncServerHistoryVisit:(NSURL*)URL {
+  chrome_test_util::AddHistoryVisitToFakeSyncServer(net::GURLWithNSURL(URL));
+}
+
 + (void)addFakeSyncServerDeviceInfo:(NSString*)deviceName
                lastUpdatedTimestamp:(base::Time)lastUpdatedTimestamp {
   chrome_test_util::AddDeviceInfoToFakeSyncServer(
@@ -824,11 +828,11 @@ NSString* SerializedValue(const base::Value* value) {
       GURL(base::SysNSStringToUTF8(URL)));
 }
 
-+ (BOOL)isTypedURL:(NSString*)spec presentOnClient:(BOOL)expectPresent {
++ (BOOL)isURL:(NSString*)spec presentOnClient:(BOOL)expectPresent {
   NSError* error = nil;
   GURL URL(base::SysNSStringToUTF8(spec));
   BOOL success =
-      chrome_test_util::IsTypedUrlPresentOnClient(URL, expectPresent, &error);
+      chrome_test_util::IsUrlPresentOnClient(URL, expectPresent, &error);
   return success && !error;
 }
 
@@ -1174,10 +1178,6 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (BOOL)isWebChannelsEnabled {
   return base::FeatureList::IsEnabled(kEnableWebChannels);
-}
-
-+ (BOOL)isSFSymbolEnabled {
-  return UseSymbols();
 }
 
 + (BOOL)isUIButtonConfigurationEnabled {

@@ -782,13 +782,12 @@ class CacheStorageManagerTest : public testing::Test {
     return future.Get();
   }
 
-  blink::mojom::QuotaStatusCode DeleteStorageKeyData(
-      const std::set<blink::StorageKey>& storage_keys,
+  blink::mojom::QuotaStatusCode DeleteOriginData(
+      const std::set<url::Origin>& origins,
       storage::mojom::CacheStorageOwner owner =
           storage::mojom::CacheStorageOwner::kCacheAPI) {
     base::test::TestFuture<::blink::mojom::QuotaStatusCode> future;
-    cache_manager_->DeleteStorageKeyData(storage_keys, owner,
-                                         future.GetCallback());
+    cache_manager_->DeleteOriginData(origins, owner, future.GetCallback());
     return future.Get();
   }
 
@@ -2835,7 +2834,17 @@ TEST_P(CacheStorageManagerTestP, StoragePutPartialContentForBackgroundFetch) {
   EXPECT_EQ(206, callback_cache_handle_response_->status_code);
 }
 
-TEST_P(CacheStorageManagerTestP, BatchDeleteStorageKeyData) {
+TEST_P(CacheStorageManagerTestP, DeleteOriginDataEmptyList) {
+  std::set<url::Origin> empty_list;
+  for (const storage::mojom::CacheStorageOwner owner :
+       {storage::mojom::CacheStorageOwner::kCacheAPI,
+        storage::mojom::CacheStorageOwner::kBackgroundFetch}) {
+    EXPECT_EQ(DeleteOriginData(empty_list, owner),
+              blink::mojom::QuotaStatusCode::kOk);
+  }
+}
+
+TEST_P(CacheStorageManagerTestP, BatchDeleteOriginData) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       net::features::kThirdPartyStoragePartitioning);
@@ -2864,10 +2873,10 @@ TEST_P(CacheStorageManagerTestP, BatchDeleteStorageKeyData) {
 
     EXPECT_EQ(3ULL, GetStorageKeys(owner).size());
 
-    std::set<blink::StorageKey> to_delete = {storage_key1_, storage_key2_,
-                                             partitioned_storage_key1};
+    std::set<url::Origin> to_delete = {storage_key1_.origin(),
+                                       storage_key2_.origin()};
 
-    EXPECT_EQ(DeleteStorageKeyData(to_delete, owner),
+    EXPECT_EQ(DeleteOriginData(to_delete, owner),
               blink::mojom::QuotaStatusCode::kOk);
 
     auto storage_keys = GetStorageKeys(owner);
@@ -2913,9 +2922,8 @@ TEST_P(CacheStorageManagerTestP, DeleteStorageKeyData) {
               blink::mojom::QuotaStatusCode::kOk);
 
     auto storage_keys = GetStorageKeys(owner);
-    EXPECT_EQ(2ULL, storage_keys.size());
-    EXPECT_NE(storage_keys[0], storage_key1_);
-    EXPECT_NE(storage_keys[1], storage_key1_);
+    ASSERT_EQ(1ULL, storage_keys.size());
+    EXPECT_EQ(storage_keys[0], storage_key2_);
 
     EXPECT_EQ(DeleteStorageKeyData(partitioned_storage_key1, owner),
               blink::mojom::QuotaStatusCode::kOk);
@@ -2962,42 +2970,20 @@ TEST_P(CacheStorageManagerTestP, DeleteStorageKeyData) {
     EXPECT_EQ(DeleteStorageKeyData(partitioned_storage_key1, owner),
               blink::mojom::QuotaStatusCode::kOk);
 
-    // TODO(https://crbug.com/1218097): We don't currently delete named bucket
-    // data when `DeleteStorageKeyData()` is called, but when we do, update this
-    // test condition.
     usages = GetAllStorageKeysUsage(owner);
-    EXPECT_EQ(3ULL, usages.size());
-
-    storage_key1_index = usages[0]->storage_key == storage_key1_   ? 0
-                         : usages[1]->storage_key == storage_key1_ ? 1
-                                                                   : 2;
-    storage_key2_index = usages[0]->storage_key == storage_key2_   ? 0
-                         : usages[1]->storage_key == storage_key2_ ? 1
-                                                                   : 2;
-    partitioned_storage_key1_index =
-        usages[0]->storage_key == partitioned_storage_key1   ? 0
-        : usages[1]->storage_key == partitioned_storage_key1 ? 1
-                                                             : 2;
-    EXPECT_NE(storage_key1_index, storage_key2_index);
-    EXPECT_NE(storage_key2_index, partitioned_storage_key1_index);
-    EXPECT_NE(partitioned_storage_key1_index, storage_key1_index);
-
-    EXPECT_EQ(usages[storage_key2_index]->total_size_bytes,
-              usages[storage_key1_index]->total_size_bytes);
-    EXPECT_EQ(usages[partitioned_storage_key1_index]->total_size_bytes,
-              usages[storage_key2_index]->total_size_bytes);
+    EXPECT_EQ(1ULL, usages.size());
+    EXPECT_EQ(usages[0]->storage_key, storage_key2_);
 
     EXPECT_EQ(DeleteStorageKeyData(storage_key2_, owner),
               blink::mojom::QuotaStatusCode::kOk);
 
-    EXPECT_EQ(2ULL, GetAllStorageKeysUsage(owner).size());
+    EXPECT_EQ(0ULL, GetAllStorageKeysUsage(owner).size());
 
     if (!MemoryOnly()) {
       auto* legacy_manager =
           static_cast<CacheStorageManager*>(cache_manager_.get());
-      // TODO(https://crbug.com/1218097): When we support deleting named
-      // buckets, check that the files for those get deleted as well.
-      for (const auto& bucket_locator : {bucket_locator2_}) {
+      for (const auto& bucket_locator : {bucket_locator1_, bucket_locator2_,
+                                         partitioned_named_bucket_locator1}) {
         base::FilePath bucket_path = CacheStorageManager::ConstructBucketPath(
             legacy_manager->profile_path(), bucket_locator, owner);
         EXPECT_FALSE(base::PathExists(bucket_path));

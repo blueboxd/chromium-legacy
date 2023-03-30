@@ -1265,6 +1265,16 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                  GLsizei height,
                                  GLboolean unpack_flip_y,
                                  const volatile GLbyte* mailboxes);
+  void DoCopySharedImageToTextureINTERNAL(GLuint texture,
+                                          GLenum target,
+                                          GLuint internal_format,
+                                          GLenum type,
+                                          GLint src_x,
+                                          GLint src_y,
+                                          GLsizei width,
+                                          GLsizei height,
+                                          GLboolean flip_y,
+                                          const volatile GLbyte* src_mailbox);
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
@@ -1303,6 +1313,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoBeginPixelLocalStorageANGLE(GLsizei n, const volatile GLenum* loadops);
   void DoEndPixelLocalStorageANGLE(GLsizei n, const volatile GLenum* storeops);
   void DoPixelLocalStorageBarrierANGLE();
+  void DoFramebufferPixelLocalStorageInterruptANGLE();
+  void DoFramebufferPixelLocalStorageRestoreANGLE();
   void DoGetFramebufferPixelLocalStorageParameterfvANGLE(GLint plane,
                                                          GLenum pname,
                                                          GLfloat* params,
@@ -18608,6 +18620,20 @@ void GLES2DecoderImpl::DoCopySharedImageINTERNAL(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void GLES2DecoderImpl::DoCopySharedImageToTextureINTERNAL(
+    GLuint texture,
+    GLenum target,
+    GLuint internal_format,
+    GLenum type,
+    GLint src_x,
+    GLint src_y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean flip_y,
+    const volatile GLbyte* src_mailbox) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void GLES2DecoderImpl::DoInsertEventMarkerEXT(
     GLsizei length, const GLchar* marker) {
   if (!marker) {
@@ -19307,6 +19333,14 @@ void GLES2DecoderImpl::DoEndPixelLocalStorageANGLE(
 }
 
 void GLES2DecoderImpl::DoPixelLocalStorageBarrierANGLE() {
+  NOTIMPLEMENTED();
+}
+
+void GLES2DecoderImpl::DoFramebufferPixelLocalStorageInterruptANGLE() {
+  NOTIMPLEMENTED();
+}
+
+void GLES2DecoderImpl::DoFramebufferPixelLocalStorageRestoreANGLE() {
   NOTIMPLEMENTED();
 }
 

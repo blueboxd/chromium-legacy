@@ -123,7 +123,7 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/sync/trusted_vault_client_android.h"
 #else
-#include "components/sync/trusted_vault/standalone_trusted_vault_client.h"  // nogncheck
+#include "components/trusted_vault/standalone_trusted_vault_client.h"  // nogncheck
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
@@ -132,6 +132,11 @@
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN)
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/webauthn/passkey_model_factory.h"
+#include "components/webauthn/core/browser/passkey_model.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_util.h"
@@ -148,7 +153,6 @@
 #include "chrome/browser/ash/printing/printers_sync_bridge.h"
 #include "chrome/browser/ash/printing/synced_printers_manager.h"
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
-#include "chrome/browser/ash/sync/os_syncable_service_model_type_controller.h"
 #include "chrome/browser/sync/desk_sync_service_factory.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chromeos/ash/components/sync_wifi/wifi_configuration_sync_service.h"
@@ -261,12 +265,14 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
   account_password_store_ = AccountPasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
+  // TODO(https://crbug.com/1404250): Pass AccountBookmarkSyncServiceFactory
+  //                                  when it is available.
   component_factory_ = std::make_unique<SyncApiComponentFactoryImpl>(
       this, chrome::GetChannel(), content::GetUIThreadTaskRunner({}),
       web_data_service_thread_, profile_web_data_service_,
       account_web_data_service_, profile_password_store_,
       account_password_store_,
-      BookmarkSyncServiceFactory::GetForProfile(profile_),
+      BookmarkSyncServiceFactory::GetForProfile(profile_), nullptr,
       PowerBookmarkServiceFactory::GetForBrowserContext(profile_));
 
   signin::IdentityManager* identity_manager =
@@ -429,7 +435,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
         syncer::EXTENSIONS, model_type_store_factory,
         GetSyncableServiceForType(syncer::EXTENSIONS), dump_stack,
-        ExtensionModelTypeController::DelegateMode::kFullSyncModeOnly,
+        ExtensionModelTypeController::DelegateMode::kLegacyFullSyncModeOnly,
         profile_));
 
     // Extension setting sync is enabled by default.
@@ -438,7 +444,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
         extensions::settings_sync_util::GetSyncableServiceProvider(
             profile_, syncer::EXTENSION_SETTINGS),
         dump_stack,
-        ExtensionSettingModelTypeController::DelegateMode::kFullSyncModeOnly,
+        ExtensionSettingModelTypeController::DelegateMode::
+            kLegacyFullSyncModeOnly,
         profile_));
 
     if (IsAppSyncEnabled(profile_)) {
@@ -458,14 +465,16 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
         syncer::THEMES, model_type_store_factory,
         GetSyncableServiceForType(syncer::THEMES), dump_stack,
-        ExtensionModelTypeController::DelegateMode::kFullSyncModeOnly,
+        ExtensionModelTypeController::DelegateMode::kLegacyFullSyncModeOnly,
         profile_));
 
     // Search Engine sync is enabled by default.
     controllers.push_back(
         std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
             syncer::SEARCH_ENGINES, model_type_store_factory,
-            GetSyncableServiceForType(syncer::SEARCH_ENGINES), dump_stack));
+            GetSyncableServiceForType(syncer::SEARCH_ENGINES), dump_stack,
+            syncer::SyncableServiceBasedModelTypeController::DelegateMode::
+                kLegacyFullSyncModeOnly));
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
@@ -488,7 +497,9 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       controllers.push_back(
           std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
               syncer::DICTIONARY, model_type_store_factory,
-              GetSyncableServiceForType(syncer::DICTIONARY), dump_stack));
+              GetSyncableServiceForType(syncer::DICTIONARY), dump_stack,
+              syncer::SyncableServiceBasedModelTypeController::DelegateMode::
+                  kLegacyFullSyncModeOnly));
     }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
   }
@@ -501,10 +512,11 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       !ash::switches::IsTabletFormFactor()) {
     // Runs in sync transport-mode and full-sync mode.
     controllers.push_back(
-        std::make_unique<OsSyncableServiceModelTypeController>(
+        std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
             syncer::APP_LIST, model_type_store_factory,
             GetSyncableServiceForType(syncer::APP_LIST), dump_stack,
-            profile_->GetPrefs(), sync_service));
+            syncer::SyncableServiceBasedModelTypeController::DelegateMode::
+                kTransportModeWithSingleModel));
   }
 
   if (arc::IsArcAllowedForProfile(profile_) &&
@@ -514,14 +526,19 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
         GetSyncableServiceForType(syncer::ARC_PACKAGE), dump_stack,
         sync_service, profile_));
   }
-  controllers.push_back(std::make_unique<OsSyncableServiceModelTypeController>(
-      syncer::OS_PREFERENCES, model_type_store_factory,
-      GetSyncableServiceForType(syncer::OS_PREFERENCES), dump_stack,
-      profile_->GetPrefs(), sync_service));
-  controllers.push_back(std::make_unique<OsSyncableServiceModelTypeController>(
-      syncer::OS_PRIORITY_PREFERENCES, model_type_store_factory,
-      GetSyncableServiceForType(syncer::OS_PRIORITY_PREFERENCES), dump_stack,
-      profile_->GetPrefs(), sync_service));
+  controllers.push_back(
+      std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
+          syncer::OS_PREFERENCES, model_type_store_factory,
+          GetSyncableServiceForType(syncer::OS_PREFERENCES), dump_stack,
+          syncer::SyncableServiceBasedModelTypeController::DelegateMode::
+              kTransportModeWithSingleModel));
+  controllers.push_back(
+      std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
+          syncer::OS_PRIORITY_PREFERENCES, model_type_store_factory,
+          GetSyncableServiceForType(syncer::OS_PRIORITY_PREFERENCES),
+          dump_stack,
+          syncer::SyncableServiceBasedModelTypeController::DelegateMode::
+              kTransportModeWithSingleModel));
 
   syncer::ModelTypeControllerDelegate* printers_delegate =
       GetControllerDelegateForModelType(syncer::PRINTERS).get();
@@ -695,6 +712,13 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->GetControllerDelegate();
     }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+#if !BUILDFLAG(IS_ANDROID)
+    case syncer::WEBAUTHN_CREDENTIAL: {
+      DCHECK(base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials));
+      return PasskeyModelFactory::GetForProfile(profile_)
+          ->GetModelTypeControllerDelegate();
+    }
+#endif  //  !BUILDFLAG(IS_ANDROID)
     // We don't exercise this function for certain datatypes, because their
     // controllers get the delegate elsewhere.
     case syncer::AUTOFILL:
@@ -739,7 +763,7 @@ void ChromeSyncClient::OnLocalSyncTransportDataCleared() {
 std::unique_ptr<syncer::ModelTypeController>
 ChromeSyncClient::CreateAppsModelTypeController() {
   auto delegate_mode =
-      ExtensionModelTypeController::DelegateMode::kFullSyncModeOnly;
+      ExtensionModelTypeController::DelegateMode::kLegacyFullSyncModeOnly;
   if (ShouldSyncAppsTypesInTransportMode()) {
     delegate_mode = ExtensionModelTypeController::DelegateMode::
         kTransportModeWithSingleModel;
@@ -753,8 +777,8 @@ ChromeSyncClient::CreateAppsModelTypeController() {
 std::unique_ptr<syncer::ModelTypeController>
 ChromeSyncClient::CreateAppSettingsModelTypeController(
     syncer::SyncService* sync_service) {
-  auto delegate_mode =
-      ExtensionSettingModelTypeController::DelegateMode::kFullSyncModeOnly;
+  auto delegate_mode = ExtensionSettingModelTypeController::DelegateMode::
+      kLegacyFullSyncModeOnly;
   if (ShouldSyncAppsTypesInTransportMode()) {
     delegate_mode = ExtensionSettingModelTypeController::DelegateMode::
         kTransportModeWithSingleModel;

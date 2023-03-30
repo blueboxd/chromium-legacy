@@ -19,12 +19,12 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.Stage;
 import android.view.View;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.MediumTest;
+import androidx.test.runner.lifecycle.Stage;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -400,6 +400,7 @@ public class StartSurfaceBackButtonTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
+    @DisabledTest(message = "https://crbug.com/1429106")
     public void testBackButtonOnIncognitoTabOpenedFromStart() throws ExecutionException {
         // This is a test for crbug.com/1315915 to make sure when clicking back button on the
         // incognito tab opened from Start, the non-incognito homepage should show.

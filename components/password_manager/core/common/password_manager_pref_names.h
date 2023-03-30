@@ -228,6 +228,22 @@ extern const char kHadBiometricsAvailable[];
 // TODO(crbug.com/1420597): Remove this after Passwords Grouping launch.
 extern const char kPasswordsGroupingInfoRequested[];
 
+#if BUILDFLAG(IS_IOS)
+// Boolean pref indicating if the one-time notice for account storage was shown.
+// The notice informs passwords will start being saved to the signed-in account.
+extern const char kAccountStorageNoticeShown[];
+
+// Integer value indicating the number of times the "new feature icon" was
+// displayed with the account storage opt-out toggle.
+extern const char kAccountStorageNewFeatureIconImpressions[];
+#endif  // BUILDFLAG(IS_IOS)
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+// A list of available promo cards with related information which are displayed
+// in the Password Manager UI.
+extern const char kPasswordManagerPromoCardsList[];
+#endif
+
 }  // namespace prefs
 }  // namespace password_manager
 

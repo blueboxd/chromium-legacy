@@ -22,12 +22,17 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "ui/accessibility/ax_node_data.h"
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
 namespace chrome_pdf {
 
 class PdfAccessibilityActionHandler;
 struct AccessibilityActionData;
 struct AccessibilityCharInfo;
 struct AccessibilityDocInfo;
+struct AccessibilityImageInfo;
 struct AccessibilityPageInfo;
 struct AccessibilityPageObjects;
 struct AccessibilityTextRunInfo;
@@ -127,9 +132,15 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   // adds a page node hosting a child tree containing the page contents which
   // will later be provided by the OCR Service.
   void OnOcrDataReceived(const ui::AXNodeID& image_node_id,
-                         const gfx::RectF& image_bounds,
+                         const chrome_pdf::AccessibilityImageInfo& image,
                          const ui::AXNodeID& parent_node_id,
                          const ui::AXTreeID& child_tree_id);
+
+  // Increment the number of remaining OCR requests by one. This function will
+  // be called whenever PdfAccessibilityTreeBuilder is about to send an OCR
+  // request to the Screen AI library. The number of remaining OCR requests
+  // will decrement by one in `OnOcrDataReceived()`.
+  void IncrementNumberOfRemainingOcrRequests();
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   bool ShowContextMenu();
@@ -161,6 +172,15 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   // Finishes assembling a complete accessibility tree and grafts it
   // onto the host tree.
   void Finish();
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  // Called after the OCR data for all images in the PDF have been received.
+  // Finishes updating the status node.
+  void FinishWithStatus();
+
+  // Set the status node's message.
+  void SetStatusMessage(int message_id);
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   void AddPageContent(
       ui::AXNodeData* page_node,
@@ -241,7 +261,12 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   bool did_get_a_text_run_ = false;
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  // The status node contains a notification message for the user. It will be
+  // owned by `nodes_` defined above.
+  ui::AXNodeData* ocr_status_node_ = nullptr;
   std::unique_ptr<PdfOcrService> ocr_service_;
+  // The number of remaining OCR service requests.
+  uint32_t num_remaining_ocr_requests_ = 0;
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   base::WeakPtrFactory<PdfAccessibilityTree> weak_ptr_factory_{this};

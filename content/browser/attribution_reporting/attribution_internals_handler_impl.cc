@@ -26,6 +26,7 @@
 #include "components/aggregation_service/parsing_utils.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/os_support.mojom.h"
 #include "components/attribution_reporting/parsing_utils.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
@@ -35,6 +36,7 @@
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
+#include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
@@ -54,7 +56,13 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/abseil-cpp/absl/utility/utility.h"
+#include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
+#include "content/browser/attribution_reporting/os_registration.h"
+#endif
 
 namespace content {
 
@@ -232,7 +240,10 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
           /*destination_origin=*/nullptr, /*reporting_origin=*/nullptr);
   bool debug_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAttributionReportingDebugMode);
-  std::move(callback).Run(attribution_reporting_enabled, debug_mode);
+  bool has_os_support = AttributionManager::GetOsSupport() ==
+                        attribution_reporting::mojom::OsSupport::kEnabled;
+  std::move(callback).Run(attribution_reporting_enabled, debug_mode,
+                          has_os_support);
 }
 
 void AttributionInternalsHandlerImpl::GetActiveSources(
@@ -396,6 +407,25 @@ void AttributionInternalsHandlerImpl::OnFailedSourceRegistration(
 
   observer_->OnSourceHandled(std::move(web_ui_source));
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void AttributionInternalsHandlerImpl::OnOsRegistration(
+    base::Time time,
+    const OsRegistration& registration,
+    bool is_debug_key_allowed,
+    attribution_reporting::mojom::OsRegistrationResult result) {
+  auto web_ui_os_registration =
+      attribution_internals::mojom::WebUIOsRegistration::New();
+  web_ui_os_registration->time = time.ToJsTimeIgnoringNull();
+  web_ui_os_registration->registration_url = registration.registration_url;
+  web_ui_os_registration->top_level_origin = registration.top_level_origin;
+  web_ui_os_registration->is_debug_key_allowed = is_debug_key_allowed;
+  web_ui_os_registration->type = registration.GetType();
+  web_ui_os_registration->result = result;
+
+  observer_->OnOsRegistration(std::move(web_ui_os_registration));
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace {
 

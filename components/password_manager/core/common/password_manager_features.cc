@@ -30,6 +30,12 @@ BASE_FEATURE(kBiometricTouchToFill,
              "BiometricTouchToFill",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Disables fallback filling if the server or the autocomplete attribute says it
+// is a credit card field.
+BASE_FEATURE(kDisablePasswordsDropdownForCvcFields,
+             "DisablePasswordsDropdownForCvcFields",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the overwriting of prefilled username fields if the server predicted
 // the field to contain a placeholder value.
 BASE_FEATURE(kEnableOverwritingPlaceholderUsernames,
@@ -273,7 +279,7 @@ BASE_FEATURE(kUnifiedPasswordManagerReenrollment,
 // icon.
 BASE_FEATURE(kUnifiedPasswordManagerAndroidBranding,
              "UnifiedPasswordManagerAndroidBranding",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables new exploratory strings for the save/update password prompts.
 BASE_FEATURE(kExploratorySaveUpdatePasswordStrings,
@@ -329,9 +335,10 @@ extern const base::FeatureParam<int> kMaxShownUPMErrorsBeforeEviction = {
     "max_shown_auth_errors_before_eviction", -1};
 
 // The string version to use for the save/update password prompts when the user
-// is syncing passwords. The only supported versions currently are 1 and 2.
+// is syncing passwords. Version 1 is outdated, so the only supported versions
+// currently are 2 and 3.
 extern const base::FeatureParam<int> kSaveUpdatePromptSyncingStringVersion = {
-    &kExploratorySaveUpdatePasswordStrings, "syncing_string_version", 1};
+    &kExploratorySaveUpdatePasswordStrings, "syncing_string_version", 2};
 #endif
 
 // Field trial identifier for password generation requirements.

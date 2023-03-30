@@ -9,14 +9,18 @@
 #include <set>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/value_map_pref_store.h"
+#include "components/sync/base/model_type.h"
 
 namespace sync_preferences {
+
+class PrefModelAssociatorClient;
 
 // A two-layer user PrefStore that combines local preferences (scoped to this
 // profile) with account-scoped preferences (scoped to the user's signed-in
@@ -29,11 +33,20 @@ namespace sync_preferences {
 //   account store.
 class DualLayerUserPrefStore : public PersistentPrefStore {
  public:
-  explicit DualLayerUserPrefStore(
-      scoped_refptr<PersistentPrefStore> local_pref_store);
+  DualLayerUserPrefStore(
+      scoped_refptr<PersistentPrefStore> local_pref_store,
+      const PrefModelAssociatorClient* pref_model_associator_client);
 
   DualLayerUserPrefStore(const DualLayerUserPrefStore&) = delete;
   DualLayerUserPrefStore& operator=(const DualLayerUserPrefStore&) = delete;
+
+  // Marks `model_type` as enabled for account storage. This should be called
+  // when a data type starts syncing.
+  void EnableType(syncer::ModelType model_type);
+  // Unmarks `model_type` as enabled for account storage and removes all
+  // corresponding preference entries(belonging to this type) from account
+  // storage. This should be called when a data type stops syncing.
+  void DisableTypeAndClearAccountStore(syncer::ModelType model_type);
 
   scoped_refptr<PersistentPrefStore> GetLocalPrefStore();
   scoped_refptr<WriteablePrefStore> GetAccountPrefStore();
@@ -96,7 +109,7 @@ class DualLayerUserPrefStore : public PersistentPrefStore {
   };
 
   // Returns whether the pref with the given `key` is registered as syncable.
-  bool IsPrefKeySyncable(base::StringPiece key) const;
+  bool IsPrefKeySyncable(const std::string& key) const;
 
   // The two underlying pref stores, scoped to this device/profile and to the
   // user's signed-in account, respectively.
@@ -108,11 +121,17 @@ class DualLayerUserPrefStore : public PersistentPrefStore {
   UnderlyingPrefStoreObserver local_pref_store_observer_;
   UnderlyingPrefStoreObserver account_pref_store_observer_;
 
+  // List of preference types currently syncing.
+  base::flat_set<syncer::ModelType> active_types_;
+
   // Set to true while this store is setting prefs in the underlying stores.
   // Used to avoid self-notifications.
   bool is_setting_prefs_ = false;
 
   base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
+
+  const raw_ptr<const PrefModelAssociatorClient> pref_model_associator_client_ =
+      nullptr;
 };
 
 }  // namespace sync_preferences

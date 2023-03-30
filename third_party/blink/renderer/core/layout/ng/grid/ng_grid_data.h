@@ -7,7 +7,9 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_line_resolver.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_subtree.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_track_collection.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -132,10 +134,14 @@ class CORE_EXPORT NGGridLayoutData {
     return AreEqual(columns_, other.columns_) && AreEqual(rows_, other.rows_);
   }
 
+  bool operator!=(const NGGridLayoutData& other) const {
+    return !(*this == other);
+  }
+
   bool HasSubgriddedAxis(GridTrackSizingDirection track_direction) const {
-    return !((track_direction == kForColumns)
-                 ? columns_ && columns_->IsForSizing()
-                 : rows_ && rows_->IsForSizing());
+    return (track_direction == kForColumns)
+               ? !(columns_ && columns_->IsForSizing())
+               : !(rows_ && rows_->IsForSizing());
   }
 
   NGGridLayoutTrackCollection& Columns() const {
@@ -156,10 +162,6 @@ class CORE_EXPORT NGGridLayoutData {
         (track_direction == kForColumns) ? Columns() : Rows());
   }
 
-  // TODO(ethavar): This two should disappear in the upcoming patch.
-  const NGGridLayoutTrackCollection* columns() const { return columns_.get(); }
-  const NGGridLayoutTrackCollection* rows() const { return rows_.get(); }
-
   void SetTrackCollection(
       std::unique_ptr<NGGridLayoutTrackCollection> track_collection) {
     DCHECK(track_collection);
@@ -176,6 +178,103 @@ class CORE_EXPORT NGGridLayoutData {
   std::unique_ptr<NGGridLayoutTrackCollection> rows_;
 };
 
+// Subgrid layout relies on the root grid to perform the track sizing algorithm
+// for every level of nested subgrids. This class contains the finalized layout
+// data of every node in a grid tree (see `ng_grid_subtree.h`), which will be
+// passed down to the constraint space of a subgrid to perform layout.
+//
+// Note that this class allows subtrees to be compared for equality; this is
+// important because when we store this tree within a constraint space we want
+// to be able to invalidate the cached layout result of a subgrid based on
+// whether the provided subtree's track were sized exactly the same.
+class NGGridLayoutTree : public RefCounted<NGGridLayoutTree> {
+ public:
+  struct GridTreeNode {
+    NGGridLayoutData layout_data;
+    wtf_size_t subtree_size;
+  };
+
+  explicit NGGridLayoutTree(wtf_size_t initial_capacity) {
+    tree_data_.ReserveInitialCapacity(initial_capacity);
+  }
+
+  void Append(const NGGridLayoutData& layout_data, wtf_size_t subtree_size) {
+    GridTreeNode grid_node_data{layout_data, subtree_size};
+    tree_data_.emplace_back(std::move(grid_node_data));
+  }
+
+  bool AreSubtreesEqual(wtf_size_t subtree_root,
+                        const NGGridLayoutTree& other,
+                        wtf_size_t other_subtree_root) const {
+    const wtf_size_t subtree_size = SubtreeSize(subtree_root);
+
+    if (subtree_size != other.SubtreeSize(other_subtree_root)) {
+      return false;
+    }
+
+    for (wtf_size_t i = 0; i < subtree_size; ++i) {
+      if (other.LayoutData(other_subtree_root + i) !=
+          LayoutData(subtree_root + i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  const NGGridLayoutData& LayoutData(wtf_size_t index) const {
+    DCHECK_LT(index, tree_data_.size());
+    return tree_data_[index].layout_data;
+  }
+
+  wtf_size_t Size() const { return tree_data_.size(); }
+
+  wtf_size_t SubtreeSize(wtf_size_t index) const {
+    DCHECK_LT(index, tree_data_.size());
+    return tree_data_[index].subtree_size;
+  }
+
+ private:
+  Vector<GridTreeNode, 16> tree_data_;
+};
+
+// This class represents a subtree in a `NGGridLayoutTree` and mostly serves two
+// purposes: provide seamless iteration over the tree structure and compare
+// input subtrees to invalidate a subgrid's cached layout result.
+class NGGridLayoutSubtree
+    : public NGGridSubtree<NGGridLayoutSubtree,
+                           scoped_refptr<const NGGridLayoutTree>> {
+  DISALLOW_NEW();
+
+ public:
+  NGGridLayoutSubtree() = default;
+
+  explicit NGGridLayoutSubtree(
+      scoped_refptr<const NGGridLayoutTree>&& layout_tree)
+      : NGGridSubtree(std::move(layout_tree)) {}
+
+  NGGridLayoutSubtree(const scoped_refptr<const NGGridLayoutTree>& layout_tree,
+                      wtf_size_t parent_end_index,
+                      wtf_size_t subtree_root)
+      : NGGridSubtree(layout_tree, parent_end_index, subtree_root) {}
+
+  // This method is meant to be used for layout invalidation, so we only care
+  // about comparing the layout data of both subtrees.
+  bool operator==(const NGGridLayoutSubtree& other) const {
+    return (grid_tree_ && other.grid_tree_)
+               ? grid_tree_->AreSubtreesEqual(subtree_root_, *other.grid_tree_,
+                                              other.subtree_root_)
+               : !grid_tree_ && !other.grid_tree_;
+  }
+
+  const NGGridLayoutData& SubtreeRootData() const {
+    DCHECK(grid_tree_);
+    return grid_tree_->LayoutData(subtree_root_);
+  }
+};
+
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(
+    blink::NGGridLayoutTree::GridTreeNode)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_DATA_H_

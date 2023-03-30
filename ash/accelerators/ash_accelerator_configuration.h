@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/accelerator_configuration.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/mojom/accelerator_configuration.mojom-shared.h"
 #include "ash/public/mojom/accelerator_configuration.mojom.h"
 #include "ash/public/mojom/accelerator_info.mojom.h"
 #include "base/containers/flat_set.h"
@@ -77,23 +78,8 @@ class ASH_EXPORT AshAcceleratorConfiguration : public AcceleratorConfiguration {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  AcceleratorAction* FindAcceleratorAction(const ui::Accelerator& accelerator) {
-    return accelerator_to_id_.Find(accelerator);
-  }
-
   const AcceleratorAction* FindAcceleratorAction(
-      const ui::Accelerator& accelerator) const {
-    return accelerator_to_id_.Find(accelerator);
-  }
-
-  AcceleratorAction& GetAcceleratorAction(const ui::Accelerator& accelerator) {
-    return accelerator_to_id_.Get(accelerator);
-  }
-
-  const AcceleratorAction& GetAcceleratorAction(
-      const ui::Accelerator& accelerator) const {
-    return accelerator_to_id_.Get(accelerator);
-  }
+      const ui::Accelerator& accelerator) const;
 
   const std::vector<ui::Accelerator>& GetAllAccelerators() {
     return accelerators_;
@@ -133,13 +119,18 @@ class ASH_EXPORT AshAcceleratorConfiguration : public AcceleratorConfiguration {
       AcceleratorActionId action_id,
       const ui::Accelerator& accelerator);
 
+  // Adds the accelerator, does not notify observers.
+  mojom::AcceleratorConfigResult DoAddAccelerator(
+      AcceleratorActionId action_id,
+      const ui::Accelerator& accelerator);
+
   void NotifyAcceleratorsUpdated();
 
   void UpdateAndNotifyAccelerators();
 
   std::vector<ui::Accelerator> accelerators_;
 
-  base::flat_set<ui::Accelerator> deprecated_accelerators_;
+  AcceleratorActionMap deprecated_accelerators_to_id_;
 
   // A map of accelerator ID's that are deprecated.
   std::map<AcceleratorActionId, const DeprecatedAcceleratorData*>
@@ -159,6 +150,9 @@ class ASH_EXPORT AshAcceleratorConfiguration : public AcceleratorConfiguration {
   // data is set.
   ActionIdToAcceleratorsMap default_id_to_accelerators_cache_;
   AcceleratorActionMap default_accelerators_to_id_cache_;
+  std::map<AcceleratorActionId, const DeprecatedAcceleratorData*>
+      default_actions_with_deprecations_cache_;
+  AcceleratorActionMap default_deprecated_accelerators_to_id_cache_;
 
   // List of all observer clients.
   base::ObserverList<Observer> observer_list_;

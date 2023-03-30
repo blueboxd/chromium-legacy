@@ -134,11 +134,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     {::switches::kHeadless, std::cref(blink::features::kPaintHolding),
      base::FeatureList::OVERRIDE_DISABLE_FEATURE},
 
-    // Override for --durable-client-hints-cache.
-    {switches::kDurableClientHintsCache,
-     std::cref(blink::features::kDurableClientHintsCache),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-
     // Override for --reduce-user-agent-minor-version.
     {switches::kReduceUserAgentMinorVersion,
      std::cref(blink::features::kReduceUserAgentMinorVersion),
@@ -175,6 +170,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnablePrivacySandboxAdsApis,
      std::cref(blink::features::kConversionMeasurement),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnablePrivacySandboxAdsApis,
+     std::cref(blink::features::kAttributionReportingCrossAppWeb),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnablePrivacySandboxAdsApis,
      std::cref(blink::features::kFencedFrames),

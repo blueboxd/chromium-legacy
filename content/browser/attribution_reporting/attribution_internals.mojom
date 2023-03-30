@@ -8,6 +8,7 @@ import "components/attribution_reporting/registration.mojom";
 import "components/attribution_reporting/source_registration_error.mojom";
 import "components/attribution_reporting/source_type.mojom";
 import "content/browser/attribution_reporting/store_source_result.mojom";
+import "content/browser/attribution_reporting/attribution_reporting.mojom";
 import "services/network/public/mojom/attribution.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -179,6 +180,19 @@ struct WebUISourceRegistration {
   SourceStatus status;
 };
 
+// Struct containing info of successfully passed OS registrations to be
+// displayed as a log by WebUI.
+struct WebUIOsRegistration {
+  // Contains msec since the Unix epoch, as returned by
+  // base::Time::ToJsTimeIgnoringNull().
+  double time;
+  url.mojom.Url registration_url;
+  url.mojom.Origin top_level_origin;
+  bool is_debug_key_allowed;
+  attribution_reporting.mojom.OsRegistrationType type;
+  attribution_reporting.mojom.OsRegistrationResult result;
+};
+
 // Observer for events relevant to the attribution internals WebUI.
 interface Observer {
   // Called when the sources in storage changed, indicating that the observer
@@ -204,14 +218,18 @@ interface Observer {
 
   // Called when a trigger is registered, regardless of success or failure.
   OnTriggerHandled(WebUITrigger trigger);
+
+  // Called when an OS source or trigger is registered, regardless of success
+  // or failure.
+  OnOsRegistration(WebUIOsRegistration registration);
 };
 
 // Mojo interface for the attribution internals WebUI to communicate with the
 // storage layer.
 interface Handler {
-  // Returns whether attribution reporting and the debug mode are enabled in
-  // the browsing context the WebUI is in.
-  IsAttributionReportingEnabled() => (bool enabled, bool debug_mode);
+  // Returns the state of the Attribution Reporting API in the WebUI's browsing context.
+  IsAttributionReportingEnabled() => (bool enabled, bool debug_mode,
+                                      bool has_os_support);
 
   // Returns all active sources that are persisted in storage. This does
   // not include expired sources, or sources that can no longer be attributed

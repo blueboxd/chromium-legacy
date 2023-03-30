@@ -207,7 +207,10 @@ class ChromeAutofillClient : public ContentAutofillClient,
       const FormFieldData& field,
       base::WeakPtr<AutofillManager> autofill_manager) override;
   void HideFastCheckout(bool allow_further_runs) override;
-  bool IsFastCheckoutSupported() override;
+  bool IsFastCheckoutSupported(
+      const FormData& form,
+      const FormFieldData& field,
+      const AutofillManager& autofill_manager) override;
   bool IsShowingFastCheckoutUI() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
@@ -243,6 +246,9 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void PropagateAutofillPredictions(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) override;
+  void DidFillOrPreviewForm(mojom::RendererFormDataAction action,
+                            AutofillTriggerSource trigger_source,
+                            bool is_refill) override;
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
@@ -311,7 +317,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
       card_expiration_date_fix_flow_controller_;
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
   SaveUpdateAddressProfileFlowManager save_update_address_profile_flow_manager_;
-  TouchToFillCreditCardController touch_to_fill_credit_card_controller_;
+  TouchToFillCreditCardController touch_to_fill_credit_card_controller_{this};
 #endif
   std::unique_ptr<CardUnmaskPromptControllerImpl> unmask_controller_;
   AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;

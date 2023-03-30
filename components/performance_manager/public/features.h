@@ -15,8 +15,16 @@
 
 namespace performance_manager::features {
 
-// The feature that gates whether or not the PM runs on the main (UI) thread.
+// If enabled the PM runs on the main (UI) thread. Incompatible with
+// kRunOnDedicatedThreadPoolThread.
 BASE_DECLARE_FEATURE(kRunOnMainThread);
+
+// If enabled the PM runs on a single ThreadPool thread that isn't shared with
+// any other task runners. It will be named "Performance Manager" in traces.
+// This makes it easy to identify tasks running on the PM sequence, but may not
+// perform as well as a shared sequence, which is the default. Incompatible with
+// kRunOnMainThread.
+BASE_DECLARE_FEATURE(kRunOnDedicatedThreadPoolThread);
 
 #if !BUILDFLAG(IS_ANDROID)
 
@@ -80,8 +88,14 @@ extern const base::FeatureParam<int>
 BASE_DECLARE_FEATURE(kHeuristicMemorySaver);
 
 // Controls the interval at which HeuristicMemorySaverPolicy checks whether the
-// amount of available memory is smaller than the discarding threshold.
-extern const base::FeatureParam<int> kHeuristicMemorySaverHeartbeatSeconds;
+// amount of available memory is smaller than the discarding threshold. The
+// "ThresholdReached" version is used when the device is past the threshold
+// specified by `kHeuristicMemorySaverAvailableMemoryThresholdPercent` and the
+// "ThresholdNotReached" version is used otherwise.
+extern const base::FeatureParam<int>
+    kHeuristicMemorySaverThresholdReachedHeartbeatSeconds;
+extern const base::FeatureParam<int>
+    kHeuristicMemorySaverThresholdNotReachedHeartbeatSeconds;
 
 // The percentage of available physical memory at which
 // HeuristicMemorySaverPolicy will start discarding tabs. For example, setting

@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
@@ -108,20 +107,24 @@ void Label::SetText(const std::u16string& new_text) {
   if (new_text == GetText())
     return;
 
-  if (GetAccessibleName().empty() || GetAccessibleName() == GetText()) {
+  std::u16string current_text = GetText();
+  full_text_->SetText(new_text);
+  ClearDisplayText();
+
+  if (GetAccessibleName().empty() || GetAccessibleName() == current_text) {
     SetAccessibleName(new_text);
   }
 
-  full_text_->SetText(new_text);
-  ClearDisplayText();
   OnPropertyChanged(&full_text_ + kLabelText,
                     kPropertyEffectsPreferredSizeChanged);
   stored_selection_range_ = gfx::Range::InvalidRange();
 }
 
-const std::u16string& Label::GetAccessibleName() const {
-  return View::GetAccessibleName().empty() ? full_text_->GetDisplayText()
-                                           : View::GetAccessibleName();
+void Label::AdjustAccessibleName(std::u16string& new_name,
+                                 ax::mojom::NameFrom& name_from) {
+  if (new_name.empty()) {
+    new_name = full_text_->GetDisplayText();
+  }
 }
 
 int Label::GetTextContext() const {
@@ -137,6 +140,11 @@ void Label::SetTextContext(int text_context) {
   ClearDisplayText();
   if (GetWidget())
     UpdateColorsFromTheme();
+
+  SetAccessibleRole(text_context_ == style::CONTEXT_DIALOG_TITLE
+                        ? ax::mojom::Role::kTitleBar
+                        : ax::mojom::Role::kStaticText);
+
   OnPropertyChanged(&text_context_, kPropertyEffectsPreferredSizeChanged);
 }
 
@@ -465,6 +473,7 @@ void Label::SetTooltipText(const std::u16string& tooltip_text) {
   if (tooltip_text_ == tooltip_text)
     return;
   tooltip_text_ = tooltip_text;
+  TooltipTextChanged();
   OnPropertyChanged(&tooltip_text_, kPropertyEffectsNone);
 }
 
@@ -711,15 +720,6 @@ bool Label::GetCanProcessEventsWithinSubtree() const {
 
 WordLookupClient* Label::GetWordLookupClient() {
   return this;
-}
-
-void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (text_context_ == style::CONTEXT_DIALOG_TITLE)
-    node_data->role = ax::mojom::Role::kTitleBar;
-  else
-    node_data->role = ax::mojom::Role::kStaticText;
-
-  node_data->SetName(GetAccessibleName());
 }
 
 std::u16string Label::GetTooltipText(const gfx::Point& p) const {
@@ -1142,6 +1142,11 @@ void Label::Init(const std::u16string& text,
   full_text_->SetMinLineHeight(GetLineHeight());
   UpdateFullTextElideBehavior();
   full_text_->SetDirectionalityMode(directionality_mode);
+
+  SetAccessibilityProperties(text_context_ == style::CONTEXT_DIALOG_TITLE
+                                 ? ax::mojom::Role::kTitleBar
+                                 : ax::mojom::Role::kStaticText,
+                             text);
 
   SetText(text);
 

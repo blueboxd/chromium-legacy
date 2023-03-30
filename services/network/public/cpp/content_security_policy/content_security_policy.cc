@@ -733,14 +733,8 @@ mojom::CSPSourceListPtr ParseSourceList(
       continue;
     }
 
-    // Discussed at https://github.com/WICG/nav-speculation/pull/209, and merged
-    // to the speculationrules explainer,
-    // https://github.com/WICG/nav-speculation/blob/main/triggers.md#content-security-policy.
-    // TODO(https://crbug.com/1382361): Have a patch spec and merge it to the
-    // upstream CSP spec.
-    if (base::FeatureList::IsEnabled(
-            features::kPrerender2ContentSecurityPolicyExtensions) &&
-        base::EqualsCaseInsensitiveASCII(expression,
+    // https://wicg.github.io/nav-speculation/speculation-rules.html#content-security-policy
+    if (base::EqualsCaseInsensitiveASCII(expression,
                                          "'inline-speculation-rules'")) {
       if (directive_name == CSPDirectiveName::ScriptSrc ||
           directive_name == CSPDirectiveName::ScriptSrcElem) {
@@ -830,7 +824,7 @@ mojom::CSPSourceListPtr ParseSourceList(
 }
 
 // Parse the 'required-trusted-types-for' directive.
-// https://w3c.github.io/webappsec-trusted-types/dist/spec/#require-trusted-types-for-csp-directive
+// https://w3c.github.io/trusted-types/dist/spec/#require-trusted-types-for-csp-directive
 network::mojom::CSPRequireTrustedTypesFor ParseRequireTrustedTypesFor(
     base::StringPiece value,
     std::vector<std::string>& parsing_errors) {
@@ -862,7 +856,7 @@ network::mojom::CSPRequireTrustedTypesFor ParseRequireTrustedTypesFor(
 }
 
 // This implements tt-policy-name from
-// https://w3c.github.io/webappsec-trusted-types/dist/spec/#trusted-types-csp-directive/
+// https://w3c.github.io/trusted-types/dist/spec/#trusted-types-csp-directive
 bool IsValidTrustedTypesPolicyName(base::StringPiece value) {
   return base::ranges::all_of(value, [](char c) {
     return base::IsAsciiAlpha(c) || base::IsAsciiDigit(c) ||
@@ -871,7 +865,7 @@ bool IsValidTrustedTypesPolicyName(base::StringPiece value) {
 }
 
 // Parse the 'trusted-types' directive.
-// https://w3c.github.io/webappsec-trusted-types/dist/spec/#trusted-types-csp-directive
+// https://w3c.github.io/trusted-types/dist/spec/#trusted-types-csp-directive
 network::mojom::CSPTrustedTypesPtr ParseTrustedTypes(
     base::StringPiece value,
     std::vector<std::string>& parsing_errors) {

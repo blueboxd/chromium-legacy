@@ -70,6 +70,12 @@ void ReadAnythingMenuButton::SetIcon(const gfx::VectorIcon& icon,
   views::InkDrop::Get(this)->SetBaseColor(icon_color);
 }
 
+void ReadAnythingMenuButton::SetDropdownColorIds(ui::ColorId background_color,
+                                                 ui::ColorId foreground_color) {
+  menu_model_->SetSubmenuBackgroundColorId(background_color);
+  menu_model_->SetForegroundColorId(foreground_color);
+}
+
 BEGIN_METADATA(ReadAnythingMenuButton, MenuButton)
 ADD_PROPERTY_METADATA(ReadAnythingMenuModel*, MenuModel)
 END_METADATA

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
@@ -52,7 +51,6 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
-#include "chrome/browser/ash/arc/enterprise/arc_data_snapshotd_delegate.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/audio/audio_survey_handler.h"
 #include "chrome/browser/ash/bluetooth/hats_bluetooth_revamp_trigger_impl.h"
@@ -91,6 +89,7 @@
 #include "chrome/browser/ash/dbus/vm/vm_launch_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_permission_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_sk_forwarding_service_provider.h"
+#include "chrome/browser/ash/dbus/vm/vm_wl_service_provider.h"
 #include "chrome/browser/ash/device_name/device_name_store.h"
 #include "chrome/browser/ash/diagnostics/diagnostics_browser_delegate_impl.h"
 #include "chrome/browser/ash/display/quirks_manager_delegate_impl.h"
@@ -262,12 +261,13 @@
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_posix.h"
+#include "net/base/network_change_notifier_passive.h"
 #include "printing/backend/print_backend.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/vm_launch/dbus-constants.h"
+#include "third_party/cros_system_api/dbus/vm_wl/dbus-constants.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -457,6 +457,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<VmPermissionServiceProvider>()));
 
+    vm_wl_service_ = CrosDBusService::Create(
+        system_bus, vm_tools::wl::kVmWlServiceName,
+        dbus::ObjectPath(vm_tools::wl::kVmWlServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<VmWlServiceProvider>()));
+
     drive_file_stream_service_ = CrosDBusService::Create(
         system_bus, drivefs::kDriveFileStreamServiceName,
         dbus::ObjectPath(drivefs::kDriveFileStreamServicePath),
@@ -574,6 +580,7 @@ class DBusServices {
     vm_launch_service_.reset();
     vm_sk_forwarding_service_.reset();
     vm_permission_service_.reset();
+    vm_wl_service_.reset();
     drive_file_stream_service_.reset();
     cryptohome_key_delegate_service_.reset();
     encrypted_reporting_service_.reset();
@@ -607,6 +614,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> vm_launch_service_;
   std::unique_ptr<CrosDBusService> vm_sk_forwarding_service_;
   std::unique_ptr<CrosDBusService> vm_permission_service_;
+  std::unique_ptr<CrosDBusService> vm_wl_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
   std::unique_ptr<CrosDBusService> cryptohome_key_delegate_service_;
   std::unique_ptr<CrosDBusService> encrypted_reporting_service_;
@@ -743,7 +751,7 @@ void ChromeBrowserMainPartsAsh::PostCreateMainMessageLoop() {
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   network_change_manager_client_ = std::make_unique<NetworkChangeManagerClient>(
-      static_cast<net::NetworkChangeNotifierPosix*>(
+      static_cast<net::NetworkChangeNotifierPassive*>(
           content::GetNetworkChangeNotifier()));
 
   // Set the crypto thread after the IO thread has been created/started.
@@ -862,11 +870,6 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
     g_browser_process->metrics_service()->InitPerUserMetrics();
   }
 
-  arc_data_snapshotd_manager_ =
-      std::make_unique<arc::data_snapshotd::ArcDataSnapshotdManager>(
-          g_browser_process->local_state(),
-          std::make_unique<arc::data_snapshotd::ArcDataSnapshotdDelegate>(),
-          base::BindOnce(chrome::AttemptUserExit));
   if (base::FeatureList::IsEnabled(::features::kWilcoDtc))
     wilco_dtc_supportd_manager_ = std::make_unique<WilcoDtcSupportdManager>();
 
@@ -1440,8 +1443,6 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   // This must be shut down before |arc_service_launcher_|.
   if (pre_profile_init_called_)
     NoteTakingHelper::Shutdown();
-
-  arc_data_snapshotd_manager_.reset();
 
   arc_service_launcher_->Shutdown();
 

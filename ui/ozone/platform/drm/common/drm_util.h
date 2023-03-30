@@ -46,6 +46,10 @@ const char kContentProtectionKey[] = "Content Protection Key";
 const char kContentProtection[] = "Content Protection";
 const char kHdcpContentType[] = "HDCP Content Type";
 
+const char kColorSpace[] = "Colorspace";
+const char kColorSpaceBT2020RGBEnumName[] = "BT2020_RGB";
+const char kHdrOutputMetadata[] = "HDR_OUTPUT_METADATA";
+
 constexpr char kPrivacyScreenPropertyNameLegacy[] = "privacy-screen";
 constexpr char kPrivacyScreenHwStatePropertyName[] = "privacy-screen hw-state";
 constexpr char kPrivacyScreenSwStatePropertyName[] = "privacy-screen sw-state";
@@ -140,8 +144,7 @@ display::DisplaySnapshot::DisplayModeList ExtractDisplayModes(
 std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     const DrmWrapper& drm,
     HardwareDisplayControllerInfo* info,
-    uint8_t device_index,
-    const display::DrmFormatsAndModifiers& drm_formats_and_modifiers);
+    uint8_t device_index);
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format);
 

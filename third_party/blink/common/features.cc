@@ -287,6 +287,11 @@ constexpr base::FeatureParam<bool>
                                                   "fledge_extensions_enabled",
                                                   /*default_value=*/false};
 
+// Maximum budget allowed to be claimed per-origin per-day per-API. See
+// `content::PrivateAggregationBudgeter` for more detail.
+constexpr base::FeatureParam<int> kPrivateAggregationApiMaxBudgetPerScope{
+    &kPrivateAggregationApi, "max_budget_per_scope", /*default_value=*/65536};
+
 // Enable the shared storage API. Note that enabling this feature does not
 // automatically expose this API to the web, it only allows the element to be
 // enabled by the runtime enabled feature, for origin trials.
@@ -327,6 +332,15 @@ const base::FeatureParam<int>
     kSharedStorageMaxAllowedFencedFrameDepthForSelectURL = {
         &kSharedStorageAPI,
         "SharedStorageMaxAllowedFencedFrameDepthForSelectURL", 1};
+const base::FeatureParam<SharedStorageWorkletImplementationType>::Option
+    shared_storage_worklet_implementation_types[] = {
+        {SharedStorageWorkletImplementationType::kLegacy, "legacy"},
+        {SharedStorageWorkletImplementationType::kBlinkStyle, "blink_style"}};
+const base::FeatureParam<SharedStorageWorkletImplementationType>
+    kSharedStorageWorkletImplementationType = {
+        &kSharedStorageAPI, "SharedStorageWorkletImplementationType",
+        SharedStorageWorkletImplementationType::kLegacy,
+        &shared_storage_worklet_implementation_types};
 
 BASE_FEATURE(kSharedStorageSelectURLLimit,
              "SharedStorageSelectURLLimit",
@@ -348,11 +362,11 @@ const base::FeatureParam<int> kSharedStorageReportEventBitBudgetPerPageLoad = {
 
 BASE_FEATURE(kPrerender2SequentialPrerendering,
              "Prerender2SequentialPrerendering",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPrerender2MainFrameNavigation,
              "Prerender2MainFrameNavigation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kPrerender2MaxNumOfRunningSpeculationRules[] =
     "max_num_of_running_speculation_rules";
@@ -1229,7 +1243,7 @@ const base::FeatureParam<bool> kLegacyWindowsPlatform = {
 
 BASE_FEATURE(kReportFCPOnlyOnSuccessfulCommit,
              "ReportFCPOnlyOnSuccessfulCommit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // TODO(crbug.com/1382005): Deprecate this flag.
 BASE_FEATURE(kRegionCaptureExperimentalSubtypes,
@@ -1490,6 +1504,10 @@ BASE_FEATURE(kTimedHTMLParserBudget,
              "TimedHTMLParserBudget",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCheckHTMLParserBudgetLessOften,
+             "CheckHTMLParserBudgetLessOften",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kClipboardUnsanitizedContent,
              "ClipboardUnsanitizedContent",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1629,7 +1647,7 @@ BASE_FEATURE(kForceHighPerformanceGPUForWebGL,
 
 BASE_FEATURE(kSplitUserMediaQueues,
              "SplitUserMediaQueues",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTextCodecCJKEnabled,
              "TextCodecCJKEnabled",
@@ -1737,6 +1755,14 @@ BASE_FEATURE(kMemoryCacheStrongReferenceSingleUnload,
 
 BASE_FEATURE(kMemoryCacheStrongReferenceFilterImages,
              "MemoryCacheStrongReferenceFilterImages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRemoteResourceCache,
+             "RemoteResourceCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kKeepAliveInBrowserMigration,
+             "KeepAliveInBrowserMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

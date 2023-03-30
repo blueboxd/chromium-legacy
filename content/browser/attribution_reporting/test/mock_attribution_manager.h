@@ -33,9 +33,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "content/browser/attribution_reporting/attribution_input_event.h"
-#include "url/gurl.h"
-#include "url/origin.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
+#include "content/browser/attribution_reporting/os_registration.h"
 #endif
 
 namespace content {
@@ -109,22 +108,10 @@ class MockAttributionManager : public AttributionManager {
               (override));
 
 #if BUILDFLAG(IS_ANDROID)
-
   MOCK_METHOD(void,
-              HandleOsSource,
-              (const GURL& registration_url,
-               const url::Origin& top_level_origin,
-               AttributionInputEvent,
-               GlobalRenderFrameHostId),
+              HandleOsRegistration,
+              (OsRegistration, GlobalRenderFrameHostId),
               (override));
-
-  MOCK_METHOD(void,
-              HandleOsTrigger,
-              (const GURL& registration_url,
-               const url::Origin& top_level_origin,
-               GlobalRenderFrameHostId),
-              (override));
-
 #endif  // BUILDFLAG(IS_ANDROID)
 
   void AddObserver(AttributionObserver*) override;
@@ -153,6 +140,11 @@ class MockAttributionManager : public AttributionManager {
   void NotifyDebugReportSent(const AttributionDebugReport&,
                              int status,
                              base::Time);
+#if BUILDFLAG(IS_ANDROID)
+  void NotifyOsRegistration(const OsRegistration&,
+                            bool is_debug_key_allowed,
+                            attribution_reporting::mojom::OsRegistrationResult);
+#endif  // BUILDFLAG(IS_ANDROID)
 
   void SetDataHostManager(std::unique_ptr<AttributionDataHostManager>);
 

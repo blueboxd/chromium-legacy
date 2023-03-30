@@ -53,8 +53,17 @@ enum class GwpAsanCrashAnalysisResult {
   kErrorOutdatedMetadataIndex = 11,
   // Failed to read the crashing process' slot to metadata mapping.
   kErrorFailedToReadSlotMetadataMapping = 12,
+
+  // The crash is caused by the Lightweight UAF Detector.
+  kLightweightDetectorCrash = 13,
+  // Failed to read the crashing process' memory of the Lightweight UAF Detector
+  // metadata store.
+  kErrorFailedToReadLightweightSlotMetadata = 14,
+  // The computed lightweight metadata index was outdated.
+  kErrorOutdatedLightweightMetadataIndex = 15,
+
   // Number of values in this enumeration, required by UMA.
-  kMaxValue = kErrorFailedToReadSlotMetadataMapping
+  kMaxValue = kErrorOutdatedLightweightMetadataIndex
 };
 
 class CrashAnalyzer {
@@ -103,6 +112,13 @@ class CrashAnalyzer {
                                  size_t stack_trace_offset,
                                  const SlotMetadata::AllocationInfo& slot_info,
                                  gwp_asan::Crash_AllocationInfo* proto_info);
+
+  // This method analyzes the AllocatorState of the crashing process. If the
+  // exception is related to the Lightweight UAF Detector it fills out the
+  // |proto| parameter and returns true.
+  static bool AnalyzeLightweightDetectorCrash(
+      const crashpad::ProcessSnapshot& process_snapshot,
+      gwp_asan::Crash* proto);
 };
 
 }  // namespace internal

@@ -45,6 +45,7 @@ export const EntryType = {
  *   icon: (!string|!chrome.fileManagerPrivate.IconSet),
  *   label: string,
  *   volumeType: (VolumeManagerCommon.VolumeType|null),
+ *   rootType: (VolumeManagerCommon.RootType|null),
  *   metadata: !MetadataItem,
  *   isDirectory: boolean,
  *   type: !EntryType,
@@ -53,6 +54,7 @@ export const EntryType = {
  *   shouldDelayLoadingChildren: !boolean,
  *   children: (!Array<!FileKey>),
  *   expanded: !boolean,
+ *   disabled: !boolean,
  * }}
  */
 export let FileData;

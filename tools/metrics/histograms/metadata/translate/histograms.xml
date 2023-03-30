@@ -41,8 +41,8 @@ chromium-metrics-reviews@google.com.
     list. If the user has multiple languages in this list, then a separate entry
     is recorded for each language.
 
-    This histogram is recorded when Chrome starts up using the preferences of
-    whatever profile is logged in at the time.
+    This histogram is recorded once per profile initiation. Incognito profiles
+    are ignored.
   </summary>
 </histogram>
 
@@ -53,8 +53,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of languages in the user's always translate language list.
 
-    This histogram is recorded when Chrome starts up using the preferences of
-    whatever profile is logged in at the time.
+    This histogram is recorded once per profile initiation. Incognito profiles
+    are ignored.
   </summary>
 </histogram>
 
@@ -67,8 +67,8 @@ chromium-metrics-reviews@google.com.
     list. If the user has multiple languages in this list, then a separate entry
     is recorded for each language.
 
-    This histogram is recorded when Chrome starts up using the preferences of
-    whatever profile is logged in at the time.
+    This histogram is recorded once per profile initiation. Incognito profiles
+    are ignored.
   </summary>
 </histogram>
 
@@ -79,8 +79,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of languages in the user's never translate language list.
 
-    This histogram is recorded when Chrome starts up using the preferences of
-    whatever profile is logged in at the time.
+    This histogram is recorded once per profile initiation. Incognito profiles
+    are ignored.
   </summary>
 </histogram>
 
@@ -91,8 +91,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of sites in the user's never translate site list.
 
-    This histogram is recorded when Chrome starts up using the preferences of
-    whatever profile is logged in at the time.
+    This histogram is recorded once per profile initiation. Incognito profiles
+    are ignored.
   </summary>
 </histogram>
 
@@ -183,7 +183,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.CompactInfobar.Language.PageNotIn"
-    enum="LocaleCodeISO639" expires_after="2023-06-04">
+    enum="LocaleCodeISO639" expires_after="2023-09-17">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -332,7 +332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.LanguageDetection.TFLiteModelEvaluationDuration"
-    units="ms" expires_after="2023-07-16">
+    units="ms" expires_after="2023-09-17">
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-language@google.com</owner>

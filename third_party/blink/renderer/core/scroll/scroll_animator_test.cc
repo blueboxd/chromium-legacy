@@ -85,7 +85,7 @@ class MockScrollableAreaForAnimatorTest
   MOCK_CONST_METHOD0(ScrollbarsCanBeActive, bool());
   MOCK_METHOD0(RegisterForAnimation, void());
   MOCK_METHOD0(ScheduleAnimation, bool());
-  MOCK_CONST_METHOD0(UsedColorScheme, mojom::blink::ColorScheme());
+  MOCK_CONST_METHOD0(UsedColorSchemeScrollbars, mojom::blink::ColorScheme());
 
   bool UserInputScrollable(ScrollbarOrientation) const override { return true; }
   bool ShouldPlaceVerticalScrollbarOnLeft() const override { return false; }
@@ -584,8 +584,11 @@ TEST(ScrollAnimatorTest, UserScrollCallBackAtAnimationFinishOnMainThread) {
   bool finished = false;
   scroll_animator->UserScroll(
       ui::ScrollGranularity::kScrollByLine, ScrollOffset(10, 0),
-      ScrollableArea::ScrollCallback(
-          base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
+      ScrollableArea::ScrollCallback(base::BindOnce(
+          [](bool* finished, ScrollableArea::ScrollCompletionMode) {
+            *finished = true;
+          },
+          &finished)));
   EXPECT_FALSE(finished);
   EXPECT_EQ(scroll_animator->run_state_,
             ScrollAnimatorCompositorCoordinator::RunState::
@@ -656,8 +659,11 @@ TEST(ScrollAnimatorTest, UserScrollCallBackAtAnimationFinishOnCompositor) {
   bool finished = false;
   scroll_animator->UserScroll(
       ui::ScrollGranularity::kScrollByLine, ScrollOffset(100, 0),
-      ScrollableArea::ScrollCallback(
-          base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
+      ScrollableArea::ScrollCallback(base::BindOnce(
+          [](bool* finished, ScrollableArea::ScrollCompletionMode) {
+            *finished = true;
+          },
+          &finished)));
   EXPECT_FALSE(finished);
   EXPECT_TRUE(scroll_animator->HasRunningAnimation());
   EXPECT_EQ(100, scroll_animator->DesiredTargetOffset().x());

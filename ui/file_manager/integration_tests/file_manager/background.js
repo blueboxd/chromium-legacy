@@ -31,6 +31,7 @@ import './my_files.js';
 import './navigation.js';
 import './office.js';
 import './open_audio_media_app.js';
+import './open_hosted_files.js';
 import './open_image_media_app.js';
 import './open_sniffed_files.js';
 import './open_video_media_app.js';
@@ -449,6 +450,9 @@ export async function navigateWithDirectoryTree(
 
   // Wait directory to finish scanning its content.
   await remoteCall.waitForElement(appId, `[scan-completed="${leaf}"]`);
+
+  // If the search was not closed, wait for it to close.
+  await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
 
   // Wait to navigation to final entry to finish.
   await remoteCall.waitUntilCurrentDirectoryIsChanged(

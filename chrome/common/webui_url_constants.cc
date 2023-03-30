@@ -272,10 +272,6 @@ const char kChromeUIReadAnythingSidePanelURL[] =
     "chrome://read-anything-side-panel.top-chrome/";
 const char kChromeUIReadLaterHost[] = "read-later.top-chrome";
 const char kChromeUIReadLaterURL[] = "chrome://read-later.top-chrome/";
-const char kChromeUISearchCompanionSidePanelHost[] =
-    "search-companion-side-panel.top-chrome";
-const char kChromeUISearchCompanionSidePanelURL[] =
-    "chrome://search-companion-side-panel.top-chrome/";
 const char kChromeUIUntrustedFeedURL[] = "chrome-untrusted://feed/";
 const char kChromeUIUserNotesSidePanelHost[] =
     "user-notes-side-panel.top-chrome";
@@ -381,6 +377,7 @@ const char kChromeUIPasswordChangeUrl[] = "chrome://password-change";
 const char kChromeUIPrintManagementUrl[] = "chrome://print-management";
 const char kChromeUIPowerHost[] = "power";
 const char kChromeUIPowerUrl[] = "chrome://power";
+const char kChromeUIRemoteManagementCurtainHost[] = "security-curtain";
 const char kChromeUIScanningAppURL[] = "chrome://scanning";
 const char kChromeUIScreenlockIconHost[] = "screenlock-icon";
 const char kChromeUIScreenlockIconURL[] = "chrome://screenlock-icon/";
@@ -486,8 +483,9 @@ bool IsSystemWebUIHost(base::StringPiece host) {
 #endif  // BUILDFLAG(PLATFORM_CFM)
   };
   for (const char* h : kHosts) {
-    if (host == h)
+    if (host == h) {
       return true;
+    }
   }
   return false;
 }

@@ -23,6 +23,9 @@ from pathlib import Path
 
 # Add Clang scripts to path so we can import them later (if running within a
 # Chromium checkout.)
+# Note: Imports cannot be done until after the --print-rust-revision flag
+# has been processed, since that needs to work when running this script
+# in isolation.
 sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'clang',
                  'scripts'))
@@ -30,7 +33,7 @@ sys.path.append(
 # These fields are written by //tools/clang/scripts/upload_revision.py, and
 # should not be changed manually.
 RUST_REVISION = 'ac4379fea9e83465d814bb05005689f49bd2141e'
-RUST_SUB_REVISION = 1
+RUST_SUB_REVISION = 2
 
 # Trunk on 2022-10-15.
 #
@@ -62,7 +65,7 @@ CRUBIT_SUB_REVISION = 1
 # TODO(lukasza): Include CRUBIT_REVISION and CRUBIT_SUB_REVISION once we
 # include Crubit binaries in the generated package.  See also a TODO comment
 # in BuildCrubit in package_rust.py.
-FALLBACK_REVISION = 'ac4379fea9e83465d814bb05005689f49bd2141e-1-llvmorg-17-init-3874-g93a2fecc-1'
+FALLBACK_REVISION = 'ac4379fea9e83465d814bb05005689f49bd2141e-2-llvmorg-17-init-3874-g93a2fecc-2'
 
 # Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
 # We trust the Rust build system checks, but to ensure it is not tampered with
@@ -97,7 +100,7 @@ def GetDownloadPackageVersion():
 
 # Get the version of the toolchain package we already have.
 def GetStampVersion():
-    if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):
+    if os.path.exists(VERSION_STAMP_PATH):
         with open(VERSION_STAMP_PATH) as version_file:
             existing_stamp = version_file.readline().rstrip()
         version_re = re.compile(r'rustc [0-9.]+ [0-9a-f]+ \((.+?) chromium\)')

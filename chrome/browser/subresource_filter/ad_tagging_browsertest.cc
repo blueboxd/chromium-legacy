@@ -220,8 +220,7 @@ content::RenderFrameHost* AdTaggingBrowserTest::CreateDocWrittenFrameImpl(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   content::TestNavigationObserver navigation_observer(web_contents, 1);
-  EXPECT_EQ(true, content::EvalJs(rfh, script,
-                                  content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  EXPECT_EQ(true, content::EvalJs(rfh, script));
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded())
       << navigation_observer.last_net_error_code();
@@ -1823,7 +1822,7 @@ IN_PROC_BROWSER_TEST_F(
   content::RenderFrameHost* fenced_frame =
       fenced_frame_test_helper().CreateFencedFrame(
           PrimaryMainFrame(), kOuterUrl, net::OK,
-          blink::mojom::FencedFrameMode::kOpaqueAds);
+          blink::FencedFrame::DeprecatedFencedFrameMode::kOpaqueAds);
 
   GURL new_url = GetURL("frame_factory.html?primary");
 
@@ -1861,7 +1860,7 @@ IN_PROC_BROWSER_TEST_F(
   content::RenderFrameHost* fenced_frame =
       fenced_frame_test_helper().CreateFencedFrame(
           PrimaryMainFrame(), kOuterUrl, net::OK,
-          blink::mojom::FencedFrameMode::kOpaqueAds);
+          blink::FencedFrame::DeprecatedFencedFrameMode::kOpaqueAds);
 
   GURL new_url = GetURL("frame_factory.html?primary");
 

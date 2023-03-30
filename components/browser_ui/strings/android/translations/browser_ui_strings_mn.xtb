@@ -56,6 +56,7 @@
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> руу буцах бол товшино уу</translation>
 <translation id="2079545284768500474">Буцаах</translation>
 <translation id="2091887806945687916">Дуу</translation>
+<translation id="2117655453726830283">Дараагийн слайд</translation>
 <translation id="2148716181193084225">Өнөөдөр</translation>
 <translation id="216989819110952009">Дороти болон түүний нөхөд ногоон өнгийн шилээр нүдээ хамгаалсан байсан ч гайхамшигт хотын гялтганах гэрэлд нүд гялбаж байлаа.</translation>
 <translation id="2176704795966505152">Үндсэн цэсэд томруулалтын сонголтыг харуулах</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">Өргөжсөн, энд дарж задална уу.</translation>
 <translation id="2586657967955657006">Түр санах ой</translation>
 <translation id="2597457036804169544">Сайтуудад бараан загварыг бүү ашигла</translation>
+<translation id="2606760465469169465">Автоматаар баталгаажуулах</translation>
 <translation id="2621115761605608342">JavaScript-г тодорхой сайтад зөвшөөрнө үү.</translation>
 <translation id="2653659639078652383">Илгээх</translation>
 <translation id="2677748264148917807">Үлдээх</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">Зөвшөөрлийг шинэчлэх</translation>
 <translation id="301521992641321250">Автоматаар блок хийсэн</translation>
 <translation id="3069226013421428034">Тодорхой сайтын гуравдагч талын нэвтрэлтийг зөвшөөрнө үү.</translation>
+<translation id="310297983047869047">Өмнөх слайд</translation>
 <translation id="3109724472072898302">Задарсан</translation>
 <translation id="3114012059975132928">Видео тоглуулагч</translation>
 <translation id="3115898365077584848">Мэдээллийг харуулах</translation>
@@ -188,6 +191,7 @@
 <translation id="4440642537584213025"><ph name="TARGET_DESCRIPTION" />-г дэлгэнэ үү</translation>
 <translation id="4468959413250150279">Тодорхой сайтын дууг хаана уу.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# күүки}other{# күүки}}</translation>
+<translation id="4478158430052450698">Өөр өөр сайтад томруулалтыг өөрчлөхийг хялбар болгоно</translation>
 <translation id="4479647676395637221">Сайтууд камер ашиглах зөвшөөрөл авах (санал болгосон)</translation>
 <translation id="4505788138578415521">URL-г өргөтгөсөн</translation>
 <translation id="4534723447064627427"><ph name="APP_NAME" />-д таны микрофонд хандахыг зөвшөөрөхийн тулд микрофоныг мөн <ph name="BEGIN_LINK" />Андройдын тохиргоо<ph name="END_LINK" />-нд асаана уу.</translation>
@@ -218,11 +222,11 @@
 <translation id="509133520954049755">Дэлгэц дээр харагдах байдлаар харах хүсэлт тавих</translation>
 <translation id="5100237604440890931">Задарсан, энд дарж өргөтгөнө үү.</translation>
 <translation id="5123685120097942451">Нууцлалтай таб</translation>
-<translation id="5134599672855298214">Гар утсан дээр харагдах байдлаар харах хүсэлт тавих (санал болгосон)</translation>
 <translation id="5186036860380548585">Сонголт дэлгэцийн дээд хэсэгт байна</translation>
 <translation id="5197729504361054390">Таны сонгох харилцагчдыг <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-тай хуваалцана.</translation>
 <translation id="5216942107514965959">Хамгийн сүүлд өнөөдөр зочилсон</translation>
 <translation id="5225463052809312700">Камерыг асаах</translation>
+<translation id="5229337741799419985">Энэ тохиргоо таныг тодорхойлолгүйгээр эсвэл сайтуудад таны хөтчийн түүхийг харахыг зөвшөөрөлгүйгээр ажилладаг</translation>
 <translation id="5234764350956374838">Хэрэгсэхгүй болго</translation>
 <translation id="5264323282659631142">'<ph name="CHIP_LABEL" />'-г хасах</translation>
 <translation id="528192093759286357">Бүтэн дэлгэцийн горимоос гарахын тулд дээрээс зөөгөөд, буцах товчлуурыг дарна уу.</translation>
@@ -309,6 +313,7 @@
 <translation id="6643016212128521049">Цэвэрлэх</translation>
 <translation id="6689172468748959065">Профайл зураг</translation>
 <translation id="6697925417670533197">Идэвхтэй татаж авсан файл</translation>
+<translation id="6701547804986694515">Таны зочилсон сайт таныг бот биш болохыг баталгаажуулдаг мэдээллийг Chrome-д хадгалах боломжтой. Таныг үргэлжлүүлэн үзэж байхад сайтууд Chrome-с шалгаж, таныг жинхэнэ хүн эсэхийг таны өмнө нь зочилсон сайтаас баталгаажуулах боломжтой</translation>
 <translation id="6722828510648505498">Таниулбарын үйлчилгээнүүдийн нэвтрэх сануулгыг блоклоно уу.</translation>
 <translation id="6746124502594467657">Доош зөөх</translation>
 <translation id="6749077623962119521">Зөвшөөрлүүдийг шинэчлэх үү?</translation>
@@ -426,6 +431,7 @@
 <translation id="8751914237388039244">Зураг сонгох</translation>
 <translation id="8801436777607969138">Зарим сайт дээр JavaScript-г блоклоно уу.</translation>
 <translation id="8803526663383843427">Асаалттай байх үед</translation>
+<translation id="8805385115381080995">Сайт танаас жинхэнэ хүн болохоо баталгаажуулахыг хүсэх магадлал багатай тул үзэхэд илүү хурдан байдаг</translation>
 <translation id="8816026460808729765">Сайтуудыг мэдрэгчид хандахыг хориглох</translation>
 <translation id="8823559166155093873">Күүкиг блоклох</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -449,5 +455,6 @@
 <translation id="9162462602695099906">Энэ хуудас аюултай байна</translation>
 <translation id="9201023452444595544">Офлайн аливаа өгөгдлийг устгах болно</translation>
 <translation id="930525582205581608">Энэ сайтыг мартах уу?</translation>
+<translation id="947156494302904893">Сайтууд таныг жинхэнэ хүн бөгөөд бот биш болохыг баталгаажуулах боломжтой</translation>
 <translation id="967624055006145463">Хадгалсан өгөгдөл</translation>
 </translationbundle>

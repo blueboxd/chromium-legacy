@@ -25,6 +25,13 @@ export type PasswordCheckStatusChangedListener =
 
 export type PasswordManagerAuthTimeoutListener = () => void;
 
+// WARNING: Keep synced with
+// chrome/browser/ui/webui/settings/password_manager_handler.cc.
+export enum PasswordManagerPage {
+  PASSWORDS = 0,
+  CHECKUP = 1,
+}
+
 /**
  * Interface for all callbacks to the password API.
  */
@@ -157,6 +164,22 @@ export interface PasswordManagerProxy {
    */
   importPasswords(toStore: chrome.passwordsPrivate.PasswordStoreSet):
       Promise<chrome.passwordsPrivate.ImportResults>;
+
+  /**
+   * Resumes the password import process when user has selected which passwords
+   * to replace.
+   * @return A promise that resolves to the |ImportResults|.
+   */
+  continueImport(selectedIds: number[]):
+      Promise<chrome.passwordsPrivate.ImportResults>;
+
+  /**
+   * Resets the PasswordImporter if it is in the CONFLICTS/FINISHED state and
+   * the user closes the dialog. Only when the PasswordImporter is in FINISHED
+   * state, |deleteFile| option is taken into account.
+   * @param deleteFile Whether to trigger deletion of the last imported file.
+   */
+  resetImporter(deleteFile: boolean): Promise<void>;
 
   /**
    * Triggers the dialog for exporting passwords.
@@ -300,6 +323,11 @@ export interface PasswordManagerProxy {
    * successful authentication.
    */
   switchBiometricAuthBeforeFillingState(): void;
+
+  /**
+   * Shows new Password Manager UI (chrome://password-manager).
+   */
+  showPasswordManager(page: PasswordManagerPage): void;
 }
 
 /**
@@ -429,6 +457,14 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
 
   importPasswords(toStore: chrome.passwordsPrivate.PasswordStoreSet) {
     return chrome.passwordsPrivate.importPasswords(toStore);
+  }
+
+  continueImport(selectedIds: number[]) {
+    return chrome.passwordsPrivate.continueImport(selectedIds);
+  }
+
+  resetImporter(deleteFile: boolean) {
+    return chrome.passwordsPrivate.resetImporter(deleteFile);
   }
 
   exportPasswords() {
@@ -561,6 +597,10 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
     chrome.metricsPrivate.recordEnumerationValue(
         'PasswordManager.BulkCheck.PasswordCheckReferrer', referrer,
         PasswordCheckReferrer.COUNT);
+  }
+
+  showPasswordManager(page: PasswordManagerPage) {
+    chrome.send('showPasswordManager', [page]);
   }
 
   static getInstance(): PasswordManagerProxy {

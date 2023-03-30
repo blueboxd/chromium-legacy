@@ -24,13 +24,19 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {Setting} from '../mojom-webui/setting.mojom-webui.js';
+import {routes} from '../os_settings_routes.js';
+import {RouteObserverMixin} from '../route_observer_mixin.js';
+import {Route} from '../router.js';
+
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
-import {InputDeviceSettingsProviderInterface, PointingStick} from './input_device_settings_types.js';
+import {InputDeviceSettingsProviderInterface, PointingStick, PointingStickSettings} from './input_device_settings_types.js';
+import {settingsAreEqual} from './input_device_settings_utils.js';
 import {getTemplate} from './per_device_pointing_stick_subsection.html.js';
 
 const SettingsPerDevicePointingStickSubsectionElementBase =
-    I18nMixin(PolymerElement);
-
+    DeepLinkingMixin(RouteObserverMixin(I18nMixin(PolymerElement)));
 export class SettingsPerDevicePointingStickSubsectionElement extends
     SettingsPerDevicePointingStickSubsectionElementBase {
   static get is(): string {
@@ -106,6 +112,22 @@ export class SettingsPerDevicePointingStickSubsectionElement extends
       },
 
       pointingStick: {type: Object},
+
+      /**
+       * Used by DeepLinkingMixin to focus this page's deep links.
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set<Setting>([
+          Setting.kPointingStickAcceleration,
+          Setting.kPointingStickSpeed,
+          Setting.kPointingStickSwapPrimaryButtons,
+        ]),
+      },
+
+      pointingStickIndex: {
+        type: Number,
+      },
     };
   }
 
@@ -118,6 +140,18 @@ export class SettingsPerDevicePointingStickSubsectionElement extends
     ];
   }
 
+  override currentRouteChanged(route: Route): void {
+    // Does not apply to this page.
+    if (route !== routes.PER_DEVICE_POINTING_STICK) {
+      return;
+    }
+
+    // If multiple pointing sticks are available, focus on the first one.
+    if (this.pointingStickIndex === 0) {
+      this.attemptDeepLink();
+    }
+  }
+
   private pointingStick: PointingStick;
   private sensitivityValues: number[];
   private swapPrimaryOptions: number[];
@@ -127,8 +161,13 @@ export class SettingsPerDevicePointingStickSubsectionElement extends
   private isInitialized: boolean = false;
   private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface =
       getInputDeviceSettingsProvider();
+  private pointingStickIndex: number;
 
   private updateSettingsToCurrentPrefs(): void {
+    // `updateSettingsToCurrentPrefs` gets called when the `keyboard` object
+    // gets updated. This subsection element can be reused multiple times so we
+    // need to reset `isInitialized` so we do not make unneeded API calls.
+    this.isInitialized = false;
     this.set('primaryRightPref.value', this.pointingStick.settings.swapRight);
     this.set(
         'accelerationPref.value',
@@ -150,16 +189,22 @@ export class SettingsPerDevicePointingStickSubsectionElement extends
   }
 
   private onSettingsChanged(): void {
-    // TODO(wangdanny): Implement onSettingsChanged.
     if (!this.isInitialized) {
       return;
     }
-    this.pointingStick.settings = {
+
+    const newSettings: PointingStickSettings = {
       ...this.pointingStick.settings,
       swapRight: this.primaryRightPref.value,
       accelerationEnabled: this.accelerationPref.value,
       sensitivity: this.sensitivityPref.value,
     };
+
+    if (settingsAreEqual(newSettings, this.pointingStick.settings)) {
+      return;
+    }
+
+    this.pointingStick.settings = newSettings;
     this.inputDeviceSettingsProvider.setPointingStickSettings(
         this.pointingStick.id, this.pointingStick.settings);
   }

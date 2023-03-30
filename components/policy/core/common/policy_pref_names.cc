@@ -137,5 +137,22 @@ const char kPPAPISharedImagesSwapChainAllowed[] =
 const char kForceEnablePepperVideoDecoderDevAPI[] =
     "policy.force_enable_pepper_video_decoder_dev_api";
 
+// Boolean controlling whether SafeSearch is mandatory for Google Web Searches.
+const char kForceGoogleSafeSearch[] = "settings.force_google_safesearch";
+
+// Integer controlling whether Restrict Mode (moderate/strict) is mandatory on
+// YouTube. See |safe_search_api::YouTubeRestrictMode| for possible values.
+const char kForceYouTubeRestrict[] = "settings.force_youtube_restrict";
+
+// A boolean pref set to true if the Chrome Web Store icons should be hidden
+// from the New Tab Page and app launcher.
+const char kHideWebStoreIcon[] = "hide_web_store_icon";
+
+// Enum that specifies whether Incognito mode is:
+// 0 - Enabled. Default behaviour. Default mode is available on demand.
+// 1 - Disabled. User cannot browse pages in Incognito mode.
+// 2 - Forced. All pages/sessions are forced into Incognito.
+const char kIncognitoModeAvailability[] = "incognito.mode_availability";
+
 }  // namespace policy_prefs
 }  // namespace policy

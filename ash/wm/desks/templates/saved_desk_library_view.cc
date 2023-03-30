@@ -11,10 +11,11 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_provider.h"
 #include "ash/style/rounded_label.h"
+#include "ash/style/typography.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
+#include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
@@ -23,9 +24,11 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "base/functional/callback_helpers.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/insets.h"
@@ -41,9 +44,6 @@
 namespace ash {
 namespace {
 
-constexpr char kGridLabelFont[] = "Roboto";
-constexpr int kGridLabelFontSize = 16;
-
 // Grids use landscape mode if the available width is greater or equal to this.
 constexpr int kLandscapeMinWidth = 756;
 
@@ -53,7 +53,6 @@ constexpr gfx::Size kLabelSizePortrait = {464, 24};
 
 // "No items" label dimensions.
 constexpr gfx::Size kNoItemsLabelPadding = {16, 8};
-constexpr int kNoItemsLabelCornerRadius = 16;
 constexpr int kNoItemsLabelHeight = 32;
 
 // Between child spacing of Library page scroll content view.
@@ -131,9 +130,8 @@ std::unique_ptr<views::View> GetLabelAndGridGroupContents() {
 std::unique_ptr<views::Label> MakeGridLabel(int label_string_id) {
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(label_string_id));
-  label->SetFontList(gfx::FontList({kGridLabelFont}, gfx::Font::NORMAL,
-                                   kGridLabelFontSize,
-                                   gfx::Font::Weight::MEDIUM));
+  TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosTitle1, *label);
+  label->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
 }
@@ -324,7 +322,7 @@ SavedDeskLibraryView::SavedDeskLibraryView() {
   no_items_label_ =
       scroll_contents->AddChildView(std::make_unique<RoundedLabel>(
           kNoItemsLabelPadding.width(), kNoItemsLabelPadding.height(),
-          kNoItemsLabelCornerRadius, kNoItemsLabelHeight,
+          kSaveDeskCornerRadius, kNoItemsLabelHeight,
           l10n_util::GetStringUTF16(
               saved_desk_util::AreDesksTemplatesEnabled()
                   ? IDS_ASH_DESKS_TEMPLATES_LIBRARY_NO_TEMPLATES_OR_DESKS_LABEL
@@ -603,17 +601,6 @@ void SavedDeskLibraryView::OnKeyEvent(ui::KeyEvent* event) {
   }
   if (is_scrolling_event)
     scroll_view_->vertical_scroll_bar()->OnKeyEvent(event);
-}
-
-void SavedDeskLibraryView::OnThemeChanged() {
-  views::View::OnThemeChanged();
-
-  auto* color_provider = AshColorProvider::Get();
-  for (views::Label* label : grid_labels_) {
-    label->SetBackgroundColor(SK_ColorTRANSPARENT);
-    label->SetEnabledColor(color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
-  }
 }
 
 void SavedDeskLibraryView::OnWindowDestroying(aura::Window* window) {

@@ -4,8 +4,7 @@
 
 package org.chromium.content.browser;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -17,9 +16,9 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -69,7 +68,7 @@ public class BrowserStartupControllerTest {
 
         private int kickOffStartup(boolean startMinimalBrowser) {
             // Post to the UI thread to emulate what would happen in a real scenario.
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            PostTask.postTask(TaskTraits.UI_DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     if (!mMinimalBrowserStarted) {

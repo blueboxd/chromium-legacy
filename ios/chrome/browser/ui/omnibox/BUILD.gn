@@ -155,6 +155,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/default_browser:utils",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/flags:system_flags",
@@ -170,7 +171,6 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/ui/default_promo",
-    "//ios/chrome/browser/ui/default_promo:utils",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/gestures",
     "//ios/chrome/browser/ui/lens:lens_entrypoint",
@@ -181,7 +181,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/omnibox/popup:popup_ui_protocols",
     "//ios/chrome/browser/ui/orchestrator:orchestrator",
-    "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/ui/toolbar/public:constants",
     "//ios/chrome/browser/url:constants",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/common",
@@ -253,7 +253,7 @@ source_set("eg_test_support+eg2") {
     "omnibox_app_interface.h",
     "omnibox_app_interface_stub.mm",
   ]
-  deps = [ "//ios/third_party/earl_grey2:test_lib" ]
+  deps = [ "//ios/testing/earl_grey:eg_test_support+eg2" ]
 }
 
 source_set("eg2_tests") {
@@ -273,7 +273,6 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/omnibox/popup:popup_accessibility_identifier_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/public/test:element_selector",
     "//net:test_support",
     "//ui/base",

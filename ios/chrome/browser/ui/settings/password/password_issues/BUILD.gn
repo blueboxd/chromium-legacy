@@ -55,12 +55,14 @@ source_set("password_issues_ui") {
   deps = [
     "//base",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/common:features",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/shared/ui/table_view",
     "//ios/chrome/browser/shared/ui/table_view/cells",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/password:password_constants",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
     "//ui/base",
   ]
@@ -70,6 +72,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "password_issue_unittest.mm",
     "password_issues_mediator_unittest.mm",
     "password_issues_table_view_controller_unittest.mm",
   ]

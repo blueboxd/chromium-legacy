@@ -306,6 +306,15 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
               ash::kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl,
               entry.web_kiosk_app().icon_url());
         }
+        if (entry.has_ephemeral_mode()) {
+          entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyEphemeralMode,
+                         static_cast<int>(entry.ephemeral_mode()));
+        } else {
+          entry_dict.Set(
+              ash::kAccountsPrefDeviceLocalAccountsKeyEphemeralMode,
+              static_cast<int>(
+                  em::DeviceLocalAccountInfoProto::EPHEMERAL_MODE_UNSET));
+        }
 
       } else if (entry.has_deprecated_public_session_id()) {
         // Deprecated public session specification.
@@ -1959,15 +1968,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
           base::Value(container.device_show_low_disk_space_notification()),
           nullptr);
-    }
-  }
-
-  if (policy.has_arc_data_snapshot_hours()) {
-    const em::DeviceArcDataSnapshotHoursProto& container(
-        policy.arc_data_snapshot_hours());
-    if (container.has_arc_data_snapshot_hours()) {
-      SetJsonDevicePolicy(key::kDeviceArcDataSnapshotHours,
-                          container.arc_data_snapshot_hours(), policies);
     }
   }
 

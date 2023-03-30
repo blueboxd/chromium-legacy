@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/system/system_monitor.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler.h"
@@ -569,6 +570,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
   std::unique_ptr<FakeMediaControllerManager> fake_manager_;
   std::unique_ptr<FakeVideoCaptureManager> video_capture_manager_;
+  base::HistogramTester histogram_tester_;
 };
 
 class HDMIRediscoverWaiter {
@@ -2173,6 +2175,25 @@ TEST_P(CrasAudioHandlerTest, SetOutputMute) {
   EXPECT_FALSE(audio_pref_handler_->GetMuteValue(speaker));
 }
 
+TEST_P(CrasAudioHandlerTest, SetOutputMuteWithSource) {
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kInternalSpeaker});
+  SetUpCrasAudioHandler(audio_nodes);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kOutputVolumeMuteSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray,
+      /*expected_count=*/0);
+
+  // Mute the device.
+  cras_audio_handler_->SetOutputMute(
+      true, CrasAudioHandler::AudioSettingsChangeSource::kSystemTray);
+
+  // Verify mute source is recorded.
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kOutputVolumeMuteSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray,
+      /*expected_count=*/1);
+}
+
 TEST_P(CrasAudioHandlerTest, SetInputMute) {
   AudioNodeList audio_nodes = GenerateAudioNodeList({kInternalMic});
   SetUpCrasAudioHandler(audio_nodes);
@@ -2193,6 +2214,26 @@ TEST_P(CrasAudioHandlerTest, SetInputMute) {
   // Verify the input is unmuted, OnInputMuteChanged event is fired.
   EXPECT_FALSE(cras_audio_handler_->IsInputMuted());
   EXPECT_EQ(2, test_observer_->input_mute_changed_count());
+}
+
+TEST_P(CrasAudioHandlerTest, SetInputMuteWithSource) {
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kInternalMic});
+  SetUpCrasAudioHandler(audio_nodes);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kInputGainMuteSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray,
+      /*expected_count=*/0);
+
+  // Mute the device.
+  cras_audio_handler_->SetInputMute(
+      true, CrasAudioHandler::InputMuteChangeMethod::kOther,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray);
+
+  // Verify mute source is recorded.
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kInputGainMuteSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray,
+      /*expected_count=*/1);
 }
 
 TEST_P(CrasAudioHandlerTest, SetOutputVolumePercent) {
@@ -5063,17 +5104,25 @@ TEST_P(CrasAudioHandlerTest,
 
   // Turn off noise cancellation.
   cras_audio_handler_->SetNoiseCancellationState(
-      /*noise_cancellation_on=*/false);
+      /*noise_cancellation_on=*/false,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray);
 
   EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
   EXPECT_FALSE(fake_cras_audio_client()->noise_cancellation_enabled());
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kNoiseCancellationEnabledSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray, 1);
 
   // Turn on noise cancellation.
   cras_audio_handler_->SetNoiseCancellationState(
-      /*noise_cancellation_on=*/true);
+      /*noise_cancellation_on=*/true,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray);
 
   EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
   EXPECT_TRUE(fake_cras_audio_client()->noise_cancellation_enabled());
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kNoiseCancellationEnabledSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kSystemTray, 2);
 }
 
 TEST_P(CrasAudioHandlerTest, SetNoiseCancellationStateObserver) {
@@ -5091,7 +5140,8 @@ TEST_P(CrasAudioHandlerTest, SetNoiseCancellationStateObserver) {
   EXPECT_EQ(0, test_observer_->noise_cancellation_state_change_count());
 
   // Change noise cancellation state to trigger observer.
-  cras_audio_handler_->SetNoiseCancellationState(false);
+  cras_audio_handler_->SetNoiseCancellationState(
+      false, CrasAudioHandler::AudioSettingsChangeSource::kSystemTray);
 
   EXPECT_EQ(1, test_observer_->noise_cancellation_state_change_count());
 }

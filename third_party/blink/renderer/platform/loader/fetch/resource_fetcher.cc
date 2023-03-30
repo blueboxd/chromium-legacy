@@ -41,7 +41,9 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
@@ -605,6 +607,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
               ? init.frame_or_worker_scheduler->GetWeakPtr()
               : nullptr),
       blob_registry_remote_(init.context_lifecycle_notifier),
+      resource_cache_remote_(init.context_lifecycle_notifier),
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
@@ -613,9 +616,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
 
   if (IsMainThread()) {
     MainThreadFetchersSet().insert(this);
-    if (MemoryPressureListenerRegistry::IsLowEndDevice()) {
-      MemoryPressureListenerRegistry::Instance().RegisterClient(this);
-    }
+    MemoryPressureListenerRegistry::Instance().RegisterClient(this);
   }
 }
 
@@ -1333,6 +1334,13 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   // the resource was already initialized for the revalidation here, but won't
   // start loading.
   if (ResourceNeedsLoad(resource, policy, should_defer)) {
+    if (resource_cache_remote_.is_bound()) {
+      resource_cache_remote_->Contains(
+          params.Url(),
+          WTF::BindOnce(&ResourceFetcher::OnResourceCacheContainsFinished,
+                        WrapWeakPersistent(this), base::TimeTicks::Now(),
+                        resource_request.GetRequestDestination()));
+    }
     if (!StartLoad(resource,
                    std::move(params.MutableResourceRequest().MutableBody()),
                    load_blocking_policy, params.GetRenderBlockingBehavior())) {
@@ -1355,7 +1363,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   return resource;
 }
 
-void ResourceFetcher::RemoveImageStrongReference(Resource* image_resource) {
+void ResourceFetcher::RemoveResourceStrongReference(Resource* image_resource) {
   document_resource_strong_refs_.erase(image_resource);
 }
 
@@ -1416,7 +1424,9 @@ std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       unfreezable_task_runner_;
-  if (request.GetKeepalive()) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration) &&
+      request.GetKeepalive()) {
     // Set the `task_runner` to the `AgentGroupScheduler`'s task-runner for
     // keepalive fetches because we want it to keep running even after the
     // frame is detached. It's pretty fragile to do that with the
@@ -1956,7 +1966,9 @@ void ResourceFetcher::ClearContext() {
   // first choice font failed to load).
   StopFetching();
 
-  if (!loaders_.empty() || !non_blocking_loaders_.empty()) {
+  if ((!loaders_.empty() || !non_blocking_loaders_.empty()) &&
+      !base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
     // There are some keepalive requests.
     // The use of WrapPersistent creates a reference cycle intentionally,
     // to keep the ResourceFetcher and ResourceLoaders alive until the requests
@@ -2338,7 +2350,12 @@ void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
 }
 
 void ResourceFetcher::StopFetching() {
-  StopFetchingInternal(StopFetchingTarget::kExcludingKeepaliveLoaders);
+  if (base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
+    StopFetchingInternal(StopFetchingTarget::kIncludingKeepaliveLoaders);
+  } else {
+    StopFetchingInternal(StopFetchingTarget::kExcludingKeepaliveLoaders);
+  }
 }
 
 void ResourceFetcher::SetDefersLoading(LoaderFreezeMode mode) {
@@ -2666,7 +2683,7 @@ void ResourceFetcher::MaybeSaveResourceToStrongReference(Resource* resource) {
       document_resource_strong_refs_.insert(resource);
       freezable_task_runner_->PostDelayedTask(
           FROM_HERE,
-          WTF::BindOnce(&ResourceFetcher::RemoveImageStrongReference,
+          WTF::BindOnce(&ResourceFetcher::RemoveResourceStrongReference,
                         WrapWeakPersistent(this), WrapWeakPersistent(resource)),
           GetResourceStrongReferenceTimeout(resource));
     }
@@ -2676,6 +2693,53 @@ void ResourceFetcher::MaybeSaveResourceToStrongReference(Resource* resource) {
 void ResourceFetcher::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   document_resource_strong_refs_.clear();
+}
+
+void ResourceFetcher::SetResourceCache(
+    mojo::PendingRemote<mojom::blink::ResourceCache> remote) {
+  DCHECK(remote.is_valid());
+  resource_cache_remote_.reset();
+  resource_cache_remote_.Bind(std::move(remote), unfreezable_task_runner_);
+}
+
+void ResourceFetcher::OnResourceCacheContainsFinished(
+    base::TimeTicks ipc_send_time,
+    network::mojom::RequestDestination destination,
+    mojom::blink::ResourceCacheContainsResultPtr result) {
+  DCHECK(result);
+
+  base::UmaHistogramBoolean(
+      base::StrCat(
+          {"Blink.MemoryCache.Remote.IsInCache.",
+           network::RequestDestinationToStringForHistogram(destination)}),
+      result->is_in_cache);
+  const char* visibility = result->is_visible ? "Visible" : "Hidden";
+  const char* lifecycle = nullptr;
+  switch (result->lifecycle_state) {
+    case mojom::blink::ResourceCacheContainsResult::LifecycleState::kUnknown:
+      lifecycle = ".Unknown";
+      break;
+    case mojom::blink::ResourceCacheContainsResult::LifecycleState::kRunning:
+      lifecycle = ".Running";
+      break;
+    case mojom::blink::ResourceCacheContainsResult::LifecycleState::kPaused:
+      lifecycle = ".Paused";
+      break;
+    case mojom::blink::ResourceCacheContainsResult::LifecycleState::kFrozen:
+      lifecycle = ".Frozen";
+      break;
+  }
+  base::TimeDelta send_delay = result->ipc_response_time - ipc_send_time;
+  base::UmaHistogramMicrosecondsTimes(
+      base::StrCat({"Blink.MemoryCache.Remote.", visibility, lifecycle,
+                    ".IPCSendDelay"}),
+      send_delay);
+  base::TimeDelta recv_delay =
+      base::TimeTicks::Now() - result->ipc_response_time;
+  base::UmaHistogramMicrosecondsTimes(
+      base::StrCat({"Blink.MemoryCache.Remote.", visibility, lifecycle,
+                    ".IPCRecvDelay"}),
+      recv_delay);
 }
 
 void ResourceFetcher::Trace(Visitor* visitor) const {
@@ -2700,6 +2764,7 @@ void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(blob_registry_remote_);
   visitor->Trace(subresource_web_bundles_);
   visitor->Trace(document_resource_strong_refs_);
+  visitor->Trace(resource_cache_remote_);
   MemoryPressureListener::Trace(visitor);
 }
 

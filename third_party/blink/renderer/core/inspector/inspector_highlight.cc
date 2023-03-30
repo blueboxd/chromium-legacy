@@ -28,8 +28,6 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
-#include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -40,7 +38,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -585,19 +582,10 @@ PhysicalOffset Transpose(PhysicalOffset& offset) {
 LayoutUnit TranslateRTLCoordinate(const LayoutObject* layout_object,
                                   LayoutUnit position,
                                   const Vector<LayoutUnit>& column_positions) {
-  // TranslateRTLCoordinate exists in legacy grid, but is not implemented in
-  // GridNG, duplicating implementation from legacy here. Once legacy grid is
-  // removed, the implementation for TranslateRTLCoordinate will only exist
-  // here.
-  // If this is a legacy grid, use the legacy grid method.
-  if (layout_object->IsLayoutGrid()) {
-    return To<LayoutGrid>(layout_object)->TranslateRTLCoordinate(position);
-  }
-  // This should only be called on grid layout objects. If the object is not
-  // legacy grid, it must be GridNG.
+  // This should only be called on grid layout objects.
   DCHECK(layout_object->IsLayoutNGGrid());
-
   DCHECK(!layout_object->StyleRef().IsLeftToRightDirection());
+
   LayoutUnit alignment_offset = column_positions.front();
   LayoutUnit right_grid_edge_position = column_positions.back();
   return right_grid_edge_position + alignment_offset - position;
@@ -1945,7 +1933,7 @@ void InspectorHighlight::AppendNodeHighlight(
   if (highlight_config.css_grid != Color::kTransparent ||
       highlight_config.grid_highlight_config) {
     grid_info_ = protocol::ListValue::create();
-    if (layout_object->IsLayoutGridIncludingNG()) {
+    if (layout_object->IsLayoutNGGrid()) {
       grid_info_->pushValue(
           BuildGridInfo(node, highlight_config, scale_, true));
     }
@@ -2077,23 +2065,22 @@ bool InspectorHighlight::GetBoxModel(
       view->ConvertToRootFrame(layout_object->AbsoluteBoundingBoxRect());
   auto* model_object = DynamicTo<LayoutBoxModelObject>(layout_object);
 
-  *model =
-      protocol::DOM::BoxModel::create()
-          .setContent(BuildArrayForQuad(content))
-          .setPadding(BuildArrayForQuad(padding))
-          .setBorder(BuildArrayForQuad(border))
-          .setMargin(BuildArrayForQuad(margin))
-          .setWidth(model_object ? AdjustForAbsoluteZoom::AdjustInt(
-                                       model_object->PixelSnappedOffsetWidth(
-                                           model_object->OffsetParent()),
-                                       model_object)
-                                 : bounding_box.width())
-          .setHeight(model_object ? AdjustForAbsoluteZoom::AdjustInt(
-                                        model_object->PixelSnappedOffsetHeight(
-                                            model_object->OffsetParent()),
-                                        model_object)
-                                  : bounding_box.height())
-          .build();
+  *model = protocol::DOM::BoxModel::create()
+               .setContent(BuildArrayForQuad(content))
+               .setPadding(BuildArrayForQuad(padding))
+               .setBorder(BuildArrayForQuad(border))
+               .setMargin(BuildArrayForQuad(margin))
+               .setWidth(model_object
+                             ? AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                                   model_object->OffsetWidth(), *model_object)
+                                   .Round()
+                             : bounding_box.width())
+               .setHeight(model_object
+                              ? AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                                    model_object->OffsetHeight(), *model_object)
+                                    .Round()
+                              : bounding_box.height())
+               .build();
 
   Shape::DisplayPaths paths;
   gfx::QuadF bounds_quad;
@@ -2164,8 +2151,9 @@ std::unique_ptr<protocol::DictionaryValue> InspectorGridHighlight(
 
   float scale = DeviceScaleFromFrameView(frame_view);
   LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object || !layout_object->IsLayoutGridIncludingNG())
+  if (!layout_object || !layout_object->IsLayoutNGGrid()) {
     return nullptr;
+  }
 
   std::unique_ptr<protocol::DictionaryValue> grid_info =
       BuildGridInfo(node, config, scale, true);

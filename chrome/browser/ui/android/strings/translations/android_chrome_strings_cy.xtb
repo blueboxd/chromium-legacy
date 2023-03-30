@@ -283,6 +283,7 @@ Mae tocynnau ymddiriedaeth yn gwella eich preifatrwydd ar y we ac ni ellir eu de
 <translation id="2581165646603367611">Bydd hyn yn clirio cwcis, storfa, a data eraill o wefannau nad yw Chrome yn credu sy'n bwysig.</translation>
 <translation id="2587052924345400782">Mae fersiwn mwy newydd ar gael</translation>
 <translation id="2593272815202181319">Lled sefydlog</translation>
+<translation id="2603212228005142861">Mewngofnodwch i reoli'ch dewisiadau</translation>
 <translation id="2604446170045642109">Gallwch ddiffodd thema dywyll ar gyfer gwefannau yn eich gosodiadau.</translation>
 <translation id="2612676031748830579">Rhif y cerdyn</translation>
 <translation id="2625189173221582860">Copïwyd cyfrinair</translation>
@@ -476,6 +477,7 @@ Mae tocynnau ymddiriedaeth yn gwella eich preifatrwydd ar y we ac ni ellir eu de
 <translation id="3587596251841506391">Helpu i wella diogelwch ar y we</translation>
 <translation id="3597179440835065298">Cael awgrymiadau gwell</translation>
 <translation id="3602290021589620013">Rhagolwg</translation>
+<translation id="360901359071773787">Dileu'r 15 munud diwethaf?</translation>
 <translation id="3616113530831147358">Sain</translation>
 <translation id="3622349720008044802">Rheoli ffenestri</translation>
 <translation id="3631987586758005671">Wrthi'n rhannu i <ph name="DEVICE_NAME" /></translation>
@@ -821,6 +823,7 @@ I newid y gosodiad hwn, <ph name="BEGIN_LINK" />ailosodwch gysoni<ph name="END_L
 <translation id="5517095782334947753">Mae gennych nodau tudalen, hanes, cyfrineiriau a gosodiadau eraill o <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Pan fydd treialon ymlaen ac os yw Chrome wedi'ch gosod ar hap mewn treial gweithredol, mae eich hanes pori yn effeithio ar yr hysbysebion a welwch a'r diddordebau fel yr amcangyfrifir isod. Er mwyn amddiffyn eich preifatrwydd, mae Chrome yn dileu eich diddordebau yn awtomatig bob mis.</translation>
 <translation id="5524843473235508879">Ailgyfeirio wedi'i rwystro.</translation>
+<translation id="554297709083131118">Bydd data dilynol o'r 15 munud diwethaf yn cael eu dileu</translation>
 <translation id="5548606607480005320">Gwiriad diogelwch</translation>
 <translation id="5555525474779371165">Dewiswch eich diogelwch Pori'n Ddiogel</translation>
 <translation id="5556459405103347317">Ail-lwytho</translation>
@@ -1075,6 +1078,7 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, tab, wedi'i ddewis</translation>
 <translation id="6828070228333235514">Stopio dilyn y pris</translation>
 <translation id="6830728435402077660">Ddim yn ddiogel</translation>
+<translation id="6831043979455480757">Cyfieithu</translation>
 <translation id="6833996806551876956">Prawf Privacy Sandbox</translation>
 <translation id="6836206421467243968">Adfer grŵp tabiau <ph name="TITLE_OF_GROUP" /> fel grŵp tabiau cefndirol newydd.</translation>
 <translation id="6846298663435243399">Yn llwytho…</translation>
@@ -1261,6 +1265,7 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="78270725016672455">Mae eich cyfrifiadur eisiau cofrestru'r ddyfais hon i fewngofnodi i wefan</translation>
 <translation id="7844171778363018843">Ni ddewiswyd unrhyw ddata i'w cysoni</translation>
 <translation id="7846296061357476882">Gwasanaethau Google</translation>
+<translation id="7847228556075070294">Hanes, cwcis a data eraill a ddilëwyd</translation>
 <translation id="784934925303690534">Ystod amser</translation>
 <translation id="7851858861565204677">Dyfeisiau eraill</translation>
 <translation id="7853202427316060426">Gweithgarwch</translation>
@@ -1440,6 +1445,7 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="869891660844655955">Dyddiad darfod</translation>
 <translation id="8699120352855309748">Peidiwch â chynnig cyfieithu'r ieithoedd hyn</translation>
 <translation id="8712637175834984815">Iawn</translation>
+<translation id="8723453889042591629">Cyfieithwch y dudalen hon yn gyflym. I olygu'r llwybr byr hwn, cyffwrddwch a daliwch.</translation>
 <translation id="8725066075913043281">Rhoi cynnig arall arni</translation>
 <translation id="8746155870861185046">Rhannu'r testun a amlygir</translation>
 <translation id="874726034427945498">I weld awgrymiadau gwell yn eich bar cyfeiriad, cysonwch eich tabiau a'ch hanes</translation>
@@ -1492,6 +1498,7 @@ Er enghraifft, gall rhai gwefannau ymateb i'r cais hwn drwy ddangos hysbysebion 
 <translation id="8989968390305463310">Mae eich hanes pori yn effeithio ar yr hysbysebion rydych yn eu gweld a'r diddordebau fel yr amcangyfrifir isod. Er mwyn amddiffyn eich preifatrwydd, mae Chrome yn dileu'ch diddordebau yn awtomatig bob mis. Gall diddordebau ail-lwytho oni bai eich bod yn eu tynnu.</translation>
 <translation id="8993760627012879038">Agor tab newydd yn y Modd Anhysbys</translation>
 <translation id="8996847606757455498">Dewiswch ddarparwr arall</translation>
+<translation id="8998289560386111590">Dim ar gael ar eich dyfais</translation>
 <translation id="8998729206196772491">Rydych yn mewngofnodi gyda chyfrif a reolir gan <ph name="MANAGED_DOMAIN" /> ac yn rhoi rheolaeth dros eich data Chrome i'w weinyddwr. Bydd eich data yn cael eu cysylltu'n barhaol i'r cyfrif hwn. Bydd allgofnodi o Chrome yn dileu eich data o'r ddyfais hon, ond bydd yn parhau i gael ei storio yn eich Cyfrif Google.</translation>
 <translation id="9022774213089566801">Ymwelir yn aml</translation>
 <translation id="9022871169049522985">Gall gwefannau a hysbysebwyr fesur perfformiad eu hysbysebion</translation>

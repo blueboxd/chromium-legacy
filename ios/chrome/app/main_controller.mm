@@ -32,6 +32,7 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
 #import "components/previous_session_info/previous_session_info.h"
+#import "components/sync/base/features.h"
 #import "components/sync/driver/sync_service.h"
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/app_metrics_app_state_agent.h"
@@ -68,7 +69,6 @@
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #import "ios/chrome/browser/crash_report/crash_report_helper.h"
-#import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #import "ios/chrome/browser/credential_provider/credential_provider_buildflags.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
@@ -89,6 +89,7 @@
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #import "ios/chrome/browser/passwords/password_manager_util_ios.h"
 #import "ios/chrome/browser/paths/paths.h"
+#import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
 #import "ios/chrome/browser/screenshot/screenshot_metrics_recorder.h"
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
@@ -373,8 +374,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @end
 
 @implementation MainController
-// Defined by MainControllerGuts.
-@synthesize restoreHelper = _restoreHelper;
 
 // Defined by public protocols.
 // - BrowserLauncher
@@ -497,21 +496,20 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
 
+  ChromeBrowserState* browserState = self.appState.mainBrowserState;
+  DCHECK(browserState);
   [self.appState
-      addAgent:[[PostRestoreAppAgent alloc]
-                   initWithPromosManager:GetApplicationContext()
-                                             ->GetPromosManager()
-                   authenticationService:AuthenticationServiceFactory::
-                                             GetForBrowserState(
-                                                 self.appState.mainBrowserState)
-                              localState:GetApplicationContext()
-                                             ->GetLocalState()]];
+      addAgent:
+          [[PostRestoreAppAgent alloc]
+              initWithPromosManager:PromosManagerFactory::GetForBrowserState(
+                                        browserState)
+              authenticationService:AuthenticationServiceFactory::
+                                        GetForBrowserState(browserState)
+                         localState:GetApplicationContext()->GetLocalState()]];
 }
 
 // This initialization must happen before any windows are created.
-// Returns YES iff there's a session restore available.
-- (BOOL)startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
-    (BOOL)showPostCrashLaunchInfobar {
+- (void)startUpBeforeFirstWindowCreated {
   GetApplicationContext()->OnAppEnterForeground();
 
   // Although this duplicates some metrics_service startup logic also in
@@ -542,17 +540,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   DCHECK_EQ(chromeBrowserState, self.appState.mainBrowserState);
 #endif  // !defined(NDEBUG)
 
-  // The CrashRestoreHelper must clean up the old browser state information.
-  // `self.restoreHelper` must be kept alive until the BVC receives the
-  // browser state.
-  BOOL needRestoration = NO;
-  if (showPostCrashLaunchInfobar) {
-    NSSet<NSString*>* sessions =
-        [[PreviousSessionInfo sharedInstance] connectedSceneSessionsIDs];
-    needRestoration =
-        [CrashRestoreHelper moveAsideSessions:sessions
-                              forBrowserState:self.appState.mainBrowserState];
-  }
   if (!base::ios::IsMultipleScenesSupported()) {
     NSSet<NSString*>* previousSessions =
         [PreviousSessionInfo sharedInstance].connectedSceneSessionsIDs;
@@ -583,8 +570,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #endif
 
   _windowConfigurationRecorder = [[WindowConfigurationRecorder alloc] init];
-
-  return needRestoration;
 }
 
 // This initialization must only happen once there's at least one Chrome window
@@ -623,14 +608,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (GetApplicationContext()->WasLastShutdownClean())
     return PostCrashAction::kRestoreTabsCleanShutdown;
 
-  bool show_crash_infobar = !base::FeatureList::IsEnabled(kRemoveCrashInfobar);
-  // When `kRemoveCrashInfobar` launches, remove the isFirstLaunchAfterUpgrade
-  // check entirely.
-  if (show_crash_infobar && ![self isFirstLaunchAfterUpgrade]) {
-    return PostCrashAction::kStashTabsAndShowNTP;
-  }
-
-  if (!show_crash_infobar && crash_util::GetFailedStartupAttemptCount() >= 2) {
+  if (crash_util::GetFailedStartupAttemptCount() >= 2) {
     return PostCrashAction::kShowNTPWithReturnToTab;
   }
 
@@ -642,10 +620,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // crashes.
 
   self.appState.postCrashAction = [self postCrashAction];
-  self.appState.sessionRestorationRequired =
-      [self startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
-                self.appState.postCrashAction ==
-                PostCrashAction::kStashTabsAndShowNTP];
+  [self startUpBeforeFirstWindowCreated];
   base::UmaHistogramEnumeration("Stability.IOS.PostCrashAction",
                                 self.appState.postCrashAction);
 }
@@ -1025,10 +1000,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // If the user chooses to restore their session, some cached snapshots and
   // session states may be needed. Otherwise, cleanup the snapshots and session
   // states
-  if (self.appState.postCrashAction != PostCrashAction::kStashTabsAndShowNTP) {
-    [self scheduleSnapshotsCleanup];
-    [self scheduleSessionStateCacheCleanup];
-  }
+  [self scheduleSnapshotsCleanup];
+  [self scheduleSessionStateCacheCleanup];
 }
 
 - (void)scheduleMemoryDebuggingTools {
@@ -1098,6 +1071,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)saveFieldTrialValuesForExtensions {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
 
+  NSNumber* credentialProviderExtensionPasswordNotesValue =
+      [NSNumber numberWithBool:base::FeatureList::IsEnabled(
+                                   syncer::kPasswordNotesWithBackup)];
+  NSNumber* credentialProviderExtensionPasswordNotesVersion =
+      [NSNumber numberWithInt:kCredentialProviderExtensionPasswordNotesVersion];
+
   // Add other field trial values here if they are needed by extensions.
   // The general format is
   // {
@@ -1106,7 +1085,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   //     version: NSNumber int,
   //   }
   // }
-  NSDictionary* fieldTrialValues = @{};
+  NSDictionary* fieldTrialValues = @{
+    base::SysUTF8ToNSString(syncer::kPasswordNotesWithBackup.name) : @{
+      kFieldTrialValueKey : credentialProviderExtensionPasswordNotesValue,
+      kFieldTrialVersionKey : credentialProviderExtensionPasswordNotesVersion,
+    },
+  };
   [sharedDefaults setObject:fieldTrialValues
                      forKey:app_group::kChromeExtensionFieldTrialPreference];
 }

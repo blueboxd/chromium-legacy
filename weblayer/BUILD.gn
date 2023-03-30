@@ -9,6 +9,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
+import("//components/services/screen_ai/buildflags/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//gpu/vulkan/features.gni")
@@ -51,6 +52,7 @@ if (is_android) {
       "enable_arcore=$enable_arcore",
       "enable_pdf=$enable_pdf",
       "enable_print_preview=$enable_print_preview",
+      "enable_screen_ai_service=$enable_screen_ai_service",
       "enable_vr=$enable_vr",
     ]
 
@@ -230,8 +232,6 @@ source_set("weblayer_lib_base") {
     "browser/i18n_util.h",
     "browser/insecure_form_controller_client.cc",
     "browser/insecure_form_controller_client.h",
-    "browser/js_communication/web_message_host_factory_wrapper.cc",
-    "browser/js_communication/web_message_host_factory_wrapper.h",
     "browser/navigation_controller_impl.cc",
     "browser/navigation_controller_impl.h",
     "browser/navigation_entry_data.cc",
@@ -362,11 +362,6 @@ source_set("weblayer_lib_base") {
     "public/fullscreen_delegate.h",
     "public/google_account_access_token_fetch_delegate.h",
     "public/google_accounts_delegate.h",
-    "public/js_communication/web_message.cc",
-    "public/js_communication/web_message.h",
-    "public/js_communication/web_message_host.h",
-    "public/js_communication/web_message_host_factory.h",
-    "public/js_communication/web_message_reply_proxy.h",
     "public/main.h",
     "public/navigation.h",
     "public/navigation_controller.h",
@@ -439,9 +434,6 @@ source_set("weblayer_lib_base") {
     "//components/heavy_ad_intervention",
     "//components/infobars/content",
     "//components/infobars/core",
-    "//components/js_injection/browser",
-    "//components/js_injection/common:common_mojom",
-    "//components/js_injection/renderer",
     "//components/keyed_service/content",
     "//components/language/core/browser",
     "//components/leveldb_proto",
@@ -637,10 +629,6 @@ source_set("weblayer_lib_base") {
       "browser/infobar_container_android.h",
       "browser/javascript_tab_modal_dialog_manager_delegate_android.cc",
       "browser/javascript_tab_modal_dialog_manager_delegate_android.h",
-      "browser/js_communication/web_message_host_factory_proxy.cc",
-      "browser/js_communication/web_message_host_factory_proxy.h",
-      "browser/js_communication/web_message_reply_proxy_impl.cc",
-      "browser/js_communication/web_message_reply_proxy_impl.h",
       "browser/media/local_presentation_manager_factory.cc",
       "browser/media/local_presentation_manager_factory.h",
       "browser/media/media_router_factory.cc",
@@ -914,7 +902,7 @@ if (is_android) {
     deps = [
       ":weblayer_lib_webview_test",
       "//base",
-      "//components/android_autofill/browser/test_support:component_autofill_provider_native_test_support",
+      "//components/android_autofill/browser/test_support:native",
       "//content/public/app",
       "//weblayer/browser/java:test_weblayer_jni_registration($default_toolchain)",
     ]

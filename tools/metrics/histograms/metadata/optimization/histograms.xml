@@ -64,6 +64,8 @@ chromium-metrics-reviews@google.com.
   <variant name="SegmentationShare" summary="Segmentation: Share user"/>
   <variant name="SegmentationShoppingUser"
       summary="Segmentation: Shopping user"/>
+  <variant name="SegmentationTabletProductivityUser"
+      summary="Segmentation: Tablet Productivity user"/>
   <variant name="SegmentationVoice" summary="Segmentation: Voice user"/>
   <variant name="TextClassifier" summary="Smart text selection"/>
 </variants>
@@ -610,7 +612,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.OptimizationHintsComponent.MajorVersion"
-    units="major version number" expires_after="2023-05-07">
+    units="major version number" expires_after="M117">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -658,7 +660,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.PageContentAnnotations.EntityCollection_50"
-    enum="OptimizationGuidePageEntityCollection" expires_after="2023-07-16">
+    enum="OptimizationGuidePageEntityCollection" expires_after="2023-09-17">
   <owner>tbansal@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>

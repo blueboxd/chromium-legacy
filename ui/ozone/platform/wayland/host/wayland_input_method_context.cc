@@ -24,8 +24,8 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
-#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/ozone/events_ozone.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/range/range.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
@@ -179,13 +179,7 @@ bool WaylandInputMethodContext::DispatchKeyEvent(
 }
 
 bool WaylandInputMethodContext::IsPeekKeyEvent(const ui::KeyEvent& key_event) {
-  const auto* properties = key_event.properties();
-  if (!properties)
-    return true;
-  auto it = properties->find(kPropertyKeyboardImeFlag);
-  if (it == properties->end())
-    return true;
-  return !(it->second[0] & kPropertyKeyboardImeIgnoredFlag);
+  return !(GetKeyboardImeFlags(key_event) & kPropertyKeyboardImeIgnoredFlag);
 }
 
 void WaylandInputMethodContext::UpdatePreeditText(
@@ -257,7 +251,9 @@ void WaylandInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {
 
 void WaylandInputMethodContext::SetSurroundingText(
     const std::u16string& text,
+    const gfx::Range& text_range,
     const gfx::Range& selection_range) {
+  // TODO(crbug.com/1402906): Text range is not currently handled correctly.
   surrounding_text_tracker_.Update(text, selection_range);
 
   if (!text_input_)
@@ -355,10 +351,12 @@ void WaylandInputMethodContext::SetSurroundingText(
 void WaylandInputMethodContext::SetContentType(TextInputType type,
                                                TextInputMode mode,
                                                uint32_t flags,
-                                               bool should_do_learning) {
+                                               bool should_do_learning,
+                                               bool can_compose_inline) {
   if (!text_input_)
     return;
-  text_input_->SetContentType(type, mode, flags, should_do_learning);
+  text_input_->SetContentType(type, mode, flags, should_do_learning,
+                              can_compose_inline);
 }
 
 void WaylandInputMethodContext::SetGrammarFragmentAtCursor(

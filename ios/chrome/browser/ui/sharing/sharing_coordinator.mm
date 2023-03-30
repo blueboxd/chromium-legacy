@@ -401,14 +401,13 @@ BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles() {
 // Removes downloaded file at `self.filePath`.
 - (void)removeFile {
   if ([[NSFileManager defaultManager] fileExistsAtPath:self.filePath]) {
-    __weak SharingCoordinator* weakSelf = self;
+    NSString* tempFilePath = self.filePath;
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(^{
           NSError* error = nil;
-          if (![[NSFileManager defaultManager]
-                  removeItemAtPath:weakSelf.filePath
-                             error:&error]) {
+          if (![[NSFileManager defaultManager] removeItemAtPath:tempFilePath
+                                                          error:&error]) {
             DLOG(ERROR) << "Failed to remove file: "
                         << base::SysNSStringToUTF8([error description]);
           }

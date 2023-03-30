@@ -20,7 +20,7 @@ The tables in this file are parsed as action templates for critical user journey
 
 TODO(dmurph): Possibly this table up into markdown-header section.
 
-| # Action base name | Argument Types | Output Actions | Unique Identifier (next: 145) | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
+| # Action base name | Argument Types | Output Actions | Unique Identifier (next: 160) | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
 | --- | --- | --- | --- | --- | --- | --- |
 | # Badging |
 | check_app_badge_empty | Site |  | 2 | Not Implemented | Check that the 'badge' on the app icon is empty |  |
@@ -42,15 +42,16 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | apply_run_on_os_login_policy_allowed | Site |  | 100 | Implemented | Apply WebAppSettings policy for run_on_os_login to be allowed | phillis@ |
 | apply_run_on_os_login_policy_blocked | Site |  | 101 | Implemented | Apply WebAppSettings policy for run_on_os_login to be blocked | phillis@ |
 | apply_run_on_os_login_policy_run_windowed | Site |  | 102 | Implemented | Apply WebAppSettings policy for run_on_os_login to be run_windowed | phillis@ |
-| disable_run_on_os_login | Site |  | 105 | Implemented | Disable run on os login from app settings page | phillis@ |
-| enable_run_on_os_login | Site |  | 104 | Implemented | Enable run on os login from app settings page | phillis@ |
+| disable_run_on_os_login_from_app_settings | Site |  | 153 | Implemented | Disable run on os login from app settings page | phillis@ |
+| enable_run_on_os_login_from_app_settings | Site |  | 154 | Implemented | Enable run on os login from app settings page | phillis@ |
+| enable_run_on_os_login | Site | enable_run_on_os_login_from_app_settings($1) & enable_run_on_os_login_from_app_home($1) | 155 | Parameterized | Enable an app to run on OS login from the app settings or app home page | dibyapal@ |
+| disable_run_on_os_login | Site | disable_run_on_os_login_from_app_settings($1) & disable_run_on_os_login_from_app_home($1) | 156 | Parameterized | Disable an app from running on OS login from the app settings or app home page | dibyapal@ |
 | remove_run_on_os_login_policy | Site |  | 103 | Implemented | Remove  run_on_os_login policy for the app in WebAppSettings policy. | phillis@ |
 | |
 | # Create Shortcut |
 | create_shortcut | Site, WindowOptions |  | 29 | Implemented | Use the 'create shortcut' functionality at the given location using the "Create Shortcut" menu option (3-dot->"More Tools"->"Create Shortcut)  The WindowOption specified if the "Open in a window" checkbox should be selected. |  |
 | |
 | # Install |
-| install_locally | Site |  | 46 | Implemented | Find the app in the app list (chrome://apps) and install it by right-clicking on the app and selecting the 'install' option. Win/Mac/Linux only. |  |
 | install_omnibox_icon | InstallableSite |  | 31 | Implemented |  |  |
 | install_policy_app | Site, ShortcutOptions, WindowOptions, InstallMode |  | 32 | Implemented | Add a force-installed enterprise policy site to the user profile (must be managed profile). |  |
 | install_menu_option | InstallableSite |  | 47 | Implemented |  |  |
@@ -73,22 +74,14 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | # Uninstall |
 | uninstall_from_os | Site |  | 87 | Implemented | Uninstalls the app from OS integration - e.g. Windows Control Panel / Start menu |  |
 | uninstall_from_app_settings | Site |  | 98 | Implemented | uninstall an app from app settings page, the app has to be locally installed. | phillis@ |
-| uninstall_from_list | Site |  | 10 | Implemented | Uninstall the webapp from wherever apps are listed by chrome. On WML, this is from chrome://apps, and on ChromeOS, this is from the 'launcher' |  |
 | uninstall_from_menu | Site |  | 43 | Implemented | Uninstall the webapp from the 3-dot menu in the webapp window |  |
 | uninstall_policy_app | Site |  | 44 | Implemented | Remove a force-installed policy app to the user profile (must be managed profile) |  |
 | uninstall_by_user | Site | uninstall_from_list($1) & uninstall_from_menu($1) & uninstall_from_os($1) & uninstall_from_app_settings($1) | 67 | Parameterized |  |  |
 | uninstall_not_locally_installed | Site | uninstall_from_list($1) & uninstall_from_menu($1) & uninstall_from_os($1) | 99 | Parameterized | Uninstall an app by user, the app can be not locally installed. |  |
 | # Checking app state |
 | check_app_icon | Site, Color |  | 110 | Implemented | Check that the app icon color is correct | finnur@ |
-| check_app_in_list_tabbed | Site |  | 11 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the app opens in a window by right clicking on it to see if the "open in window" option is checked, and by launching it to see if it opens in a separate window. |  |
-| check_app_in_list_windowed | Site |  | 12 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the app opens in a tab by right clicking on it to see if the "open in window" option is unchecked, and by launching it to see if it opens in a browser tab (and not a window). |  |
-| check_app_list_empty |  |  | 13 | Implemented | The app list is empty (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). |  |
 | check_app_navigation | Site |  | 133 | Implemented |  |  |
 | check_app_navigation_is_start_url |  |  | 14 | Implemented |  |  |
-| check_app_in_list_not_locally_installed | Site |  | 45 | Implemented | Find the app in the app list (chrome://apps) and check that the given app is in the app list and is not installed. This means the icon is grey, and right clicking on it provides an 'install' option. Win/Mac/Linux only. |  |
-| check_app_not_in_list | Site |  | 15 | Implemented | Check that the given app is NOT in the app list. On desktop, this is chrome://apps, and on ChromeOS, this is the app drawer. |  |
-| check_app_title | Site, Title |  | 79 | Implemented | Check that the app title is correct | finnur@ |
-| check_app_in_list_icon_correct | Site |  | 75 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the icon for the given app in the app list is correct. | P2 (fetch icon using web request for chrome://app-icon/<app-id>/<icon-size>) |
 | check_theme_color | Site |  | 76 | Not Implemented | Asserts that the theme color of the given app window is correct. | P3 |
 | # Misc UX |
 | check_browser_navigation | Site |  | 134 | Implemented | Check the current browser navigation is the given site |  |
@@ -107,7 +100,8 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | check_run_on_os_login_enabled | Site |  | 106 | Implemented | Check run on os login is enabled. | phillis@ |
 | check_tab_created |  |  | 22 | Implemented | A tab was created in a chrome browser window |  |
 | check_tab_not_created |  |  | 94 | Implemented | A tab was not created by the last state change action | cliffordcheng@, P1 |
-| check_user_cannot_set_run_on_os_login | Site |  | 111 | Implemented | Check user can't change the app's  run_on_os_login state.  |  |
+| check_user_cannot_set_run_on_os_login | Site | check_user_cannot_set_run_on_os_login_app_settings($1) & check_user_cannot_set_run_on_os_login_app_home($1) | 159 | Parameterized | Check an user is unable to change the run on os login state from UI surfaces due to policy.  | dibyapal@ |
+| check_user_cannot_set_run_on_os_login_app_settings | Site | | 158 | Implemented | Check user can't change the app's run_on_os_login state from the app settings page. | |
 | check_window_closed |  |  | 23 | Implemented | The window was closed |  |
 | check_window_created |  |  | 24 | Implemented | A window was created. |  |
 | check_window_not_created |  |  | 127 | Implemented | A window was not created. | P2 |
@@ -120,13 +114,13 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | maybe_close_pwa |  |  | 143 | Implemented | Close the current app window if there is one open. |  |
 | open_app_settings | Site | open_app_settings_from_chrome_apps($1) & open_app_settings_from_app_menu($1) | 95 | Parameterized | Launch chrome://app-settings/<app-id> page | phillis@ |
 | open_app_settings_from_app_menu | Site |  | 97 | Implemented |  | phillis@ |
-| open_app_settings_from_chrome_apps | Site |  | 96 | Implemented |  | phillis@ |
 | open_in_chrome |  |  | 71 | Implemented | Click on the 'open in chrome' link in the 3-dot menu of the app window | cliffordcheng@, P1 |
-| set_open_in_tab | Site |  | 50 | Implemented | Uncheck the "open in window" checkbox in the right-click menu of the app icon, in the app list page |  |
-| set_open_in_window | Site |  | 51 | Implemented | Check the "open in window" checkbox in the right-click menu of the app icon, in the app list page |  |
+| set_open_in_tab | Site | set_open_in_tab_from_app_settings($1) & set_open_in_tab_from_app_home($1) | 148 | Parameterized | All methods to toggle an app to open in a tab in the same window. | dibyapal@ |
+| set_open_in_tab_from_app_settings | Site |  | 149 | Implemented | Toggle the "open in window"  option in the chrome://app-settings/<app-id> page to disable an app from opening in a separate window, so that the app opens in a tab in the same window. | dibyapal@ |
+| set_open_in_window | Site | set_open_in_window_from_app_settings($1) & set_open_in_window_from_app_home($1) | 146 | Parameterized | All methods to toggle an app to open in window. | dibyapal@ |
+| set_open_in_window_from_app_settings | Site |  | 150 | Implemented | Toggle the "open in window" option in the chrome://app-settings/<app-id> page to enable an app to launch in a separate window. | dibyapal@ |
 | check_window_color_correct | Site |  | 77 | Not Implemented | The color of the window is correct. | P3 |
 | check_window_icon_correct | Site |  | 78 | Not Implemented |  | P3 |
-| create_shortcuts_from_list | Site |  | 72 | Implemented | "create shortcuts" in chrome://apps. Win/Mac/Linux only. | P2 |
 | delete_platform_shortcut | Site |  | 74 | Implemented | Delete the shortcut that lives on the operating system. Win/Mac/Linux only. | P2 |
 | delete_profile |  |  | 83 | Not Implemented | Delete the user profile. | P4 |
 | # Launching |
@@ -169,3 +163,28 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | check_has_sub_app | Site |  | 140 | Implemented | Assuming we have the active browser window on the (potential) parent site, call subApps.list() and check if the given site is listed. |  |
 | check_not_has_sub_app | Site |  | 141 | Implemented | Assuming we have the active browser window on the (potential) parent site, call subApps.list() and check if the given site is not listed. |  |
 | check_no_sub_apps |  |  | 142 | Implemented | Assuming we navigated to the (potential) parent site, call subApps.list() and check if the list is empty. |  |
+
+### App Home
+
+TODO(dibyapal): Move more app home based actions here once they are integrated to above actions or newly implemented.
+
+Actions that the user can take by going to chrome://apps and either left clicking an app or right clicking an app and then taking actions from the context menu that opens.
+
+| # Action base name | Argument Types | Output Actions | Unique Identifier | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
+| --- | --- | --- | --- | --- | --- | --- |
+| set_open_in_window_from_app_home | Site |  | 145 | Implemented | Checks the `open in window` checkbox from the chrome://apps context menu by right clicking an app icon. | dibyapal@ |
+| set_open_in_tab_from_app_home | Site |  | 147 | Implemented | Unchecks the `open in window` checkbox from the chrome://apps context menu by right clicking an app icon. | dibyapal@ |
+| check_app_in_list_not_locally_installed | Site |  | 45 | Implemented | Find the app in the app list (chrome://apps) and check that the given app is in the app list and is not installed. This means the icon is grey, and right clicking on it provides an 'install' option. Win/Mac/Linux only. |  |
+| check_app_not_in_list | Site |  | 15 | Implemented | Check that the given app is NOT in the app list. On desktop, this is chrome://apps, and on ChromeOS, this is the app drawer. |  |
+| check_app_title | Site, Title |  | 79 | Implemented | Check that the app title is correct | finnur@ |
+| check_app_in_list_icon_correct | Site |  | 75 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the icon for the given app in the app list is correct. | P2 (fetch icon using web request for chrome://app-icon/<app-id>/<icon-size>) |
+| check_app_in_list_tabbed | Site |  | 11 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the app opens in a window by right clicking on it to see if the "open in window" option is checked, and by launching it to see if it opens in a separate window. |  |
+| check_app_in_list_windowed | Site |  | 12 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the app opens in a tab by right clicking on it to see if the "open in window" option is unchecked, and by launching it to see if it opens in a browser tab (and not a window). |  |
+| check_app_list_empty |  |  | 13 | Implemented | The app list is empty (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). |  |
+| enable_run_on_os_login_from_app_home | Site |  | 151 | Implemented | Checks the `launch at startup` checkbox from the chrome://apps context menu by right clicking an app icon. | dibyapal@ |
+| disable_run_on_os_login_from_app_home | Site |  | 152 | Implemented | Unchecks the `launch at startup` checkbox from the chrome://apps context menu by right clicking an app icon. | dibyapal@ |
+| check_user_cannot_set_run_on_os_login_app_home | Site | | 157 | Implemented | Checks that the user cannot set the `launch at startup` checkbox from the chrome://apps context menu by right clicking an app icon. | dibyapal@ |
+| install_locally | Site |  | 46 | Implemented | Find the app in the app list (chrome://apps) and install it by right-clicking on the app and selecting the 'install' option. Win/Mac/Linux only. |  |
+| uninstall_from_list | Site |  | 10 | Implemented | Uninstall the webapp from wherever apps are listed by chrome. On WML, this is from chrome://apps, and on ChromeOS, this is from the 'launcher' |  |
+| create_shortcuts_from_list | Site |  | 72 | Implemented | "create shortcuts" in chrome://apps. Win/Mac/Linux only. | P2 |
+| open_app_settings_from_chrome_apps | Site |  | 96 | Implemented |  | phillis@ |

@@ -62,6 +62,8 @@ if (is_win || is_mac || is_linux) {
       "app/app_server.h",
       "app/app_uninstall.cc",
       "app/app_uninstall.h",
+      "app/app_uninstall_self.cc",
+      "app/app_uninstall_self.h",
       "app/app_update.cc",
       "app/app_update.h",
       "app/app_utils.cc",
@@ -225,6 +227,10 @@ if (is_win || is_mac || is_linux) {
         "app/server/win/server.h",
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
+        "app/server/win/update_service_internal_stub_win.cc",
+        "app/server/win/update_service_internal_stub_win.h",
+        "app/server/win/update_service_stub_win.cc",
+        "app/server/win/update_service_stub_win.h",
         "app/server/win/wrl_classes.cc",
         "device_management/dm_storage_win.cc",
         "ipc/update_service_internal_proxy_win.cc",
@@ -484,6 +490,10 @@ if (is_win || is_mac || is_linux) {
       "-e",
       "UPDATE_CHECK_URL=\"$update_check_url\"",
       "-e",
+      "UPDATER_APPID=\"$updater_appid\"",
+      "-e",
+      "QUALIFICATION_APPID=\"$qualification_appid\"",
+      "-e",
       "LEGACY_GOOGLE_UPDATE_APPID=\"$legacy_google_update_appid\"",
       "-e",
       "LEGACY_SERVICE_NAME_PREFIX=\"$legacy_service_name_prefix\"",
@@ -608,12 +618,17 @@ if (is_win || is_mac || is_linux) {
     }
   }
 
-  if (is_mac || is_win) {
+  if (is_linux || is_mac || is_win) {
     crx3("updater_selfupdate_test_crx") {
       base_dir = "$root_build_dir"
       key = "test/data/selfupdate_test_key.der"
       output = "$root_build_dir/updater_selfupdate.crx3"
       testonly = true
+
+      if (is_linux) {
+        inputs = [ "$root_build_dir/updater_test" ]
+        deps = [ "//chrome/updater/linux:updater_test" ]
+      }
 
       if (is_mac) {
         inputs = [
@@ -813,6 +828,7 @@ if (is_win || is_mac || is_linux) {
       sources += [
         "mac/keystone/ksadmin_unittest.cc",
         "mac/privileged_helper/privileged_helper_unittests.mm",
+        "mac/setup/keystone_unittest.cc",
         "mac/setup/ks_tickets_unittest.mm",
         "mac/setup/setup_unittest.mm",
         "policy/mac/managed_preference_policy_manager_impl_unittest.mm",
@@ -830,6 +846,7 @@ if (is_win || is_mac || is_linux) {
       ]
 
       data += [
+        "//chrome/test/data/updater/CountingMetrics.plist",
         "//chrome/test/data/updater/Keystone.ticketstore",
         "//chrome/test/data/updater/Keystone.withlaunchservicechecker.ticketstore",
         "//chrome/test/data/updater/Keystone.legacy.ticketstore",
@@ -873,7 +890,7 @@ if (is_win || is_mac || is_linux) {
 
       data_deps = [
         ":updater_selfupdate_test_crx",
-        "//chrome/updater/mac:ksadmin",
+        "//chrome/updater/mac:ksadmin_test",
         "//chrome/updater/mac:updater_bundle_test",
       ]
 
@@ -908,13 +925,16 @@ if (is_win || is_mac || is_linux) {
       sources += [ "test/integration_tests_linux.cc" ]
 
       data += [ "//chrome/test/data/updater/updater_qualification_app.crx" ]
-      data_deps = [ "//chrome/updater/linux:updater_test" ]
+      data_deps = [
+        ":updater_selfupdate_test_crx",
+        "//chrome/updater/linux:updater_test",
+      ]
       public_configs = [ "linux:libsystemd" ]
     }
 
     if (is_posix) {
       sources += [
-        "app/server/posix/rpc_unittests.cc",
+        "app/server/posix/ipc_unittests.cc",
         "util/posix_util_unittest.cc",
       ]
 
@@ -976,6 +996,9 @@ if (is_win || is_mac || is_linux) {
     }
     if (is_linux) {
       data_deps = [ "//chrome/updater/linux:updater_test" ]
+      if (is_chrome_branded) {
+        data_deps += [ "//third_party/updater:old_updater" ]
+      }
     }
   }
 

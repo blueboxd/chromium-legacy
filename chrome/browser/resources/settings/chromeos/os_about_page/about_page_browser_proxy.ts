@@ -22,6 +22,8 @@ export enum BrowserChannel {
   CANARY = 'canary-channel',
   DEV = 'dev-channel',
   STABLE = 'stable-channel',
+  LTC = 'ltc-channel',
+  LTS = 'lts-channel',
 }
 
 export interface ChannelInfo {
@@ -41,9 +43,15 @@ export interface AboutPageUpdateInfo {
   size?: string;
 }
 
+/**
+ * Information related to device end of life. These values will always be
+ * populated by the C++ handler.
+ */
 interface EndOfLifeInfo {
-  hasEndOfLife?: boolean;
-  aboutPageEndOfLifeMessage?: string;
+  hasEndOfLife: boolean;
+  aboutPageEndOfLifeMessage: string;
+  shouldShowEndOfLifeIncentive: boolean;
+  shouldShowOfferText: boolean;
 }
 
 export interface TpmFirmwareUpdateStatusChangedEvent {
@@ -81,6 +89,7 @@ export interface UpdateStatusChangedEvent {
 
 export function browserChannelToI18nId(
     channel: BrowserChannel, isLts: boolean): string {
+  // TODO(b/273717293): Remove LTS tag handling.
   if (isLts) {
     return 'aboutChannelLongTermSupport';
   }
@@ -94,6 +103,10 @@ export function browserChannelToI18nId(
       return 'aboutChannelDev';
     case BrowserChannel.STABLE:
       return 'aboutChannelStable';
+    case BrowserChannel.LTC:
+      return 'aboutChannelLongTermSupportCandidate';
+    case BrowserChannel.LTS:
+      return 'aboutChannelLongTermSupport';
   }
 }
 
@@ -108,6 +121,8 @@ export function isTargetChannelMoreStable(
     BrowserChannel.DEV,
     BrowserChannel.BETA,
     BrowserChannel.STABLE,
+    BrowserChannel.LTC,
+    BrowserChannel.LTS,
   ];
   const currentIndex = channelList.indexOf(currentChannel);
   const targetIndex = channelList.indexOf(targetChannel);
@@ -192,6 +207,11 @@ export interface AboutPageBrowserProxy {
    * receive updates.
    */
   getEndOfLifeInfo(): Promise<EndOfLifeInfo>;
+
+  /**
+   * Called when the end of life incentive button is clicked.
+   */
+  endOfLifeIncentiveButtonClicked(): void;
 
   /**
    * Request TPM firmware update status from the browser. It results in one or
@@ -294,6 +314,10 @@ export class AboutPageBrowserProxyImpl implements AboutPageBrowserProxy {
 
   getEndOfLifeInfo(): Promise<EndOfLifeInfo> {
     return sendWithPromise('getEndOfLifeInfo');
+  }
+
+  endOfLifeIncentiveButtonClicked(): void {
+    chrome.send('openEndOfLifeIncentive');
   }
 
   checkInternetConnection(): Promise<boolean> {

@@ -283,6 +283,7 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="2581165646603367611">Borraranse as cookies, a memoria caché e outros datos dos sitios que Chrome non considera importantes.</translation>
 <translation id="2587052924345400782">Versión nova dispoñible</translation>
 <translation id="2593272815202181319">Monoespazado</translation>
+<translation id="2603212228005142861">Inicia sesión para xestionar as túas preferencias</translation>
 <translation id="2604446170045642109">Podes desactivar o tema escuro para os sitios na configuración.</translation>
 <translation id="2612676031748830579">Número da tarxeta</translation>
 <translation id="2625189173221582860">Copiouse o contrasinal</translation>
@@ -476,6 +477,7 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="3587596251841506391">Axudar a mellorar a seguranza na Web</translation>
 <translation id="3597179440835065298">Recibe mellores suxestións</translation>
 <translation id="3602290021589620013">Previsualizar</translation>
+<translation id="360901359071773787">Queres eliminar os últimos 15 minutos?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Xestionar as ventás</translation>
 <translation id="3631987586758005671">Compartindo co dispositivo <ph name="DEVICE_NAME" /></translation>
@@ -792,6 +794,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5342314432463739672">Solicitudes de permisos</translation>
 <translation id="53537532693258630">Os sitios que quites aparecerán aquí</translation>
 <translation id="5355191726083956201">A protección mellorada está activada</translation>
+<translation id="5361107212971249203">mensaxe de texto</translation>
 <translation id="5368227114232678694">Se queres navegar de forma privada neste dispositivo, proba o modo de incógnito</translation>
 <translation id="5375577065097716013">Buscar imaxe con Google Lens <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">Para continuar, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> compartirá o teu nome, enderezo de correo electrónico e imaxe do perfil con este sitio.</translation>
@@ -821,6 +824,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5517095782334947753">Tes os marcadores, o historial, os contrasinais e outras opcións de configuración de <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Cando as probas están activas e Chrome te inclúe de forma aleatoria nunha delas, o teu historial de navegación aféctalles aos anuncios que se che mostran e aos intereses estimados que se indican abaixo. Para protexer a túa privacidade, Chrome elimina os teus intereses cada mes.</translation>
 <translation id="5524843473235508879">Bloqueouse a redirección.</translation>
+<translation id="554297709083131118">Os seguintes datos dos últimos 15 minutos eliminaranse</translation>
 <translation id="5548606607480005320">Revisión de seguranza</translation>
 <translation id="5555525474779371165">Escolle a protección da función Navegación segura</translation>
 <translation id="5556459405103347317">Volver cargar</translation>
@@ -1075,6 +1079,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, pestana, seleccionada</translation>
 <translation id="6828070228333235514">Deter seguimento do prezo</translation>
 <translation id="6830728435402077660">Non seguro</translation>
+<translation id="6831043979455480757">Traducir</translation>
 <translation id="6833996806551876956">Proba de Privacy Sandbox</translation>
 <translation id="6836206421467243968">Restablecer grupo de pestanas <ph name="TITLE_OF_GROUP" /> como un novo grupo de pestanas en segundo plano.</translation>
 <translation id="6846298663435243399">Cargando…</translation>
@@ -1242,6 +1247,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7707922173985738739">Utilizaranse datos móbiles</translation>
 <translation id="7709094866268987903">Os intereses que quites mostraranse aquí</translation>
 <translation id="7709918231054955894">Accede a todas as túas pestanas</translation>
+<translation id="772434085369393266">Cambia ao protocolo HTTPS para a navegación. Mostraráseche un aviso antes de cargar os sitios que non sexan compatibles. Non podes cambiar esta opción de configuración porque tes activada a opción Protección avanzada.</translation>
 <translation id="7725024127233776428">As páxinas que engadas aos marcadores aparecerán aquí</translation>
 <translation id="7757787379047923882">O texto compartiuse desde <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Tarxeta SD <ph name="SD_CARD_NUMBER" /></translation>
@@ -1260,6 +1266,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="78270725016672455">O ordenador require que se rexistre este dispositivo para iniciar sesión nun sitio</translation>
 <translation id="7844171778363018843">Non se seleccionaron datos para sincronizalos</translation>
 <translation id="7846296061357476882">Servizos de Google</translation>
+<translation id="7847228556075070294">Elimináronse o historial, as cookies e outros datos</translation>
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="7853202427316060426">Actividade</translation>
@@ -1314,6 +1321,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8058746566562539958">Abrir na pestana de Chrome</translation>
 <translation id="8062594758852531064">Precarga ampliada:</translation>
 <translation id="8063895661287329888">Non se puido engadir o marcador.</translation>
+<translation id="8066816452984416180">Engade rapidamente esta páxina aos marcadores. Mantén premido este atallo para editalo.</translation>
 <translation id="806745655614357130">Conservar os meus datos por separado</translation>
 <translation id="8073388330009372546">Abrir imaxe na pestana nova</translation>
 <translation id="8076492880354921740">Pestanas</translation>
@@ -1345,6 +1353,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8216351761227087153">Ver</translation>
 <translation id="8218622182176210845">Xestiona a túa conta</translation>
 <translation id="8223642481677794647">Menú da tarxeta do feed</translation>
+<translation id="8236097722223016103">Engadir aos marcadores</translation>
 <translation id="8250920743982581267">Documentos</translation>
 <translation id="8255617931166444521">Os distintos sitios só poden utilizar as túas cookies para consultar a actividade de navegación que levaches a cabo no seu propio sitio</translation>
 <translation id="8259179246279078674">Como as páxinas precargadas están encriptadas, Google non recibirá información sobre o seu contido. Os nosos servidores saberán que sitios se precargan de forma privada. Esta información só se utilizará para precargar as páxinas e non se vinculará a outros datos da túa Conta de Google.</translation>
@@ -1439,6 +1448,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="869891660844655955">Data de vencemento</translation>
 <translation id="8699120352855309748">Non ofrecer a opción de traducir texto escrito nestes idiomas</translation>
 <translation id="8712637175834984815">De acordo</translation>
+<translation id="8723453889042591629">Traduce rapidamente esta páxina. Para editar este atallo, mantén premido o botón.</translation>
 <translation id="8725066075913043281">Tentar de novo</translation>
 <translation id="8746155870861185046">Compartir texto destacado</translation>
 <translation id="874726034427945498">Para ver mellores suxestións na barra de enderezos, sincroniza as pestanas e o historial</translation>
@@ -1491,6 +1501,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8989968390305463310">O teu historial de navegación aféctalles aos anuncios que se che mostran e aos intereses estimados que se indican abaixo. Para protexer a túa privacidade, Chrome elimina automaticamente os teus intereses cada mes. A menos que os quites, os intereses poden actualizarse.</translation>
 <translation id="8993760627012879038">Abrir unha nova pestana no modo de incógnito</translation>
 <translation id="8996847606757455498">Escoller outro provedor</translation>
+<translation id="8998289560386111590">Non está dispoñible no teu dispositivo</translation>
 <translation id="8998729206196772491">Estás iniciando sesión cunha conta xestionada por <ph name="MANAGED_DOMAIN" /> e proporcionándolle ao seu administrador o control dos teus datos de Chrome, que quedarán ligados permanentemente a esta conta. Se pechas sesión en Chrome, eliminaranse os teus datos deste dispositivo, pero seguirán almacenados na túa conta de Google.</translation>
 <translation id="9022774213089566801">Visitas frecuentes</translation>
 <translation id="9022871169049522985">Os sitios e os anunciantes poden medir o rendemento dos seus anuncios</translation>

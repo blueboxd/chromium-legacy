@@ -59,6 +59,7 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #endif
 
+class Browser;
 class ContentSettingsPattern;
 class ContentSettingsTypeSet;
 class Profile;
@@ -91,7 +92,6 @@ namespace web_app {
 
 class WebApp;
 class WebAppProvider;
-class WebAppLaunchManager;
 
 struct ShortcutIdTypeMarker {};
 
@@ -413,6 +413,15 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       bool allowed,
       bool remember_user_choice);
 
+  void OnLaunchCompleted(
+      apps::AppLaunchParams params_for_restore,
+      bool is_system_web_app,
+      absl::optional<GURL> override_url,
+      base::OnceCallback<void(content::WebContents*)> on_complete,
+      Browser* browser,
+      content::WebContents* web_contents,
+      apps::LaunchContainer container);
+
   const raw_ptr<Profile, DanglingUntriaged> profile_;
 
   const raw_ptr<WebAppProvider, DanglingUntriaged> provider_;
@@ -431,8 +440,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
       content_settings_observation_{this};
-
-  std::unique_ptr<WebAppLaunchManager> web_app_launch_manager_;
 
   bool is_shutting_down_ = false;
 

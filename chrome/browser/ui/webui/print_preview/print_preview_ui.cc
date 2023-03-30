@@ -50,7 +50,6 @@
 #include "chrome/grit/pdf_resources_map.h"
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
-#include "components/device_event_log/device_event_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
@@ -70,6 +69,7 @@
 #include "printing/print_job_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -106,8 +106,6 @@ constexpr char kInvalidPageNumberForDidPreviewPage[] =
     "Invalid page number for DidPreviewPage";
 constexpr char kInvalidPageCountForMetafileReadyForPrinting[] =
     "Invalid page count for MetafileReadyForPrinting";
-constexpr char kInvalidArgsForPrinterSettingsInvalid[] =
-    "Invalid details for PrinterSettingsInvalid";
 
 PrintPreviewUI::TestDelegate* g_test_delegate = nullptr;
 
@@ -334,6 +332,10 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                         IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION, shortcut_text));
 #endif
 
+  source->AddString(
+      "chromeRefresh2023Attribute",
+      ::features::IsChromeRefresh2023() ? "chrome-refresh-2023" : "");
+
   // Register strings for the PDF viewer, so that $i18n{} replacements work.
   base::Value::Dict pdf_strings;
   pdf_extension_util::AddStrings(
@@ -535,6 +537,9 @@ void PrintPreviewUI::NotifyUIPreviewDocumentReady(
 
   SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX,
                               std::move(data_bytes));
+  if (g_test_delegate) {
+    g_test_delegate->PreviewDocumentReady(web_ui()->GetWebContents());
+  }
   handler_->OnPrintPreviewReady(*id_, request_id);
 }
 
@@ -1071,14 +1076,7 @@ void PrintPreviewUI::PrintPreviewCancelled(int32_t document_cookie,
 }
 
 void PrintPreviewUI::PrinterSettingsInvalid(int32_t document_cookie,
-                                            int32_t request_id,
-                                            const std::string& details) {
-  if (!base::IsStringASCII(details)) {
-    receiver_.ReportBadMessage(kInvalidArgsForPrinterSettingsInvalid);
-    return;
-  }
-  if (!details.empty())
-    PRINTER_LOG(ERROR) << "Printer settings invalid: " << details;
+                                            int32_t request_id) {
   StopWorker(document_cookie);
   if (ShouldCancelRequest(id_, request_id))
     return;

@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/browser_container/edit_menu_alert_delegate.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/web_selection/web_selection_response.h"
 #import "ios/chrome/browser/web_selection/web_selection_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -75,7 +76,7 @@ void ReportErrorOutcome(PartialTranslateError error, bool went_full) {
 
 // Character limit for the partial translate feature.
 // A string longer than that will trigger a full page translate.
-const NSUInteger kPartialTranslateCharactersLimit = 500;
+const NSUInteger kPartialTranslateCharactersLimit = 1000;
 
 }  // anonymous namespace
 
@@ -97,17 +98,23 @@ const NSUInteger kPartialTranslateCharactersLimit = 500;
 
   // The Browser's WebStateList.
   base::WeakPtr<WebStateList> _webStateList;
+
+  // The fullscreen controller to offset sourceRect depending on fullscreen
+  // status.
+  FullscreenController* _fullscreenController;
 }
 
 - (instancetype)initWithWebStateList:(base::WeakPtr<WebStateList>)webStateList
               withBaseViewController:(UIViewController*)baseViewController
                          prefService:(PrefService*)prefs
+                fullscreenController:(FullscreenController*)fullscreenController
                            incognito:(BOOL)incognito {
   if (self = [super init]) {
     DCHECK(webStateList);
     DCHECK(baseViewController);
     _webStateList = webStateList;
     _baseViewController = baseViewController;
+    _fullscreenController = fullscreenController;
     _incognito = incognito;
     _translateEnabled.Init(translate::prefs::kOfferTranslateEnabled, prefs);
   }
@@ -116,6 +123,7 @@ const NSUInteger kPartialTranslateCharactersLimit = 500;
 
 - (void)shutdown {
   _translateEnabled.Destroy();
+  _fullscreenController = nullptr;
 }
 
 - (void)handlePartialTranslateSelection {
@@ -138,11 +146,11 @@ const NSUInteger kPartialTranslateCharactersLimit = 500;
     return NO;
   }
   return tabHelper->CanRetrieveSelectedText() &&
-         PartialTranslateLimitMaxCharacters() > 0u;
+         ios::provider::PartialTranslateLimitMaxCharacters() > 0u;
 }
 
 - (BOOL)shouldInstallPartialTranslate {
-  if (PartialTranslateLimitMaxCharacters() == 0u) {
+  if (ios::provider::PartialTranslateLimitMaxCharacters() == 0u) {
     // Feature is not available.
     return NO;
   }
@@ -214,21 +222,31 @@ const NSUInteger kPartialTranslateCharactersLimit = 500;
   base::UmaHistogramCounts10000("IOS.PartialTranslate.SelectionLength",
                                 response.selectedText.length);
   if (response.selectedText.length >
-      std::min(PartialTranslateLimitMaxCharacters(),
+      std::min(ios::provider::PartialTranslateLimitMaxCharacters(),
                kPartialTranslateCharactersLimit)) {
     return [self switchToFullTranslateWithError:PartialTranslateError::
                                                     kSelectionTooLong];
   }
-  if ([[response.selectedText
+  if (!response.valid ||
+      [[response.selectedText
           stringByTrimmingCharactersInSet:[NSCharacterSet
                                               whitespaceAndNewlineCharacterSet]]
           length] == 0u) {
     return [self
         switchToFullTranslateWithError:PartialTranslateError::kSelectionEmpty];
   }
+
+  CGRect sourceRect = response.sourceRect;
+  if (_fullscreenController && !CGRectEqualToRect(sourceRect, CGRectZero)) {
+    UIEdgeInsets fullscreenInset =
+        _fullscreenController->GetCurrentViewportInsets();
+    sourceRect.origin.y += fullscreenInset.top;
+    sourceRect.origin.x += fullscreenInset.left;
+  }
+
+  self.controller = ios::provider::NewPartialTranslateController(
+      response.selectedText, sourceRect, self.incognito);
   __weak __typeof(self) weakSelf = self;
-  self.controller = NewPartialTranslateController(
-      response.selectedText, response.sourceRect, self.incognito);
   [self.controller
       presentOnViewController:self.baseViewController
         flowCompletionHandler:^(BOOL success) {

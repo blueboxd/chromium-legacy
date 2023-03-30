@@ -22,7 +22,12 @@ BASE_FEATURE(kIgnoreSyncEncryptionKeysLongMissing,
 
 BASE_FEATURE(kPasswordNotesWithBackup,
              "PasswordNotesWithBackup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kSyncAndroidLimitNTPPromoImpressions,
@@ -98,6 +103,10 @@ BASE_FEATURE(kSyncEnableContactInfoDataType,
              "SyncEnableContactInfoDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSyncEnableContactInfoDataTypeEarlyReturnNoDatabase,
+             "SyncEnableContactInfoDataTypeEarlyReturnNoDatabase",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode,
              "SyncEnableContactInfoDataTypeInTransportMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -106,12 +115,12 @@ BASE_FEATURE(kSyncEnableContactInfoDataTypeForCustomPassphraseUsers,
              "SyncEnableContactInfoDataTypeForCustomPassphraseUsers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
-             "SyncEnforceBookmarksCountLimit",
+BASE_FEATURE(kSyncEnableContactInfoDataTypeForDasherUsers,
+             "SyncEnableContactInfoDataTypeForDasherUsers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncDoNotPropagateBrowserShutdownToDataTypes,
-             "SyncDoNotPropagateBrowserShutdownToDataTypes",
+BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
+             "SyncEnforceBookmarksCountLimit",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped,
@@ -133,5 +142,17 @@ BASE_FEATURE(kEnablePreferencesAccountStorage,
 BASE_FEATURE(kSyncPollImmediatelyOnEveryStartup,
              "SyncPollImmediatelyOnEveryStartup",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_IOS)
+BASE_FEATURE(kIndicateAccountStorageErrorInAccountCell,
+             "IndicateAccountStorageErrorInAccountCell",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_IOS)
+
+#if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
+BASE_FEATURE(kSyncWebauthnCredentials,
+             "SyncWebauthnCredentials",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
 
 }  // namespace syncer

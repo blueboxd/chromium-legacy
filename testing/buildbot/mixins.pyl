@@ -255,6 +255,13 @@
       },
     },
   },
+  'android_user': {
+    'swarming': {
+      'dimensions': {
+        'device_os_type': 'user',
+      },
+    },
+  },
   'arm64': {
     'swarming': {
       'dimensions': {
@@ -416,7 +423,7 @@
   },
   'chromeos-kevin-skylab': {
     'cros_board': 'kevin',
-    'cros_img': 'kevin-public/R113-15384.0.0',
+    'cros_img': 'kevin-public/R114-15397.0.0',
     'bucket': 'chromiumos-image-archive',
     'timeout_sec': 10800,
   },
@@ -546,6 +553,13 @@
       ],
     },
   },
+  'fuchsia-persistent-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--everlasting'
+      ],
+    },
+  },
   'fuchsia_logs': {
     '$mixin_append': {
       'args': [
@@ -597,18 +611,6 @@
       'args': [
         '--restart',
       ],
-    },
-  },
-  'ios_runtime_cache_14_4': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'runtime_ios_14_4',
-            'path': 'Runtime-ios-14.4',
-          },
-        ],
-      },
     },
   },
   'ios_runtime_cache_14_5': {
@@ -1004,7 +1006,7 @@
         {
           "cipd_package": 'infra/tools/mac_toolchain/${platform}',
           'location': '.',
-          'revision': 'git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1',
+          'revision': 'git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff',
         },
       ],
     },
@@ -1202,6 +1204,7 @@
     'swarming': {
       'dimensions': {
         'device_type': 'a13',
+        'os': 'Android',
       },
     },
   },
@@ -1209,6 +1212,7 @@
     'swarming': {
       'dimensions': {
         'device_type': 'a23',
+        'os': 'Android',
       },
     },
   },
@@ -1421,6 +1425,20 @@
       'dimensions': {
         'os': 'Windows-11-22000',
       },
+    },
+  },
+  'win_arm64': {
+    'swarming': {
+      'dimensions': {
+        # TODO(https://crbug.com/1422826): Update the right cpu value.
+        'cpu': None,
+        'os': 'Windows-11',
+        'pool': 'chrome.tests.arm64',
+      },
+      # The resources are limited in the pool.
+      # The slowest test is expected to run >9 hours.
+      'expiration': 64800,  # 18 hours
+      'hard_timeout': 43200,  # 12 hours
     },
   },
   'x86-64': {

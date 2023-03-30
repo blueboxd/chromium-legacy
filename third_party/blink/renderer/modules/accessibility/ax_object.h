@@ -466,6 +466,13 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool IsVisible() const;
   virtual bool IsVisited() const;
 
+  // Returns true if the current element is text or an image, and all
+  // the children are also plain content by this definition.
+  // TODO(https://crbug.com/1426889): return false if there are "interesting"
+  // elements in the subtree, even within a deep descendant, possibly reusing
+  // CSS :has() in order to make a performant and flexible implementation.
+  bool IsPlainContent() const;
+
   // Check whether value can be modified.
   bool CanSetValueAttribute() const;
 
@@ -784,7 +791,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual ax::mojom::blink::IsPopup IsPopup() const;
 
   // Heuristic to get the target popover for an invoking element.
-  AXObject* GetTargetPopoverForInvoker();
+  AXObject* GetTargetPopoverForInvoker() const;
 
   // Heuristic to get the listbox for an <input role="combobox">.
   AXObject* GetControlsListboxForTextfieldCombobox();
@@ -1448,6 +1455,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   void SerializeTableAttributes(ui::AXNodeData* node_data);
   void SerializeUnignoredAttributes(ui::AXNodeData* node_data,
                                     ui::AXMode accessibility_mode);
+  void SerializeComputedDetailsRelation(ui::AXNodeData* node_data) const;
 
   // Serialization implemented in specific subclasses.
   virtual void SerializeMarkerAttributes(ui::AXNodeData* node_data) const;

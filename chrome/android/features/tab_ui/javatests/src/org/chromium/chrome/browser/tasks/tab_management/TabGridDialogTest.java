@@ -40,7 +40,6 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_FOR_TABLETS;
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_STRIP_IMPROVEMENTS;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickNthTabInDialog;
@@ -68,7 +67,6 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -77,6 +75,7 @@ import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.intent.Intents;
@@ -143,7 +142,7 @@ import java.util.concurrent.ExecutionException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
 @Features.EnableFeatures({TAB_GRID_LAYOUT_ANDROID, TAB_GROUPS_ANDROID,
-    TAB_GROUPS_FOR_TABLETS, TAB_STRIP_IMPROVEMENTS})
+    TAB_GROUPS_FOR_TABLETS})
 @DoNotBatch(reason = "crbug.com/1380489")
 public class TabGridDialogTest {
     // clang-format on
@@ -1572,7 +1571,7 @@ public class TabGridDialogTest {
         // Test undo closure in dialog from StartSurface home page.
         clickScrimToExitDialog(cta);
         onView(withId(R.id.new_tab_button)).perform(click());
-        onView(allOf(withParent(withId(org.chromium.chrome.R.id.carousel_tab_switcher_container)),
+        onView(allOf(withParent(withId(org.chromium.chrome.R.id.tab_switcher_module_container)),
                        withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollUiThread(() -> isDialogShowing(cta));

@@ -3210,6 +3210,27 @@ void CopySharedImageINTERNALImmediate(GLint xoffset,
   }
 }
 
+void CopySharedImageToTextureINTERNALImmediate(GLuint texture,
+                                               GLenum target,
+                                               GLuint internal_format,
+                                               GLenum type,
+                                               GLint src_x,
+                                               GLint src_y,
+                                               GLsizei width,
+                                               GLsizei height,
+                                               GLboolean flip_y,
+                                               const GLbyte* src_mailbox) {
+  const uint32_t size =
+      gles2::cmds::CopySharedImageToTextureINTERNALImmediate::ComputeSize();
+  gles2::cmds::CopySharedImageToTextureINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::CopySharedImageToTextureINTERNALImmediate>(size);
+  if (c) {
+    c->Init(texture, target, internal_format, type, src_x, src_y, width, height,
+            flip_y, src_mailbox);
+  }
+}
+
 void ReadbackARGBImagePixelsINTERNAL(GLint src_x,
                                      GLint src_y,
                                      GLint plane_index,
@@ -3392,6 +3413,22 @@ void EndPixelLocalStorageANGLEImmediate(GLsizei count, const GLenum* storeops) {
 void PixelLocalStorageBarrierANGLE() {
   gles2::cmds::PixelLocalStorageBarrierANGLE* c =
       GetCmdSpace<gles2::cmds::PixelLocalStorageBarrierANGLE>();
+  if (c) {
+    c->Init();
+  }
+}
+
+void FramebufferPixelLocalStorageInterruptANGLE() {
+  gles2::cmds::FramebufferPixelLocalStorageInterruptANGLE* c =
+      GetCmdSpace<gles2::cmds::FramebufferPixelLocalStorageInterruptANGLE>();
+  if (c) {
+    c->Init();
+  }
+}
+
+void FramebufferPixelLocalStorageRestoreANGLE() {
+  gles2::cmds::FramebufferPixelLocalStorageRestoreANGLE* c =
+      GetCmdSpace<gles2::cmds::FramebufferPixelLocalStorageRestoreANGLE>();
   if (c) {
     c->Init();
   }

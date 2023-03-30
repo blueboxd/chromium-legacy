@@ -53,7 +53,6 @@ import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.url.GURL;
 
 import java.io.BufferedInputStream;
@@ -330,7 +329,8 @@ public class TabPersistentStore {
         mTabsToRestore = new ArrayDeque<>();
         mTabIdsToRestore = new HashSet<>();
         mObservers = new ObserverList<>();
-        TaskTraits taskTraits = TaskTraits.USER_BLOCKING_MAY_BLOCK;
+        @TaskTraits
+        int taskTraits = TaskTraits.USER_BLOCKING_MAY_BLOCK;
         mSequencedTaskRunner = PostTask.createSequencedTaskRunner(taskTraits);
         mPrefetchTabListToMergeTasks = new ArrayList<>();
         mMergedFileNames = new HashSet<>();
@@ -1467,7 +1467,7 @@ public class TabPersistentStore {
         for (TabPersistentStoreObserver observer : mObservers) {
             // mergeState() starts an AsyncTask to call this and this calls
             // onTabStateInitialized which should be called from the UI thread.
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> observer.onStateLoaded());
+            PostTask.runOrPostTask(TaskTraits.UI_DEFAULT, () -> observer.onStateLoaded());
         }
     }
 
@@ -1483,7 +1483,7 @@ public class TabPersistentStore {
             // TabPersistentStore and delete the metadata file for the other instance, then notify
             // observers.
             if (mPersistencePolicy.isMergeInProgress()) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+                PostTask.postTask(TaskTraits.UI_DEFAULT, new Runnable() {
                     @Override
                     public void run() {
                         // This eventually calls serializeTabModelSelector() which much be called
@@ -1884,9 +1884,10 @@ public class TabPersistentStore {
      * @return Whether the specified filename matches the expected pattern of the tab state files.
      */
     public static boolean isStateFile(String fileName) {
-        // The .new suffix will be added internally by AtomicFile before the file finishes writing.
-        // Ignore files in this transitory state.
-        return fileName.startsWith(SAVED_STATE_FILE_PREFIX) && !fileName.endsWith(".new");
+        // The .new/.bak suffixes may be added internally by AtomicFile before the file finishes
+        // writing. Ignore files in this transitory state.
+        return fileName.startsWith(SAVED_STATE_FILE_PREFIX) && !fileName.endsWith(".new")
+                && !fileName.endsWith(".bak");
     }
 
     /**

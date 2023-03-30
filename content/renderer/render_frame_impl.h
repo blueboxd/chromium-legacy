@@ -184,7 +184,8 @@ class CONTENT_EXPORT RenderFrameImpl
       bool is_for_scalable_page,
       blink::mojom::FrameReplicationStatePtr replication_state,
       const base::UnguessableToken& devtools_frame_token,
-      mojom::CreateLocalMainFrameParamsPtr params);
+      mojom::CreateLocalMainFrameParamsPtr params,
+      const blink::WebURL& base_url);
 
   // Creates a new RenderFrame with |routing_id|. If |previous_frame_token| is
   // not provided, it creates the Blink WebLocalFrame and inserts it into
@@ -450,6 +451,8 @@ class CONTENT_EXPORT RenderFrameImpl
           prefetch_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           topics_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          keep_alive_loader_factory,
       const blink::DocumentToken& document_token,
       const base::UnguessableToken& devtools_navigation_token,
       const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
@@ -638,7 +641,8 @@ class CONTENT_EXPORT RenderFrameImpl
       bool& consumed_user_gesture,
       const absl::optional<blink::Impression>& impression,
       const absl::optional<blink::WebPictureInPictureWindowOptions>&
-          pip_options) override;
+          pip_options,
+      const blink::WebURL& base_url) override;
 
   // Dispatches the current state of selection on the webpage to the browser if
   // it has changed or if the forced flag is passed. The forced flag is used
@@ -876,6 +880,8 @@ class CONTENT_EXPORT RenderFrameImpl
       bool save_with_empty_url,
       mojo::PendingRemote<mojom::FrameHTMLSerializerHandler> handler_remote)
       override;
+  void SetResourceCache(
+      mojo::PendingRemote<blink::mojom::ResourceCache> remote) override;
 
   // Callback scheduled from SerializeAsMHTML for when writing serialized
   // MHTML to the handle has been completed in the file thread.
@@ -903,7 +909,9 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          topics_loader_factory);
+          topics_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          keep_alive_loader_factory);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -969,6 +977,8 @@ class CONTENT_EXPORT RenderFrameImpl
           prefetch_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           topics_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          keep_alive_loader_factory,
       mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
       mojom::CookieManagerInfoPtr cookie_manager_info,
       mojom::StorageInfoPtr storage_info,

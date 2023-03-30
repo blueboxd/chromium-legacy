@@ -20,6 +20,7 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/accelerated_widget_mac/ca_layer_tree_coordinator.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/gpu_fence.h"
@@ -30,7 +31,6 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "ui/accelerated_widget_mac/io_surface_context.h"
-#include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_cgl.h"
 #endif
@@ -55,13 +55,10 @@ BASE_FEATURE(kAVFoundationOverlays,
 ImageTransportSurfaceOverlayMacEGL::ImageTransportSurfaceOverlayMacEGL(
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate)
     : delegate_(delegate),
-#if BUILDFLAG(IS_MAC)
       use_remote_layer_api_(ui::RemoteLayerAPISupported()),
-#endif
       scale_factor_(1),
       vsync_callback_(delegate->GetGpuVSyncCallback()),
       weak_ptr_factory_(this) {
-
   static bool av_disabled_at_command_line =
       !base::FeatureList::IsEnabled(kAVFoundationOverlays);
 
@@ -71,22 +68,26 @@ ImageTransportSurfaceOverlayMacEGL::ImageTransportSurfaceOverlayMacEGL(
            ->workarounds()
            .disable_av_sample_buffer_display_layer;
 
-#if BUILDFLAG(IS_MAC)
   ca_layer_tree_coordinator_ = std::make_unique<ui::CALayerTreeCoordinator>(
       use_remote_layer_api_, allow_av_sample_buffer_display_layer);
 
   // Create the CAContext to send this to the GPU process, and the layer for
   // the context.
   if (use_remote_layer_api_) {
+#if BUILDFLAG(IS_MAC)
     CGSConnectionID connection_id = CGSMainConnectionID();
     ca_context_.reset([[CAContext contextWithCGSConnection:connection_id
                                                    options:@{}] retain]);
+#else
+    // Use a very large display ID to ensure that the context is never put
+    // on-screen without being explicitly parented.
+    ca_context_.reset([[CAContext remoteContextWithOptions:@{
+      kCAContextIgnoresHitTest : @YES,
+      kCAContextDisplayId : @10000
+    }] retain]);
+#endif
     [ca_context_ setLayer:ca_layer_tree_coordinator_->GetCALayerForDisplay()];
   }
-#else
-  ca_layer_tree_coordinator_ = std::make_unique<ui::CALayerTreeCoordinator>(
-      /*allow_remote_layers=*/false, allow_av_sample_buffer_display_layer);
-#endif
 }
 
 ImageTransportSurfaceOverlayMacEGL::~ImageTransportSurfaceOverlayMacEGL() {
@@ -168,13 +169,9 @@ void ImageTransportSurfaceOverlayMacEGL::Present(
     TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers", TRACE_EVENT_SCOPE_THREAD,
                          "GLImpl", static_cast<int>(gl::GetGLImplementation()),
                          "width", pixel_size_.width());
-#if BUILDFLAG(IS_MAC)
     if (use_remote_layer_api_) {
       params.ca_context_id = [ca_context_ contextId];
     } else {
-#else
-    if (true) {
-#endif
       IOSurfaceRef io_surface =
           ca_layer_tree_coordinator_->GetIOSurfaceForDisplay();
       if (io_surface) {

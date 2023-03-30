@@ -58,6 +58,12 @@ BASE_FEATURE(kUseLessHighResTimers,
              "UseLessHighResTimers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 std::atomic_bool g_use_less_high_res_timers = false;
+
+// If enabled, high resolution timer will be used all the time on Windows. This
+// is for test only.
+BASE_FEATURE(kAlwaysUseHighResTimers,
+             "AlwaysUseHighResTimers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 std::atomic_bool g_align_wake_ups = false;
@@ -94,6 +100,9 @@ void ThreadControllerWithMessagePumpImpl::InitializeFeatures() {
       FeatureList::IsEnabled(kExplicitHighResolutionTimerWin);
   g_use_less_high_res_timers.store(
       FeatureList::IsEnabled(kUseLessHighResTimers), std::memory_order_relaxed);
+  if (FeatureList::IsEnabled(kAlwaysUseHighResTimers)) {
+    Time::ActivateHighResolutionTimer(true);
+  }
 #endif
 }
 
@@ -479,12 +488,17 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
       task_annotator_.RunTask(
           "ThreadControllerImpl::RunTask", *selected_task->task,
           [&selected_task, &source](perfetto::EventContext& ctx) {
-            if (selected_task->task_execution_trace_logger)
+            if (selected_task->task_execution_trace_logger) {
               selected_task->task_execution_trace_logger.Run(
                   ctx, *selected_task->task);
+            }
             source->MaybeEmitTaskDetails(ctx, selected_task.value());
           });
     }
+
+    // Reset `selected_task` before the call to `DidRunTask()` below makes its
+    // `PendingTask` reference dangling.
+    selected_task.reset();
 
     LazyNow lazy_now_after_run_task(time_source_);
     main_thread_only().task_source->DidRunTask(lazy_now_after_run_task);
@@ -549,11 +563,6 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
   // of the "ThreadController active" trace event emitted from
   // `run_level_tracker_.OnIdle()`.
   TRACE_EVENT0("sequence_manager", "SequenceManager::DoIdleWork");
-
-  // A hang watch scope should already be in place in most cases but some
-  // MessagePump impls (e.g. Mac) can call DoIdleWork straight out of idle
-  // without first calling DoWork.
-  hang_watch_scope_.emplace();
 
 #if BUILDFLAG(IS_WIN)
   if (!power_monitor_.IsProcessInPowerSuspendState()) {

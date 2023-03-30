@@ -116,7 +116,6 @@
 #include "chrome/browser/prefs/pref_metrics_service.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_link_manager_factory.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
-#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_service_factory.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/privacy/privacy_metrics_service_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
@@ -229,6 +228,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager_factory.h"
 #include "chrome/browser/cart/cart_service_factory.h"
 #include "chrome/browser/commerce/coupons/coupon_service_factory.h"
+#include "chrome/browser/download/bubble/download_bubble_update_service_factory.h"
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_sink_service_factory.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
@@ -375,6 +375,7 @@
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 #include "chrome/browser/enterprise/connectors/analysis/local_binary_upload_service_factory.h"
 #include "chrome/browser/enterprise/signals/signals_aggregator_factory.h"
+#include "chrome/browser/signin/profile_token_web_signin_interceptor_factory.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -598,6 +599,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   DocumentSuggestionsServiceFactory::GetInstance();
   DomainDiversityReporterFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
+#if !BUILDFLAG(IS_ANDROID)
+  DownloadBubbleUpdateServiceFactory::GetInstance();
+#endif
   DownloadCoreServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   DriveServiceFactory::GetInstance();
@@ -659,7 +663,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   HttpsEngagementServiceFactory::GetInstance();
   HttpsFirstModeServiceFactory::GetInstance();
   IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
-  image_service::ImageServiceFactory::EnsureFactoryBuilt();
+  page_image_service::ImageServiceFactory::EnsureFactoryBuilt();
   InMemoryURLIndexFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   InstantServiceFactory::GetInstance();
@@ -781,8 +785,10 @@ void ChromeBrowserMainExtraPartsProfiles::
   policy::ManagementServiceFactory::GetInstance();
   PolicyBlocklistFactory::GetInstance();
   PredictionServiceFactory::GetInstance();
-  PrefetchProxyServiceFactory::GetInstance();
   PrimaryAccountPolicyManagerFactory::GetInstance();
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  ProfileTokenWebSigninInterceptorFactory::GetInstance();
+#endif
 #if !BUILDFLAG(IS_ANDROID)
   PromoServiceFactory::GetInstance();
 #endif

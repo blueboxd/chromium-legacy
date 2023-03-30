@@ -779,6 +779,7 @@ dictionary Preferences {
   boolean trashEnabled;
   double officeFileMovedOneDrive;
   double officeFileMovedGoogleDrive;
+  boolean driveFsBulkPinningEnabled;
 };
 
 dictionary PreferencesChange {
@@ -786,6 +787,7 @@ dictionary PreferencesChange {
   boolean? arcEnabled;
   boolean? arcRemovableMediaAccessEnabled;
   DOMString[]? folderShortcuts;
+  boolean? driveFsBulkPinningEnabled;
 };
 
 dictionary SearchParams {
@@ -1096,6 +1098,10 @@ dictionary ProgressStatus {
 
   // The files affected by the IOTask. Currently only returned for TrashIOTask.
   [instanceOf=Entry] object[]? outputs;
+
+  // Volume id of the destination for operations that transfer files to a
+  // directory (e.g. copy or move).
+  DOMString destinationVolumeId;
 };
 
 dictionary DlpMetadata {
@@ -1890,10 +1896,6 @@ interface Functions {
   [nocompile]
   static void parseTrashInfoFiles([instanceOf=Entry] object[] entries,
                                   ParseTrashInfoFilesCallback callback);
-
-
-  // Sets the bulk pinning feature as enabled (true) or disabled (false).
-  static void toggleBulkPinning(boolean shouldEnable);
 };
 
 // Events supported by fileManagerPrivate API. These events are broadcasted.

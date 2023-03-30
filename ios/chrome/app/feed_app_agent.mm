@@ -50,12 +50,12 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
              InitStageBrowserObjectsForBackgroundHandlers) {
     // Save the value of the feature flag now since 'base::FeatureList' was
     // not available in `InitStageBrowserBasic`.
-    // IsFeedBackgroundRefreshEnabled() simply reads the saved value saved by
-    // SaveFeedBackgroundRefreshEnabledForNextColdStart(). Do not wrap this in
-    // IsFeedBackgroundRefreshEnabled() -- in this case, a new value would
-    // never be saved again once we save NO, since the NO codepath would not
-    // execute saving a new value.
-    SaveFeedBackgroundRefreshEnabledForNextColdStart();
+    // IsFeedBackgroundRefreshCapabilityEnabled() simply reads the saved value
+    // saved by SaveFeedBackgroundRefreshCapabilityEnabledForNextColdStart(). Do
+    // not wrap this in IsFeedBackgroundRefreshCapabilityEnabled() -- in this
+    // case, a new value would never be saved again once we save NO, since the
+    // NO codepath would not execute saving a new value.
+    SaveFeedBackgroundRefreshCapabilityEnabledForNextColdStart();
   } else if (appState.initStage == InitStageNormalUI &&
              IsWebChannelsEnabled() && IsDiscoverFeedServiceCreatedEarly()) {
     // Starting the DiscoverFeedService is required before users are able to
@@ -79,17 +79,17 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
 #pragma mark - SceneObservingAppAgent
 
 - (void)appDidEnterBackground {
-  if (IsFeedBackgroundRefreshEnabled()) {
+  if (IsFeedBackgroundRefreshEnabled() ||
+      IsFeedAppCloseBackgroundRefreshEnabled()) {
     [self scheduleBackgroundRefresh];
-  }
-  if (IsFeedRefreshOnAppBackgroundingEnabled()) {
+  } else if (IsFeedAppCloseForegroundRefreshEnabled()) {
     [self feedService]->RefreshFeed(FeedRefreshTrigger::kForegroundAppClose);
   }
 }
 
 - (void)appDidEnterForeground {
   _wasForegroundedAtLeastOnce = YES;
-  if (IsFeedBackgroundRefreshEnabled()) {
+  if (IsFeedBackgroundRefreshCapabilityEnabled()) {
     // This is not strictly necessary, but it makes it more explicit. The OS
     // limits to 1 refresh task at any time, and a new request will replace a
     // previous request. Tasks are only executed in the background.
@@ -109,11 +109,16 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
       self.appState.mainBrowserState);
 }
 
+// Returns the FeedMetricsRecorder.
+- (FeedMetricsRecorder*)feedMetricsRecorder {
+  return self.feedService->GetFeedMetricsRecorder();
+}
+
 // Registers handler for the background refresh task. According to
 // documentation, this must complete before the end of
 // `applicationDidFinishLaunching`.
 - (void)maybeRegisterBackgroundRefreshTask {
-  if (!IsFeedBackgroundRefreshEnabled()) {
+  if (!IsFeedBackgroundRefreshCapabilityEnabled()) {
     return;
   }
   __weak FeedAppAgent* weakSelf = self;
@@ -135,10 +140,11 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
 // including other files. The OS only allows one fetch task at a time.
 // Eventually, background fetches should be managed by a central manager.
 - (void)scheduleBackgroundRefresh {
-  // Do not DCHECK IsFeedBackgroundRefreshEnabled() because this is also called
-  // from the background task handler, and the value could have changed during a
-  // cold start.
-  if (!IsFeedBackgroundRefreshEnabled()) {
+  // Do not DCHECK whether background refreshes were enabled at startup because
+  // this is also called from the background task handler, and the value could
+  // have changed during a cold start.
+  if (!IsFeedBackgroundRefreshEnabled() &&
+      !IsFeedAppCloseBackgroundRefreshEnabled()) {
     return;
   }
   BGAppRefreshTaskRequest* request = [[BGAppRefreshTaskRequest alloc]
@@ -158,6 +164,10 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
   if (IsFeedOverrideDefaultsEnabled()) {
     earliestBeginDate = [NSDate
         dateWithTimeIntervalSinceNow:GetBackgroundRefreshIntervalInSeconds()];
+  } else if (IsFeedAppCloseBackgroundRefreshEnabled()) {
+    earliestBeginDate =
+        [NSDate dateWithTimeIntervalSinceNow:
+                    GetAppCloseBackgroundRefreshIntervalInSeconds()];
   } else {
     // This is expected to crash if FeedService is not available.
     earliestBeginDate =
@@ -168,21 +178,17 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
 
 // This method is called when the app is in the background.
 - (void)handleBackgroundRefreshTask:(BGTask*)task {
-  // Do not DCHECK IsFeedBackgroundRefreshEnabled() because the value could have
-  // changed during a cold start.
-  if (!IsFeedBackgroundRefreshEnabled()) {
+  // Do not DCHECK whether background refreshes were enabled at startup because
+  // the value could have changed during a cold start.
+  if (!IsFeedBackgroundRefreshEnabled() &&
+      !IsFeedAppCloseBackgroundRefreshEnabled()) {
     return;
   }
-  if (_wasForegroundedAtLeastOnce) {
-    [FeedMetricsRecorder
-        recordFeedRefreshTrigger:FeedRefreshTrigger::kBackgroundWarmStart];
-  } else {
-    [FeedMetricsRecorder
-        recordFeedRefreshTrigger:FeedRefreshTrigger::kBackgroundColdStart];
-    // TODO(crbug.com/1396459): Remove this workaround and enable background
-    // cold starts.
-    GetApplicationContext()->GetMetricsService()->OnAppEnterBackground();
-    exit(0);
+
+  // TODO(crbug.com/1396459): Kill the app if in a cold start because currently
+  // there are issues with background cold starts.
+  if (!_wasForegroundedAtLeastOnce) {
+    [self handleColdStartAndKillApp];
   }
   if (IsRecurringBackgroundRefreshScheduleEnabled()) {
     [self scheduleBackgroundRefresh];
@@ -194,11 +200,58 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
       [self maybeNotifyRefreshSuccess:NO];
     });
   };
+
+  // The `engagedWithLatestRefreshedContent` criteria only applies to background
+  // app close. Early return if criteria is not met.
+  if (IsFeedAppCloseBackgroundRefreshEnabled() &&
+      ![self.feedMetricsRecorder hasEngagedWithLatestRefreshedContent]) {
+    return;
+  }
+
+  // Cold starts are killed earlier in this method, so warm and cold starts
+  // cannot be recorded at the same time.
+  [self recordWarmStartMetrics];
+
   // This is expected to crash if FeedService is not available.
   [self feedService]->PerformBackgroundRefreshes(^(BOOL success) {
     [self maybeNotifyRefreshSuccess:success];
     [task setTaskCompletedWithSuccess:success];
   });
+}
+
+// Records cold start histogram and kills app.
+- (void)handleColdStartAndKillApp {
+  if (IsFeedAppCloseBackgroundRefreshEnabled()) {
+    // Normally check `engagedWithLatestRefreshedContent` whenever background
+    // app close is enabled. However, it doesn't matter for cold starts. Kill
+    // the app in all cold starts.
+    [FeedMetricsRecorder recordFeedRefreshTrigger:
+                             FeedRefreshTrigger::kBackgroundColdStartAppClose];
+  } else {
+    [FeedMetricsRecorder
+        recordFeedRefreshTrigger:FeedRefreshTrigger::kBackgroundColdStart];
+  }
+  // TODO(crbug.com/1396459): Remove this workaround and enable background
+  // cold starts.
+  [self maybeNotifyRefreshSuccess:NO];
+  GetApplicationContext()->GetMetricsService()->OnAppEnterBackground();
+  exit(0);
+}
+
+// Record refresh trigger for warm start.
+- (void)recordWarmStartMetrics {
+  CHECK(!IsFeedAppCloseBackgroundRefreshEnabled() ||
+        [self.feedMetricsRecorder hasEngagedWithLatestRefreshedContent]);
+
+  if (IsFeedAppCloseBackgroundRefreshEnabled()) {
+    // This is recorded if both app close and regular background refreshes are
+    // enabled.
+    [FeedMetricsRecorder recordFeedRefreshTrigger:
+                             FeedRefreshTrigger::kBackgroundWarmStartAppClose];
+  } else {
+    [FeedMetricsRecorder
+        recordFeedRefreshTrigger:FeedRefreshTrigger::kBackgroundWarmStart];
+  }
 }
 
 #pragma mark - Refresh Completion Notifications (only enabled by Experimental Settings)

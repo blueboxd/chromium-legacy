@@ -333,6 +333,9 @@ class AcceleratorConfigurationProviderTest : public AshTestBase {
     fake_keyboard_manager_ = std::make_unique<FakeDeviceManager>();
     provider_->ignore_layouts_for_testing_ = true;
     base::RunLoop().RunUntilIdle();
+    // After adding a fake keyboard, clear the observer call count.
+    observer_.clear_num_times_notified();
+    EXPECT_EQ(0, observer_.num_times_notified());
   }
 
   void TearDown() override {
@@ -528,6 +531,55 @@ TEST_F(AcceleratorConfigurationProviderTest, ValidateAllAcceleratorLayouts) {
 
   // Validate that the non-callback version of this method returns correct data.
   ValidateAcceleratorLayouts(provider_->GetAcceleratorLayoutInfos());
+}
+
+TEST_F(AcceleratorConfigurationProviderTest, FilterOutHiddenAccelerators) {
+  FakeAcceleratorsUpdatedMojoObserver mojo_observer;
+  SetUpObserver(&mojo_observer);
+  EXPECT_EQ(0, mojo_observer.num_times_notified());
+  EXPECT_EQ(0, observer_.num_times_notified());
+
+  const AcceleratorData test_data[] = {
+      {/*trigger_on_press=*/true, ui::VKEY_TAB, ui::EF_ALT_DOWN,
+       CYCLE_FORWARD_MRU},
+      {/*trigger_on_press=*/true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN,
+       SHOW_TASK_MANAGER},
+      // Accelerators that should be hidden from display.
+      {/*trigger_on_press=*/true, ui::VKEY_BROWSER_SEARCH, ui::EF_NONE,
+       TOGGLE_APP_LIST},
+      {/*trigger_on_press=*/true, ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN,
+       TOGGLE_APP_LIST},
+      {/*trigger_on_press=*/false, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST},
+      {/*trigger_on_press=*/false, ui::VKEY_LWIN, ui::EF_SHIFT_DOWN,
+       TOGGLE_APP_LIST},
+      {/*trigger_on_press=*/true, ui::VKEY_F14, ui::EF_NONE,
+       SHOW_SHORTCUT_VIEWER},
+      {/*trigger_on_press=*/true, ui::VKEY_OEM_2,
+       ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+       SHOW_SHORTCUT_VIEWER},
+      {/*trigger_on_press=*/true, ui::VKEY_OEM_2,
+       ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, OPEN_GET_HELP},
+      {/*trigger_on_press=*/false, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
+       SWITCH_TO_LAST_USED_IME},
+      {/*trigger_on_press=*/true, ui::VKEY_ZOOM, ui::EF_SHIFT_DOWN,
+       TOGGLE_FULLSCREEN},
+  };
+
+  // Initialize with a set of accelerators that include hidden accelerators.
+  Shell::Get()->ash_accelerator_configuration()->Initialize(test_data);
+  base::RunLoop().RunUntilIdle();
+
+  const AcceleratorData expected_test_data[]{
+      {/*trigger_on_press=*/true, ui::VKEY_TAB, ui::EF_ALT_DOWN,
+       CYCLE_FORWARD_MRU},
+      {/*trigger_on_press=*/true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN,
+       SHOW_TASK_MANAGER},
+  };
+  EXPECT_EQ(1, observer_.num_times_notified());
+
+  // Verify observer won't receive hidden accelerators.
+  ExpectMojomAcceleratorsEqual(mojom::AcceleratorSource::kAsh,
+                               expected_test_data, mojo_observer.config());
 }
 
 TEST_F(AcceleratorConfigurationProviderTest, TopRowKeyAcceleratorRemapped) {
@@ -1037,7 +1089,7 @@ TEST_F(AcceleratorConfigurationProviderTest, RemoveAcceleratorNonAsh) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AcceleratorConfigurationProviderTest, RemoveAndResoreAllDefaults) {
+TEST_F(AcceleratorConfigurationProviderTest, RemoveAndRestoreAllDefaults) {
   FakeAcceleratorsUpdatedMojoObserver observer;
   SetUpObserver(&observer);
 
@@ -1049,6 +1101,7 @@ TEST_F(AcceleratorConfigurationProviderTest, RemoveAndResoreAllDefaults) {
   AshAcceleratorConfiguration* config =
       Shell::Get()->ash_accelerator_configuration();
   config->Initialize(test_data);
+  config->InitializeDeprecatedAccelerators({}, {});
   base::RunLoop().RunUntilIdle();
 
   // Verify accelerators are populated.
@@ -1087,6 +1140,7 @@ TEST_F(AcceleratorConfigurationProviderTest, RemoveAndResoreAllDefaults) {
   ash::shortcut_customization::mojom::
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .RestoreAllDefaults(&result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kSuccess, result->result);
 
   base::RunLoop().RunUntilIdle();
 

@@ -242,18 +242,14 @@ void RemapLegacySemanticColors(ui::ColorMixer& mixer) {
       cros_tokens::kCrosSysOnPrimaryContainer};
 
   mixer[cros_tokens::kBgColor] = {cros_tokens::kCrosSysAppBase};
-  mixer[cros_tokens::kBgColorElevation1] = {
-      cros_tokens::kCrosSysAppBaseElevated};
+  mixer[cros_tokens::kBgColorElevation1] = {cros_tokens::kCrosSysBaseElevated};
   mixer[cros_tokens::kBgColorElevation2Light] = {
-      cros_tokens::kCrosSysAppBaseElevatedLight};
+      cros_tokens::kCrosSysBaseElevatedLight};
   mixer[cros_tokens::kBgColorElevation2Dark] = {
-      cros_tokens::kCrosSysAppBaseElevatedDark};
-  mixer[cros_tokens::kBgColorElevation3] = {
-      cros_tokens::kCrosSysAppBaseElevated};
-  mixer[cros_tokens::kBgColorElevation4] = {
-      cros_tokens::kCrosSysAppBaseElevated};
-  mixer[cros_tokens::kBgColorElevation5] = {
-      cros_tokens::kCrosSysAppBaseElevated};
+      cros_tokens::kCrosSysBaseElevatedDark};
+  mixer[cros_tokens::kBgColorElevation3] = {cros_tokens::kCrosSysBaseElevated};
+  mixer[cros_tokens::kBgColorElevation4] = {cros_tokens::kCrosSysBaseElevated};
+  mixer[cros_tokens::kBgColorElevation5] = {cros_tokens::kCrosSysBaseElevated};
   mixer[cros_tokens::kBgColorDroppedElevation1] = {
       cros_tokens::kCrosSysAppBaseShaded};
   mixer[cros_tokens::kBgColorDroppedElevation2] = {
@@ -299,7 +295,7 @@ void RemapLegacySemanticColors(ui::ColorMixer& mixer) {
       cros_tokens::kCrosSysRipplePrimary};
   mixer[cros_tokens::kHighlightColor] = {cros_tokens::kCrosSysPrimary};
   mixer[cros_tokens::kTextfieldBackgroundColor] = {
-      cros_tokens::kCrosSysInputFieldLight};
+      cros_tokens::kCrosSysInputFieldOnShaded};
   mixer[cros_tokens::kTextfieldLabelColor] = {cros_tokens::kCrosSysOnSurface};
 
   mixer[cros_tokens::kSliderColorActive] = {cros_tokens::kCrosSysPrimary};
@@ -526,6 +522,9 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   AddControlsColors(mixer, key);
   AddContentColors(mixer, key);
 
+  mixer[kColorAshAssistantBgPlate] = {use_dark_color
+                                          ? SkColorSetRGB(0x1c, 0x2b, 0x3b)
+                                          : SkColorSetRGB(0xec, 0xef, 0xee)};
   mixer[kColorAshAssistantGreetingEnabled] = {cros_tokens::kColorPrimary};
   mixer[kColorAshSuggestionChipViewTextView] = {cros_tokens::kColorSecondary};
   mixer[kColorAshAssistantQueryHighConfidenceLabel] = {
@@ -564,7 +563,7 @@ void AddAshColorMixer(ui::ColorProvider* provider,
 
   mixer[ui::kColorAshSystemUIMenuBackground] = {
       chromeos::features::IsJellyEnabled()
-          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysAppBaseElevated)
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysBaseElevated)
           : kColorAshShieldAndBase80};
   mixer[ui::kColorAshSystemUIMenuIcon] = {kColorAshIconColorPrimary};
   mixer[ui::kColorAshSystemUIMenuItemBackgroundSelected] = {kColorAshInkDrop};
@@ -602,6 +601,23 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   mixer[kColorAshFolderItemCountBackgroundColor] =
       use_dark_color ? ui::ColorTransform(gfx::kGoogleBlue300)
                      : ui::ColorTransform(gfx::kGoogleBlue600);
+
+  mixer[ui::kColorToggleButtonThumbOn] = {cros_tokens::kCrosSysOnPrimary};
+  mixer[ui::kColorToggleButtonThumbOff] = {cros_tokens::kCrosSysOnSecondary};
+  mixer[ui::kColorToggleButtonThumbOnDisabled] =
+      ui::SetAlpha({ui::kColorToggleButtonThumbOn}, kDisabledColorOpacity);
+  mixer[ui::kColorToggleButtonThumbOffDisabled] =
+      ui::SetAlpha({ui::kColorToggleButtonThumbOff}, kDisabledColorOpacity);
+  mixer[ui::kColorToggleButtonTrackOn] = {cros_tokens::kCrosSysPrimary};
+  mixer[ui::kColorToggleButtonTrackOff] = {cros_tokens::kCrosSysSecondary};
+  mixer[ui::kColorToggleButtonTrackOnDisabled] =
+      ui::SetAlpha({ui::kColorToggleButtonTrackOn}, kDisabledColorOpacity);
+  mixer[ui::kColorToggleButtonTrackOffDisabled] =
+      ui::SetAlpha({ui::kColorToggleButtonTrackOff}, kDisabledColorOpacity);
+  mixer[ui::kColorToggleButtonHover] = {cros_tokens::kCrosSysHoverOnProminent};
+
+  mixer[ui::kColorTooltipBackground] = {cros_tokens::kCrosSysOnSurface};
+  mixer[ui::kColorTooltipForeground] = {cros_tokens::kCrosSysInverseOnSurface};
 }
 
 }  // namespace ash

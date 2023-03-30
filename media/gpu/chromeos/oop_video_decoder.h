@@ -143,6 +143,10 @@ class OOPVideoDecoder : public VideoDecoderMixin,
   //    pending in the queue and |decode_cb| must be called after that." We can
   //    do this by clearing the cache when a flush has been reported to be
   //    completed by the remote decoder.
+  //
+  // 3) Guarantee the following requirement mandated by the
+  //    VideoDecoder::Reset() API: "All pending Decode() requests will be
+  //    finished or aborted before |closure| is called."
   base::TimeDelta current_fake_timestamp_
       GUARDED_BY_CONTEXT(sequence_checker_) = base::Microseconds(0u);
   base::LRUCache<base::TimeDelta, base::TimeDelta>
@@ -177,6 +181,8 @@ class OOPVideoDecoder : public VideoDecoderMixin,
 
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_
       GUARDED_BY_CONTEXT(sequence_checker_);
+
+  bool can_read_without_stalling_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 
   // This is to indicate we should perform transcryption before sending the data
   // to the video decoder utility process.

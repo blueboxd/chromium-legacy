@@ -1058,6 +1058,17 @@ error::Error DoCopySharedImageINTERNAL(GLint xoffset,
                                        GLsizei height,
                                        GLboolean unpack_flip_y,
                                        const volatile GLbyte* mailboxes);
+error::Error DoCopySharedImageToTextureINTERNAL(
+    GLuint texture,
+    GLenum target,
+    GLuint internal_format,
+    GLenum type,
+    GLint src_x,
+    GLint src_y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean flip_y,
+    const volatile GLbyte* src_mailbox);
 error::Error DoEnableiOES(GLenum target, GLuint index);
 error::Error DoDisableiOES(GLenum target, GLuint index);
 error::Error DoBlendEquationiOES(GLuint buf, GLenum mode);
@@ -1097,6 +1108,8 @@ error::Error DoBeginPixelLocalStorageANGLE(GLsizei n,
 error::Error DoEndPixelLocalStorageANGLE(GLsizei n,
                                          const volatile GLenum* storeops);
 error::Error DoPixelLocalStorageBarrierANGLE();
+error::Error DoFramebufferPixelLocalStorageInterruptANGLE();
+error::Error DoFramebufferPixelLocalStorageRestoreANGLE();
 error::Error DoGetFramebufferPixelLocalStorageParameterfvANGLE(GLint plane,
                                                                GLenum pname,
                                                                GLsizei bufsize,

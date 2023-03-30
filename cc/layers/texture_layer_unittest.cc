@@ -147,16 +147,16 @@ struct CommonResourceObjects {
     gfx::Size size(128, 128);
     resource1_ = viz::TransferableResource::MakeGpu(
         mailbox_name1_, GL_LINEAR, arbitrary_target1, sync_token1_, size,
-        viz::RGBA_8888, false /* is_overlay_candidate */);
+        viz::SinglePlaneFormat::kRGBA_8888, false /* is_overlay_candidate */);
     resource2_ = viz::TransferableResource::MakeGpu(
         mailbox_name2_, GL_LINEAR, arbitrary_target2, sync_token2_, size,
-        viz::RGBA_8888, false /* is_overlay_candidate */);
+        viz::SinglePlaneFormat::kRGBA_8888, false /* is_overlay_candidate */);
     shared_bitmap_id_ = viz::SharedBitmap::GenerateId();
     sw_release_callback_ = base::BindRepeating(
         &MockReleaseCallback::Release2, base::Unretained(&mock_callback_),
         shared_bitmap_id_);
     sw_resource_ = viz::TransferableResource::MakeSoftware(
-        shared_bitmap_id_, size, viz::RGBA_8888);
+        shared_bitmap_id_, size, viz::SinglePlaneFormat::kRGBA_8888);
   }
 
   using RepeatingReleaseCallback =
@@ -712,7 +712,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     auto resource = viz::TransferableResource::MakeGpu(
         MailboxFromChar(mailbox_char), GL_LINEAR, GL_TEXTURE_2D,
         SyncTokenFromUInt(static_cast<uint32_t>(mailbox_char)), size,
-        viz::RGBA_8888, false /* is_overlay_candidate */);
+        viz::SinglePlaneFormat::kRGBA_8888, false /* is_overlay_candidate */);
     layer_->SetTransferableResource(resource, std::move(callback));
     // Damage the layer so we send a new frame with the new resource to the
     // Display compositor.
@@ -941,7 +941,7 @@ class TextureLayerNoExtraCommitForMailboxTest : public LayerTreeTest,
     constexpr gfx::Size size(64, 64);
     *resource = viz::TransferableResource::MakeGpu(
         MailboxFromChar('1'), GL_LINEAR, GL_TEXTURE_2D,
-        SyncTokenFromUInt(0x123), size, viz::RGBA_8888,
+        SyncTokenFromUInt(0x123), size, viz::SinglePlaneFormat::kRGBA_8888,
         false /* is_overlay_candidate */);
     *release_callback = base::BindOnce(
         &TextureLayerNoExtraCommitForMailboxTest::ResourceReleased,
@@ -1020,8 +1020,8 @@ class TextureLayerChangeInvisibleMailboxTest : public LayerTreeTest,
     constexpr gfx::Size size(64, 64);
     return viz::TransferableResource::MakeGpu(
         MailboxFromChar(name), GL_LINEAR, GL_TEXTURE_2D,
-        SyncTokenFromUInt(static_cast<uint32_t>(name)), size, viz::RGBA_8888,
-        false /* is_overlay_candidate */);
+        SyncTokenFromUInt(static_cast<uint32_t>(name)), size,
+        viz::SinglePlaneFormat::kRGBA_8888, false /* is_overlay_candidate */);
   }
 
   void ResourceReleased(const gpu::SyncToken& sync_token, bool lost_resource) {
@@ -1168,7 +1168,8 @@ class TextureLayerReleaseResourcesBase : public LayerTreeTest,
     constexpr gfx::Size size(64, 64);
     *resource = viz::TransferableResource::MakeGpu(
         MailboxFromChar('1'), GL_LINEAR, GL_TEXTURE_2D, SyncTokenFromUInt(1),
-        size, viz::RGBA_8888, false /* is_overlay_candidate */);
+        size, viz::SinglePlaneFormat::kRGBA_8888,
+        false /* is_overlay_candidate */);
     *release_callback =
         base::BindOnce(&TextureLayerReleaseResourcesBase::ResourceReleased,
                        base::Unretained(this));
@@ -1247,7 +1248,7 @@ class TextureLayerWithResourceMainThreadDeleted : public LayerTreeTest {
     auto resource = viz::TransferableResource::MakeGpu(
         MailboxFromChar(mailbox_char), GL_LINEAR, GL_TEXTURE_2D,
         SyncTokenFromUInt(static_cast<uint32_t>(mailbox_char)), size,
-        viz::RGBA_8888, false /* is_overlay_candidate */);
+        viz::SinglePlaneFormat::kRGBA_8888, false /* is_overlay_candidate */);
     layer_->SetTransferableResource(resource, std::move(callback));
   }
 
@@ -1318,7 +1319,7 @@ class TextureLayerWithResourceImplThreadDeleted : public LayerTreeTest {
     auto resource = viz::TransferableResource::MakeGpu(
         MailboxFromChar(mailbox_char), GL_LINEAR, GL_TEXTURE_2D,
         SyncTokenFromUInt(static_cast<uint32_t>(mailbox_char)), size,
-        viz::RGBA_8888, false /* is_overlay_candidate */);
+        viz::SinglePlaneFormat::kRGBA_8888, false /* is_overlay_candidate */);
     layer_->SetTransferableResource(resource, std::move(callback));
   }
 
@@ -1462,7 +1463,7 @@ class SoftwareTextureLayerSwitchTreesTest : public SoftwareTextureLayerTest {
     PostSetNeedsCommitToMainThread();
 
     gfx::Size size(1, 1);
-    viz::ResourceFormat format = viz::RGBA_8888;
+    viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
 
     id_ = viz::SharedBitmap::GenerateId();
     bitmap_ = base::MakeRefCounted<CrossThreadSharedBitmap>(
@@ -1482,8 +1483,8 @@ class SoftwareTextureLayerSwitchTreesTest : public SoftwareTextureLayerTest {
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
-                                                    viz::RGBA_8888),
+            viz::TransferableResource::MakeSoftware(
+                id_, gfx::Size(1, 1), viz::SinglePlaneFormat::kRGBA_8888),
             base::BindOnce([](const gpu::SyncToken&, bool) {}));
         break;
       case 2:
@@ -1565,7 +1566,7 @@ class SoftwareTextureLayerPurgeMemoryTest : public SoftwareTextureLayerTest {
     PostSetNeedsCommitToMainThread();
 
     const gfx::Size size(1, 1);
-    const viz::ResourceFormat format = viz::RGBA_8888;
+    const viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
 
     id_ = viz::SharedBitmap::GenerateId();
     bitmap_ = base::MakeRefCounted<CrossThreadSharedBitmap>(
@@ -1585,8 +1586,8 @@ class SoftwareTextureLayerPurgeMemoryTest : public SoftwareTextureLayerTest {
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
-                                                    viz::RGBA_8888),
+            viz::TransferableResource::MakeSoftware(
+                id_, gfx::Size(1, 1), viz::SinglePlaneFormat::kRGBA_8888),
             base::BindOnce([](const gpu::SyncToken&, bool) {}));
         break;
       case 2:
@@ -1644,7 +1645,7 @@ class SoftwareTextureLayerMultipleRegisterTest
     PostSetNeedsCommitToMainThread();
 
     gfx::Size size(1, 1);
-    viz::ResourceFormat format = viz::RGBA_8888;
+    viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
 
     id1_ = viz::SharedBitmap::GenerateId();
     bitmap1_ = base::MakeRefCounted<CrossThreadSharedBitmap>(
@@ -1669,8 +1670,8 @@ class SoftwareTextureLayerMultipleRegisterTest
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id1_, gfx::Size(1, 1),
-                                                    viz::RGBA_8888),
+            viz::TransferableResource::MakeSoftware(
+                id1_, gfx::Size(1, 1), viz::SinglePlaneFormat::kRGBA_8888),
             base::BindOnce([](const gpu::SyncToken&, bool) {}));
         break;
       case 2:
@@ -1737,7 +1738,7 @@ class SoftwareTextureLayerRegisterUnregisterTest
     PostSetNeedsCommitToMainThread();
 
     gfx::Size size(1, 1);
-    viz::ResourceFormat format = viz::RGBA_8888;
+    viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
 
     id1_ = viz::SharedBitmap::GenerateId();
     bitmap1_ = base::MakeRefCounted<CrossThreadSharedBitmap>(
@@ -1770,8 +1771,8 @@ class SoftwareTextureLayerRegisterUnregisterTest
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id1_, gfx::Size(1, 1),
-                                                    viz::RGBA_8888),
+            viz::TransferableResource::MakeSoftware(
+                id1_, gfx::Size(1, 1), viz::SinglePlaneFormat::kRGBA_8888),
             base::BindOnce([](const gpu::SyncToken&, bool) {}));
         break;
       case 2:
@@ -1825,7 +1826,7 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
     PostSetNeedsCommitToMainThread();
 
     gfx::Size size(1, 1);
-    viz::ResourceFormat format = viz::RGBA_8888;
+    viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
 
     id_ = viz::SharedBitmap::GenerateId();
     bitmap_ = base::MakeRefCounted<CrossThreadSharedBitmap>(
@@ -1857,8 +1858,8 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
-                                                    viz::RGBA_8888),
+            viz::TransferableResource::MakeSoftware(
+                id_, gfx::Size(1, 1), viz::SinglePlaneFormat::kRGBA_8888),
             base::BindOnce(
                 &SoftwareTextureLayerLoseFrameSinkTest::ReleaseCallback,
                 base::Unretained(this)));
@@ -1945,7 +1946,7 @@ class SoftwareTextureLayerUnregisterRegisterTest
     PostSetNeedsCommitToMainThread();
 
     gfx::Size size(1, 1);
-    viz::ResourceFormat format = viz::RGBA_8888;
+    viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
 
     id_ = viz::SharedBitmap::GenerateId();
     bitmap_ = base::MakeRefCounted<CrossThreadSharedBitmap>(
@@ -1975,8 +1976,8 @@ class SoftwareTextureLayerUnregisterRegisterTest
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
-                                                    viz::RGBA_8888),
+            viz::TransferableResource::MakeSoftware(
+                id_, gfx::Size(1, 1), viz::SinglePlaneFormat::kRGBA_8888),
             base::BindOnce([](const gpu::SyncToken&, bool) {}));
         break;
       case 2:

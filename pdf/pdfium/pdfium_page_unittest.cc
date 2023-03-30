@@ -874,7 +874,7 @@ class PDFiumPageThumbnailTest : public PDFiumTestBase {
     ASSERT_GT(stride, 0);
     ASSERT_EQ(image_info.minRowBytes(), static_cast<size_t>(stride));
     std::vector<uint8_t> data = thumbnail.TakeData();
-    sk_sp<SkImage> image = SkImage::MakeRasterCopy(
+    sk_sp<SkImage> image = SkImages::RasterFromPixmapCopy(
         SkPixmap(image_info, data.data(), image_info.minRowBytes()));
     ASSERT_TRUE(image);
 
@@ -913,9 +913,9 @@ TEST_P(PDFiumPageThumbnailTest, GenerateThumbnail) {
       {6, 2, {46, 1399}},  // Super tall
   };
 
-#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
+#if defined(ARCH_CPU_ARM64)
   std::string file_name =
-      GetParam() ? "variable_page_sizes_mac_arm64" : "variable_page_sizes";
+      GetParam() ? "variable_page_sizes_arm64" : "variable_page_sizes";
 #else
   std::string file_name = "variable_page_sizes";
 #endif

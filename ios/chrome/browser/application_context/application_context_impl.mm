@@ -58,8 +58,6 @@
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
-#import "ios/chrome/browser/promos_manager/features.h"
-#import "ios/chrome/browser/promos_manager/promos_manager_impl.h"
 #import "ios/chrome/browser/push_notification/push_notification_service.h"
 #import "ios/chrome/browser/segmentation_platform/otr_web_state_observer.h"
 #import "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
@@ -143,6 +141,12 @@ void ApplicationContextImpl::PreCreateThreads() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ios_chrome_io_thread_.reset(
       new IOSChromeIOThread(GetLocalState(), GetNetLog()));
+}
+
+void ApplicationContextImpl::PostCreateThreads() {
+  web::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&IOSChromeIOThread::InitOnIO,
+                                base::Unretained(ios_chrome_io_thread_.get())));
 }
 
 void ApplicationContextImpl::PreMainMessageLoopRun() {
@@ -435,10 +439,9 @@ network::NetworkConnectionTracker*
 ApplicationContextImpl::GetNetworkConnectionTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!network_connection_tracker_) {
-    if (!network_change_manager_) {
-      network_change_manager_ =
-          std::make_unique<network::NetworkChangeManager>(nullptr);
-    }
+    DCHECK(!network_change_manager_);
+    network_change_manager_ =
+        std::make_unique<network::NetworkChangeManager>(nullptr);
     network_connection_tracker_ =
         std::make_unique<network::NetworkConnectionTracker>(base::BindRepeating(
             &BindNetworkChangeManagerReceiver,
@@ -480,15 +483,6 @@ BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
     }
   }
   return browser_policy_connector_.get();
-}
-
-PromosManager* ApplicationContextImpl::GetPromosManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!promos_manager_) {
-    promos_manager_ = std::make_unique<PromosManagerImpl>(
-        GetLocalState(), base::DefaultClock::GetInstance());
-  }
-  return promos_manager_.get();
 }
 
 id<SingleSignOnService> ApplicationContextImpl::GetSSOService() {

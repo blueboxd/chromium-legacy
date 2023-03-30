@@ -327,6 +327,9 @@ Style notes:
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_VPN_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for VPN settings accessed through the VPN feature pod.">
         VPN Settings
       </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_EOL_NOTICE" desc="Message shown to the user in the quick settings bubble when their device reaches end of life, and stops receiveing software updates.">
+        Security updates ended. Upgrade your device.
+    </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Autozoom feature (which controls if camera auto zoom to faces) on or off. [CHAR_LIMIT=14]">
         Camera framing
       </message>
@@ -569,6 +572,12 @@ Style notes:
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_STOP_CASTING" desc="Label for a button in the system tray popup to stop casting to a Chromecast device.">
         Stop casting
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_PAUSE" desc="Label for a button in the cast notification to pause the current cast mirroring session to a Chromecast device">
+        Pause
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_RESUME" desc="Label for a button in the cast notification to resume a paused cast mirroring session to a Chromecast device">
+        Resume
       </message>
       <message name="IDS_ASH_STATUS_TRAY_QUIET_MODE_TOOLTIP" desc="The tooltip text for the status area icon to tell do-not-disturb mode is currently on.">
         Do Not Disturb is on
@@ -1278,6 +1287,9 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_SHUTDOWN" desc="The accessible text for the shutdown button.">
         Shut down
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_POWER_MENU" desc="The accessible text for the power button.">
+        Power menu
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_COLLAPSE" desc="The accessible text for the button to collapse system menu.">
         Collapse menu
       </message>
@@ -1320,6 +1332,15 @@ Style notes:
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_SUBLABEL" desc="The sub label text shown under do not disturb button when all notifications are disabled. [CHAR_LIMIT=14]">
         Do not disturb
+      </message>
+       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_SETTINGS_DO_NOT_DISTURB_TOGGLE_TOOLTIP" desc="The tooltip text of the button that shows notification settings. Used when all notifications are disabled.">
+        Do not disturb is on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_ON_SUBLABEL" desc="The sub label text shown under the do not disturb button when notifications are disabled (do not disturb is on). [CHAR_LIMIT=14]">
+        On
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_OFF_SUBLABEL" desc="The sub label text shown under do not disturb button when notifications are enabled (do not disturb is off). [CHAR_LIMIT=14]">
+        Off
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCALE" desc="The label used for locale button in system tray bubble. [CHAR_LIMIT=14]">
         Language
@@ -1867,8 +1888,75 @@ Style notes:
       <message name="IDS_ASH_MEMORY_USAGE_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the answer card with the current memory usage information in the launcher.">
         <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> of <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> available
       </message>
-
-
+      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_TITLE" desc="Message content for the title of the battery answer card while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
+        <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>% | <ph name="TIME">$2<ex>2 hours and 20 minutes</ex></ph> left
+      </message>
+      <message name="IDS_ASH_BATTERY_STATUS_CHARGING_IN_LAUNCHER_TITLE" desc="Message content for the title of the battery answer card while the battery is charging, showing the battery power as a percentage and the time left until the battery is full.">
+        <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>% | <ph name="TIME">$2<ex>2 hours and 20 minutes</ex></ph> until full
+      </message>
+      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the battery answer card, showing the battery health percentage and the cycle count.">
+        Battery health <ph name="BATTERY_HEALTH_PERCENTAGE">$1<ex>97</ex></ph>% | Cycle count <ph name="CYCLE_COUNT">$2<ex>15</ex></ph>
+      </message>
+      <message name="IDS_ASH_STORAGE_STATUS_IN_LAUNCHER_TITLE" desc="Message content for the title of the storage answer card, showing the amount of storage currently in use and the total storage size.">
+        <ph name="STORAGE_IN_USE_SIZE">$1<ex>65 GB</ex></ph> in use / <ph name="STORAGE_TOTAL_SIZE">$2<ex>124 GB</ex></ph>
+      </message>
+      <message name="IDS_ASH_STORAGE_MANAGEMENT_KEYWORD_FOR_LAUNCHER" desc="Keyword of storage management in launcher search that should trigger a storage answer card result.">
+        storage management
+      </message>
+      <message name="IDS_ASH_STORAGE_KEYWORD_FOR_LAUNCHER" desc="Keyword of storage in launcher search that should trigger a storage answer card result.">
+        storage
+      </message>
+      <message name="IDS_ASH_STORAGE_USE_KEYWORD_FOR_LAUNCHER" desc="Keyword of storage use in launcher search that should trigger a storage answer card result.">
+        storage use
+      </message>
+      <message name="IDS_ASH_CPU_KEYWORD_FOR_LAUNCHER" desc="Keyword of cpu in launcher search that should trigger a CPU answer card result.">
+        cpu
+      </message>
+      <message name="IDS_ASH_CPU_USAGE_KEYWORD_FOR_LAUNCHER" desc="Keyword of cpu usage in launcher search that should trigger a CPU answer card result.">
+        cpu usage
+      </message>
+      <message name="IDS_ASH_DEVICE_SLOW_KEYWORD_FOR_LAUNCHER" desc="Keyword of device slow in launcher search that should trigger a CPU answer card result.">
+        device slow
+      </message>
+      <message name="IDS_ASH_WHY_IS_MY_DEVICE_SLOW_KEYWORD_FOR_LAUNCHER" desc="Keyword of why is my device slow in launcher search that should trigger a CPU answer card result.">
+        why is my device slow
+      </message>
+      <message name="IDS_ASH_MEMORY_KEYWORD_FOR_LAUNCHER" desc="Keyword of memory in launcher search that should trigger a memory answer card result.">
+        memory
+      </message>
+      <message name="IDS_ASH_MEMORY_USAGE_KEYWORD_FOR_LAUNCHER" desc="Keyword of memory usage in launcher search that should trigger a memory answer card result.">
+        memory usage
+      </message>
+      <message name="IDS_ASH_RAM_KEYWORD_FOR_LAUNCHER" desc="Keyword of ram (random access memory) in launcher search that should trigger a memory answer card result.">
+        ram
+      </message>
+      <message name="IDS_ASH_RANDOM_ACCESS_MEMORY_KEYWORD_FOR_LAUNCHER" desc="Keyword of random access memory in launcher search that should trigger a memory answer card result.">
+        random access memory
+      </message>
+      <message name="IDS_ASH_RAM_USAGE_KEYWORD_FOR_LAUNCHER" desc="Keyword of ram usage in launcher search that should trigger a memory answer card result.">
+        ram usage
+      </message>
+      <message name="IDS_ASH_ACTIVITY_MONITOR_KEYWORD_FOR_LAUNCHER" desc="Keyword of activity monitor in launcher search that should trigger a memory answer card result.">
+        actvity monitor
+      </message>
+      <message name="IDS_ASH_BATTERY_KEYWORD_FOR_LAUNCHER" desc="Keyword of battery in launcher search that should trigger a battery answer card result.">
+        battery
+      </message>
+      <message name="IDS_ASH_BATTERY_LIFE_KEYWORD_FOR_LAUNCHER" desc="Keyword of battery life in launcher search that should trigger a battery answer card result.">
+        battery life
+      </message>
+      <message name="IDS_ASH_BATTERY_HEALTH_KEYWORD_FOR_LAUNCHER" desc="Keyword of battery health in launcher search that should trigger a battery answer card result.">
+        battery health
+      </message>
+      <message name="IDS_ASH_VERSION_KEYWORD_FOR_LAUNCHER" desc="Keyword of version in launcher search that should trigger a version answer card result.">
+        version
+      </message>
+      <message name="IDS_ASH_MY_DEVICE_KEYWORD_FOR_LAUNCHER" desc="Keyword of my device in launcher search that should trigger a version answer card result.">
+        my device
+      </message>
+      <message name="IDS_ASH_ABOUT_KEYWORD_FOR_LAUNCHER" desc="Keyword of about in launcher search that should trigger a version answer card result.">
+        about
+      </message>
 
       <message name="IDS_ASH_TOAST_DISMISS_BUTTON" desc="The text button shown in toasts to close the toast immediately without waiting timeout.">
         DISMISS
@@ -3901,26 +3989,11 @@ Connect your device to power.
       <message name="IDS_AMBIENT_ACCELERATOR_CYCLE_BACKWARD_MRU" translateable="false" desc="Action for accelerator action - Open the window that has been unused for the longest time.">
         Press and hold <ph name="MODIFIER_1">$1<ex>alt</ex></ph><ph name="MODIFIER_2">$2<ex>shift</ex></ph>, tap <ph name="KEY">$3<ex>tab</ex></ph> until you get to the window you want to open, then release
       </message>
-      <message name="IDS_AMBIENT_ACCELERATOR_FIND_NEXT" translateable="false" desc="Action for accelerator action - Go to the next match for your search.">
-        <ph name="MODIFIER">$1<ex>ctrl</ex></ph><ph name="KEY_ONE">$2<ex>g</ex></ph> or <ph name="KEY_TWO">$3<ex>enter</ex></ph>
-      </message>
-      <message name="IDS_AMBIENT_ACCELERATOR_FIND_PREVIOUS" translateable="false" desc="Action for accelerator action - Go to the previous match for your search.">
-        <ph name="MODIFIER_ONE">$1<ex>ctrl</ex></ph><ph name="MODIFIER_TWO">$2<ex>shift</ex></ph><ph name="KEY_ONE">$3<ex>g</ex></ph> or <ph name="MODIFIER_THREE">$4<ex>shift</ex></ph><ph name="KEY_TWO">$5<ex>enter</ex></ph>
-      </message>
-      <message name="IDS_AMBIENT_ACCELERATOR_FOCUS_SEARCH" translateable="false" desc="Action for accelerator action - Place focus in search address bar.">
-        <ph name="MODIFIER">$1<ex>ctrl</ex></ph><ph name="KEY_ONE">$2<ex>k</ex></ph> or <ph name="KEY_TWO">$3<ex>e</ex></ph>
-      </message>
-      <message name="IDS_AMBIENT_ACCELERATOR_RELOAD" translateable="false" desc="Action for accelerator action - Reload your current page.">
-        <ph name="KEY_ONE">$1<ex>browser_refresh</ex></ph> or <ph name="MODIFIER">$2<ex>ctrl</ex></ph><ph name="KEY_TWO">$3<ex>r</ex></ph>
-      </message>
       <message name="IDS_AMBIENT_ACCELERATOR_RIGHT_CLICK" translateable="false" desc="Action for accelerator action - Right-click a link.">
         Press <ph name="MODIFIER">$1<ex>alt</ex></ph> and click a link
       </message>
       <message name="IDS_AMBIENT_ACCELERATOR_SAVE_LINK_AS_BOOKMARK" translateable="false" desc="Action for accelerator action - Drag link to bookmarks bar.">
         Drag link to bookmarks bar
-      </message>
-      <message name="IDS_AMBIENT_ACCELERATOR_SHOW_APP_MENU" translateable="false" desc="Action for accelerator action - Show app menu.">
-        <ph name="MODIFIER">$1<ex>alt</ex></ph><ph name="KEY_ONE">$2<ex>e</ex></ph> or <ph name="KEY_TWO">$3<ex>f</ex></ph>
       </message>
       <message name="IDS_AMBIENT_ACCELERATOR_LAUNCH_NUMBERED_APP" translateable="false" desc="Action for accelerator action - Click icons 1-8 on your shelf.">
         <ph name="MODIFIER">$1<ex>alt</ex></ph> <ph name="DELIMITER">$2<ex>+</ex></ph> <ph name="KEY_ONE">$3<ex>1</ex></ph> through <ph name="KEY_TWO">$4<ex>8</ex></ph>
@@ -4740,7 +4813,7 @@ Connect your device to power.
       </message>
 
       <message name="IDS_ASH_CALENDAR_JOIN_BUTTON_ACCESSIBLE_NAME" desc="The join meeting button accessible name on the event list item views.">
-        Hit enter to join event <ph name="event_summary">$1<ex>Lunch break</ex></ph>
+        Join <ph name="event_summary">$1<ex>Lunch break</ex></ph>
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_PROGRESS_BAR_ACCESSIBLE_NAME" desc="The accessible name for the progress bar shown in the status tray.">
@@ -5229,6 +5302,12 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_DISPLAY_SOURCE" desc="The name that is the display source of the screen capture notification.">
         Screen capture
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_GIF_PROGRESS_TITLE" desc="The title of the notification that shows up informing the user about the GIF file being processed.">
+        Creating GIF
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_GIF_PROGRESS_MESSAGE" desc="The message of the notification that shows up informing the user about the GIF file being processed.">
+        Your GIF will be ready shortly
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_SCREENSHOT_TITLE" desc="The title of the notificaton which shows after a screenshot is taken.">
         Screenshot taken
@@ -5957,6 +6036,11 @@ New install
       <message name="IDS_APP_LIST_FOLDER_BUTTON_ACCESSIBILE_NAME" desc="The spoken feedback text for navigating to a folder button in top level app list">
         Folder <ph name="folder_name">$1<ex>OEM Apps</ex></ph>
       </message>
+      <message name="IDS_APP_LIST_FOLDER_NUMBER_OF_APPS_ACCESSIBILE_DESCRIPTION" desc="The spoken feedback text that announces the number of apps in a folder when navigating to the folder button in top level app list">
+        {NUM_APPS, plural,
+         =1 {1 app}
+         other {# apps}}
+      </message>
       <message name="IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME" desc="The spoken feedback text for closing an app launcher folder">
         Close folder
       </message>
@@ -6281,11 +6365,14 @@ New install
       <message name="IDS_ASH_ECHE_APP_STREMING_ERROR_DIALOG_TITLE" desc="The title of dialog that appears when there is a connection error trying to stream app">
         Can't stream apps
       </message>
-      <message name="IDS_ASH_ECHE_APP_STREMING_ERROR_DIALOG_MAIN_TEXT" desc="The main description in the dialog that appears when there is a connection error trying to stream app">
-        This network doesn't support streaming apps from your phone. Try turning on your phone's hotspot. Learn more.
+      <message name="IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_MAIN_TEXT" desc="The main description in the dialog that appears when there is a connection error trying to stream app">
+        This network doesn't support streaming apps from your phone. Try using your phone's hotspot. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
       </message>
       <message name="IDS_ASH_ECHE_APP_STREMING_ERROR_DIALOG_TURN_ON_HOTSPOT" desc="The button in the dialog that appears when there is a connection error trying to stream app to turn on hotspot">
         Turn on hotspot
+      </message>
+      <message name="IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_OK_TEXT" desc="Confirm button on the connection error dialog to acknowledge.">
+        Ok
       </message>
 
       <!-- Deferred update dialog -->
@@ -6332,12 +6419,6 @@ New install
       <message name="IDS_GLANCEABLES_UP_NEXT" desc="Section header for upcoming calendar events. Used on the glanceables surface (welcome screen).">
         Up next
       </message>
-      <message name="IDS_GLANCEABLES_RESTORE_SESSION" desc="Section header for a button that restores the last user session windows. Used on the glanceables surface (welcome screen).">
-        Restore last session
-      </message>
-      <message name="IDS_GLANCEABLES_RESTORE" desc="Label for button that restores the last user session windows. Used on the glanceables surface (welcome screen).">
-        Restore
-      </message>
       <message name="IDS_GLANCEABLES_UP_NEXT_NO_EVENTS" desc="Text label used in the up next section in case if there are no (more) calendar events for today.">
         No events today
       </message>
@@ -6364,20 +6445,27 @@ New install
         Please unlock to view notifications
       </message>
 
-      <!-- security curtain -->
-      <message name="IDS_ASH_CURTAIN_TITLE" desc="Title text displayed to inform the user a remote admin has taken control of the ChromeOs device.">
-        Your administrator is controlling your device
-      </message>
-      <message name="IDS_ASH_CURTAIN_DESCRIPTION" desc="Detailed description displayed to inform the user a remote admin has taken control of the ChromeOs device.">
-        Your administrator has logged in to look into an issue. You can continue to use the device after the administrator gives the control back to you.
-      </message>
-
       <!-- pagination view -->
-      <message name="IDS_ASH_PAGINATION_LEFT_ARROW_TOOLTIP" desc="The tooltip text used for pagination left arrow button." >
+      <message name="IDS_ASH_PAGINATION_BACKWARD_ARROW_TOOLTIP" desc="The tooltip text used for pagination backward arrow button." >
         Previous page
       </message>
-      <message name="IDS_ASH_PAGINATION_RIGHT_ARROW_TOOLTIP" desc="The tooltip text used for pagination right arrow button." >
+      <message name="IDS_ASH_PAGINATION_FORWARD_ARROW_TOOLTIP" desc="The tooltip text used for pagination forward arrow button." >
         Next page
+      </message>
+
+      <!-- Power menu widget for security curtain -->
+      <message name="IDS_ASH_CURTAIN_POWER_WIDGET_TITLE" desc="Title text displayed in the dialog when the power button is pressed and the remote admin session on ChromeOs device will end.">
+        Shut down the device?
+      </message>
+      <message name="IDS_ASH_CURTAIN_POWER_WIDGET_DESCRIPTION" desc="Detailed description displayed to inform the user that the device will be shut down and remote admin session will be end if they press the power button again. The linebreak should NOT be removed from the string.">
+        Once shut down, the administrator will be logged out and won't be able to control your device.
+
+To shut down the device, press and hold the power button on the device again.
+      </message>
+
+       <!-- Tuck Education -->
+      <message name="IDS_ASH_TUCK_EDUCATIONAL_NUDGE_LABEL" desc="The text shown to users when a window is floated in tablet mode to indicate the tuck gesture." >
+        Swipe to hide your floating window
       </message>
      </messages>
     </release>

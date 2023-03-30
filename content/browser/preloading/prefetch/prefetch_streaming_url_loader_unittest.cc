@@ -192,6 +192,12 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient,
     return completion_status_;
   }
 
+  const std::vector<
+      std::pair<net::RedirectInfo, network::mojom::URLResponseHeadPtr>>&
+  received_redirects() {
+    return received_redirects_;
+  }
+
  private:
   // network::mojom::URLLoaderClient
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
@@ -211,7 +217,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient,
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override {
-    NOTREACHED();
+    received_redirects_.emplace_back(redirect_info, std::move(head));
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -248,6 +254,9 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient,
   int32_t total_transfer_size_diff_{0};
 
   absl::optional<network::URLLoaderCompletionStatus> completion_status_;
+
+  std::vector<std::pair<net::RedirectInfo, network::mojom::URLResponseHeadPtr>>
+      received_redirects_;
 };
 
 class PrefetchStreamingURLLoaderTest : public ::testing::Test {
@@ -329,10 +338,11 @@ TEST_F(PrefetchStreamingURLLoaderTest, SuccessfulServedAfterCompletion) {
   // Gets handler to serve prefetch from |streaming_loader|. After this
   // |streaming_loader| is self owned, so |weak_streaming_loader| should be used
   // after this point.
+  EXPECT_TRUE(streaming_loader->IsReadyToServeFinalResponse());
   base::WeakPtr<PrefetchStreamingURLLoader> weak_streaming_loader =
       streaming_loader->GetWeakPtr();
   PrefetchStreamingURLLoader::RequestHandler request_handler =
-      weak_streaming_loader->ServingResponseHandler(
+      weak_streaming_loader->ServingFinalResponseHandler(
           std::move(streaming_loader));
 
   // Set up URLLoaderClient to "serve" the prefetch.
@@ -358,6 +368,7 @@ TEST_F(PrefetchStreamingURLLoaderTest, SuccessfulServedAfterCompletion) {
   EXPECT_TRUE(serving_url_loader_client->completion_status());
   EXPECT_EQ(serving_url_loader_client->completion_status()->error_code,
             net::OK);
+  EXPECT_EQ(serving_url_loader_client->received_redirects().size(), 0U);
 
   serving_url_loader_client->DisconnectMojoPipes();
   task_environment()->RunUntilIdle();
@@ -427,10 +438,11 @@ TEST_F(PrefetchStreamingURLLoaderTest, SuccessfulServedBeforeCompletion) {
   // Gets handler to serve prefetch from |streaming_loader|. After this
   // |streaming_loader| is self owned, so |weak_streaming_loader| should be used
   // after this point.
+  EXPECT_TRUE(streaming_loader->IsReadyToServeFinalResponse());
   base::WeakPtr<PrefetchStreamingURLLoader> weak_streaming_loader =
       streaming_loader->GetWeakPtr();
   PrefetchStreamingURLLoader::RequestHandler request_handler =
-      weak_streaming_loader->ServingResponseHandler(
+      weak_streaming_loader->ServingFinalResponseHandler(
           std::move(streaming_loader));
 
   // Set up URLLoaderClient to "serve" the prefetch.
@@ -474,6 +486,7 @@ TEST_F(PrefetchStreamingURLLoaderTest, SuccessfulServedBeforeCompletion) {
   EXPECT_TRUE(serving_url_loader_client->completion_status());
   EXPECT_EQ(serving_url_loader_client->completion_status()->error_code,
             net::OK);
+  EXPECT_EQ(serving_url_loader_client->received_redirects().size(), 0U);
 
   serving_url_loader_client->DisconnectMojoPipes();
   task_environment()->RunUntilIdle();
@@ -706,10 +719,11 @@ TEST_F(PrefetchStreamingURLLoaderTest, FailedNetErrorButServed) {
   // Gets handler to serve prefetch from |streaming_loader|. After this
   // |streaming_loader| is self owned, so |weak_streaming_loader| should be used
   // after this point.
+  EXPECT_TRUE(streaming_loader->IsReadyToServeFinalResponse());
   base::WeakPtr<PrefetchStreamingURLLoader> weak_streaming_loader =
       streaming_loader->GetWeakPtr();
   PrefetchStreamingURLLoader::RequestHandler request_handler =
-      weak_streaming_loader->ServingResponseHandler(
+      weak_streaming_loader->ServingFinalResponseHandler(
           std::move(streaming_loader));
 
   // Set up URLLoaderClient to "serve" the prefetch.
@@ -748,6 +762,7 @@ TEST_F(PrefetchStreamingURLLoaderTest, FailedNetErrorButServed) {
   EXPECT_TRUE(serving_url_loader_client->completion_status());
   EXPECT_EQ(serving_url_loader_client->completion_status()->error_code,
             net::ERR_FAILED);
+  EXPECT_EQ(serving_url_loader_client->received_redirects().size(), 0U);
 
   serving_url_loader_client->DisconnectMojoPipes();
   task_environment()->RunUntilIdle();
@@ -765,6 +780,7 @@ TEST_F(PrefetchStreamingURLLoaderTest, FailedNetErrorButServed) {
 TEST_F(PrefetchStreamingURLLoaderTest, ImmediateEligibleRedirect) {
   base::HistogramTester histogram_tester;
   const GURL kTestUrl = GURL("https://example.com");
+  const GURL kRedirectUrl = GURL("https://redirect.com");
   const std::string kBodyContent = "example body";
 
   std::unique_ptr<network::ResourceRequest> prefetch_request =
@@ -810,7 +826,7 @@ TEST_F(PrefetchStreamingURLLoaderTest, ImmediateEligibleRedirect) {
       on_follow_redirect_loop.QuitClosure());
 
   // Simulate a redirect that should be followed by the URL loader.
-  test_url_loader_factory()->SimulateRedirect(GURL("https://redirect.com"),
+  test_url_loader_factory()->SimulateRedirect(kRedirectUrl,
                                               net::HTTP_PERMANENT_REDIRECT);
   on_receive_redirect_loop.Run();
   on_follow_redirect_loop.Run();
@@ -828,11 +844,78 @@ TEST_F(PrefetchStreamingURLLoaderTest, ImmediateEligibleRedirect) {
 
   EXPECT_TRUE(streaming_loader->Servable(base::TimeDelta::Max()));
 
-  streaming_loader.reset();
+  // Simulates serving the redirect.
+  EXPECT_FALSE(streaming_loader->IsReadyToServeFinalResponse());
+  PrefetchStreamingURLLoader::RequestHandler redirect_handler =
+      streaming_loader->ServingRedirectHandler();
+
+  std::unique_ptr<TestURLLoaderClient> redirect_url_loader_client =
+      std::make_unique<TestURLLoaderClient>();
+
+  network::ResourceRequest serving_request;
+  serving_request.url = kTestUrl;
+  serving_request.method = "GET";
+
+  std::move(redirect_handler)
+      .Run(serving_request,
+           redirect_url_loader_client->BindURLloaderAndGetReceiver(),
+           redirect_url_loader_client->BindURLLoaderClientAndGetRemote());
+
+  // Wait for the redirect to be sent to |redirect_url_loader_client|. Once the
+  // redirect is served, |streaming_loader| will stop.
+  task_environment()->RunUntilIdle();
+
+  EXPECT_FALSE(redirect_url_loader_client->body_finished());
+  EXPECT_EQ(redirect_url_loader_client->body_content(), "");
+  EXPECT_EQ(redirect_url_loader_client->total_bytes_read(), 0U);
+
+  EXPECT_FALSE(redirect_url_loader_client->completion_status());
+  EXPECT_EQ(redirect_url_loader_client->received_redirects().size(), 1U);
+
+  redirect_url_loader_client->DisconnectMojoPipes();
+  task_environment()->RunUntilIdle();
+  ASSERT_TRUE(streaming_loader);
+
+  // Simulates serving the final response.
+  EXPECT_TRUE(streaming_loader->IsReadyToServeFinalResponse());
+  base::WeakPtr<PrefetchStreamingURLLoader> weak_streaming_loader =
+      streaming_loader->GetWeakPtr();
+  PrefetchStreamingURLLoader::RequestHandler final_response_handler =
+      weak_streaming_loader->ServingFinalResponseHandler(
+          std::move(streaming_loader));
+
+  // Set up URLLoaderClient to "serve" the prefetch.
+  std::unique_ptr<TestURLLoaderClient> serving_url_loader_client =
+      std::make_unique<TestURLLoaderClient>();
+
+  std::move(final_response_handler)
+      .Run(serving_request,
+           serving_url_loader_client->BindURLloaderAndGetReceiver(),
+           serving_url_loader_client->BindURLLoaderClientAndGetRemote());
+
+  // Wait for the data to be drained from the body pipe.
+  task_environment()->RunUntilIdle();
+
+  EXPECT_TRUE(serving_url_loader_client->body_finished());
+  EXPECT_EQ(serving_url_loader_client->body_content(), kBodyContent);
+  EXPECT_EQ(serving_url_loader_client->total_bytes_read(), kBodyContent.size());
+
+  EXPECT_TRUE(serving_url_loader_client->completion_status());
+  EXPECT_EQ(serving_url_loader_client->completion_status()->error_code,
+            net::OK);
+  EXPECT_EQ(serving_url_loader_client->received_redirects().size(), 0U);
+
+  serving_url_loader_client->DisconnectMojoPipes();
+  task_environment()->RunUntilIdle();
+
+  // Once the streaming URL loader serves is finished (all prefetched data
+  // received and served) and all mojo pipes are disconnected, it should delete
+  // itself.
+  EXPECT_FALSE(weak_streaming_loader);
 
   histogram_tester.ExpectUniqueSample(
       "PrefetchProxy.Prefetch.StreamingURLLoaderFinalStatus",
-      PrefetchStreamingURLLoaderStatus::kSuccessfulNotServed, 1);
+      PrefetchStreamingURLLoaderStatus::kSuccessfulServedAfterCompletion, 1);
 }
 
 TEST_F(PrefetchStreamingURLLoaderTest, ImmediateIneligibleRedirect) {
@@ -953,11 +1036,78 @@ TEST_F(PrefetchStreamingURLLoaderTest, PausedEligibleRedirect) {
 
   EXPECT_TRUE(streaming_loader->Servable(base::TimeDelta::Max()));
 
-  streaming_loader.reset();
+  // Simulates serving the redirect.
+  EXPECT_FALSE(streaming_loader->IsReadyToServeFinalResponse());
+  PrefetchStreamingURLLoader::RequestHandler redirect_handler =
+      streaming_loader->ServingRedirectHandler();
+
+  std::unique_ptr<TestURLLoaderClient> redirect_url_loader_client =
+      std::make_unique<TestURLLoaderClient>();
+
+  network::ResourceRequest serving_request;
+  serving_request.url = kTestUrl;
+  serving_request.method = "GET";
+
+  std::move(redirect_handler)
+      .Run(serving_request,
+           redirect_url_loader_client->BindURLloaderAndGetReceiver(),
+           redirect_url_loader_client->BindURLLoaderClientAndGetRemote());
+
+  // Wait for the redirect to be sent to |redirect_url_loader_client|. Once the
+  // redirect is served, |streaming_loader| will stop.
+  task_environment()->RunUntilIdle();
+
+  EXPECT_FALSE(redirect_url_loader_client->body_finished());
+  EXPECT_EQ(redirect_url_loader_client->body_content(), "");
+  EXPECT_EQ(redirect_url_loader_client->total_bytes_read(), 0U);
+
+  EXPECT_FALSE(redirect_url_loader_client->completion_status());
+  EXPECT_EQ(redirect_url_loader_client->received_redirects().size(), 1U);
+
+  redirect_url_loader_client->DisconnectMojoPipes();
+  task_environment()->RunUntilIdle();
+  ASSERT_TRUE(streaming_loader);
+
+  // Simulate serving the final response.
+  EXPECT_TRUE(streaming_loader->IsReadyToServeFinalResponse());
+  base::WeakPtr<PrefetchStreamingURLLoader> weak_streaming_loader =
+      streaming_loader->GetWeakPtr();
+  PrefetchStreamingURLLoader::RequestHandler final_response_handler =
+      weak_streaming_loader->ServingFinalResponseHandler(
+          std::move(streaming_loader));
+
+  // Set up URLLoaderClient to "serve" the prefetch.
+  std::unique_ptr<TestURLLoaderClient> serving_url_loader_client =
+      std::make_unique<TestURLLoaderClient>();
+
+  std::move(final_response_handler)
+      .Run(serving_request,
+           serving_url_loader_client->BindURLloaderAndGetReceiver(),
+           serving_url_loader_client->BindURLLoaderClientAndGetRemote());
+
+  // Wait for the data to be drained from the body pipe.
+  task_environment()->RunUntilIdle();
+
+  EXPECT_TRUE(serving_url_loader_client->body_finished());
+  EXPECT_EQ(serving_url_loader_client->body_content(), kBodyContent);
+  EXPECT_EQ(serving_url_loader_client->total_bytes_read(), kBodyContent.size());
+
+  EXPECT_TRUE(serving_url_loader_client->completion_status());
+  EXPECT_EQ(serving_url_loader_client->completion_status()->error_code,
+            net::OK);
+  EXPECT_EQ(serving_url_loader_client->received_redirects().size(), 0U);
+
+  serving_url_loader_client->DisconnectMojoPipes();
+  task_environment()->RunUntilIdle();
+
+  // Once the streaming URL loader serves is finished (all prefetched data
+  // received and served) and all mojo pipes are disconnected, it should delete
+  // itself.
+  EXPECT_FALSE(weak_streaming_loader);
 
   histogram_tester.ExpectUniqueSample(
       "PrefetchProxy.Prefetch.StreamingURLLoaderFinalStatus",
-      PrefetchStreamingURLLoaderStatus::kSuccessfulNotServed, 1);
+      PrefetchStreamingURLLoaderStatus::kSuccessfulServedAfterCompletion, 1);
 }
 
 TEST_F(PrefetchStreamingURLLoaderTest, PausedIneligibleRedirect) {
@@ -1003,6 +1153,66 @@ TEST_F(PrefetchStreamingURLLoaderTest, PausedIneligibleRedirect) {
   streaming_loader->OnEligibilityCheckForRedirectComplete(
       /*is_eligible=*/false);
 
+  EXPECT_FALSE(streaming_loader->Servable(base::TimeDelta::Max()));
+
+  streaming_loader.reset();
+
+  histogram_tester.ExpectUniqueSample(
+      "PrefetchProxy.Prefetch.StreamingURLLoaderFinalStatus",
+      PrefetchStreamingURLLoaderStatus::kFailedInvalidRedirect, 1);
+}
+
+TEST_F(PrefetchStreamingURLLoaderTest,
+       PausedEligibleRedirect_UrlLoaderDisconnect) {
+  base::HistogramTester histogram_tester;
+  const GURL kTestUrl = GURL("https://example.com");
+  const std::string kBodyContent = "example body";
+
+  std::unique_ptr<network::ResourceRequest> prefetch_request =
+      std::make_unique<network::ResourceRequest>();
+  prefetch_request->url = kTestUrl;
+  prefetch_request->method = "GET";
+
+  base::RunLoop on_receive_redirect_loop;
+
+  // Create the |PrefetchStreamingURLLoader| that is being tested.
+  std::unique_ptr<PrefetchStreamingURLLoader> streaming_loader =
+      std::make_unique<PrefetchStreamingURLLoader>(
+          test_url_loader_factory(), std::move(prefetch_request),
+          TRAFFIC_ANNOTATION_FOR_TESTS, /*timeout_duration=*/base::TimeDelta(),
+          base::BindOnce([](network::mojom::URLResponseHead* head) {
+            NOTREACHED();
+            return PrefetchStreamingURLLoaderStatus::kHeadReceivedWaitingOnBody;
+          }),
+          base::BindOnce(
+              [](const network::URLLoaderCompletionStatus& completion_status) {
+                NOTREACHED();
+              }),
+          base::BindRepeating(
+              [](base::RunLoop* on_receive_redirect_loop,
+                 const net::RedirectInfo& redirect_info,
+                 const network::mojom::URLResponseHead& response_head) {
+                on_receive_redirect_loop->Quit();
+                return PrefetchStreamingURLLoaderStatus::
+                    kPauseRedirectForEligibilityCheck;
+              },
+              &on_receive_redirect_loop));
+
+  // Simulate a redirect that should be followed by the URL loader. The URL
+  // loader needs to pause until the eligibility check is complete.
+  test_url_loader_factory()->SimulateRedirect(GURL("https://redirect.com"),
+                                              net::HTTP_PERMANENT_REDIRECT);
+  on_receive_redirect_loop.Run();
+
+  // Simulate the network URL loader stopping before the result of the
+  // eligibility check is done.
+  test_url_loader_factory()->DisconnectMojoPipes();
+  task_environment()->RunUntilIdle();
+
+  streaming_loader->OnEligibilityCheckForRedirectComplete(/*is_eligible=*/true);
+
+  // Since the network URL loader was disconnected, then redirect cannot be
+  // followed and the prefetch should not be servable.
   EXPECT_FALSE(streaming_loader->Servable(base::TimeDelta::Max()));
 
   streaming_loader.reset();
@@ -1116,6 +1326,109 @@ TEST_F(PrefetchStreamingURLLoaderTest, Timeout) {
   histogram_tester.ExpectUniqueSample(
       "PrefetchProxy.Prefetch.StreamingURLLoaderFinalStatus",
       PrefetchStreamingURLLoaderStatus::kFailedNetError, 1);
+}
+
+TEST_F(PrefetchStreamingURLLoaderTest, StopTimeoutTimerAfterBeingServed) {
+  base::HistogramTester histogram_tester;
+  const GURL kTestUrl = GURL("https://example.com");
+  const std::string kBodyContent = "example body";
+
+  std::unique_ptr<network::ResourceRequest> prefetch_request =
+      std::make_unique<network::ResourceRequest>();
+  prefetch_request->url = kTestUrl;
+  prefetch_request->method = "GET";
+
+  base::RunLoop on_response_received_loop;
+  base::RunLoop on_response_complete_loop;
+
+  // Create the |PrefetchStreamingURLLoader| that is being tested.
+  std::unique_ptr<PrefetchStreamingURLLoader> streaming_loader =
+      std::make_unique<PrefetchStreamingURLLoader>(
+          test_url_loader_factory(), std::move(prefetch_request),
+          TRAFFIC_ANNOTATION_FOR_TESTS, /*timeout_duration=*/base::Seconds(1),
+          base::BindOnce(
+              [](base::RunLoop* on_response_received_loop,
+                 network::mojom::URLResponseHead* head) {
+                on_response_received_loop->Quit();
+                return PrefetchStreamingURLLoaderStatus::
+                    kHeadReceivedWaitingOnBody;
+              },
+              &on_response_received_loop),
+          base::BindOnce(
+              [](base::RunLoop* on_response_complete_loop,
+                 const network::URLLoaderCompletionStatus& completion_status) {
+                EXPECT_EQ(completion_status.error_code, net::OK);
+                on_response_complete_loop->Quit();
+              },
+              &on_response_complete_loop),
+          base::BindRepeating(
+              [](const net::RedirectInfo& redirect_info,
+                 const network::mojom::URLResponseHead& response_head) {
+                NOTREACHED();
+                return PrefetchStreamingURLLoaderStatus::kFollowRedirect;
+              }));
+
+  // Simulates receiving the head of the prefetch response.
+  test_url_loader_factory()->SimulateReceiveHead(net::HTTP_OK,
+                                                 kBodyContent.size());
+  on_response_received_loop.Run();
+
+  EXPECT_TRUE(streaming_loader->Servable(base::TimeDelta::Max()));
+
+  // Simulate serving the prefetch. This should stop the timeout timer.
+  base::WeakPtr<PrefetchStreamingURLLoader> weak_streaming_loader =
+      streaming_loader->GetWeakPtr();
+  PrefetchStreamingURLLoader::RequestHandler request_handler =
+      weak_streaming_loader->ServingFinalResponseHandler(
+          std::move(streaming_loader));
+
+  std::unique_ptr<TestURLLoaderClient> serving_url_loader_client =
+      std::make_unique<TestURLLoaderClient>();
+
+  network::ResourceRequest serving_request;
+  serving_request.url = kTestUrl;
+  serving_request.method = "GET";
+
+  std::move(request_handler)
+      .Run(serving_request,
+           serving_url_loader_client->BindURLloaderAndGetReceiver(),
+           serving_url_loader_client->BindURLLoaderClientAndGetRemote());
+
+  // Since the prefetch has been served, the timeout trigger should not be
+  // triggered.
+  task_environment()->FastForwardBy(base::Seconds(10));
+
+  // Simulate receiving the body of the response.
+  test_url_loader_factory()->SimulateReceiveData(kBodyContent);
+  test_url_loader_factory()->SimulateResponseComplete(net::OK);
+  on_response_complete_loop.Run();
+
+  EXPECT_TRUE(weak_streaming_loader->Servable(base::TimeDelta::Max()));
+
+  test_url_loader_factory()->DisconnectMojoPipes();
+
+  // Wait for the data to be drained from the body pipe.
+  task_environment()->RunUntilIdle();
+
+  EXPECT_TRUE(serving_url_loader_client->body_finished());
+  EXPECT_EQ(serving_url_loader_client->body_content(), kBodyContent);
+  EXPECT_EQ(serving_url_loader_client->total_bytes_read(), kBodyContent.size());
+
+  EXPECT_TRUE(serving_url_loader_client->completion_status());
+  EXPECT_EQ(serving_url_loader_client->completion_status()->error_code,
+            net::OK);
+
+  serving_url_loader_client->DisconnectMojoPipes();
+  task_environment()->RunUntilIdle();
+
+  // Once the streaming URL loader serves is finished (all prefetched data
+  // received and served) and all mojo pipes are disconnected, it should delete
+  // itself.
+  EXPECT_FALSE(weak_streaming_loader);
+
+  histogram_tester.ExpectUniqueSample(
+      "PrefetchProxy.Prefetch.StreamingURLLoaderFinalStatus",
+      PrefetchStreamingURLLoaderStatus::kSuccessfulServedBeforeCompletion, 1);
 }
 
 TEST_F(PrefetchStreamingURLLoaderTest, StaleResponse) {
@@ -1243,10 +1556,11 @@ TEST_F(PrefetchStreamingURLLoaderTest, TransferSizeUpdated) {
   // Gets handler to serve prefetch from |streaming_loader|. After this
   // |streaming_loader| is self owned, so |weak_streaming_loader| should be used
   // after this point.
+  EXPECT_TRUE(streaming_loader->IsReadyToServeFinalResponse());
   base::WeakPtr<PrefetchStreamingURLLoader> weak_streaming_loader =
       streaming_loader->GetWeakPtr();
   PrefetchStreamingURLLoader::RequestHandler request_handler =
-      weak_streaming_loader->ServingResponseHandler(
+      weak_streaming_loader->ServingFinalResponseHandler(
           std::move(streaming_loader));
 
   // Set up URLLoaderClient to "serve" the prefetch.
@@ -1290,6 +1604,7 @@ TEST_F(PrefetchStreamingURLLoaderTest, TransferSizeUpdated) {
   EXPECT_TRUE(serving_url_loader_client->completion_status());
   EXPECT_EQ(serving_url_loader_client->completion_status()->error_code,
             net::OK);
+  EXPECT_EQ(serving_url_loader_client->received_redirects().size(), 0U);
 
   serving_url_loader_client->DisconnectMojoPipes();
   task_environment()->RunUntilIdle();

@@ -29,6 +29,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
+#include "chrome/browser/ash/eol_incentive_util.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
@@ -61,6 +62,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -87,7 +89,6 @@ SystemTrayClientImpl* g_system_tray_client_instance = nullptr;
 // calendar web app.
 constexpr char kOfficialCalendarUrlPrefix[] =
     "https://calendar.google.com/calendar/";
-constexpr char kGoogleMeetSubDomain[] = "meet.google.com";
 
 void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
@@ -364,6 +365,11 @@ void SystemTrayClientImpl::SetLocaleList(
   system_tray_->SetLocaleList(std::move(locale_list), current_locale_iso_code);
 }
 
+void SystemTrayClientImpl::SetShowEolNotice(bool show,
+                                            bool eol_passed_recently) {
+  eol_incentive_recently_passed_ = eol_passed_recently;
+  system_tray_->SetShowEolNotice(show);
+}
 ////////////////////////////////////////////////////////////////////////////////
 // ash::SystemTrayClient:
 
@@ -754,24 +760,11 @@ void SystemTrayClientImpl::ShowCalendarEvent(
 // one for each call to `LaunchAppWithUrl`.
 void SystemTrayClientImpl::ShowVideoConference(
     const GURL& video_conference_url) {
-  const bool is_google_meet =
-      video_conference_url.DomainIs(kGoogleMeetSubDomain);
-
-  if (!is_google_meet || !IsAppInstalled(web_app::kGoogleMeetAppId)) {
-    OpenInBrowser(video_conference_url);
-    return;
+  if (auto* profile = ProfileManager::GetActiveUserProfile()) {
+    apps::MaybeLaunchPreferredAppForUrl(
+        profile, video_conference_url,
+        apps::LaunchSource::kFromSysTrayCalendar);
   }
-
-  apps::AppServiceProxyAsh* proxy = GetActiveUserAppServiceProxyAsh();
-  if (!proxy) {
-    LOG(ERROR) << __FUNCTION__
-               << " failed to get active user AppServiceProxyAsh";
-    OpenInBrowser(video_conference_url);
-    return;
-  }
-
-  proxy->LaunchAppWithUrl(web_app::kGoogleMeetAppId, ui::EF_NONE,
-                          video_conference_url, apps::LaunchSource::kFromShelf);
 }
 
 void SystemTrayClientImpl::ShowChannelInfoAdditionalDetails() {
@@ -791,6 +784,36 @@ void SystemTrayClientImpl::ShowAudioSettings() {
   base::RecordAction(base::UserMetricsAction("ShowAudioSettingsPage"));
   ShowSettingsSubPageForActiveUser(
       chromeos::settings::mojom::kAudioSubpagePath);
+}
+
+void SystemTrayClientImpl::ShowEolInfoPage() {
+  const bool use_offer_url = ash::features::kEolIncentiveParam.Get() !=
+                                 ash::features::EolIncentiveParam::kNoOffer &&
+                             eol_incentive_recently_passed_;
+
+  if (eol_incentive_recently_passed_) {
+    ash::eol_incentive_util::RecordButtonClicked(
+        use_offer_url ? ash::eol_incentive_util::EolIncentiveButtonType::
+                            kQuickSettings_Offer_RecentlyPassed
+                      : ash::eol_incentive_util::EolIncentiveButtonType::
+                            kQuickSettings_NoOffer_RecentlyPassed);
+  } else {
+    DCHECK(!use_offer_url);
+    ash::eol_incentive_util::RecordButtonClicked(
+        ash::eol_incentive_util::EolIncentiveButtonType::
+            kQuickSettings_NoOffer_Passed);
+  }
+
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      GURL(use_offer_url ? chrome::kEolIncentiveNotificationOfferURL
+                         : chrome::kEolIncentiveNotificationNoOfferURL),
+      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      ash::NewWindowDelegate::Disposition::kNewForegroundTab);
+}
+
+void SystemTrayClientImpl::RecordEolNoticeShown() {
+  ash::eol_incentive_util::RecordShowSourceHistogram(
+      ash::eol_incentive_util::EolIncentiveShowSource::kQuickSettings);
 }
 
 bool SystemTrayClientImpl::IsUserFeedbackEnabled() {

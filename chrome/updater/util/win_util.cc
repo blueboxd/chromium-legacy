@@ -20,6 +20,7 @@
 
 #include "base/base_paths_win.h"
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
@@ -50,6 +51,7 @@
 #include "base/win/scoped_process_information.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/startup_information.h"
+#include "base/win/win_util.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
@@ -78,7 +80,7 @@ HResultOr<bool> IsUserRunningSplitToken() {
   }
   bool is_split_token = elevation_type == TokenElevationTypeFull ||
                         elevation_type == TokenElevationTypeLimited;
-  DCHECK(is_split_token || elevation_type == TokenElevationTypeDefault);
+  CHECK(is_split_token || elevation_type == TokenElevationTypeDefault);
   return base::ok(is_split_token);
 }
 
@@ -175,8 +177,8 @@ HWND CreateForegroundParentWindowForUAC() {
 bool CompareOSVersionsInternal(const OSVERSIONINFOEX& os,
                                DWORD type_mask,
                                BYTE oper) {
-  DCHECK(type_mask);
-  DCHECK(oper);
+  CHECK(type_mask);
+  CHECK(oper);
 
   ULONGLONG cond_mask = 0;
   cond_mask = ::VerSetConditionMask(cond_mask, VER_MAJORVERSION, oper);
@@ -207,7 +209,7 @@ HRESULT HRESULTFromLastError() {
 HMODULE GetModuleHandleFromAddress(void* address) {
   MEMORY_BASIC_INFORMATION mbi = {0};
   size_t result = ::VirtualQuery(address, &mbi, sizeof(mbi));
-  DCHECK_EQ(result, sizeof(mbi));
+  CHECK_EQ(result, sizeof(mbi));
   return static_cast<HMODULE>(mbi.AllocationBase);
 }
 
@@ -221,7 +223,7 @@ HMODULE GetCurrentModuleHandle() {
 HRESULT CreateUniqueEventInEnvironment(const std::wstring& var_name,
                                        UpdaterScope scope,
                                        HANDLE* unique_event) {
-  DCHECK(unique_event);
+  CHECK(unique_event);
 
   const std::wstring event_name = base::ASCIIToWide(base::GenerateGUID());
   NamedObjectAttributes attr =
@@ -240,7 +242,7 @@ HRESULT CreateUniqueEventInEnvironment(const std::wstring& var_name,
 HRESULT OpenUniqueEventFromEnvironment(const std::wstring& var_name,
                                        UpdaterScope scope,
                                        HANDLE* unique_event) {
-  DCHECK(unique_event);
+  CHECK(unique_event);
 
   wchar_t event_name[MAX_PATH] = {0};
   if (!::GetEnvironmentVariable(var_name.c_str(), event_name,
@@ -258,9 +260,9 @@ HRESULT OpenUniqueEventFromEnvironment(const std::wstring& var_name,
 }
 
 HRESULT CreateEvent(NamedObjectAttributes* event_attr, HANDLE* event_handle) {
-  DCHECK(event_handle);
-  DCHECK(event_attr);
-  DCHECK(!event_attr->name.empty());
+  CHECK(event_handle);
+  CHECK(event_attr);
+  CHECK(!event_attr->name.empty());
   *event_handle = ::CreateEvent(&event_attr->sa,
                                 true,   // manual reset
                                 false,  // not signaled
@@ -274,7 +276,7 @@ HRESULT CreateEvent(NamedObjectAttributes* event_attr, HANDLE* event_handle) {
 
 NamedObjectAttributes GetNamedObjectAttributes(const wchar_t* base_name,
                                                UpdaterScope scope) {
-  DCHECK(base_name);
+  CHECK(base_name);
 
   switch (scope) {
     case UpdaterScope::kUser: {
@@ -388,7 +390,7 @@ bool SetRegistryKey(HKEY root,
 int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
   if (downloaded_bytes == -1 || total_bytes == -1 || total_bytes == 0)
     return -1;
-  DCHECK_LE(downloaded_bytes, total_bytes);
+  CHECK_LE(downloaded_bytes, total_bytes);
   return 100 * base::clamp(static_cast<double>(downloaded_bytes) / total_bytes,
                            0.0, 1.0);
 }
@@ -405,7 +407,7 @@ base::win::ScopedHandle GetUserTokenFromCurrentSessionId() {
     return token_handle;
   }
 
-  DCHECK_EQ(bytes_returned, sizeof(*session_id_ptr));
+  CHECK_EQ(bytes_returned, sizeof(*session_id_ptr));
   DWORD session_id = *session_id_ptr;
   ::WTSFreeMemory(session_id_ptr);
   VLOG(1) << "::WTSQuerySessionInformation session id: " << session_id;
@@ -493,7 +495,7 @@ HResultOr<bool> IsCOMCallerAdmin() {
   HResultOr<bool> result = IsTokenAdmin(token.get());
   if (!result.has_value()) {
     HRESULT hr = result.error();
-    DCHECK(FAILED(hr));
+    CHECK(FAILED(hr));
     LOG(ERROR) << __func__ << ": IsTokenAdmin failed: " << std::hex << hr;
   }
   return result;
@@ -560,7 +562,7 @@ HResultOr<DWORD> ShellExecuteAndWait(const base::FilePath& file_path,
                                      const std::wstring& verb) {
   VLOG(1) << __func__ << ": path: " << file_path
           << ", parameters:" << parameters << ", verb:" << verb;
-  DCHECK(!file_path.empty());
+  CHECK(!file_path.empty());
 
   const HWND hwnd = CreateForegroundParentWindowForUAC();
   const base::ScopedClosureRunner destroy_window(base::BindOnce(
@@ -804,7 +806,7 @@ absl::optional<OSVERSIONINFOEX> GetOSVersion() {
 }
 
 bool CompareOSVersions(const OSVERSIONINFOEX& os_version, BYTE oper) {
-  DCHECK(oper);
+  CHECK(oper);
 
   constexpr DWORD kOSTypeMask = VER_MAJORVERSION | VER_MINORVERSION |
                                 VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR;
@@ -994,7 +996,7 @@ base::FilePath GetExecutableRelativePath() {
 }
 
 bool IsGuid(const std::wstring& s) {
-  DCHECK(!s.empty());
+  CHECK(!s.empty());
 
   GUID guid = {0};
   return SUCCEEDED(::IIDFromString(&s[0], &guid));
@@ -1096,6 +1098,29 @@ void ForEachServiceWithPrefix(
 bool WrongUser(UpdaterScope scope) {
   return IsSystemInstall(scope) ? !::IsUserAnAdmin()
                                 : ::IsUserAnAdmin() && IsUACOn();
+}
+
+void LogClsidEntries(REFCLSID clsid) {
+  const std::wstring local_server32_reg_path(
+      base::StrCat({base::StrCat({L"Software\\Classes\\CLSID\\",
+                                  base::win::WStringFromGUID(clsid)}),
+                    L"\\LocalServer32"}));
+
+  for (const HKEY root : {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER}) {
+    for (const REGSAM key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+      base::win::RegKey key;
+      if (ERROR_SUCCESS == key.Open(root, local_server32_reg_path.c_str(),
+                                    KEY_QUERY_VALUE | key_flag)) {
+        std::wstring val;
+        if (ERROR_SUCCESS == key.ReadValue(L"", &val)) {
+          LOG(ERROR) << __func__ << ": CLSID entry found: "
+                     << (root == HKEY_LOCAL_MACHINE ? "HKEY_LOCAL_MACHINE\\"
+                                                    : "HKEY_CURRENT_USER\\")
+                     << local_server32_reg_path << ": " << val;
+        }
+      }
+    }
+  }
 }
 
 }  // namespace updater

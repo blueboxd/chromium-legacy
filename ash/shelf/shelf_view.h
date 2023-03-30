@@ -31,6 +31,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/accessible_pane_view.h"
@@ -180,8 +181,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
 
-  void EndDragCallback(const ui::DropTargetEvent& event,
-                       ui::mojom::DragOperation& output_drag_op);
+  void EndDragCallback(
+      const ui::DropTargetEvent& event,
+      ui::mojom::DragOperation& output_drag_op,
+      std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner);
 
   // ShelfButtonDelegate:
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
@@ -591,6 +594,18 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // ShelfParty feature is enabled.
   bool AreAllPinnedAppsHidden() const;
 
+  // Calculate the drop target bounds in the screen for the current `drag_view_`
+  // according to the target position in the shelf.
+  gfx::Rect CalculateDropTargetBoundsForDragViewInScreen();
+
+  // Runs animation for a `drag_icon_proxy_` to the provided
+  // `target_bounds_in_screen`.
+  void AnimateDragIconProxy(const gfx::Rect& target_bounds_in_screen);
+
+  // Runs animation for a `drag_image_layer_` to the provided
+  // `target_bounds_in_screen`.
+  void AnimateDragImageLayer(const gfx::Rect& target_bounds_in_screen);
+
   // The model; owned by Launcher.
   ShelfModel* const model_;
 
@@ -774,6 +789,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Called when showing shelf context menu.
   base::RepeatingClosure context_menu_shown_callback_;
+
+  // The layer that contains the icon image for the item under the drag cursor.
+  // Assigned before the dropping animation is scheduled.
+  std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_;
 
   // The shelf party animations.
   base::flat_map<ShelfID, std::unique_ptr<PartyingShelfItem>> party_;

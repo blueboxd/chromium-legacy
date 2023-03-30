@@ -12,10 +12,13 @@
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/time/time.h"
+#import "components/password_manager/core/common/password_manager_constants.h"
 #import "components/password_manager/core/common/password_manager_features.h"
+#import "components/policy/policy_constants.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
+#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
@@ -380,8 +383,10 @@ id<GREYMatcher> ToolbarSettingsSubmenuButton() {
 // Returns matcher for the password details / add password view footer displayed
 // when the note length is approaching max limit.
 id<GREYMatcher> TooLongNoteFooter() {
-  return grey_text(l10n_util::GetNSString(
-      IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION));
+  return grey_text(l10n_util::GetNSStringF(
+      IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION,
+      base::NumberToString16(
+          password_manager::constants::kMaxPasswordNoteLength)));
 }
 
 // Saves an example form in the store.
@@ -576,6 +581,9 @@ id<GREYMatcher> EditDoneButton() {
   }
   if ([self isRunningTest:@selector
             (testAccountStorageSwitchShownIfSignedInAndFlagEnabled)] ||
+      [self
+          isRunningTest:@selector
+          (testAccountStorageSwitchDisabledIfBlockedByPolicyAndFlagEnabled)] ||
       [self isRunningTest:@selector(testMovePasswordToAccount)]) {
     config.features_enabled.push_back(
         password_manager::features::kEnablePasswordsAccountStorage);
@@ -3166,6 +3174,24 @@ id<GREYMatcher> EditDoneButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+- (void)testAccountStorageSwitchDisabledIfBlockedByPolicyAndFlagEnabled {
+  policy_test_utils::SetPolicy(std::string("[\"passwords\"]"),
+                               policy::key::kSyncTypesListDisabled);
+
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::TableViewSwitchCell(
+                     kPasswordSettingsAccountStorageSwitchTableViewId,
+                     /*is_toggled_on=*/NO,
+                     /*is_enabled=*/NO)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 - (void)testAccountStorageSwitchHiddenIfSignedOut {
   OpenPasswordManager();
   OpenSettingsSubmenu();
@@ -3211,7 +3237,7 @@ id<GREYMatcher> EditDoneButton() {
   id<GREYMatcher> localIconMatcher =
       grey_allOf(grey_accessibilityID(kLocalOnlyPasswordIconId),
                  grey_ancestor(passwordMatcher), nil);
-  [[EarlGrey selectElementWithMatcher:localIconMatcher]
+  [GetInteractionForListItem(localIconMatcher, kGREYDirectionDown)
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:passwordMatcher]
@@ -3236,7 +3262,7 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:localIconMatcher]
+  [GetInteractionForListItem(localIconMatcher, kGREYDirectionDown)
       assertWithMatcher:grey_notVisible()];
 }
 

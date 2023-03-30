@@ -81,6 +81,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/drag_utils.h"
@@ -99,10 +100,13 @@
 namespace {
 
 // Used when encoding a notification drop image into binary data. The drop image
-// should be resized if either its length or its width exceeds this threshold.
-constexpr int kMaxDragImageSizeInDIP = 2000;
+// should be resized if its binary size exceeds this limit.
+// Use 1 MB as the size limit. On a 256 color image, each pixel takes four bytes
+// (RGB + Alpha). The size limit of 1 MB means the maximum pixel count being
+// 250K, which should be enough for most notification images without file
+// backing.
+constexpr size_t kMaxImageSizeInByte = 1000000;
 
-constexpr auto kNotificationViewPadding = gfx::Insets(4);
 constexpr int kMainRightViewVerticalSpacing = 4;
 
 // This padding is applied to all the children of `main_right_view_` except the
@@ -1085,6 +1089,20 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
                                                  !is_grouped_parent_view_);
   }
 
+  if (progress_bar_view()) {
+    int progress_bar_bottom_padding;
+    if (!action_buttons().empty()) {
+      progress_bar_bottom_padding = kProgressBarWithActionButtonsBottomPadding;
+    } else if (use_expanded_padding) {
+      progress_bar_bottom_padding = kProgressBarExpandedBottomPadding;
+    } else {
+      progress_bar_bottom_padding = kProgressBarCollapsedBottomPadding;
+    }
+    progress_bar_view()->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets::TLBR(message_center::kProgressBarTopPadding, 0,
+                          progress_bar_bottom_padding, 0)));
+  }
+
   // Custom padding for app icon and expand button. These 2 views should always
   // use the same padding value so that they are vertical aligned.
   app_icon_view_->SetProperty(views::kMarginsKey,
@@ -1288,6 +1306,11 @@ void AshNotificationView::CreateOrUpdateProgressViews(
   // bar. This is the opposite of what is required of the chrome notification.
   CreateOrUpdateProgressStatusView(notification);
   CreateOrUpdateProgressBarView(notification);
+
+  if (status_view()) {
+    status_view()->SetMultiLine(true);
+    status_view()->SetMaxLines(message_center::kMaxLinesForStatusView);
+  }
 }
 
 void AshNotificationView::UpdateControlButtonsVisibility() {
@@ -2076,17 +2099,10 @@ void AshNotificationView::AttachBinaryImageAsDropData(
           ->original_image();
   DCHECK(!image.size().IsEmpty());
 
-  // Shrink `image` if it is too big.
-  const float ratio = static_cast<float>(kMaxDragImageSizeInDIP) /
-                      std::max(image.size().width(), image.size().height());
-  absl::optional<gfx::ImageSkia> resized_image;
-  if (!cc::MathUtil::IsWithinEpsilon(ratio, 1.f) && ratio < 1.f) {
-    gfx::SizeF resized_size(image.size());
-    resized_size.Scale(ratio);
-    resized_image.emplace(gfx::ImageSkiaOperations::CreateResizedImage(
-        image, skia::ImageOperations::RESIZE_BEST,
-        gfx::ToFlooredSize(resized_size)));
-  }
+  // Resize `image` if necessary.
+  absl::optional<gfx::ImageSkia> resized_image =
+      message_center_utils::ResizeImageIfExceedSizeLimit(image,
+                                                         kMaxImageSizeInByte);
 
   // Add the drop data in the format of HTML.
   if (const absl::optional<std::u16string> html_snippet = GetHtmlForBitmap(

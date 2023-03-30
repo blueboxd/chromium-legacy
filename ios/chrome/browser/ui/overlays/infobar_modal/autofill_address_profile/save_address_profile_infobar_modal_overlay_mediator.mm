@@ -62,7 +62,12 @@ using save_address_profile_infobar_modal_responses::CancelViewAction;
     kIsUpdateModalPrefKey : @(config->IsUpdateModal()),
     kProfileDataDiffKey : config->profile_diff(),
     kUpdateModalDescriptionKey :
-        base::SysUTF16ToNSString(config->update_modal_description())
+        base::SysUTF16ToNSString(config->update_modal_description()),
+    kIsMigrationToAccountKey : @(config->is_migration_to_account()),
+    kSyncingUserEmailKey : config->syncing_user_email()
+        ? base::SysUTF16ToNSString(config->syncing_user_email().value())
+        : @"",
+    kIsProfileAnAccountProfileKey : @(config->is_profile_an_account_profile())
   };
 
   [_consumer setupModalViewControllerWithPrefs:prefs];

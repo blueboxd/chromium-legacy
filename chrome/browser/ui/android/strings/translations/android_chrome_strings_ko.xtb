@@ -283,6 +283,7 @@
 <translation id="2581165646603367611">이를 통해 쿠키, 캐시 및 Chrome에서 중요하다고 간주하지 않는 사이트의 기타 데이터가 삭제됩니다.</translation>
 <translation id="2587052924345400782">최신 버전 사용 가능</translation>
 <translation id="2593272815202181319">고정 너비</translation>
+<translation id="2603212228005142861">환경설정을 관리하려면 로그인하세요</translation>
 <translation id="2604446170045642109">설정에서 사이트의 어두운 테마를 사용 중지할 수 있습니다.</translation>
 <translation id="2612676031748830579">카드번호</translation>
 <translation id="2625189173221582860">비밀번호 복사됨</translation>
@@ -476,6 +477,7 @@
 <translation id="3587596251841506391">웹 보안 개선에 참여</translation>
 <translation id="3597179440835065298">추천 기능 개선하기</translation>
 <translation id="3602290021589620013">미리보기</translation>
+<translation id="360901359071773787">지난 15분 동안의 데이터를 삭제하시겠습니까?</translation>
 <translation id="3616113530831147358">오디오</translation>
 <translation id="3622349720008044802">창 관리</translation>
 <translation id="3631987586758005671"><ph name="DEVICE_NAME" />에 공유하는 중</translation>
@@ -792,6 +794,7 @@
 <translation id="5342314432463739672">권한 요청</translation>
 <translation id="53537532693258630">삭제한 사이트가 여기에 표시됩니다.</translation>
 <translation id="5355191726083956201">향상된 보호 모드를 사용 중입니다.</translation>
+<translation id="5361107212971249203">텍스트</translation>
 <translation id="5368227114232678694">이 기기에서 비공개로 인터넷을 사용하려면 시크릿 모드를 사용하세요.</translation>
 <translation id="5375577065097716013">Google 렌즈로 이미지 검색 <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">계속하려면 <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />에서 내 이름, 이메일 주소, 프로필 사진을 이 사이트와 공유해야 합니다.</translation>
@@ -821,6 +824,7 @@
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" />에서 가져온 북마크, 방문 기록, 비밀번호 및 기타 설정이 있습니다.</translation>
 <translation id="5524761631371622910">무료 체험이 사용 설정되어 있으며 Chrome에서 임의로 나에게 현재 진행 중인 무료 체험을 적용한 경우, 표시되는 광고 및 아래의 예측 관심분야에 방문 기록이 영향을 미칩니다. 개인 정보를 보호하기 위해 Chrome에서는 매월 최소 한 번씩 수시로 관심분야를 삭제합니다.</translation>
 <translation id="5524843473235508879">리디렉션이 차단되었습니다.</translation>
+<translation id="554297709083131118">지난 15분 동안의 다음 데이터가 삭제됩니다.</translation>
 <translation id="5548606607480005320">안전 확인</translation>
 <translation id="5555525474779371165">세이프 브라우징 보호 기능을 선택하세요</translation>
 <translation id="5556459405103347317">새로고침</translation>
@@ -1075,6 +1079,7 @@
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, 탭, 선택됨</translation>
 <translation id="6828070228333235514">가격 추적 중지</translation>
 <translation id="6830728435402077660">안전하지 않음</translation>
+<translation id="6831043979455480757">번역</translation>
 <translation id="6833996806551876956">개인 정보 보호 샌드박스 무료 체험</translation>
 <translation id="6836206421467243968"><ph name="TITLE_OF_GROUP" /> 탭 그룹을 새 백그라운드 탭 그룹으로 복원합니다.</translation>
 <translation id="6846298663435243399">로드 중…</translation>
@@ -1242,6 +1247,7 @@
 <translation id="7707922173985738739">모바일 데이터 사용</translation>
 <translation id="7709094866268987903">삭제한 관심분야가 여기에 표시됩니다.</translation>
 <translation id="7709918231054955894">탭 모두 가져오기</translation>
+<translation id="772434085369393266">탐색을 HTTPS로 업그레이드하고 지원되지 않는 사이트를 로드하기 전에 경고를 표시합니다. 고급 보호가 사용 설정되어 있으므로 이 설정을 변경할 수 없습니다.</translation>
 <translation id="7725024127233776428">북마크한 페이지가 여기에 표시됩니다.</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" />에서 공유된 텍스트</translation>
 <translation id="7762668264895820836">SD 카드 <ph name="SD_CARD_NUMBER" /></translation>
@@ -1260,6 +1266,7 @@
 <translation id="78270725016672455">컴퓨터가 사이트에 로그인하기 위해 기기를 등록하려고 합니다.</translation>
 <translation id="7844171778363018843">동기화할 데이터 선택 안됨</translation>
 <translation id="7846296061357476882">Google 서비스</translation>
+<translation id="7847228556075070294">기록, 쿠키, 기타 데이터 삭제됨</translation>
 <translation id="784934925303690534">기간</translation>
 <translation id="7851858861565204677">다른 기기</translation>
 <translation id="7853202427316060426">활동</translation>
@@ -1314,6 +1321,7 @@
 <translation id="8058746566562539958">새 Chrome 탭에서 열기</translation>
 <translation id="8062594758852531064">확장된 미리 로드:</translation>
 <translation id="8063895661287329888">북마크를 추가하지 못했습니다.</translation>
+<translation id="8066816452984416180">이 페이지를 빠르게 북마크에 추가합니다. 바로가기를 수정하려면 길게 터치하세요.</translation>
 <translation id="806745655614357130">내 데이터 별도로 유지</translation>
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8076492880354921740">탭</translation>
@@ -1345,6 +1353,7 @@
 <translation id="8216351761227087153">보기</translation>
 <translation id="8218622182176210845">계정 관리</translation>
 <translation id="8223642481677794647">피드 카드 메뉴</translation>
+<translation id="8236097722223016103">북마크에 추가</translation>
 <translation id="8250920743982581267">문서</translation>
 <translation id="8255617931166444521">사이트에서 사용자의 사이트 내 탐색 활동을 보기 위해서만 쿠키를 사용할 수 있습니다.</translation>
 <translation id="8259179246279078674">미리 로드된 페이지는 암호화되어 있으므로 Google에서는 미리 로드된 페이지의 콘텐츠에 관해 어떠한 정보도 알 수 없습니다. Google 서버는 어떤 사이트가 비공개로 미리 로드되었는지 파악하게 됩니다. 이 정보는 페이지를 미리 로드하는 데에만 사용되며, Google 계정의 다른 정보와 연결되지 않습니다.</translation>
@@ -1439,6 +1448,7 @@
 <translation id="869891660844655955">유효기간</translation>
 <translation id="8699120352855309748">번역할지 묻지 않을 언어</translation>
 <translation id="8712637175834984815">확인</translation>
+<translation id="8723453889042591629">이 페이지를 빠르게 번역합니다. 바로가기를 수정하려면 길게 터치하세요.</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8746155870861185046">강조표시한 텍스트 공유</translation>
 <translation id="874726034427945498">주소 표시줄의 추천 항목을 개선하려면 탭과 방문 기록을 동기화하세요</translation>
@@ -1491,6 +1501,7 @@
 <translation id="8989968390305463310">방문 기록에 따라 표시되는 광고 및 아래의 예측 관심분야가 달라집니다. 개인 정보를 보호하기 위해 Chrome에서는 매월 최소 한 번씩 수시로 관심분야를 자동 삭제합니다. 관심분야는 직접 삭제하지 않는 한 새로고침될 수 있습니다.</translation>
 <translation id="8993760627012879038">시크릿 모드로 새 탭 열기</translation>
 <translation id="8996847606757455498">다른 제공업체 선택</translation>
+<translation id="8998289560386111590">내 기기에서 사용할 수 없음</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="9022774213089566801">자주 방문한 웹사이트</translation>
 <translation id="9022871169049522985">사이트 및 광고주가 광고 실적을 측정할 수 있습니다.</translation>

@@ -2442,6 +2442,24 @@ void GLES2TraceImplementation::CopySharedImageINTERNAL(
                                unpack_flip_y, mailboxes);
 }
 
+void GLES2TraceImplementation::CopySharedImageToTextureINTERNAL(
+    GLuint texture,
+    GLenum target,
+    GLuint internal_format,
+    GLenum type,
+    GLint src_x,
+    GLint src_y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean flip_y,
+    const GLbyte* src_mailbox) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::CopySharedImageToTextureINTERNAL");
+  gl_->CopySharedImageToTextureINTERNAL(texture, target, internal_format, type,
+                                        src_x, src_y, width, height, flip_y,
+                                        src_mailbox);
+}
+
 void GLES2TraceImplementation::ReadbackARGBImagePixelsINTERNAL(
     const GLbyte* mailbox,
     const void* dst_color_space,
@@ -2583,6 +2601,18 @@ void GLES2TraceImplementation::PixelLocalStorageBarrierANGLE() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::PixelLocalStorageBarrierANGLE");
   gl_->PixelLocalStorageBarrierANGLE();
+}
+
+void GLES2TraceImplementation::FramebufferPixelLocalStorageInterruptANGLE() {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::FramebufferPixelLocalStorageInterruptANGLE");
+  gl_->FramebufferPixelLocalStorageInterruptANGLE();
+}
+
+void GLES2TraceImplementation::FramebufferPixelLocalStorageRestoreANGLE() {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::FramebufferPixelLocalStorageRestoreANGLE");
+  gl_->FramebufferPixelLocalStorageRestoreANGLE();
 }
 
 void GLES2TraceImplementation::GetFramebufferPixelLocalStorageParameterfvANGLE(

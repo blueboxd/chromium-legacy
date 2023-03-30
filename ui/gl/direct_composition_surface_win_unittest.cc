@@ -22,6 +22,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gl/dc_layer_overlay_params.h"
+#include "ui/gl/dc_layer_tree.h"
 #include "ui/gl/direct_composition_child_surface_win.h"
 #include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -1350,10 +1351,22 @@ TEST_F(DirectCompositionPixelTest, RootSurfaceDrawOffset) {
 
   constexpr gfx::Point draw_offset(50, 50);
   auto root_surface = surface_->GetRootSurfaceForTesting();
+  Microsoft::WRL::ComPtr<IDCompositionSurface> orig_dcomp_surface =
+      root_surface->dcomp_surface();
   auto dcomp_surface =
       Microsoft::WRL::Make<DrawOffsetOverridingDCompositionSurface>(
           root_surface->dcomp_surface(), draw_offset);
-  root_surface->SetDCompSurfaceForTesting(std::move(dcomp_surface));
+
+  // Although |dcomp_surface| is not used beyond this point, it should not be
+  // freed. This is because surface_->SetDrawRectangle sets |dcomp_surface|
+  // as a row pointer to DirectCompositionChildSurfaceWin::g_current_surface,
+  // and later, root_surface->SetDCompSurfaceForTesting releases dcomp_surface
+  // without nullifying DirectCompositionChildSurfaceWin::g_current_surface.
+  // As a result, accessing the invalid
+  // DirectCompositionChildSurfaceWin::g_current_surface in
+  // DirectCompositionChildSurfaceWin::OnMakeCurrent leads to
+  // EXCEPTION_ACCESS_VIOLATION.
+  root_surface->SetDCompSurfaceForTesting(dcomp_surface);
 
   // Even though draw_rect is the first quadrant, the rendering will be limited
   // to the third quadrant because the dcomp surface will return that offset.
@@ -1363,6 +1376,10 @@ TEST_F(DirectCompositionPixelTest, RootSurfaceDrawOffset) {
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
+  // Reset the original dcomp surface so it can be successfully set to a visual
+  // in dcomp tree. Passing DrawOffsetOverridingDCompositionSurface to
+  // Visual::SetContent returns an error.
+  root_surface->SetDCompSurfaceForTesting(std::move(orig_dcomp_surface));
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
             surface_->SwapBuffers(base::DoNothing(), gfx::FrameData()));
 
@@ -1443,6 +1460,78 @@ TEST_F(DirectCompositionSurfaceTest, RootSwapChainBufferCount) {
 
 TEST_F(DirectCompositionSurfaceTest, VideoSwapChainBufferCount) {
   RunBufferCountTest(surface_, /*buffer_count=*/2u, /*for_video=*/true);
+}
+
+// Ensure that swap chains stay attached to the same visual between subsequent
+// frames.
+// Please ensure this test is not broken. Re-attaching swapchains between
+// subsequent frames may cause flickering under certain conditions that include
+// specific Intel drivers, custom present duration etc.
+// See https://bugs.chromium.org/p/chromium/issues/detail?id=1421175.
+TEST_F(DirectCompositionSurfaceTest, VisualsReused) {
+  if (!surface_) {
+    return;
+  }
+  // Frame 1:
+  // overlay 0: root dcomp surface
+  // overlay 1: swapchain z-order = 1 (overlay)
+  constexpr gfx::Size window_size(100, 100);
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
+
+  glClearColor(0.0, 0.0, 1.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size texture_size(50, 50);
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
+      CreateNV12Texture(d3d11_device, texture_size);
+  EXPECT_NE(texture, nullptr);
+
+  {
+    auto params = std::make_unique<DCLayerOverlayParams>();
+    params->overlay_image.emplace(texture_size, texture);
+    params->content_rect = gfx::Rect(texture_size);
+    params->quad_rect = gfx::Rect(100, 100);
+    params->color_space = gfx::ColorSpace::CreateREC709();
+    // Overlay
+    params->z_order = 1;
+    surface_->ScheduleDCLayer(std::move(params));
+  }
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing(), gfx::FrameData()));
+
+  DCLayerTree* dcLayerTree = surface_->GetLayerTreeForTesting();
+  EXPECT_EQ(2u, dcLayerTree->GetDcompLayerCountForTesting());
+  Microsoft::WRL::ComPtr<IDCompositionVisual2> visual0 =
+      dcLayerTree->GetContentVisualForTesting(0);
+  Microsoft::WRL::ComPtr<IDCompositionVisual2> visual1 =
+      dcLayerTree->GetContentVisualForTesting(1);
+
+  // Frame 1:
+  // overlay 0: root dcomp surface
+  // overlay 1: swapchain z-order = -1 (underlay)
+  {
+    auto params = std::make_unique<DCLayerOverlayParams>();
+    params->overlay_image.emplace(texture_size, texture);
+    params->content_rect = gfx::Rect(texture_size);
+    params->quad_rect = gfx::Rect(100, 100);
+    params->color_space = gfx::ColorSpace::CreateREC709();
+    // Underlay
+    params->z_order = -1;
+    surface_->ScheduleDCLayer(std::move(params));
+  }
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing(), gfx::FrameData()));
+  EXPECT_EQ(2u, dcLayerTree->GetDcompLayerCountForTesting());
+  // Verify that the visuals are reused from the previous frame but attached
+  // to the root visual in a reversed order.
+  EXPECT_EQ(visual0.Get(), dcLayerTree->GetContentVisualForTesting(1));
+  EXPECT_EQ(visual1.Get(), dcLayerTree->GetContentVisualForTesting(0));
 }
 
 class DirectCompositionTripleBufferingTest

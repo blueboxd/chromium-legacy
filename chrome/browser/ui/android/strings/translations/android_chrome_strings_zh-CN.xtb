@@ -283,6 +283,7 @@
 <translation id="2581165646603367611">这会清除 Chrome 认为不重要的网站的 Cookie、缓存和其他数据。</translation>
 <translation id="2587052924345400782">新版本已推出</translation>
 <translation id="2593272815202181319">等宽</translation>
+<translation id="2603212228005142861">登录以管理您的偏好设置</translation>
 <translation id="2604446170045642109">您可在设置中为网站关闭深色主题。</translation>
 <translation id="2612676031748830579">卡号</translation>
 <translation id="2625189173221582860">已复制密码</translation>
@@ -476,6 +477,7 @@
 <translation id="3587596251841506391">帮助我们改善网络安全环境</translation>
 <translation id="3597179440835065298">获得更好的建议</translation>
 <translation id="3602290021589620013">预览</translation>
+<translation id="360901359071773787">要删除过去 15 分钟的浏览数据吗？</translation>
 <translation id="3616113530831147358">音频</translation>
 <translation id="3622349720008044802">管理窗口</translation>
 <translation id="3631987586758005671">正在分享给<ph name="DEVICE_NAME" /></translation>
@@ -792,6 +794,7 @@
 <translation id="5342314432463739672">权限请求</translation>
 <translation id="53537532693258630">您移除的网站将会显示在此处</translation>
 <translation id="5355191726083956201">已开启增强型保护</translation>
+<translation id="5361107212971249203">文字</translation>
 <translation id="5368227114232678694">若要在此设备上私密地浏览网页，请试试无痕模式</translation>
 <translation id="5375577065097716013">使用 Google 智能镜头搜索图片<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">如果您继续注册，<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> 便会将您的用户名、电子邮件地址和个人资料照片提供给此网站。</translation>
@@ -821,6 +824,7 @@
 <translation id="5517095782334947753">您有来自 <ph name="FROM_ACCOUNT" /> 的书签、历史记录、密码及其他设置。</translation>
 <translation id="5524761631371622910">在试用期间，如果 Chrome 随机将您加入到了其中某项正在进行的试用活动，您的浏览记录会影响您看到的广告以及系统推测出的兴趣（如下所示）。为了保护您的隐私，Chrome 每个月都会按保留时间先后顺序删除您的部分兴趣。</translation>
 <translation id="5524843473235508879">已禁止重定向。</translation>
+<translation id="554297709083131118">过去 15 分钟内浏览的以下数据将被删除</translation>
 <translation id="5548606607480005320">安全检查</translation>
 <translation id="5555525474779371165">选择所需的“安全浏览”功能保护级别</translation>
 <translation id="5556459405103347317">重新加载</translation>
@@ -890,7 +894,7 @@
 <translation id="5876496397064130037">任务已恢复</translation>
 <translation id="587735546353481577">若要关注某个网站，请转到该网站，打开 Chrome 菜单，然后点按“关注”。</translation>
 <translation id="5879072387416556377">获得更好的建议</translation>
-<translation id="5916664084637901428">启用</translation>
+<translation id="5916664084637901428">已启用</translation>
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
 <translation id="5938820472109305350">添加“<ph name="INTEREST" />”</translation>
 <translation id="5942872142862698679">目前使用的搜索引擎是 Google</translation>
@@ -1075,6 +1079,7 @@
 <translation id="6824899148643461612">已选择标签页“<ph name="TAB_TITLE" />”</translation>
 <translation id="6828070228333235514">停止跟踪价格</translation>
 <translation id="6830728435402077660">不安全</translation>
+<translation id="6831043979455480757">翻译</translation>
 <translation id="6833996806551876956">隐私沙盒试用</translation>
 <translation id="6836206421467243968">将标签页分组“<ph name="TITLE_OF_GROUP" />”恢复为新的背景标签页分组。</translation>
 <translation id="6846298663435243399">正在加载…</translation>
@@ -1261,6 +1266,7 @@
 <translation id="78270725016672455">您的计算机希望注册此设备以登录网站</translation>
 <translation id="7844171778363018843">未选择任何要同步的数据</translation>
 <translation id="7846296061357476882">Google 服务</translation>
+<translation id="7847228556075070294">已删除历史记录、Cookie 和其他数据</translation>
 <translation id="784934925303690534">时间范围</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7853202427316060426">活动</translation>
@@ -1315,6 +1321,7 @@
 <translation id="8058746566562539958">在新的 Chrome 标签页中打开</translation>
 <translation id="8062594758852531064">扩展型预加载：</translation>
 <translation id="8063895661287329888">无法添加书签。</translation>
+<translation id="8066816452984416180">快速为此页添加书签。若要修改此快捷方式，请轻触并按住这里。</translation>
 <translation id="806745655614357130">单独保存我的数据</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8076492880354921740">标签页</translation>
@@ -1346,6 +1353,7 @@
 <translation id="8216351761227087153">观看</translation>
 <translation id="8218622182176210845">管理您的帐号</translation>
 <translation id="8223642481677794647">动态卡片上的菜单</translation>
+<translation id="8236097722223016103">添加到书签</translation>
 <translation id="8250920743982581267">文档</translation>
 <translation id="8255617931166444521">网站只能使用 Cookie 查看您在此网站上的浏览活动</translation>
 <translation id="8259179246279078674">由于预加载的网页均已加密，因此 Google 不会得知与预加载的网页内容有关的任何信息。不过，Google 服务器会得知哪些网站是以私密方式预加载的。该信息仅用于预加载网页，不会关联到您 Google 帐号中的其他信息。</translation>
@@ -1440,6 +1448,7 @@
 <translation id="869891660844655955">截止日期</translation>
 <translation id="8699120352855309748">不询问是否翻译这些语言</translation>
 <translation id="8712637175834984815">知道了</translation>
+<translation id="8723453889042591629">快速翻译该页面。若要修改此快捷方式，请轻触并按住这里。</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8746155870861185046">分享突出显示的内容</translation>
 <translation id="874726034427945498">为了在地址栏中获得更好的建议，请同步您的标签页和历史记录</translation>
@@ -1492,6 +1501,7 @@
 <translation id="8989968390305463310">您的浏览记录会影响您看到的广告以及系统推测出的兴趣（如下所示）。为了保护您的隐私，Chrome 每个月都会按保留时间先后顺序自动删除您的部分兴趣。兴趣能够刷新，除非您将其移除。</translation>
 <translation id="8993760627012879038">在无痕模式下打开新标签页</translation>
 <translation id="8996847606757455498">另选一个提供商</translation>
+<translation id="8998289560386111590">在您的设备上不可用</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="9022774213089566801">经常访问</translation>
 <translation id="9022871169049522985">网站和广告主可以衡量其广告的效果</translation>

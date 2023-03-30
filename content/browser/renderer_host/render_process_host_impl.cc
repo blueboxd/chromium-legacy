@@ -1793,7 +1793,7 @@ bool RenderProcessHostImpl::Init() {
 #if BUILDFLAG(IS_WIN)
     std::unique_ptr<SandboxedProcessLauncherDelegate> sandbox_delegate =
         std::make_unique<RendererSandboxedProcessLauncherDelegateWin>(
-            *cmd_line, IsJitDisabled());
+            *cmd_line, IsPdf(), IsJitDisabled());
 #else
     std::unique_ptr<SandboxedProcessLauncherDelegate> sandbox_delegate =
         std::make_unique<RendererSandboxedProcessLauncherDelegate>();
@@ -2029,10 +2029,8 @@ void RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker(
           net::IsolationInfo::RequestType::kOther,
           url::Origin::Create(storage_key.top_level_site().GetURL()),
           storage_key.origin(), storage_key.ToNetSiteForCookies(),
-          /*party_context=*/absl::nullopt,
-          storage_key.nonce().has_value() ? &storage_key.nonce().value()
-                                          : nullptr),
-      true /* is_service_worker */, GetID(), MSG_ROUTING_NONE,
+          /*party_context=*/absl::nullopt, storage_key.nonce()),
+      /*is_service_worker=*/true, GetID(), MSG_ROUTING_NONE,
       net::CookieSettingOverrides(), std::move(receiver),
       storage_partition_impl_->CreateCookieAccessObserverForServiceWorker());
 }
@@ -2142,9 +2140,7 @@ void RenderProcessHostImpl::CreateWebSocketConnector(
               net::IsolationInfo::RequestType::kOther,
               url::Origin::Create(storage_key.top_level_site().GetURL()),
               storage_key.origin(), storage_key.ToNetSiteForCookies(),
-              /*party_context=*/absl::nullopt,
-              storage_key.nonce().has_value() ? &storage_key.nonce().value()
-                                              : nullptr)),
+              /*party_context=*/absl::nullopt, storage_key.nonce())),
       std::move(receiver));
 }
 
@@ -2232,8 +2228,11 @@ RenderProcessHostImpl::GetInfoForBrowserContextDestructionCrashReporting() {
   if (delayed_cleanup_needed_)
     ret += " dcn";
 
-  if (keep_alive_ref_count_ != 0)
+  if (keep_alive_ref_count_ != 0) {
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     ret += " karc=" + base::NumberToString(keep_alive_ref_count_);
+  }
 
   if (shutdown_delay_ref_count_ != 0)
     ret += " sdrc=" + base::NumberToString(shutdown_delay_ref_count_);
@@ -2668,12 +2667,18 @@ void RenderProcessHostImpl::IncrementKeepAliveRefCount(uint64_t handle_id) {
   if (base::FeatureList::IsEnabled(kCheckNoNewRefCountsWhenRphDeletingSoon)) {
     CHECK(!deleting_soon_);
   }
+  CHECK(!base::FeatureList::IsEnabled(
+      blink::features::kKeepAliveInBrowserMigration));
   ++keep_alive_ref_count_;
   DCHECK(!keep_alive_start_times_.contains(handle_id));
   keep_alive_start_times_[handle_id] = base::Time::Now();
 }
 
 bool RenderProcessHostImpl::AreAllRefCountsZero() {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
+    CHECK_EQ(keep_alive_ref_count_, 0);
+  }
   return keep_alive_ref_count_ == 0 && worker_ref_count_ == 0 &&
          shutdown_delay_ref_count_ == 0 && pending_reuse_ref_count_ == 0;
 }
@@ -2681,6 +2686,8 @@ bool RenderProcessHostImpl::AreAllRefCountsZero() {
 void RenderProcessHostImpl::DecrementKeepAliveRefCount(uint64_t handle_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(!are_ref_counts_disabled_);
+  CHECK(!base::FeatureList::IsEnabled(
+      blink::features::kKeepAliveInBrowserMigration));
   CHECK_GT(keep_alive_ref_count_, 0);
   --keep_alive_ref_count_;
   DCHECK(keep_alive_start_times_.contains(handle_id));
@@ -3449,6 +3456,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     blink::switches::kDefaultTileHeight,
     blink::switches::kDisableImageAnimationResync,
     blink::switches::kDisableLowResTiling,
+    blink::switches::kDisableNewBaseUrlInheritanceBehavior,
     blink::switches::kDisablePreferCompositingToLCDText,
     blink::switches::kDisableRGBA4444Textures,
     blink::switches::kDisableThreadedScrolling,
@@ -3650,8 +3658,12 @@ bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
   if (!skip_unload_handlers && !SuddenTerminationAllowed())
     return false;
 
-  if (keep_alive_ref_count_ != 0)
+  // TODO(crbug.com/1356128): Remove this block once the migration is launched.
+  if (keep_alive_ref_count_ != 0) {
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     return false;
+  }
 
   if (worker_ref_count_ != 0)
     return false;
@@ -3929,6 +3941,8 @@ void RenderProcessHostImpl::Cleanup() {
         });
     return;
   } else if (keep_alive_ref_count_ != 0) {
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     TRACE_EVENT(
         "shutdown", "RenderProcessHostImpl::Cleanup : Have keep_alive_ref.",
         ChromeTrackEvent::kRenderProcessHost, *this,

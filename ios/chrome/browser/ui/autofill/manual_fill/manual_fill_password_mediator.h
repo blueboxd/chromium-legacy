@@ -30,6 +30,7 @@ class SyncSetupService;
 namespace manual_fill {
 
 extern NSString* const ManagePasswordsAccessibilityIdentifier;
+extern NSString* const ManageSettingsAccessibilityIdentifier;
 extern NSString* const OtherPasswordsAccessibilityIdentifier;
 extern NSString* const SuggestPasswordAccessibilityIdentifier;
 
@@ -62,18 +63,23 @@ extern NSString* const SuggestPasswordAccessibilityIdentifier;
 @property(nonatomic, assign, getter=isActionSectionEnabled)
     BOOL actionSectionEnabled;
 
-// The designated initializer. `passwordStore` must not be nil.
-- (instancetype)initWithPasswordStore:
-                    (scoped_refptr<password_manager::PasswordStoreInterface>)
-                        passwordStore
-                        faviconLoader:(FaviconLoader*)faviconLoader
-                             webState:(web::WebState*)webState
-                          syncService:(SyncSetupService*)syncService
-                                  URL:(const GURL&)URL
-               invokedOnPasswordField:(BOOL)invokedOnPasswordField
+// The designated initializer. `profilePasswordStore` must not be nil.
+// TODO(crbug.com/1374242): DCHECK accountPasswordStore too and document the
+// precondition after launch.
+- (instancetype)
+    initWithProfilePasswordStore:
+        (scoped_refptr<password_manager::PasswordStoreInterface>)
+            profilePasswordStore
+            accountPasswordStore:
+                (scoped_refptr<password_manager::PasswordStoreInterface>)
+                    accountPasswordStore
+                   faviconLoader:(FaviconLoader*)faviconLoader
+                        webState:(web::WebState*)webState
+                     syncService:(SyncSetupService*)syncService
+                             URL:(const GURL&)URL
+          invokedOnPasswordField:(BOOL)invokedOnPasswordField
     NS_DESIGNATED_INITIALIZER;
 
-// Unavailable. Use `initWithPasswordStore:faviconLoader:`.
 - (instancetype)init NS_UNAVAILABLE;
 
 // Fetches passwords using the URL provided at initialisation as the filter.

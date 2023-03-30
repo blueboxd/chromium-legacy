@@ -11,12 +11,11 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_id.h"
-#include "ash/style/ash_color_provider.h"
-#include "ash/style/close_button.h"
+#include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
-#include "ash/wm/desks/desks_textfield.h"
+#include "ash/wm/desks/desk_textfield.h"
+#include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 #include "ash/wm/desks/templates/saved_desk_icon_container.h"
@@ -35,11 +34,13 @@
 #include "base/i18n/time_formatting.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -61,11 +62,7 @@ namespace ash {
 namespace {
 
 // The padding values of the SavedDeskItemView.
-constexpr int kHorizontalPaddingDp = 24;
 constexpr int kVerticalPaddingDp = 16;
-
-// The corner radius for the SavedDeskItemView.
-constexpr int kCornerRadius = 16;
 
 // The margin for the delete button.
 constexpr int kDeleteButtonMargin = 8;
@@ -76,13 +73,12 @@ constexpr int kLaunchButtonDistanceFromBottomDp = 14;
 // The preferred width of the container that houses the saved desk name
 // textfield and managed status indicator and the time label.
 constexpr int kSavedDeskNameAndTimePreferredWidth =
-    SavedDeskItemView::kPreferredSize.width() - kHorizontalPaddingDp * 2;
+    SavedDeskItemView::kPreferredSize.width() - kSaveDeskPaddingDp * 2;
 
 // The height of the view which contains the time of the saved desk.
 constexpr int kTimeViewHeight = 24;
 
-// The spacing between the textfield and the managed status icon.
-constexpr int kManagedStatusIndicatorSpacing = 8;
+// The size of the managed status icon.
 constexpr int kManagedStatusIndicatorSize = 20;
 
 // There is a gap between the background of the name view and the name view's
@@ -127,10 +123,8 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
 
   const std::u16string saved_desk_name = saved_desk_->template_name();
   DCHECK(!saved_desk_name.empty());
-  auto* color_provider = AshColorProvider::Get();
   const bool is_admin_managed =
       saved_desk_->source() == DeskTemplateSource::kPolicy;
-
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
   views::Builder<SavedDeskItemView>(this)
@@ -139,15 +133,19 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
       .SetAccessibleName(saved_desk_name)
       .SetCallback(std::move(launch_template_callback))
       .SetBackground(views::CreateThemedRoundedRectBackground(
-          kColorAshShieldAndBase80, kCornerRadius))
+          cros_tokens::kCrosSysSystemBaseElevated, kSaveDeskCornerRadius))
       .SetBorder(std::make_unique<views::HighlightBorder>(
-          kCornerRadius, views::HighlightBorder::Type::kHighlightBorder1,
+          kSaveDeskCornerRadius,
+          chromeos::features::IsJellyrollEnabled()
+              ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+              : views::HighlightBorder::Type::kHighlightBorder1,
           /*use_light_colors=*/false))
+      // TODO(b/274025495): Update Shadow for SavedDeskItemView.
       .AddChildren(
           views::Builder<views::FlexLayoutView>()
               .SetOrientation(views::LayoutOrientation::kVertical)
               .SetInteriorMargin(
-                  gfx::Insets::VH(kVerticalPaddingDp, kHorizontalPaddingDp))
+                  gfx::Insets::VH(kVerticalPaddingDp, kSaveDeskPaddingDp))
               // TODO(richui): Consider splitting some of the children into
               // different files and/or classes.
               .AddChildren(
@@ -178,7 +176,7 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
                           // "managed-by-admin" admin icon.
                           views::Builder<views::View>()
                               .SetPreferredSize(
-                                  gfx::Size(kManagedStatusIndicatorSpacing, 1))
+                                  gfx::Size(kSaveDeskSpacingDp, 1))
                               .SetProperty(
                                   views::kFlexBehaviorKey,
                                   views::FlexSpecification(
@@ -189,12 +187,10 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
                               .SetPreferredSize(
                                   gfx::Size(kManagedStatusIndicatorSize,
                                             kManagedStatusIndicatorSize))
-                              .SetImage(gfx::CreateVectorIcon(
+                              .SetImage(ui::ImageModel::FromVectorIcon(
                                   chromeos::kEnterpriseIcon,
-                                  kManagedStatusIndicatorSize,
-                                  color_provider->GetContentLayerColor(
-                                      AshColorProvider::ContentLayerType::
-                                          kIconColorSecondary)))
+                                  cros_tokens::kCrosSysSecondary,
+                                  kManagedStatusIndicatorSize))
                               .SetProperty(
                                   views::kFlexBehaviorKey,
                                   views::FlexSpecification(
@@ -204,6 +200,7 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
                   views::Builder<views::Label>()
                       .CopyAddressTo(&time_view_)
                       .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+                      .SetEnabledColorId(cros_tokens::kCrosSysSecondary)
                       .SetText(
                           is_admin_managed
                               ? l10n_util::GetStringUTF16(
@@ -246,17 +243,18 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
   // Users cannot delete admin templates.
   if (!is_admin_managed) {
     delete_button_ =
-        hover_container_->AddChildView(std::make_unique<CloseButton>(
+        hover_container_->AddChildView(std::make_unique<IconButton>(
             base::BindRepeating(&SavedDeskItemView::OnDeleteButtonPressed,
                                 weak_ptr_factory_.GetWeakPtr()),
-            CloseButton::Type::kMedium, &kDeleteIcon,
-            kColorAshControlBackgroundColorInactive));
+            IconButton::Type::kXSmall, &kDeleteIcon,
+            /*is_togglable=*/false,
+            /*has_border=*/false));
     delete_button_->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_CONFIRM_BUTTON));
   }
 
   // Use a border to create spacing between `name_view_`s background (set in
-  // `DesksTextfield`) and the actual text. Shift the parent by the same amount
+  // `DeskTextfield`) and the actual text. Shift the parent by the same amount
   // so that the text stays aligned with the text in `time_view`. We shift the
   // parent here and not `name_view_` itself otherwise its bounds will be
   // outside the parent bounds and the background will get clipped.
@@ -268,14 +266,14 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
                                    /*highlight_on_hover=*/false,
                                    /*highlight_on_focus=*/false);
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                kCornerRadius);
+                                                kSaveDeskCornerRadius);
 
   views::FocusRing* focus_ring =
       StyleUtil::SetUpFocusRingForView(this, kFocusRingHaloInset);
   focus_ring->SetHasFocusPredicate([](views::View* view) {
     return static_cast<SavedDeskItemView*>(view)->IsViewHighlighted();
   });
-  focus_ring->SetColorId(ui::kColorAshFocusRing);
+  focus_ring->SetColorId(cros_tokens::kCrosSysFocusRing);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
@@ -424,15 +422,6 @@ void SavedDeskItemView::Layout() {
                  height() - launch_button_preferred_size.height() -
                      kLaunchButtonDistanceFromBottomDp},
                 launch_button_preferred_size));
-}
-
-void SavedDeskItemView::OnThemeChanged() {
-  views::View::OnThemeChanged();
-  auto* color_provider = AshColorProvider::Get();
-
-  time_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  time_view_->SetEnabledColor(color_provider->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorSecondary));
 }
 
 void SavedDeskItemView::OnViewFocused(views::View* observed_view) {
@@ -614,9 +603,9 @@ void SavedDeskItemView::ContentsChanged(views::Textfield* sender,
   // names to have an unbounded length. Therefore we trim if needed at
   // `kMaxLength` UTF-16 boundary. Note that we don't care about code point
   // boundaries in this case.
-  if (new_contents.size() > DesksTextfield::kMaxLength) {
+  if (new_contents.size() > DeskTextfield::kMaxLength) {
     std::u16string trimmed_new_contents = new_contents;
-    trimmed_new_contents.resize(DesksTextfield::kMaxLength);
+    trimmed_new_contents.resize(DeskTextfield::kMaxLength);
     name_view_->SetText(trimmed_new_contents);
   }
 

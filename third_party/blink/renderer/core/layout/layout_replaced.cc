@@ -126,17 +126,9 @@ void LayoutReplaced::UpdateLayout() {
 
   PhysicalRect old_content_rect = ReplacedContentRect();
 
-  if (!RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled()) {
-    UpdateLogicalWidth();
-    UpdateLogicalHeight();
-  }
-
   ClearLayoutOverflow();
   ClearSelfNeedsLayoutOverflowRecalc();
   ClearChildNeedsLayoutOverflowRecalc();
-
-  if (!RuntimeEnabledFeatures::LayoutNGUnifyUpdateAfterLayoutEnabled())
-    UpdateAfterLayout();
 
   ClearNeedsLayout();
 
@@ -870,8 +862,7 @@ PhysicalRect LayoutReplaced::ReplacedContentRectFrom(
 }
 
 LayoutSize LayoutReplaced::SizeFromNG() const {
-  if (!RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled() ||
-      !GetBoxLayoutExtraInput()) {
+  if (!GetBoxLayoutExtraInput()) {
     return Size();
   }
   LayoutSize new_size(OverrideLogicalWidth(), OverrideLogicalHeight());
@@ -881,8 +872,7 @@ LayoutSize LayoutReplaced::SizeFromNG() const {
 }
 
 NGPhysicalBoxStrut LayoutReplaced::BorderPaddingFromNG() const {
-  if (RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled() &&
-      GetBoxLayoutExtraInput()) {
+  if (GetBoxLayoutExtraInput()) {
     return GetBoxLayoutExtraInput()->border_padding_for_replaced;
   }
   return NGPhysicalBoxStrut(

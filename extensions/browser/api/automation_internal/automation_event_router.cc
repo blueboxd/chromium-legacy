@@ -14,9 +14,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "extensions/browser/api/automation_internal/automation_internal_api_delegate.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
@@ -129,6 +126,11 @@ void AutomationEventRouter::DispatchAccessibilityEventsInternal(
 
 void AutomationEventRouter::DispatchAccessibilityLocationChange(
     const ExtensionMsg_AccessibilityLocationChangeParams& params) {
+  if (remote_router_) {
+    remote_router_->DispatchAccessibilityLocationChange(params);
+    return;
+  }
+
   for (const auto& listener : listeners_) {
     // Skip listeners that don't want to listen to this tree.
     if (!listener->desktop &&

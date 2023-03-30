@@ -4,6 +4,8 @@
 
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 
+#include <string>
+
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
@@ -38,10 +40,8 @@ namespace ash::personalization_app {
 
 namespace {
 
-inline constexpr char kGooglePhotosURL[] = "https://photos.google.com";
-
-GURL GetGooglePhotosURL() {
-  return GURL(kGooglePhotosURL);
+std::u16string GetGooglePhotosURL() {
+  return u"https://photos.google.com";
 }
 
 bool IsAmbientModeAllowed() {
@@ -210,6 +210,8 @@ void AddStrings(content::WebUIDataSource* source) {
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_FEEL_THE_BREEZE_LABEL},
       {"ambientModeAnimationFloatOnByLabel",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_FLOAT_ON_BY_LABEL},
+      {"ambientModeAnimationVideoLabel",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_VIDEO_LABEL},
       {"ambientModeZeroStateMessage",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_ZERO_STATE_MESSAGE},
       {"ambientModeMultipleAlbumsDesc",
@@ -283,20 +285,32 @@ void AddStrings(content::WebUIDataSource* source) {
       {"googlePhotosZeroStateMessage",
        IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ZERO_STATE_MESSAGE},
       {"googlePhotosAlbumZeroStateMessage",
-       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUM_ZERO_STATE_MESSAGE}};
+       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUM_ZERO_STATE_MESSAGE},
+
+      //  Time of day Wallpaper/Screen saver strings
+      {"timeOfDayWallpaperDialogTitle",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_TITLE},
+      {"timeOfDayWallpaperDialogContent",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONTENT},
+      {"timeOfDayWallpaperDialogBackButton",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_BACK_BUTTON},
+      {"timeOfDayWallpaperDialogConfirmButton",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONFIRM_BUTTON}};
 
   source->AddLocalizedStrings(kLocalizedStrings);
+
+  source->AddString("googlePhotosURL", GetGooglePhotosURL());
 
   source->AddString(
       "ambientModeAlbumsSubpageGooglePhotosTitle",
       l10n_util::GetStringFUTF16(
           IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_GOOGLE_PHOTOS_TITLE,
-          base::UTF8ToUTF16(GetGooglePhotosURL().spec())));
+          GetGooglePhotosURL()));
   source->AddString(
       "ambientModeAlbumsSubpageGooglePhotosNoAlbum",
       l10n_util::GetStringFUTF16(
           IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_GOOGLE_PHOTOS_NO_ALBUM,
-          base::UTF8ToUTF16(GetGooglePhotosURL().spec())));
+          GetGooglePhotosURL()));
 
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
@@ -402,11 +416,20 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
       features::IsRgbKeyboardEnabled() &&
           Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
 
+  source->AddBoolean("isScreenSaverDurationEnabled",
+                     features::IsScreenSaverDurationEnabled());
+
   source->AddBoolean("isScreenSaverPreviewEnabled",
                      features::IsScreenSaverPreviewEnabled());
 
   source->AddBoolean("isPersonalizationJellyEnabled",
                      features::IsPersonalizationJellyEnabled());
+
+  source->AddBoolean("isUserAvatarCustomizationSelectorsEnabled",
+                     user_provider_->IsCustomizationSelectorsPrefEnabled());
+
+  source->AddBoolean("isTimeOfDayScreenSaverEnabled",
+                     features::IsTimeOfDayScreenSaverEnabled());
 }
 
 void PersonalizationAppUI::AddIntegers(content::WebUIDataSource* source) {

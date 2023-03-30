@@ -151,10 +151,8 @@ void DropCompletionCallback(WebDragDest* drag_dest,
 - (NSPoint)flipWindowPointToScreen:(const NSPoint&)windowPoint
                               view:(NSView*)view {
   DCHECK(view);
-  NSPoint screenPoint =
-      ui::ConvertPointFromWindowToScreen([view window], windowPoint);
-  NSScreen* screen = [[view window] screen];
-  NSRect screenFrame = [screen frame];
+  NSPoint screenPoint = [view.window convertPointToScreen:windowPoint];
+  NSRect screenFrame = view.window.screen.frame;
   screenPoint.y = screenFrame.size.height - screenPoint.y;
   return screenPoint;
 }

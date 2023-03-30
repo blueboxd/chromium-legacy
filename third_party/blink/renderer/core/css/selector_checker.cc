@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -235,15 +236,7 @@ bool SelectorChecker::Match(const SelectorCheckingContext& context,
       return false;
     }
   }
-  if (MatchSelector(context, result) != kSelectorMatches) {
-    return false;
-  }
-  if (context.style_scope != nullptr &&
-      RuntimeEnabledFeatures::CSSScopeEnabled() &&
-      !CheckInStyleScope(context, result)) {
-    return false;
-  }
-  return true;
+  return MatchSelector(context, result) == kSelectorMatches;
 }
 
 // Recursive check of selectors and combinators
@@ -335,7 +328,29 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForSubSelector(
   //
   // In all of those cases we need to skip matching the pseudo classes after the
   // pseudo element on the originating element.
-  if (dynamic_pseudo != kPseudoIdNone && context.pseudo_id == kPseudoIdNone) {
+  if (context.in_rightmost_compound && dynamic_pseudo != kPseudoIdNone &&
+      context.pseudo_id == kPseudoIdNone) {
+    // We are in the rightmost compound and have matched a pseudo element
+    // (dynamic_pseudo is not kPseudoIdNone), which means we are looking at
+    // pseudo classes after the pseudo element. We are also matching the
+    // originating element (context.pseudo_id is kPseudoIdnone), which means we
+    // are matching for tracking the existence of such pseudo elements which
+    // results in SetHasPseudoElementStyle() on the originating element's
+    // ComputedStyle.
+    if (!next_context.has_scrollbar_pseudo &&
+        dynamic_pseudo == kPseudoIdScrollbar) {
+      // Fail ::-webkit-scrollbar:hover because HasPseudoElementStyle for
+      // scrollbars will remove the native scrollbar. Having only
+      // ::-webkit-scrollbar rules that have pseudo class modifiers will end up
+      // with not adding a custom scrollbar which means we end up with no
+      // scrollbar.
+      return kSelectorFailsCompletely;
+    }
+    // This means we will end up with false positives for pseudo elements like
+    // ::before with only pseudo class modifiers where we end up trying to
+    // create the pseudo element but end up not doing it because we have no
+    // matching rules without modifiers. That is also already the case if you
+    // have ::before elements without content properties.
     return kSelectorMatches;
   }
 
@@ -504,6 +519,24 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       return kSelectorFailsCompletely;
     case CSSSelector::kSubSelector:
       break;
+    case CSSSelector::kScopeActivation:
+      if (context.style_scope) {
+        const StyleScopeActivations& activations =
+            EnsureActivations(context, *context.style_scope);
+        if (activations.empty()) {
+          return kSelectorFailsCompletely;
+        }
+        for (const StyleScopeActivation& activation : activations) {
+          next_context.style_scope = nullptr;
+          next_context.scope = activation.root;
+          if (MatchSelector(next_context, result) == kSelectorMatches) {
+            result.proximity = activation.proximity;
+            return kSelectorMatches;
+          }
+        }
+        return kSelectorFailsLocally;
+      }
+      return MatchSelector(next_context, result);
   }
   NOTREACHED();
   return kSelectorFailsCompletely;
@@ -1658,6 +1691,9 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       break;
     }
     case CSSSelector::kPseudoOpen:
+      if (auto* selectmenu = DynamicTo<HTMLSelectMenuElement>(element)) {
+        return selectmenu->open();
+      }
       if (auto* html_element = DynamicTo<HTMLElement>(element);
           html_element && html_element->HasPopoverAttribute()) {
         return html_element->popoverOpen();
@@ -1670,6 +1706,9 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         // that uses :closed, with `dialog:not(:not(:closed))`, so it's
         // important to *match* when the feature is *disabled*.
         return true;
+      }
+      if (auto* selectmenu = DynamicTo<HTMLSelectMenuElement>(element)) {
+        return !selectmenu->open();
       }
       if (auto* html_element = DynamicTo<HTMLElement>(element);
           html_element && html_element->HasPopoverAttribute()) {
@@ -2028,21 +2067,6 @@ bool SelectorChecker::CheckPseudoHost(const SelectorCheckingContext& context,
 bool SelectorChecker::CheckPseudoScope(const SelectorCheckingContext& context,
                                        MatchResult& result) const {
   Element& element = *context.element;
-  if (RuntimeEnabledFeatures::CSSScopeEnabled() && context.style_scope) {
-    DCHECK(context.style_scope_frame);
-    const StyleScopeActivations& activations =
-        EnsureActivations(context, *context.style_scope);
-    // The same @scope may produce multiple activations, but only (at most)
-    // one activation per element in the ancestor chain. Therefore we do not
-    // need to check the list of activations in any particular order.
-    for (const StyleScopeActivation& activation : activations) {
-      if (&element == activation.root) {
-        result.proximity = activation.proximity;
-        return true;
-      }
-    }
-    return false;
-  }
   if (!context.scope) {
     return false;
   }
@@ -2382,22 +2406,6 @@ bool SelectorChecker::ElementIsScopingLimit(
     return false;
   }
   return MatchesWithScope(element, *style_scope.To(), activation.root.Get());
-}
-
-bool SelectorChecker::CheckInStyleScope(const SelectorCheckingContext& context,
-                                        MatchResult& result) const {
-  const StyleScopeActivations& activations =
-      EnsureActivations(context, *context.style_scope);
-
-  if (activations.empty()) {
-    return false;
-  }
-
-  for (const StyleScopeActivation& activation : activations) {
-    result.proximity = std::min(activation.proximity, result.proximity);
-  }
-
-  return true;
 }
 
 }  // namespace blink

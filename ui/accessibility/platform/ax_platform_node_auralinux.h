@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -40,7 +41,9 @@ using AtkAttributes = std::unique_ptr<AtkAttributeSet, AtkAttributeSetDeleter>;
 namespace ui {
 
 struct FindInPageResultInfo {
-  AtkObject* node;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION AtkObject* node;
   int start_offset;
   int end_offset;
 
@@ -397,11 +400,14 @@ class COMPONENT_EXPORT(AX_PLATFORM) AXPlatformNodeAuraLinux
   ImplementedAtkInterfaces interface_mask_;
 
   // We own a reference to these ref-counted objects.
-  AtkObject* atk_object_ = nullptr;
-  AtkHyperlink* atk_hyperlink_ = nullptr;
+  // These fields are not a raw_ptr<> because of in-out-arg usage.
+  RAW_PTR_EXCLUSION AtkObject* atk_object_ = nullptr;
+  RAW_PTR_EXCLUSION AtkHyperlink* atk_hyperlink_ = nullptr;
 
   // A weak pointers which help us track the ATK embeds relation.
-  AtkObject* document_parent_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION AtkObject* document_parent_ = nullptr;
 
   // Whether or not this node (if it is a frame or a window) was
   // minimized the last time it's visibility changed.

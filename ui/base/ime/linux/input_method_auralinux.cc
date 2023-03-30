@@ -342,6 +342,7 @@ bool InputMethodAuraLinux::MaybeUpdateComposition(bool text_committed) {
 
 void InputMethodAuraLinux::UpdateContextFocusState() {
   surrounding_text_.reset();
+  text_range_ = gfx::Range::InvalidRange();
   selection_range_ = gfx::Range::InvalidRange();
 
   auto old_text_input_type = text_input_type_;
@@ -363,12 +364,15 @@ void InputMethodAuraLinux::UpdateContextFocusState() {
   TextInputMode mode = TEXT_INPUT_MODE_DEFAULT;
   int flags = TEXT_INPUT_FLAG_NONE;
   bool should_do_learning = false;
+  bool can_compose_inline = true;
   if (client) {
     mode = client->GetTextInputMode();
     flags = client->GetTextInputFlags();
     should_do_learning = client->ShouldDoLearning();
+    can_compose_inline = client->CanComposeInline();
   }
-  context_->SetContentType(text_input_type_, mode, flags, should_do_learning);
+  context_->SetContentType(text_input_type_, mode, flags, should_do_learning,
+                           can_compose_inline);
 }
 
 void InputMethodAuraLinux::OnTextInputTypeChanged(TextInputClient* client) {
@@ -414,10 +418,12 @@ void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
                                  client->GetAutocorrectCharacterBounds());
 #endif
 
-    if (surrounding_text_ != text || selection_range_ != selection_range) {
+    if (surrounding_text_ != text || text_range_ != text_range ||
+        selection_range_ != selection_range) {
       surrounding_text_ = text;
+      text_range_ = text_range;
       selection_range_ = selection_range;
-      context_->SetSurroundingText(text, selection_range);
+      context_->SetSurroundingText(text, text_range, selection_range);
     }
   }
 }

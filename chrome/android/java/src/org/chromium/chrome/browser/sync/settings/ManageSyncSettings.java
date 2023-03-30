@@ -33,14 +33,16 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.BackPressHelper;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
+import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
@@ -60,7 +62,6 @@ import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.UserSelectableType;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 import org.chromium.ui.widget.ButtonCompat;
 
@@ -75,8 +76,9 @@ import java.util.Set;
 public class ManageSyncSettings extends PreferenceFragmentCompat
         implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
                    PassphraseTypeDialogFragment.Listener, Preference.OnPreferenceChangeListener,
-                   SyncService.SyncStateChangedListener, SettingsActivity.OnBackPressedListener,
-                   Listener, SyncErrorCardPreference.SyncErrorCardPreferenceListener {
+                   SyncService.SyncStateChangedListener, BackPressHelper.ObsoleteBackPressedHandler,
+                   Listener, SyncErrorCardPreference.SyncErrorCardPreferenceListener,
+                   FragmentHelpAndFeedbackLauncher {
     private static final String IS_FROM_SIGNIN_SCREEN = "ManageSyncSettings.isFromSigninScreen";
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
@@ -154,6 +156,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     private ChromeSwitchPreference mUrlKeyedAnonymizedData;
 
     private SyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
+    private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
 
     /**
      * Creates an argument bundle for this fragment.
@@ -277,8 +280,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            HelpAndFeedbackLauncherImpl.getForProfile(Profile.getLastUsedRegularProfile())
-                    .show(getActivity(), getString(R.string.help_context_sync_and_services), null);
+            mHelpAndFeedbackLauncher.show(
+                    getActivity(), getString(R.string.help_context_sync_and_services), null);
             return true;
         }
         if (item.getItemId() == android.R.id.home) {
@@ -332,7 +335,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         // A change to Preference state hasn't been applied yet. Defer
         // updateSyncStateFromSelectedTypes so it gets the updated state from
         // isChecked().
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncStateFromSelectedTypes);
+        PostTask.postTask(TaskTraits.UI_DEFAULT, this::updateSyncStateFromSelectedTypes);
         return true;
     }
 
@@ -346,7 +349,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     public void syncStateChanged() {
         // This is invoked synchronously from SyncService.setSelectedTypes, postpone the
         // update to let updateSyncStateFromSelectedTypes finish saving the state.
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncPreferences);
+        PostTask.postTask(TaskTraits.UI_DEFAULT, this::updateSyncPreferences);
     }
 
     /**
@@ -384,7 +387,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
                 || (mSyncPaymentsIntegration.isChecked() && mSyncAutofill.isChecked()));
 
         // Some calls to setSelectedTypes don't trigger syncStateChanged, so schedule update here.
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncPreferences);
+        PostTask.postTask(TaskTraits.UI_DEFAULT, this::updateSyncPreferences);
     }
 
     /**
@@ -653,6 +656,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     @Override
     public boolean onBackPressed() {
+        // TODO(crbug.com/1406012): Remove these metrics or introduce new metrics in other lifecycle
+        //                          hooks because this method never consumes back event.
         if (mIsFromSigninScreen) {
             RecordUserAction.record("Signin_Signin_BackOnAdvancedSyncSettings");
         }
@@ -796,5 +801,10 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
                     SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, dataWipeCallback,
                     forceWipeUserData);
         }
+    }
+
+    @Override
+    public void setHelpAndFeedbackLauncher(HelpAndFeedbackLauncher helpAndFeedbackLauncher) {
+        mHelpAndFeedbackLauncher = helpAndFeedbackLauncher;
     }
 }

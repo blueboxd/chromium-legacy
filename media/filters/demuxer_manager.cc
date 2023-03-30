@@ -21,7 +21,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
-#include "media/filters/hls_demuxer.h"
+#include "media/filters/manifest_demuxer.h"
 #endif  // BUILDFLAG(ENABLE_HLS_DEMUXER)
 
 namespace media {
@@ -279,8 +279,16 @@ PipelineStatus DemuxerManager::SelectHlsFallbackMechanism(
     return PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED;
   }
 
-  PopulateHlsHistograms(cryptographic_url);
   loaded_url_ = GetDataSourceUrlAfterRedirects().value();
+
+  // We do not support using blob and filesystem schemes with the Android
+  // MediaPlayer. Fail now rather than during MediaPlayerRender initialization.
+  if (is_mp &&
+      (loaded_url_.SchemeIsBlob() || loaded_url_.SchemeIsFileSystem())) {
+    return PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED;
+  }
+
+  PopulateHlsHistograms(cryptographic_url);
 
   if (client_) {
     client_->UpdateLoadedUrl(loaded_url_);
@@ -565,9 +573,9 @@ std::unique_ptr<Demuxer> DemuxerManager::CreateFFmpegDemuxer() {
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
 std::unique_ptr<Demuxer> DemuxerManager::CreateHlsDemuxer() {
-  return std::make_unique<HlsDemuxer>(media_task_runner_,
-                                      client_->GetHlsDataSourceProvider(),
-                                      loaded_url_, media_log_.get());
+  return std::make_unique<ManifestDemuxer>(media_task_runner_,
+                                           client_->GetHlsDataSourceProvider(),
+                                           loaded_url_, media_log_.get());
 }
 #endif
 

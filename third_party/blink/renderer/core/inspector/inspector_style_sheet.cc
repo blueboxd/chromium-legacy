@@ -35,13 +35,16 @@
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_layer_block_rule.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
+#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_scope_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet_ids.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
+#include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_observer.h"
@@ -614,6 +617,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kFontFace:
       case StyleRule::kKeyframe:
       case StyleRule::kFontFeature:
+      case StyleRule::kTry:
         result->push_back(data);
         break;
       case StyleRule::kStyle:
@@ -624,6 +628,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kContainer:
       case StyleRule::kLayerBlock:
       case StyleRule::kFontFeatureValues:
+      case StyleRule::kPositionFallback:
         result->push_back(data);
         FlattenSourceData(data->child_rules, result);
         break;
@@ -659,6 +664,10 @@ CSSRuleList* AsCSSRuleList(CSSRule* rule) {
   if (auto* layer_rule = DynamicTo<CSSLayerBlockRule>(rule))
     return layer_rule->cssRules();
 
+  if (auto* position_fallback_rule = DynamicTo<CSSPositionFallbackRule>(rule)) {
+    return position_fallback_rule->cssRules();
+  }
+
   return nullptr;
 }
 
@@ -680,6 +689,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kViewportRule:
       case CSSRule::kKeyframeRule:
       case CSSRule::kFontFeatureRule:
+      case CSSRule::kTryRule:
         result->push_back(rule);
         break;
       case CSSRule::kStyleRule:
@@ -690,6 +700,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kContainerRule:
       case CSSRule::kLayerBlockRule:
       case CSSRule::kFontFeatureValuesRule:
+      case CSSRule::kPositionFallbackRule:
         result->push_back(rule);
         CollectFlatRules(AsCSSRuleList(rule), result);
         break;
@@ -991,8 +1002,8 @@ void InspectorStyle::Trace(Visitor* visitor) const {
   visitor->Trace(source_data_);
 }
 
-InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener)
-    : id_(IdentifiersFactory::CreateIdentifier()),
+InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener, String id)
+    : id_(id),
       listener_(listener),
       line_endings_(std::make_unique<LineEndings>()) {}
 
@@ -1046,7 +1057,9 @@ InspectorStyleSheet::InspectorStyleSheet(
     const String& document_url,
     InspectorStyleSheetBase::Listener* listener,
     InspectorResourceContainer* resource_container)
-    : InspectorStyleSheetBase(listener),
+    : InspectorStyleSheetBase(
+          listener,
+          CSSStyleSheetIds::IdForCSSStyleSheet(page_style_sheet)),
       resource_container_(resource_container),
       network_agent_(network_agent),
       page_style_sheet_(page_style_sheet),
@@ -1854,6 +1867,18 @@ InspectorStyleSheet::BuildObjectForRuleWithoutAncestorData(CSSStyleRule* rule) {
           .setStyle(BuildObjectForStyle(rule->style()))
           .build();
 
+  auto nesting_selectors = std::make_unique<protocol::Array<String>>();
+  CSSRule* ancestor_rule = rule->parentRule();
+  while (ancestor_rule) {
+    if (auto* style_rule = DynamicTo<CSSStyleRule>(ancestor_rule)) {
+      nesting_selectors->emplace_back(style_rule->selectorText());
+    }
+    ancestor_rule = ancestor_rule->parentRule();
+  }
+  if (nesting_selectors->size() > 0) {
+    result->setNestingSelectors(std::move(nesting_selectors));
+  }
+
   if (CanBind(origin_)) {
     if (!Id().empty())
       result->setStyleSheetId(Id());
@@ -1879,6 +1904,19 @@ InspectorStyleSheet::BuildObjectForRuleUsage(CSSRule* rule, bool was_used) {
           .setUsed(was_used)
           .build();
 
+  return result;
+}
+
+std::unique_ptr<protocol::CSS::CSSTryRule>
+InspectorStyleSheet::BuildObjectForTryRule(CSSTryRule* try_rule) {
+  std::unique_ptr<protocol::CSS::CSSTryRule> result =
+      protocol::CSS::CSSTryRule::create()
+          .setOrigin(origin_)
+          .setStyle(BuildObjectForStyle(try_rule->style()))
+          .build();
+  if (CanBind(origin_) && !Id().empty()) {
+    result->setStyleSheetId(Id());
+  }
   return result;
 }
 
@@ -2286,7 +2324,8 @@ bool InspectorStyleSheet::InspectorStyleSheetText(String* result) {
 InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(
     Element* element,
     Listener* listener)
-    : InspectorStyleSheetBase(listener), element_(element) {
+    : InspectorStyleSheetBase(listener, IdentifiersFactory::CreateIdentifier()),
+      element_(element) {
   DCHECK(element_);
 }
 

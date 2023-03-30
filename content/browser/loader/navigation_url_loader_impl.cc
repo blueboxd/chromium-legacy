@@ -225,6 +225,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     const NavigationRequestInfo& request_info,
     FrameTreeNode* frame_tree_node,
     mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
+    mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
+        trust_token_observer,
     mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
         url_loader_network_observer,
     mojo::PendingRemote<network::mojom::DevToolsObserver> devtools_observer,
@@ -240,6 +242,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->trusted_params = network::ResourceRequest::TrustedParams();
   new_request->trusted_params->isolation_info = request_info.isolation_info;
   new_request->trusted_params->cookie_observer = std::move(cookie_observer);
+  new_request->trusted_params->trust_token_observer =
+      std::move(trust_token_observer);
   new_request->trusted_params->url_loader_network_observer =
       std::move(url_loader_network_observer);
   new_request->trusted_params->devtools_observer = std::move(devtools_observer);
@@ -318,19 +322,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
         *request_info.begin_params->trust_token_params;
   }
 
-  // TODO(https://crbug.com/1423092): This is more restrictive than necessary,
-  // since `request_info.common_params->has_storage_access` really represents
-  // "does this navigation have an initiator, and if so, did the initiator
-  // obtain storage access, and if so, is the initiator the same as the frame
-  // being navigated, and is the navigation same-origin?". While here, we only
-  // really need "does this navigation have an initiator, and if so, did it
-  // obtain storage access?". So in particular, cross-origin same-site
-  // navigations and non-self-initiated navigations won't include cookies from
-  // Storage Access API, but they should. This is ok for now, since the most
-  // common case for this is expected to be a refresh, which does fit the
-  // stricter criteria.
   new_request->has_storage_access =
-      request_info.common_params->has_storage_access;
+      request_info.begin_params->has_storage_access;
 
   return new_request;
 }
@@ -1280,6 +1273,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         prefetched_signed_exchange_cache,
     NavigationURLLoaderDelegate* delegate,
     mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
+    mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
+        trust_token_observer,
     mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
         url_loader_network_observer,
     mojo::PendingRemote<network::mojom::DevToolsObserver> devtools_observer,
@@ -1322,8 +1317,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   resource_request_ = CreateResourceRequest(
       *request_info_, frame_tree_node, std::move(cookie_observer),
-      std::move(url_loader_network_observer), std::move(devtools_observer),
-      std::move(accept_ch_frame_observer));
+      std::move(trust_token_observer), std::move(url_loader_network_observer),
+      std::move(devtools_observer), std::move(accept_ch_frame_observer));
 
   std::string accept_langs =
       GetContentClient()->browser()->GetAcceptLangs(browser_context_);

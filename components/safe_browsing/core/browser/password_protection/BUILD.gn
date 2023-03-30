@@ -8,6 +8,9 @@ source_set("password_protection") {
     "password_protection_request.h",
     "password_protection_service_base.cc",
     "password_protection_service_base.h",
+    "password_reuse_detection_manager_client.h",
+    "password_reuse_detection_manager_sb.cc",
+    "password_reuse_detection_manager_sb.h",
     "request_canceler.cc",
     "request_canceler.h",
   ]
@@ -17,6 +20,7 @@ source_set("password_protection") {
   deps = [
     ":password_protection_metrics_util",
     "//base",
+    "//components/autofill/core/browser",
     "//components/history/core/browser",
     "//components/password_manager/core/browser",
     "//components/safe_browsing/core/browser:referrer_chain_provider",
@@ -42,6 +46,21 @@ source_set("password_protection") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "stub_password_reuse_detection_manager_client.cc",
+    "stub_password_reuse_detection_manager_client.h",
+  ]
+
+  deps = [
+    ":password_protection",
+    "//base",
+    "//components/autofill/core/browser:test_support",
+    "//components/password_manager/core/browser",
+  ]
+}
+
 source_set("password_protection_metrics_util") {
   sources = [
     "metrics_util.cc",
@@ -55,5 +74,20 @@ source_set("password_protection_metrics_util") {
     "//components/safe_browsing/core/common:common",
     "//components/safe_browsing/core/common/proto:csd_proto",
     "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "password_reuse_detection_manager_sb_unittest.cc" ]
+  deps = [
+    ":password_protection",
+    ":test_support",
+    "//base",
+    "//components/password_manager/core/browser:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/abseil-cpp:absl",
+    "//url:url",
   ]
 }

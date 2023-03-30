@@ -81,9 +81,11 @@ enum class FeedRefreshTrigger {
   kForegroundFeedNotVisible = 8,
   kForegroundNewFeedViewController = 9,
   kForegroundAppClose = 10,
+  kBackgroundColdStartAppClose = 11,
+  kBackgroundWarmStartAppClose = 12,
 
   // Change this to match max value.
-  kMaxValue = kForegroundAppClose,
+  kMaxValue = kBackgroundWarmStartAppClose,
 };
 
 // Enum class contains values indicating the type of follow request. Ex.
@@ -393,5 +395,10 @@ extern const char kFollowingFeedSortByLatest[];
 // promo UI.
 extern const char kFeedSignInPromoUIContinueTapped[];
 extern const char kFeedSignInPromoUICancelTapped[];
+
+// User actions triggered when a user taps on Feed Back of Card menu
+// personalization options when not signed in.
+extern const char kShowFeedSignInOnlyUIWithUserId[];
+extern const char kShowFeedSignInOnlyUIWithoutUserId[];
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_METRICS_FEED_METRICS_CONSTANTS_H_

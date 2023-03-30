@@ -71,25 +71,43 @@ SBThreatType MapThreatTypeToSbThreatType(const V5::ThreatType& threat_type) {
 class ObliviousHttpClient : public network::mojom::ObliviousHttpClient {
  public:
   using OnCompletedCallback =
-      base::OnceCallback<void(const absl::optional<std::string>&, int)>;
+      base::OnceCallback<void(const absl::optional<std::string>&, int, int)>;
 
   explicit ObliviousHttpClient(OnCompletedCallback callback)
       : callback_(std::move(callback)) {}
 
   ~ObliviousHttpClient() override {
     if (!called_) {
-      std::move(callback_).Run(absl::nullopt, net::ERR_FAILED);
+      std::move(callback_).Run(absl::nullopt, net::ERR_FAILED,
+                               /*response_code=*/0);
     }
   }
 
-  void OnCompleted(const absl::optional<std::string>& response,
-                   int net_error) override {
+  void OnCompleted(
+      network::mojom::ObliviousHttpCompletionResultPtr status) override {
     if (called_) {
       mojo::ReportBadMessage("OnCompleted called more than once");
       return;
     }
     called_ = true;
-    std::move(callback_).Run(response, net_error);
+    if (status->is_net_error()) {
+      std::move(callback_).Run(absl::nullopt, status->get_net_error(),
+                               /*response_code=*/0);
+    } else if (status->is_outer_response_error_code()) {
+      std::move(callback_).Run(absl::nullopt,
+                               net::ERR_HTTP_RESPONSE_CODE_FAILURE,
+                               status->get_outer_response_error_code());
+    } else {
+      DCHECK(status->is_inner_response());
+      if (status->get_inner_response()->response_code != net::HTTP_OK) {
+        std::move(callback_).Run(absl::nullopt,
+                                 net::ERR_HTTP_RESPONSE_CODE_FAILURE,
+                                 status->get_inner_response()->response_code);
+      } else {
+        std::move(callback_).Run(status->get_inner_response()->response_body,
+                                 net::OK, net::HTTP_OK);
+      }
+    }
   }
 
  private:
@@ -127,7 +145,8 @@ bool HashRealTimeService::IsEnhancedProtectionEnabled() {
 // static
 SBThreatType HashRealTimeService::DetermineSBThreatType(
     const GURL& url,
-    const std::vector<V5::FullHash>& result_full_hashes) {
+    const std::vector<V5::FullHash>& result_full_hashes,
+    bool log_threat_info_size) {
   std::vector<std::string> url_full_hashes_vector;
   V4ProtocolManagerUtil::UrlToFullHashes(url, &url_full_hashes_vector);
   std::set<std::string> url_full_hashes(url_full_hashes_vector.begin(),
@@ -151,8 +170,10 @@ SBThreatType HashRealTimeService::DetermineSBThreatType(
       }
     }
   }
-  base::UmaHistogramCounts100("SafeBrowsing.HPRT.ThreatInfoSize",
-                              num_full_hash_matches);
+  if (log_threat_info_size) {
+    base::UmaHistogramCounts100("SafeBrowsing.HPRT.ThreatInfoSize",
+                                num_full_hash_matches);
+  }
   return sb_threat_type;
 }
 int HashRealTimeService::GetThreatSeverity(const V5::ThreatType& threat_type) {
@@ -241,13 +262,17 @@ void HashRealTimeService::StartLookup(
   // If all the prefixes are in the cache, no need to send a request. Return
   // early with the cached results.
   if (hash_prefixes_to_request.empty()) {
-    auto sb_threat_type = DetermineSBThreatType(url, cached_full_hashes);
+    auto sb_threat_type = DetermineSBThreatType(url, cached_full_hashes,
+                                                /*log_threat_info_size=*/true);
     callback_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(response_callback),
-                       /*is_lookup_successful=*/true, sb_threat_type));
+                       /*is_lookup_successful=*/true, sb_threat_type,
+                       /*locally_cached_results_threat_type=*/sb_threat_type));
     return;
   }
+  SBThreatType locally_cached_results_threat_type = DetermineSBThreatType(
+      url, cached_full_hashes, /*log_threat_info_size=*/false);
 
   // If the service is in backoff mode, don't send a request.
   bool in_backoff = backoff_operator_->IsInBackoffMode();
@@ -256,7 +281,9 @@ void HashRealTimeService::StartLookup(
     callback_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(response_callback),
                                   /*is_lookup_successful=*/false,
-                                  /*sb_threat_type=*/absl::nullopt));
+                                  /*sb_threat_type=*/absl::nullopt,
+                                  /*locally_cached_results_threat_type=*/
+                                  locally_cached_results_threat_type));
     return;
   }
 
@@ -275,7 +302,8 @@ void HashRealTimeService::StartLookup(
         &HashRealTimeService::OnGetOhttpKey, weak_factory_.GetWeakPtr(),
         std::move(request), url, std::move(hash_prefixes_to_request),
         std::move(cached_full_hashes), base::TimeTicks::Now(),
-        std::move(callback_task_runner), std::move(response_callback)));
+        std::move(callback_task_runner), std::move(response_callback),
+        locally_cached_results_threat_type));
   } else {
     // Direct fetch
     std::unique_ptr<network::SimpleURLLoader> url_loader =
@@ -291,7 +319,8 @@ void HashRealTimeService::StartLookup(
                        std::move(hash_prefixes_to_request),
                        std::move(cached_full_hashes), url_loader.get(),
                        base::TimeTicks::Now(), std::move(callback_task_runner),
-                       std::move(response_callback)));
+                       std::move(response_callback),
+                       locally_cached_results_threat_type));
     pending_requests_.emplace(std::move(url_loader));
   }
 }
@@ -304,6 +333,7 @@ void HashRealTimeService::OnGetOhttpKey(
     base::TimeTicks request_start_time,
     scoped_refptr<base::SequencedTaskRunner> response_callback_task_runner,
     HPRTLookupResponseCallback response_callback,
+    SBThreatType locally_cached_results_threat_type,
     absl::optional<std::string> key) {
   // TODO(crbug.com/1407283): Add a histogram to log the key fetch result.
   if (!key.has_value()) {
@@ -311,7 +341,9 @@ void HashRealTimeService::OnGetOhttpKey(
     response_callback_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(response_callback),
                                   /*is_lookup_successful=*/false,
-                                  /*sb_threat_type=*/absl::nullopt));
+                                  /*sb_threat_type=*/absl::nullopt,
+                                  /*locally_cached_results_threat_type=*/
+                                  locally_cached_results_threat_type));
     return;
   }
   // Construct OHTTP request.
@@ -334,7 +366,7 @@ void HashRealTimeService::OnGetOhttpKey(
           url, std::move(hash_prefixes_in_request),
           std::move(result_full_hashes), request_start_time,
           std::move(response_callback_task_runner),
-          std::move(response_callback))),
+          std::move(response_callback), locally_cached_results_threat_type)),
       std::move(pending_receiver));
 }
 
@@ -345,19 +377,19 @@ void HashRealTimeService::OnOhttpComplete(
     base::TimeTicks request_start_time,
     scoped_refptr<base::SequencedTaskRunner> response_callback_task_runner,
     HPRTLookupResponseCallback response_callback,
+    SBThreatType locally_cached_results_threat_type,
     const absl::optional<std::string>& response_body,
-    int net_error) {
+    int net_error,
+    int response_code) {
   // TODO(crbug.com/1407283): Notify ohttp_key_service_ if the error is key
   // related.
   auto response_body_ptr =
       std::make_unique<std::string>(response_body.value_or(""));
-  // TODO(crbug.com/1407283): Set response_code when the mojo interface exposes
-  // response_code.
   OnURLLoaderComplete(
       url, std::move(hash_prefixes_in_request), std::move(result_full_hashes),
       request_start_time, std::move(response_callback_task_runner),
-      std::move(response_callback), std::move(response_body_ptr), net_error,
-      /*response_code=*/net::HTTP_OK);
+      std::move(response_callback), locally_cached_results_threat_type,
+      std::move(response_body_ptr), net_error, response_code);
 }
 
 void HashRealTimeService::OnDirectURLLoaderComplete(
@@ -368,6 +400,7 @@ void HashRealTimeService::OnDirectURLLoaderComplete(
     base::TimeTicks request_start_time,
     scoped_refptr<base::SequencedTaskRunner> response_callback_task_runner,
     HPRTLookupResponseCallback response_callback,
+    SBThreatType locally_cached_results_threat_type,
     std::unique_ptr<std::string> response_body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -379,11 +412,11 @@ void HashRealTimeService::OnDirectURLLoaderComplete(
     response_code = url_loader->ResponseInfo()->headers->response_code();
   }
 
-  OnURLLoaderComplete(url, std::move(hash_prefixes_in_request),
-                      std::move(result_full_hashes), request_start_time,
-                      std::move(response_callback_task_runner),
-                      std::move(response_callback), std::move(response_body),
-                      url_loader->NetError(), response_code);
+  OnURLLoaderComplete(
+      url, std::move(hash_prefixes_in_request), std::move(result_full_hashes),
+      request_start_time, std::move(response_callback_task_runner),
+      std::move(response_callback), locally_cached_results_threat_type,
+      std::move(response_body), url_loader->NetError(), response_code);
 
   pending_requests_.erase(pending_request_it);
 }
@@ -395,11 +428,11 @@ void HashRealTimeService::OnURLLoaderComplete(
     base::TimeTicks request_start_time,
     scoped_refptr<base::SequencedTaskRunner> response_callback_task_runner,
     HPRTLookupResponseCallback response_callback,
+    SBThreatType locally_cached_results_threat_type,
     std::unique_ptr<std::string> response_body,
     int net_error,
     int response_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   base::UmaHistogramTimes("SafeBrowsing.HPRT.Network.Time",
                           base::TimeTicks::Now() - request_start_time);
   RecordHttpResponseOrErrorCode("SafeBrowsing.HPRT.Network.Result", net_error,
@@ -423,13 +456,16 @@ void HashRealTimeService::OnURLLoaderComplete(
     for (const auto& response_hash : response.value()->full_hashes()) {
       result_full_hashes.push_back(response_hash);
     }
-    sb_threat_type = DetermineSBThreatType(url, result_full_hashes);
+    sb_threat_type = DetermineSBThreatType(url, result_full_hashes,
+                                           /*log_threat_info_size=*/true);
   }
 
   response_callback_task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(response_callback),
                                 /*is_lookup_successful=*/response.has_value(),
-                                sb_threat_type));
+                                sb_threat_type,
+                                /*locally_cached_results_threat_type=*/
+                                locally_cached_results_threat_type));
 }
 
 base::expected<std::unique_ptr<V5::SearchHashesResponse>,
@@ -523,7 +559,8 @@ HashRealTimeService::ParseResponse(
     return base::unexpected(OperationResult::kParseError);
   } else if (ErrorIsRetriable(net_error, response_code)) {
     return base::unexpected(OperationResult::kRetriableError);
-  } else if (net_error != net::OK) {
+  } else if (net_error != net::OK &&
+             net_error != net::ERR_HTTP_RESPONSE_CODE_FAILURE) {
     return base::unexpected(OperationResult::kNetworkError);
   } else if (response_code != net::HTTP_OK) {
     return base::unexpected(OperationResult::kHttpError);

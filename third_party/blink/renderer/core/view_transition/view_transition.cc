@@ -809,20 +809,45 @@ bool ViewTransition::NeedsViewTransitionEffectNode(
 
   // Otherwise check if the layout object has an active transition element.
   auto* element = DynamicTo<Element>(object.GetNode());
+  return style_tracker_ && element &&
+         style_tracker_->IsTransitionElement(*element);
+}
+
+bool ViewTransition::NeedsViewTransitionClipNode(
+    const LayoutObject& object) const {
+  // The root element's painting is already clipped to the snapshot root using
+  // LayoutView::ViewRect.
+  if (IsA<LayoutView>(object)) {
+    return false;
+  }
+
+  auto* element = DynamicTo<Element>(object.GetNode());
   return element && style_tracker_ &&
-         style_tracker_->IsTransitionElement(element);
+         style_tracker_->NeedsCaptureClipNode(*element);
 }
 
 bool ViewTransition::IsRepresentedViaPseudoElements(
     const LayoutObject& object) const {
-  if (IsTerminalState(state_))
+  if (IsTerminalState(state_)) {
     return false;
+  }
 
-  if (IsA<LayoutView>(object))
+  if (IsA<LayoutView>(object)) {
     return style_tracker_->IsRootTransitioning();
+  }
 
-  auto* element = DynamicTo<Element>(object.GetNode());
-  return element && style_tracker_->IsTransitionElement(element);
+  if (auto* element = DynamicTo<Element>(object.GetNode())) {
+    return IsRepresentedViaPseudoElements(*element);
+  }
+  return false;
+}
+
+bool ViewTransition::IsRepresentedViaPseudoElements(
+    const Element& element) const {
+  if (IsTerminalState(state_)) {
+    return false;
+  }
+  return style_tracker_->IsTransitionElement(element);
 }
 
 PaintPropertyChangeType ViewTransition::UpdateEffect(
@@ -857,18 +882,38 @@ PaintPropertyChangeType ViewTransition::UpdateEffect(
   style_tracker_->UpdateElementIndicesAndSnapshotId(
       element, state.view_transition_element_id,
       state.view_transition_element_resource_id);
-  return style_tracker_->UpdateEffect(element, std::move(state),
+  return style_tracker_->UpdateEffect(*element, std::move(state),
                                       current_effect);
 }
 
-EffectPaintPropertyNode* ViewTransition::GetEffect(
+PaintPropertyChangeType ViewTransition::UpdateCaptureClip(
+    const LayoutObject& object,
+    const ClipPaintPropertyNodeOrAlias* current_clip,
+    const TransformPaintPropertyNodeOrAlias* current_transform) {
+  DCHECK(NeedsViewTransitionClipNode(object));
+  DCHECK(current_transform);
+
+  auto* element = DynamicTo<Element>(object.GetNode());
+  DCHECK(element);
+  return style_tracker_->UpdateCaptureClip(*element, current_clip,
+                                           current_transform);
+}
+
+const EffectPaintPropertyNode* ViewTransition::GetEffect(
     const LayoutObject& object) const {
   DCHECK(NeedsViewTransitionEffectNode(object));
 
   auto* element = DynamicTo<Element>(object.GetNode());
   if (!element)
     return style_tracker_->GetRootEffect();
-  return style_tracker_->GetEffect(element);
+  return style_tracker_->GetEffect(*element);
+}
+
+const ClipPaintPropertyNode* ViewTransition::GetCaptureClip(
+    const LayoutObject& object) const {
+  DCHECK(NeedsViewTransitionClipNode(object));
+
+  return style_tracker_->GetCaptureClip(*To<Element>(object.GetNode()));
 }
 
 void ViewTransition::RunViewTransitionStepsOutsideMainFrame() {

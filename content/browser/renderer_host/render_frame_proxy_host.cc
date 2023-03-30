@@ -21,6 +21,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
+#include "content/browser/renderer_host/batched_proxy_ipc_sender.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -120,7 +121,6 @@ RenderFrameProxyHost::RenderFrameProxyHost(
     : routing_id_(site_instance->GetProcess()->GetNextRoutingID()),
       site_instance_(site_instance),
       site_instance_group_(site_instance->group()),
-      route_(this, site_instance_group_->agent_scheduling_group(), routing_id_),
       process_(site_instance->GetProcess()),
       frame_tree_node_(frame_tree_node),
       render_frame_proxy_created_(false),
@@ -130,6 +130,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(
   TRACE_EVENT_BEGIN("navigation", "RenderFrameProxyHost",
                     perfetto::Track::FromPointer(this),
                     "render_frame_proxy_host_when_created", *this);
+  GetAgentSchedulingGroup().AddRoute(routing_id_, this);
   CHECK(
       g_routing_id_frame_proxy_map.Get()
           .insert(std::make_pair(
@@ -184,6 +185,7 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
   // destructor. This line can be removed.
   render_view_host_.reset();
 
+  GetAgentSchedulingGroup().RemoveRoute(routing_id_);
   g_routing_id_frame_proxy_map.Get().erase(
       RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_));
   g_token_frame_proxy_map.Get().erase(frame_token_);
@@ -215,7 +217,8 @@ std::string RenderFrameProxyHost::ToDebugString() {
          GetRenderViewHost()->GetDelegate()->GetCreatorLocation().ToString();
 }
 
-bool RenderFrameProxyHost::InitRenderFrameProxy() {
+bool RenderFrameProxyHost::InitRenderFrameProxy(
+    BatchedProxyIPCSender* batched_proxy_ipc_sender) {
   DCHECK(!render_frame_proxy_created_);
   // We shouldn't be creating proxies for subframes of frames in
   // BackForwardCache.
@@ -244,6 +247,15 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
         frame_tree_node_->render_manager()->GetOpenerFrameToken(
             site_instance_group());
   }
+
+  // The current `RenderFrameHost`'s `devtools_frame_token` can be used here
+  // because it is not expected to differ when there is a
+  // `RenderFrameProxyHost` in a separate window. The token may change on
+  // MPArch activations in the main frame (e.g., prerender), but those
+  // cannot occur if the `BrowsingInstance` has more than one window.
+  const ::base::UnguessableToken& devtools_frame_token =
+      frame_tree_node_->current_frame_host()->devtools_frame_token();
+
   if (frame_tree_node_->parent()) {
     // It is safe to use GetRenderFrameProxyHost to get the parent proxy, since
     // new child frames always start out as local frames, so a new proxy should
@@ -256,35 +268,56 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
 
     // Proxies that aren't live in the parent node should not be initialized
     // here, since there is no valid parent `blink::RemoteFrame` on the renderer
-    // side.  This can happen when adding a new child frame after an opener
-    // process crashed and was reloaded.  See https://crbug.com/501152.
-    if (!parent_proxy->is_render_frame_proxy_live())
+    // side. This can happen when adding a new child frame after an opener
+    // process crashed and was reloaded. See https://crbug.com/501152.
+    //
+    // Note that with `batched_proxy_ipc_sender`, the parent proxy could be
+    // non-live but pending creation. In that case, it is fine to initialize
+    // this proxy, as `batched_proxy_ipc_sender` guarantees that its parent
+    // will be created first in the renderer.
+    GlobalRoutingID parent_global_id = parent_proxy->GetGlobalID();
+    bool is_parent_proxy_creation_pending =
+        batched_proxy_ipc_sender &&
+        batched_proxy_ipc_sender->IsProxyCreationPending(parent_global_id);
+    if (!parent_proxy->is_render_frame_proxy_live() &&
+        !is_parent_proxy_creation_pending) {
       return false;
+    }
 
-    // The current RenderFrameHost's devtools_frame_token can be used here
-    // because it is not expected to differ when there is a RenderFrameProxyHost
-    // in a separate window. The token may change on MPArch activations in the
-    // main frame (e.g., prerender), but those cannot occur if the
-    // BrowsingInstance has more than one window. Same for the
-    // CreateRemoteMainFrame call below.
-    parent_proxy->GetAssociatedRemoteFrame()->CreateRemoteChild(
-        frame_token_, opener_frame_token, frame_tree_node_->tree_scope_type(),
-        frame_tree_node_->current_replication_state().Clone(),
-        frame_tree_node_->frame_owner_properties().Clone(),
-        frame_tree_node_->IsLoading(),
-        frame_tree_node_->current_frame_host()->devtools_frame_token(),
-        CreateAndBindRemoteFrameInterfaces());
+    // TODO(https://crbug.com/1393697): Support main frame proxy batch creation
+    // with batched_proxy_ipc_sender.
+    if (batched_proxy_ipc_sender) {
+      batched_proxy_ipc_sender->AddNewChildProxyCreationTask(
+          GetSafeRef(), frame_token_, opener_frame_token,
+          frame_tree_node_->tree_scope_type(),
+          frame_tree_node_->current_replication_state().Clone(),
+          frame_tree_node_->frame_owner_properties().Clone(),
+          frame_tree_node_->IsLoading(), devtools_frame_token,
+          CreateAndBindRemoteFrameInterfaces(), parent_global_id);
+
+      // Don't call `SetRenderFrameProxyCreated(true)` here, since the proxy
+      // wasn't actually created. This will be called for all
+      // `RenderFrameProxyHosts` later in
+      // `BatchedProxyIPCSender::CreateAllProxies`, after all proxies
+      // are created.
+    } else {
+      parent_proxy->GetAssociatedRemoteFrame()->CreateRemoteChild(
+          frame_token_, opener_frame_token, frame_tree_node_->tree_scope_type(),
+          frame_tree_node_->current_replication_state().Clone(),
+          frame_tree_node_->frame_owner_properties().Clone(),
+          frame_tree_node_->IsLoading(), devtools_frame_token,
+          CreateAndBindRemoteFrameInterfaces());
+      SetRenderFrameProxyCreated(true);
+    }
   } else {
     GetRenderViewHost()->GetAssociatedPageBroadcast()->CreateRemoteMainFrame(
         frame_token_, opener_frame_token,
         frame_tree_node_->current_replication_state().Clone(),
-        frame_tree_node_->IsLoading(),
-        frame_tree_node_->current_frame_host()->devtools_frame_token(),
+        frame_tree_node_->IsLoading(), devtools_frame_token,
         CreateAndBindRemoteFrameInterfaces(),
         CreateAndBindRemoteMainFrameInterfaces());
+    SetRenderFrameProxyCreated(true);
   }
-
-  SetRenderFrameProxyCreated(true);
 
   return true;
 }
@@ -640,8 +673,8 @@ void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
 
-  if (!VerifyOpenURLParams(current_rfh, GetSiteInstance(), params,
-                           &validated_url, &blob_url_loader_factory)) {
+  if (!VerifyOpenURLParams(current_rfh, GetProcess(), params, &validated_url,
+                           &blob_url_loader_factory)) {
     return;
   }
 
@@ -661,8 +694,10 @@ void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
 
   // Verify that we are in the same BrowsingInstance as the current
   // RenderFrameHost.
-  if (!site_instance_->IsRelatedSiteInstance(current_rfh->GetSiteInstance()))
+  if (!site_instance_group()->IsRelatedSiteInstanceGroup(
+          current_rfh->GetSiteInstance()->group())) {
     return;
+  }
 
   // Since this navigation targeted a specific RenderFrameProxy, it should stay
   // in the current tab.
@@ -832,6 +867,10 @@ void RenderFrameProxyHost::WriteIntoTrace(
                               .value());
     proto->set_site_instance_id(site_instance->GetId().value());
   }
+}
+
+base::SafeRef<RenderFrameProxyHost> RenderFrameProxyHost::GetSafeRef() {
+  return weak_factory_.GetSafeRef();
 }
 
 }  // namespace content

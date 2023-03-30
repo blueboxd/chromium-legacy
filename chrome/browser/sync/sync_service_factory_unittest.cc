@@ -86,7 +86,7 @@ class SyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(45 == syncer::GetNumModelTypes(),
+    static_assert(46 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -171,6 +171,9 @@ class SyncServiceFactoryTest : public testing::Test {
     datatypes.Put(syncer::USER_CONSENTS);
     datatypes.Put(syncer::SEND_TAB_TO_SELF);
     datatypes.Put(syncer::SHARING_MESSAGE);
+    if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials)) {
+      datatypes.Put(syncer::WEBAUTHN_CREDENTIAL);
+    }
     return datatypes;
   }
 

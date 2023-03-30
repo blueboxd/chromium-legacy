@@ -111,9 +111,16 @@ base::Value OsStatesDebugValue(
   }
 
   if (current_states.has_uninstall_registration()) {
-    debug_dict.Set(
-        "uninstall_registration",
-        current_states.uninstall_registration().registered_with_os());
+    base::Value::Dict state;
+    proto::OsUninstallRegistration os_uninstall =
+        current_states.uninstall_registration();
+    if (os_uninstall.has_registered_with_os()) {
+      state.Set("registered_with_os", os_uninstall.registered_with_os());
+    }
+    if (os_uninstall.has_display_name()) {
+      state.Set("display_name", os_uninstall.display_name());
+    }
+    debug_dict.Set("uninstall_registration", std::move(state));
   }
 
   if (current_states.has_shortcut_menus()) {
@@ -581,6 +588,15 @@ void WebApp::AddInstallURLToManagementExternalConfigMap(
   management_to_external_config_map_[type].install_urls.emplace(install_url);
 }
 
+void WebApp::AddPolicyIdToManagementExternalConfigMap(
+    WebAppManagement::Type type,
+    const std::string& policy_id) {
+  DCHECK_NE(type, WebAppManagement::Type::kSync);
+  DCHECK(!policy_id.empty());
+  management_to_external_config_map_[type].additional_policy_ids.emplace(
+      policy_id);
+}
+
 void WebApp::AddExternalSourceInformation(WebAppManagement::Type type,
                                           GURL install_url,
                                           bool is_placeholder) {
@@ -659,10 +675,15 @@ WebApp::ExternalManagementConfig& WebApp::ExternalManagementConfig::operator=(
 base::Value::Dict WebApp::ExternalManagementConfig::AsDebugValue() const {
   base::Value::Dict root;
   base::Value::List urls;
-  for (auto it : install_urls) {
-    urls.Append(it.spec());
+  for (const auto& install_url : install_urls) {
+    urls.Append(install_url.spec());
+  }
+  base::Value::List policy_ids;
+  for (const auto& policy_id : additional_policy_ids) {
+    policy_ids.Append(policy_id);
   }
   root.Set("install_urls", std::move(urls));
+  root.Set("additional_policy_ids", std::move(policy_ids));
   root.Set("is_placeholder", is_placeholder);
   return root;
 }
@@ -945,6 +966,10 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
       }
       json_decl.Set("feature", feature_name->second);
       base::Value::List allowlist_json;
+      // TODO(crbug.com/1418009): Consolidate code and filter opaque origins.
+      if (decl.self_if_matches) {
+        allowlist_json.Append(decl.self_if_matches->Serialize());
+      }
       for (const auto& origin_with_possible_wildcards : decl.allowed_origins) {
         allowlist_json.Append(origin_with_possible_wildcards.Serialize());
       }
@@ -1090,8 +1115,12 @@ bool operator!=(const WebApp::SyncFallbackData& sync_fallback_data1,
 
 bool operator==(const WebApp::ExternalManagementConfig& management_config1,
                 const WebApp::ExternalManagementConfig& management_config2) {
-  return management_config1.install_urls == management_config2.install_urls &&
-         management_config1.is_placeholder == management_config2.is_placeholder;
+  return std::tie(management_config1.install_urls,
+                  management_config1.is_placeholder,
+                  management_config1.additional_policy_ids) ==
+         std::tie(management_config2.install_urls,
+                  management_config2.is_placeholder,
+                  management_config2.additional_policy_ids);
 }
 
 bool operator!=(const WebApp::ExternalManagementConfig& management_config1,

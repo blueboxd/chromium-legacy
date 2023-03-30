@@ -49,6 +49,11 @@ class CONTENT_EXPORT PrefetchService {
   static std::unique_ptr<PrefetchService> CreateIfPossible(
       BrowserContext* browser_context);
 
+  static PrefetchService* GetFromFrameTreeNodeId(int frame_tree_node_id);
+  static void SetFromFrameTreeNodeIdForTesting(
+      int frame_tree_node_id,
+      std::unique_ptr<PrefetchService> prefetch_service);
+
   explicit PrefetchService(BrowserContext* browser_context);
   virtual ~PrefetchService();
 
@@ -65,10 +70,7 @@ class CONTENT_EXPORT PrefetchService {
     return prefetch_proxy_configurator_.get();
   }
 
-  PrefetchOriginProber* GetPrefetchOriginProber() const {
-    return origin_prober_.get();
-  }
-
+  virtual PrefetchOriginProber* GetPrefetchOriginProber() const;
   virtual void PrefetchUrl(base::WeakPtr<PrefetchContainer> prefetch_container);
 
   // Called when a navigation to `url` that will be served by
@@ -85,6 +87,11 @@ class CONTENT_EXPORT PrefetchService {
       base::WeakPtr<PrefetchContainer> prefetch_to_serve)>;
   void GetPrefetchToServe(const GURL& url,
                           OnPrefetchToServeReady on_prefetch_to_serve_ready);
+
+  // Copies any cookies in the isolated network context associated with
+  // |prefetch_container| to the default network context.
+  virtual void CopyIsolatedCookies(
+      base::WeakPtr<PrefetchContainer> prefetch_container);
 
   // Removes the prefetch with the given |prefetch_container_key| from
   // |all_prefetches_|.
@@ -217,9 +224,9 @@ class CONTENT_EXPORT PrefetchService {
       base::WeakPtr<PrefetchContainer> prefetch_container,
       const network::URLLoaderCompletionStatus& completion_status);
 
-  // Copies any cookies in the isolated network context associated with
-  // |prefetch_container| to the default network context.
-  void CopyIsolatedCookies(base::WeakPtr<PrefetchContainer> prefetch_container);
+  // Called when the cookies from |prefetch_conatiner| are read from the
+  // isolated network context and are ready to be written to the default network
+  // context.
   void OnGotIsolatedCookiesForCopy(
       base::WeakPtr<PrefetchContainer> prefetch_container,
       const net::CookieAccessResultList& cookie_list,
@@ -237,6 +244,8 @@ class CONTENT_EXPORT PrefetchService {
   // Records the result to a UMA histogram.
   void RecordExistingPrefetchWithMatchingURL(
       base::WeakPtr<PrefetchContainer> prefetch_container) const;
+
+  void DumpPrefetchesForDebug() const;
 
   raw_ptr<BrowserContext> browser_context_;
 

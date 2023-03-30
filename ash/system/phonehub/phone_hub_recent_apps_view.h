@@ -11,11 +11,16 @@
 #include "ash/system/phonehub/phone_connected_view.h"
 #include "base/gtest_prod_util.h"
 #include "chromeos/ash/components/phonehub/recent_apps_interaction_handler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
 namespace ash {
+
+class AppLoadingIcon;
+class PhoneHubMoreAppsButton;
 
 namespace phonehub {
 class PhoneHubManager;
@@ -41,8 +46,16 @@ class ASH_EXPORT PhoneHubRecentAppsView
   // views::View:
   const char* GetClassName() const override;
 
+ protected:
+  friend class RecentAppButtonsViewTest;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest, TaskViewVisibility);
+  FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest,
+                           TaskViewVisibility_NetworkConnectionFlagDisabled);
+  FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest, LoadingStateVisibility);
+  FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest,
+                           ConnectionFailedStateVisibility);
   FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest,
                            SingleRecentAppButtonsView);
   FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest,
@@ -51,6 +64,24 @@ class ASH_EXPORT PhoneHubRecentAppsView
                            MultipleRecentAppButtonsWithMoreAppsButtonView);
 
   class PlaceholderView;
+
+  class HeaderView : public views::View {
+   public:
+    explicit HeaderView(views::ImageButton::PressedCallback callback);
+    ~HeaderView() override = default;
+    HeaderView(HeaderView&) = delete;
+    HeaderView operator=(HeaderView&) = delete;
+
+    // views::View:
+    const char* GetClassName() const override;
+
+    void SetErrorButtonVisible(bool is_visible);
+
+    views::ImageButton* get_error_button_for_test() { return error_button_; }
+
+   private:
+    views::ImageButton* error_button_;
+  };
 
   class RecentAppButtonsView : public views::View {
    public:
@@ -69,6 +100,26 @@ class ASH_EXPORT PhoneHubRecentAppsView
     void Reset();
   };
 
+  class LoadingView : public views::BoxLayoutView {
+   public:
+    LoadingView();
+    ~LoadingView() override;
+    LoadingView(LoadingView&) = delete;
+    LoadingView operator=(LoadingView&) = delete;
+
+    // views::View:
+    gfx::Size CalculatePreferredSize() const override;
+    void Layout() override;
+    const char* GetClassName() const override;
+
+    void StartLoadingAnimation();
+    void StopLoadingAnimation();
+
+   private:
+    std::vector<AppLoadingIcon*> app_loading_icons_;
+    PhoneHubMoreAppsButton* more_apps_button_ = nullptr;
+  };
+
   // Update the view to reflect the most recently opened apps.
   void Update();
 
@@ -77,8 +128,17 @@ class ASH_EXPORT PhoneHubRecentAppsView
 
   void ShowConnectionErrorDialog();
 
+  // Apply an opacity animation when swapping out the loading view for the
+  // RecentAppButtonsView.
+  void FadeOutLoadingView();
+
   // Generate more apps button.
   std::unique_ptr<views::View> GenerateMoreAppsButton();
+
+  views::ImageButton* get_error_button_for_test() {
+    return header_view_->get_error_button_for_test();
+  }
+  LoadingView* get_loading_view_for_test() { return loading_view_; }
 
   RecentAppButtonsView* recent_app_buttons_view_ = nullptr;
   std::vector<views::View*> recent_app_button_list_;
@@ -86,6 +146,8 @@ class ASH_EXPORT PhoneHubRecentAppsView
       nullptr;
   phonehub::PhoneHubManager* phone_hub_manager_ = nullptr;
   PlaceholderView* placeholder_view_ = nullptr;
+  HeaderView* header_view_ = nullptr;
+  LoadingView* loading_view_ = nullptr;
   PhoneConnectedView* connected_view_ = nullptr;
 };
 

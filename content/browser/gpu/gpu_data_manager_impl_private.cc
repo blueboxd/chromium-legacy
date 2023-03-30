@@ -415,15 +415,6 @@ bool SwiftShaderAllowed() {
 #endif
 }
 
-// Determines if Metal is available for the GPU process.
-[[maybe_unused]] bool MetalAllowed() {
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
-  return base::FeatureList::IsEnabled(features::kMetal);
-#else
-  return false;
-#endif
-}
-
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with "CompositingMode" in
 // src/tools/metrics/histograms/enums.xml.
@@ -431,7 +422,7 @@ enum class CompositingMode {
   kSoftware = 0,
   kGL = 1,
   kVulkan = 2,
-  kMetal = 3,
+  kMetal = 3,  // deprecated
   kMaxValue = kMetal
 };
 
@@ -448,7 +439,8 @@ void CollectExtraDevicePerfInfo(const gpu::GPUInfo& gpu_info,
   if (device.vendor_id == 0xffff /* internal flag for software rendering */ ||
       device.vendor_id == 0x15ad /* VMware */ ||
       device.vendor_id == 0x1414 /* Microsoft software renderer */ ||
-      gpu_info.software_rendering /* SwiftShader */) {
+      gl::IsSoftwareGLImplementation(
+          gpu_info.gl_implementation_parts) /* SwiftShader */) {
     device_perf_info->software_rendering = true;
   }
 }
@@ -560,8 +552,6 @@ void GpuDataManagerImplPrivate::InitializeGpuModes() {
 
     if (VulkanAllowed())
       fallback_modes_.push_back(gpu::GpuMode::HARDWARE_VULKAN);
-    if (MetalAllowed())
-      fallback_modes_.push_back(gpu::GpuMode::HARDWARE_METAL);
 #endif  // BUILDFLAG(IS_FUCHSIA)
   }
 
@@ -598,7 +588,6 @@ std::vector<std::string> GpuDataManagerImplPrivate::GetDawnInfoList() const {
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
-    case gpu::GpuMode::HARDWARE_METAL:
     case gpu::GpuMode::HARDWARE_VULKAN:
       return true;
     case gpu::GpuMode::SWIFTSHADER:
@@ -1322,7 +1311,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   std::string use_gl;
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
-    case gpu::GpuMode::HARDWARE_METAL:
     case gpu::GpuMode::HARDWARE_VULKAN:
       use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
       break;
@@ -1383,10 +1371,7 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
                                            .message_pump_type_for_gpu;
 #endif
 
-#if BUILDFLAG(IS_MAC)
-  if (gpu_mode_ != gpu::GpuMode::HARDWARE_METAL)
-    gpu_preferences->enable_metal = false;
-#elif BUILDFLAG(ENABLE_VULKAN)
+#if BUILDFLAG(ENABLE_VULKAN)
   if (gpu_mode_ != gpu::GpuMode::HARDWARE_VULKAN)
     gpu_preferences->use_vulkan = gpu::VulkanImplementationName::kNone;
 #endif
@@ -1401,7 +1386,6 @@ void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
 bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
-    case gpu::GpuMode::HARDWARE_METAL:
     case gpu::GpuMode::HARDWARE_VULKAN:
       return true;
     default:
@@ -1721,5 +1705,15 @@ void GpuDataManagerImplPrivate::RecordCompositingMode() {
 
   UMA_HISTOGRAM_ENUMERATION("GPU.CompositingMode", compositing_mode);
 }
+
+#if BUILDFLAG(IS_LINUX)
+bool GpuDataManagerImplPrivate::IsGpuMemoryBufferNV12Supported() {
+  return is_gpu_memory_buffer_NV12_supported_;
+}
+void GpuDataManagerImplPrivate::SetGpuMemoryBufferNV12Supported(
+    bool supported) {
+  is_gpu_memory_buffer_NV12_supported_ = supported;
+}
+#endif  // BUILDFLAG(IS_LINUX)
 
 }  // namespace content

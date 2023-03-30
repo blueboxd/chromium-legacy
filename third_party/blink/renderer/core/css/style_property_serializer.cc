@@ -51,6 +51,29 @@
 
 namespace blink {
 
+namespace {
+
+template <typename T>
+T ConvertIdentifierTo(const CSSValue* value, T initial_value) {
+  if (const auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
+    return ident->ConvertTo<T>();
+  }
+  DCHECK(value->IsInitialValue());
+  return initial_value;
+}
+
+inline WhiteSpaceCollapse ToWhiteSpaceCollapse(const CSSValue* value) {
+  return ConvertIdentifierTo<WhiteSpaceCollapse>(
+      value, ComputedStyleInitialValues::InitialWhiteSpaceCollapse());
+}
+
+inline TextWrap ToTextWrap(const CSSValue* value) {
+  return ConvertIdentifierTo<TextWrap>(
+      value, ComputedStyleInitialValues::InitialTextWrap());
+}
+
+}  // namespace
+
 StylePropertySerializer::CSSPropertyValueSetForSerializer::
     CSSPropertyValueSetForSerializer(const CSSPropertyValueSet& properties)
     : property_set_(&properties),
@@ -379,6 +402,7 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
     case CSSPropertyID::kTextEmphasis:
     case CSSPropertyID::kWebkitMask:
     case CSSPropertyID::kWebkitTextStroke:
+    case CSSPropertyID::kAlternativeWhiteSpace:
       return true;
     default:
       return false;
@@ -660,6 +684,8 @@ String StylePropertySerializer::SerializeShorthand(
     }
     case CSSPropertyID::kViewTimeline:
       return ViewTimelineValue();
+    case CSSPropertyID::kAlternativeWhiteSpace:
+      return WhiteSpaceValue();
     case CSSPropertyID::kGridColumnGap:
     case CSSPropertyID::kGridGap:
     case CSSPropertyID::kGridRowGap:
@@ -901,21 +927,34 @@ CSSValue* AnimationDelayShorthandValueItem(wtf_size_t index,
   return list;
 }
 
-// If `value` is a range on the form '<ident> <percentage>', then return that as
-// a pair. This is useful for contracting '<somename> 0%' and '<somename> 100%'
-// into just just <somename>.
-std::pair<CSSValueID, double> GetTimelineRangePercent(const CSSValue& value) {
+// Return the name and offset (in percent). This is useful for
+// contracting '<somename> 0%' and '<somename> 100%' into just <somename>.
+//
+// If the offset is present, but not a <percentage>, -1 is returned as the
+// offset. Otherwise (also in the 'normal' case), the `default_offset_percent`
+// is returned.
+std::pair<CSSValueID, double> GetTimelineRangePercent(
+    const CSSValue& value,
+    double default_offset_percent) {
   const auto* list = DynamicTo<CSSValueList>(value);
   if (!list) {
-    return {CSSValueID::kInvalid, -1.0};
+    return {CSSValueID::kNormal, default_offset_percent};
   }
-  DCHECK_EQ(list->length(), 2u);
+  DCHECK_GE(list->length(), 1u);
+  DCHECK_LE(list->length(), 2u);
   const auto& name = To<CSSIdentifierValue>(list->Item(0));
-  const auto& offset = To<CSSPrimitiveValue>(list->Item(1));
-  if (!offset.IsPercentage()) {
-    return {CSSValueID::kInvalid, -1.0};
+  double offset_percent = -1.0;
+
+  if (list->length() == 1u) {
+    // <ident>
+    offset_percent = default_offset_percent;
+  } else {
+    // <ident> <length-percentage>
+    const auto& offset = To<CSSPrimitiveValue>(list->Item(1));
+    offset_percent = offset.IsPercentage() ? offset.GetValue<double>() : -1.0;
   }
-  return {name.GetValueID(), offset.GetValue<double>()};
+
+  return {name.GetValueID(), offset_percent};
 }
 
 CSSValue* AnimationRangeShorthandValueItem(wtf_size_t index,
@@ -927,21 +966,17 @@ CSSValue* AnimationRangeShorthandValueItem(wtf_size_t index,
   const CSSValue& start = start_list.Item(index);
   const CSSValue& end = end_list.Item(index);
 
-  // E.g. "enter 0% enter 100%" must be shortened to just "enter".
-  {
-    const auto& [start_name, start_offset] = GetTimelineRangePercent(start);
-    const auto& [end_name, end_offset] = GetTimelineRangePercent(end);
-    if (start_name == end_name && start_offset == 0.0 && end_offset == 100.0) {
-      return CSSIdentifierValue::Create(start_name);
-    }
-  }
-
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
   list->Append(start);
 
-  if (const auto* ident = DynamicTo<CSSIdentifierValue>(end);
-      !ident || (ident->GetValueID() != CSSValueID::kAuto)) {
+  // The form "name X name 100%" must contract to "name X".
+  //
+  // https://github.com/w3c/csswg-drafts/issues/8438
+  const auto& start_pair = GetTimelineRangePercent(start, 0.0);
+  const auto& end_pair = GetTimelineRangePercent(end, 100.0);
+  std::pair<CSSValueID, double> omittable_end = {start_pair.first, 100.0};
+  if (end_pair != omittable_end) {
     list->Append(end);
   }
 
@@ -1552,6 +1587,22 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         }
         is_initial_value = true;
       }
+      if (property->IDEquals(CSSPropertyID::kAnimationRangeStart)) {
+        auto* ident = DynamicTo<CSSIdentifierValue>(value);
+        if (!ident || (ident->GetValueID() != CSSValueID::kNormal)) {
+          DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+          return g_empty_string;
+        }
+        is_initial_value = true;
+      }
+      if (property->IDEquals(CSSPropertyID::kAnimationRangeEnd)) {
+        auto* ident = DynamicTo<CSSIdentifierValue>(value);
+        if (!ident || (ident->GetValueID() != CSSValueID::kNormal)) {
+          DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+          return g_empty_string;
+        }
+        is_initial_value = true;
+      }
 
       if (!is_initial_value) {
         if (property->IDEquals(CSSPropertyID::kBackgroundSize) ||
@@ -2099,6 +2150,43 @@ bool StylePropertySerializer::IsValidToggleShorthand(
     }
   }
   return true;
+}
+
+String StylePropertySerializer::WhiteSpaceValue() const {
+  DCHECK(RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled());
+
+  const CSSValue* collapse_value =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyWhiteSpaceCollapse());
+  const CSSValue* wrap_value =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyTextWrap());
+  if (!collapse_value || !wrap_value) {
+    // If any longhands are missing, don't serialize as a shorthand.
+    return g_empty_string;
+  }
+
+  // Check if longhands are one of pre-defined keywords of `white-space`.
+  const WhiteSpaceCollapse collapse = ToWhiteSpaceCollapse(collapse_value);
+  const TextWrap wrap = ToTextWrap(wrap_value);
+  const EWhiteSpace whitespace = ToWhiteSpace(collapse, wrap);
+  if (IsValidWhiteSpace(whitespace)) {
+    return getValueName(PlatformEnumToCSSValueID(whitespace));
+  }
+
+  // Otherwise build a multi-value list.
+  StringBuilder result;
+  if (collapse != ComputedStyleInitialValues::InitialWhiteSpaceCollapse()) {
+    result.Append(getValueName(PlatformEnumToCSSValueID(collapse)));
+  }
+  if (wrap != ComputedStyleInitialValues::InitialTextWrap()) {
+    if (!result.empty()) {
+      result.Append(kSpaceCharacter);
+    }
+    result.Append(getValueName(PlatformEnumToCSSValueID(wrap)));
+  }
+  // When all longhands are initial values, it should be `normal`, covered by
+  // `IsValidWhiteSpace()` above.
+  DCHECK(!result.empty());
+  return result.ToString();
 }
 
 }  // namespace blink

@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/cart/cart_service.h"
 #include "chrome/browser/cart/cart_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -33,6 +34,8 @@
 #include "components/history_clusters/public/mojom/history_cluster_types.mojom.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/search/ntp_features.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_util.h"
@@ -45,12 +48,23 @@ constexpr int kMinRequiredRelatedSearches = 3;
 // visit.
 constexpr int kMinRequiredVisits = 3;
 
-base::flat_set<std::string> GetCategories(bool allowlist) {
+// This enum must match the numbering for NTPHistoryClustersIneligibleReason in
+// enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
+enum NTPHistoryClustersIneligibleReason {
+  kNone = 0,
+  kNoClusters = 1,
+  kNonProminent = 2,
+  kNoSRPVisit = 3,
+  kInsufficientVisits = 4,
+  kInsufficientImages = 5,
+  kInsufficientRelatedSearches = 6,
+  kMaxValue = kInsufficientRelatedSearches,
+};
+
+base::flat_set<std::string> GetCategories(const char* feature_param) {
   std::string categories_string = base::GetFieldTrialParamValueByFeature(
-      ntp_features::kNtpHistoryClustersModuleCategories,
-      allowlist
-          ? ntp_features::kNtpHistoryClustersModuleCategoriesAllowlistParam
-          : ntp_features::kNtpHistoryClustersModuleCategoriesBlocklistParam);
+      ntp_features::kNtpHistoryClustersModuleCategories, feature_param);
   if (categories_string.empty()) {
     return {};
   }
@@ -64,6 +78,17 @@ base::flat_set<std::string> GetCategories(bool allowlist) {
                                                           categories.end());
 }
 
+int GetMinVisitsToShow() {
+  static int min_visits = base::GetFieldTrialParamByFeatureAsInt(
+      ntp_features::kNtpHistoryClustersModuleMinimumVisitsRequired,
+      ntp_features::kNtpHistoryClustersModuleMinimumVisitsRequiredParam,
+      kMinRequiredVisits);
+  if (min_visits < 0) {
+    return kMinRequiredVisits;
+  }
+  return min_visits;
+}
+
 int GetMinImagesToShow() {
   static int min_images_to_show = base::GetFieldTrialParamByFeatureAsInt(
       ntp_features::kNtpHistoryClustersModuleMinimumImagesRequired,
@@ -71,15 +96,33 @@ int GetMinImagesToShow() {
   return min_images_to_show;
 }
 
+size_t GetMaxClusters() {
+  // Even though only one cluster will be shown on the NTP at a time for now,
+  // set this to greater than that in case the filtering logic does not match
+  // up.
+  static int max_clusters = base::GetFieldTrialParamByFeatureAsInt(
+      ntp_features::kNtpHistoryClustersModuleMaxClusters,
+      ntp_features::kNtpHistoryClustersModuleMaxClustersParam, 5);
+  if (max_clusters < 0) {
+    return 5;
+  }
+  return static_cast<size_t>(max_clusters);
+}
+
 history_clusters::QueryClustersFilterParams GetFilterParamsFromFeatureFlags() {
   history_clusters::QueryClustersFilterParams filter_params;
+  filter_params.min_visits = GetMinVisitsToShow();
   filter_params.min_visits_with_images = GetMinImagesToShow();
-  filter_params.categories_allowlist = GetCategories(/*allowlist=*/true);
-  filter_params.categories_blocklist = GetCategories(/*allowlist=*/false);
+  filter_params.categories_allowlist = GetCategories(
+      ntp_features::kNtpHistoryClustersModuleCategoriesAllowlistParam);
+  filter_params.categories_blocklist = GetCategories(
+      ntp_features::kNtpHistoryClustersModuleCategoriesBlocklistParam);
   filter_params.is_search_initiated = true;
   filter_params.has_related_searches = true;
   filter_params.is_shown_on_prominent_ui_surfaces = true;
-  // TODO(b/265301665): Add max clusters param when actually showing in the UI.
+  filter_params.max_clusters = GetMaxClusters();
+  filter_params.categories_boostlist = GetCategories(
+      ntp_features::kNtpHistoryClustersModuleCategoriesBoostlistParam);
   return filter_params;
 }
 
@@ -94,15 +137,17 @@ base::Time GetBeginTime() {
   return base::Time::Now() - base::Hours(hours_to_look_back);
 }
 
-history::ClusterVisit GenerateSampleVisit(history::VisitID visit_id,
-                                          const std::string& page_title,
-                                          const GURL& url,
-                                          bool has_url_keyed_image) {
+history::ClusterVisit GenerateSampleVisit(
+    history::VisitID visit_id,
+    const std::string& page_title,
+    const GURL& url,
+    bool has_url_keyed_image,
+    const base::Time visit_time = base::Time::Now()) {
   history::URLRow url_row = history::URLRow(url);
   url_row.set_title(base::UTF8ToUTF16(page_title));
   history::VisitRow visit_row;
   visit_row.visit_id = visit_id;
-  visit_row.visit_time = base::Time::Now();
+  visit_row.visit_time = visit_time;
   visit_row.is_known_to_sync = true;
   auto content_annotations = history::VisitContentAnnotations();
   content_annotations.has_url_keyed_image = has_url_keyed_image;
@@ -120,20 +165,29 @@ history::ClusterVisit GenerateSampleVisit(history::VisitID visit_id,
 }
 
 history::Cluster GenerateSampleCluster(int num_visits, int num_images) {
-  const std::vector<std::tuple<std::string, GURL>> kSampleUrlVisitData = {
-      {"Pixel 7", GURL("https://store.google.com/product/pixel_7?hl=en-US")},
-      {"Pixel Buds Pro",
-       GURL("https://store.google.com/product/pixel_buds_pro?hl=en-US")},
-      {"Pixel Watch",
-       GURL("https://store.google.com/product/google_pixel_watch?hl=en-US")}};
+  const base::Time current_time = base::Time::Now();
+  const std::vector<std::tuple<std::string, GURL, base::Time>>
+      kSampleUrlVisitData = {
+          {"Pixel 7 Pro - The all-pro Google phone.",
+           GURL("https://store.google.com/product/pixel_7?hl=en-US"),
+           current_time - base::Minutes(1)},
+          {"Pixel Buds Pro - How premium sounds.",
+           GURL("https://store.google.com/product/pixel_buds_pro?hl=en-US"),
+           current_time - base::Hours(1)},
+          {"Pixel Watch - Help by Google. Health by Fitbit.",
+           GURL("https://store.google.com/product/google_pixel_watch?hl=en-US"),
+           current_time - base::Hours(4)},
+          {"Next Door Bells - Know who's knocking.",
+           GURL("https://store.google.com/product/nest_doorbell?hl=en-US"),
+           current_time - base::Hours(8)}};
 
   std::vector<history::ClusterVisit> sample_visits;
   for (int i = 0; i < num_visits; i++) {
-    const std::tuple<std::string, GURL> kSampleData =
+    const std::tuple<std::string, GURL, base::Time> kSampleData =
         kSampleUrlVisitData.at(i % kSampleUrlVisitData.size());
-    sample_visits.push_back(GenerateSampleVisit(i, std::get<0>(kSampleData),
-                                                std::get<1>(kSampleData),
-                                                (i < num_images)));
+    sample_visits.push_back(GenerateSampleVisit(
+        i, std::get<0>(kSampleData), std::get<1>(kSampleData), (i < num_images),
+        std::get<2>(kSampleData)));
   }
 
   std::string kSampleSearchQuery = "google store products";
@@ -177,25 +231,81 @@ void HistoryClustersPageHandler::CallbackWithClusterData(
     GetClusterCallback callback,
     std::vector<history::Cluster> clusters,
     history_clusters::QueryClustersContinuationParams continuation_params) {
-  std::set<GURL> seen_urls = {};
-  history_clusters::CullNonProminentOrDuplicateClusters("", clusters,
-                                                        &seen_urls);
-  // Cull clusters that do not have the minimum number of visits to be eligible
-  // for display.
+  const TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (!template_url_service) {
+    return;
+  }
+
+  history_clusters::CoalesceRelatedSearches(clusters);
+
+  // Cull clusters that do not have the minimum number of visits with and
+  // without images to be eligible for display.
+  NTPHistoryClustersIneligibleReason ineligible_reason =
+      clusters.empty() ? kNoClusters : kNone;
   base::EraseIf(clusters, [&](auto& cluster) {
+    // Cull non prominent clusters.
+    if (!cluster.should_show_on_prominent_ui_surfaces) {
+      ineligible_reason = kNonProminent;
+      return true;
+    }
+
+    // Cull clusters whose visits don't have at least one SRP.
+    const TemplateURL* default_search_provider =
+        template_url_service->GetDefaultSearchProvider();
+    auto srp_visits_it = std::find_if(
+        cluster.visits.begin(), cluster.visits.end(), [&](auto& visit) {
+          return default_search_provider->IsSearchURL(
+              visit.normalized_url, template_url_service->search_terms_data());
+        });
+    if (srp_visits_it == cluster.visits.end()) {
+      ineligible_reason = kNoSRPVisit;
+      return true;
+    }
+
+    // Ensure visits contains at most one SRP visit and its the first one in the
+    // list.
+    history::ClusterVisit first_srp_visit = *srp_visits_it;
+    base::EraseIf(cluster.visits, [&](auto& visit) {
+      return default_search_provider->IsSearchURL(
+          visit.normalized_url, template_url_service->search_terms_data());
+    });
+    cluster.visits.insert(cluster.visits.begin(), first_srp_visit);
+
     // Cull visits that have a zero relevance score.
     base::EraseIf(cluster.visits,
                   [&](auto& visit) { return visit.score == 0.0; });
 
-    return cluster.visits.size() < kMinRequiredVisits;
-  });
-  history_clusters::CoalesceRelatedSearches(clusters);
-  // Cull clusters that do not have the minimum required number of related
-  // searches to be eligible for display.
-  base::EraseIf(clusters, [&](auto& cluster) {
-    return cluster.related_searches.size() < kMinRequiredRelatedSearches;
+    int visits_with_images = std::accumulate(
+        cluster.visits.begin(), cluster.visits.end(), 0,
+        [](const auto& i, const auto& v) {
+          return i + int(v.annotated_visit.content_annotations
+                             .has_url_keyed_image &&
+                         v.annotated_visit.visit_row.is_known_to_sync);
+        });
+
+    if (cluster.visits.size() < kMinRequiredVisits) {
+      ineligible_reason = kInsufficientVisits;
+      return true;
+    }
+
+    if (visits_with_images < GetMinImagesToShow()) {
+      ineligible_reason = kInsufficientImages;
+      return true;
+    }
+
+    // Cull clusters that do not have the minimum required number of related
+    // searches to be eligible for display.
+    if (cluster.related_searches.size() < kMinRequiredRelatedSearches) {
+      ineligible_reason = kInsufficientRelatedSearches;
+      return true;
+    }
+
+    return false;
   });
 
+  base::UmaHistogramEnumeration("NewTabPage.HistoryClusters.IneligibleReason",
+                                ineligible_reason);
   base::UmaHistogramBoolean("NewTabPage.HistoryClusters.HasClusterToShow",
                             !clusters.empty());
   base::UmaHistogramCounts100("NewTabPage.HistoryClusters.NumClusterCandidates",
@@ -212,8 +322,8 @@ void HistoryClustersPageHandler::CallbackWithClusterData(
                               clusters.front().related_searches.size());
 
   history::Cluster top_cluster = clusters.front();
-  auto cluster_mojom = history_clusters::ClusterToMojom(
-      TemplateURLServiceFactory::GetForProfile(profile_), top_cluster);
+  auto cluster_mojom =
+      history_clusters::ClusterToMojom(template_url_service, top_cluster);
   std::move(callback).Run(std::move(cluster_mojom));
 
   if (!IsCartModuleEnabled() || !cart_service_) {

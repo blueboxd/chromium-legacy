@@ -10,7 +10,7 @@
 class ChromeBrowserState;
 class ReadingListModel;
 @class CSSearchableItem;
-@class TopSitesSpotlightManager;
+@class SpotlightInterface;
 
 /// Manages Reading List items in Spotlight search.
 @interface ReadingListSpotlightManager : BaseSpotlightManager
@@ -27,11 +27,13 @@ class ReadingListModel;
 - (instancetype)initWithLargeIconService:
                     (favicon::LargeIconService*)largeIconService
                         readingListModel:(ReadingListModel*)readingListModel
+                      spotlightInterface:(SpotlightInterface*)spotlightInterface
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithLargeIconService:
                     (favicon::LargeIconService*)largeIconService
                                   domain:(spotlight::Domain)domain
+                      spotlightInterface:(SpotlightInterface*)spotlightInterface
     NS_UNAVAILABLE;
 
 /// Immediately clears and reindexes the reading list items in Spotlight. Calls

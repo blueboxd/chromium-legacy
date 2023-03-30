@@ -9,9 +9,11 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/extensions/api/side_panel/side_panel_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_view_state_observer.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_icon_image.h"
 
 class Browser;
@@ -34,7 +36,8 @@ class Extension;
 // shown if this extension's SidePanelEntry is active.
 class ExtensionSidePanelCoordinator : public ExtensionViewViews::Observer,
                                       public IconImage::Observer,
-                                      public SidePanelService::Observer {
+                                      public SidePanelService::Observer,
+                                      public TabStripModelObserver {
  public:
   explicit ExtensionSidePanelCoordinator(Browser* browser,
                                          const Extension* extension,
@@ -56,9 +59,19 @@ class ExtensionSidePanelCoordinator : public ExtensionViewViews::Observer,
  private:
   SidePanelEntry::Key GetEntryKey() const;
 
+  SidePanelEntry* GetEntry() const;
+
+  // Returns if this extension's side panel is explicitly disabled for the given
+  // `tab_id`.
+  bool IsDisabledForTab(int tab_id) const;
+
   // Deregisters this extension's SidePanelEntry from the global
   // SidePanelCoordinator.
   void DeregisterGlobalEntry();
+
+  // Deregisters this extension's SidePanelEntry from the global
+  // SidePanelCoordinator and caches the entry's view into `global_entry_view_`.
+  void DeregisterGlobalEntryAndCacheView();
 
   // SidePanelService::Observer:
   void OnPanelOptionsChanged(
@@ -72,6 +85,12 @@ class ExtensionSidePanelCoordinator : public ExtensionViewViews::Observer,
   // IconImage::Observer
   void OnExtensionIconImageChanged(IconImage* image) override;
 
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
   // Creates and registers the SidePanelEntry for this extension, and observes
   // the entry. This is called if the extension has a default side panel path
   // when the browser view is created or when the extension is loaded.
@@ -81,6 +100,11 @@ class ExtensionSidePanelCoordinator : public ExtensionViewViews::Observer,
   // extension's SidePanelEntry is about to be shown in the side panel and a
   // view for the entry has not been cached.
   std::unique_ptr<views::View> CreateView();
+
+  // Called when window.close() is called from the extension's side panel page.
+  // This closes the side panel if the extension's panel is showing. Otherwise
+  // it clears the extension entry's cached view.
+  void HandleCloseExtensionSidePanel(ExtensionHost* host);
 
   // Loads the `side_panel_url_` into the WebContents of the view for the
   // extension's SidePanelEntry. To avoid unnecessary updates, this is only
@@ -106,6 +130,10 @@ class ExtensionSidePanelCoordinator : public ExtensionViewViews::Observer,
 
   // The extension's own icon for its side panel entry.
   std::unique_ptr<IconImage> extension_icon_;
+
+  // Cached view for global entry if it was disabled for a specific tab and may
+  // be shown again on a different tab where it's enabled.
+  std::unique_ptr<views::View> global_entry_view_;
 
   base::ScopedObservation<ExtensionViewViews, ExtensionViewViews::Observer>
       scoped_view_observation_{this};

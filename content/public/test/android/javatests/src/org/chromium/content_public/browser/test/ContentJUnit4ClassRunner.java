@@ -4,12 +4,13 @@
 
 package org.chromium.content_public.browser.test;
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 
 import org.junit.runners.model.InitializationError;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.SkipCheck;
+import org.chromium.ui.test.util.DeviceRestrictionSkipCheck;
 import org.chromium.ui.test.util.UiDisableIfSkipCheck;
 import org.chromium.ui.test.util.UiRestrictionSkipCheck;
 
@@ -32,6 +33,7 @@ public class ContentJUnit4ClassRunner extends BaseJUnit4ClassRunner {
     protected List<SkipCheck> getSkipChecks() {
         return addToList(super.getSkipChecks(),
                 new UiRestrictionSkipCheck(InstrumentationRegistry.getTargetContext()),
+                new DeviceRestrictionSkipCheck(InstrumentationRegistry.getTargetContext()),
                 new UiDisableIfSkipCheck(InstrumentationRegistry.getTargetContext()));
     }
 

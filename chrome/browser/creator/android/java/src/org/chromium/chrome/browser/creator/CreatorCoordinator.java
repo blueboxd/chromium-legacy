@@ -309,6 +309,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
             view.setId(R.id.creator_feed_stream_recycler_view);
             view.setClipToPadding(false);
             view.setBackgroundColor(SemanticColorUtils.getDefaultBgColor(mActivity));
+            view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         } else {
             view = null;
         }
@@ -373,6 +374,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         }, mCreatorViewGroup, mActivity.getResources().getColor(R.color.default_scrim_color));
 
         mBottomSheetContainer = new FrameLayout(mActivity);
+        mBottomSheetContainer.setId(R.id.creator_content_preview_bottom_sheet);
         mBottomSheetContainer.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mCreatorViewGroup.addView(mBottomSheetContainer);

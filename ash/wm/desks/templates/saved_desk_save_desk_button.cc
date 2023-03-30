@@ -7,6 +7,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/style_util.h"
+#include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -17,8 +18,6 @@
 
 namespace ash {
 
-constexpr int kCornerRadius = 16;
-
 SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
     base::RepeatingClosure callback,
     const std::u16string& text,
@@ -26,9 +25,7 @@ SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
     const gfx::VectorIcon* icon)
     : PillButton(callback,
                  text,
-                 chromeos::features::IsJellyrollEnabled()
-                     ? PillButton::Type::kDefaultElevatedWithIconLeading
-                     : PillButton::Type::kDefaultWithIconLeading,
+                 PillButton::Type::kDefaultElevatedWithIconLeading,
                  icon),
       callback_(callback),
       button_type_(button_type) {
@@ -41,9 +38,9 @@ SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
 
   if (features::IsDarkLightModeEnabled()) {
     SetBorder(std::make_unique<views::HighlightBorder>(
-        /*corner_radius=*/kCornerRadius,
+        kSaveDeskCornerRadius,
         chromeos::features::IsJellyrollEnabled()
-            ? views::HighlightBorder::Type::kHighlightBorder1
+            ? views::HighlightBorder::Type::kHighlightBorderNoShadow
             : views::HighlightBorder::Type::kHighlightBorder2,
         /*use_light_colors=*/false));
   }

@@ -13,6 +13,7 @@
 namespace blink {
 
 class LayoutNGTable;
+class LayoutNGTableRow;
 
 // NOTE:
 // Every child of LayoutNGTableSection must be LayoutNGTableRow.
@@ -21,8 +22,12 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGBlock,
  public:
   explicit LayoutNGTableSection(Element*);
 
+  static LayoutNGTableSection* CreateAnonymousWithParent(const LayoutObject&);
+
   bool IsEmpty() const;
 
+  LayoutNGTableRow* FirstRow() const;
+  LayoutNGTableRow* LastRow() const;
   LayoutNGTable* Table() const;
 
   // LayoutBlock methods start.
@@ -58,7 +63,6 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGBlock,
   // Whether a section has opaque background depends on many factors, e.g.
   // border spacing, border collapsing, missing cells, etc. For simplicity,
   // just conservatively assume all table sections are not opaque.
-  // Copied from LayoutTableSection,
   bool ForegroundIsKnownToBeOpaqueInRect(const PhysicalRect&,
                                          unsigned) const override {
     NOT_DESTROYED();
@@ -135,7 +139,7 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGBlock,
 template <>
 struct DowncastTraits<LayoutNGTableSection> {
   static bool AllowFrom(const LayoutObject& object) {
-    return object.IsTableSection() && object.IsLayoutNGObject();
+    return object.IsTableSection();
   }
 };
 

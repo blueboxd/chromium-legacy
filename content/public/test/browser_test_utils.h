@@ -17,6 +17,7 @@
 #include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
@@ -29,6 +30,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/commit_deferring_condition.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -536,7 +538,9 @@ class ToRenderFrameHost {
   RenderFrameHost* render_frame_host() const { return render_frame_host_; }
 
  private:
-  RenderFrameHost* render_frame_host_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION RenderFrameHost* render_frame_host_;
 };
 
 RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_view_host);
@@ -600,16 +604,6 @@ void ExecuteScriptAsyncWithoutUserGesture(const ToRenderFrameHost& adapter,
                                                const std::string& script,
                                                bool* result);
 [[nodiscard]] bool ExecuteScriptAndExtractString(
-    const ToRenderFrameHost& adapter,
-    const std::string& script,
-    std::string* result);
-
-// Same as above but the script executed without user gesture.
-[[nodiscard]] bool ExecuteScriptWithoutUserGestureAndExtractBool(
-    const ToRenderFrameHost& adapter,
-    const std::string& script,
-    bool* result);
-[[nodiscard]] bool ExecuteScriptWithoutUserGestureAndExtractString(
     const ToRenderFrameHost& adapter,
     const std::string& script,
     std::string* result);
@@ -1076,9 +1070,6 @@ void SetFileSystemAccessPermissionContext(
     FileSystemAccessPermissionContext* permission_context);
 
 // Waits until all resources have loaded in the given RenderFrameHost.
-// When the load completes, this function sends a "pageLoadComplete" message
-// via domAutomationController. The caller should make sure this extra
-// message is handled properly.
 [[nodiscard]] bool WaitForRenderFrameReady(RenderFrameHost* rfh);
 
 // Enable accessibility support for all of the frames in this WebContents
@@ -1776,7 +1767,9 @@ class TestNavigationManager : public WebContentsObserver {
   void ResumeIfPaused();
 
   const GURL url_;
-  NavigationRequest* request_ = nullptr;
+  // This field is not a raw_ptr<> because of incompatibilities with tracing
+  // (TRACE_EVENT*), perfetto::TracedDictionary::Add and gmock/EXPECT_THAT.
+  RAW_PTR_EXCLUSION NavigationRequest* request_ = nullptr;
   bool navigation_paused_ = false;
   NavigationState current_state_ = NavigationState::INITIAL;
   NavigationState desired_state_ = NavigationState::WILL_START;
@@ -1980,6 +1973,29 @@ class WebContentsConsoleObserver : public WebContentsObserver {
   std::string pattern_;
   WaiterHelper waiter_helper_;
   std::vector<Message> messages_;
+};
+
+// A helper class to get DevTools inspector log messages (e.g. network errors).
+class DevToolsInspectorLogWatcher : public DevToolsAgentHostClient {
+ public:
+  explicit DevToolsInspectorLogWatcher(WebContents* web_contents);
+  ~DevToolsInspectorLogWatcher() override;
+
+  void FlushAndStopWatching();
+  std::string last_message() { return last_message_; }
+  GURL last_url() { return last_url_; }
+
+  // DevToolsAgentHostClient:
+  void DispatchProtocolMessage(DevToolsAgentHost* host,
+                               base::span<const uint8_t> message) override;
+  void AgentHostClosed(DevToolsAgentHost* host) override;
+
+ private:
+  scoped_refptr<DevToolsAgentHost> host_;
+  base::RunLoop run_loop_enable_log_;
+  base::RunLoop run_loop_disable_log_;
+  std::string last_message_;
+  GURL last_url_;
 };
 
 // Static methods that simulates Mojo methods as if they were called by a
@@ -2394,6 +2410,29 @@ class CreateAndLoadWebContentsObserver {
 
   const int num_expected_contents_;
   int num_new_contents_seen_ = 0;
+};
+
+// Waits for the given number of calls to
+// WebContentsObserver::OnCookiesAccessed.
+class CookieChangeObserver : public content::WebContentsObserver {
+ public:
+  explicit CookieChangeObserver(content::WebContents* web_contents,
+                                int num_expected_calls = 1);
+  ~CookieChangeObserver() override;
+
+  void Wait();
+
+ private:
+  void OnCookiesAccessed(content::RenderFrameHost* render_frame_host,
+                         const content::CookieAccessDetails& details) override;
+  void OnCookiesAccessed(content::NavigationHandle* navigation,
+                         const content::CookieAccessDetails& details) override;
+
+  void OnCookieAccessed();
+
+  base::RunLoop run_loop_;
+  int num_seen_ = 0;
+  int num_expected_calls_;
 };
 
 [[nodiscard]] base::CallbackListSubscription

@@ -25,10 +25,12 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/web_package/test_support/signed_web_bundles/web_bundle_signer.h"
 #include "components/web_package/web_bundle_builder.h"
+#include "content/public/common/content_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkEncodedImageFormat.h"
@@ -66,7 +68,10 @@ std::string GetTestIconInString() {
 }
 }  // namespace
 
-IsolatedWebAppBrowserTestHarness::IsolatedWebAppBrowserTestHarness() = default;
+IsolatedWebAppBrowserTestHarness::IsolatedWebAppBrowserTestHarness() {
+  iwa_scoped_feature_list_.InitWithFeatures(
+      {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode}, {});
+}
 
 IsolatedWebAppBrowserTestHarness::~IsolatedWebAppBrowserTestHarness() = default;
 
@@ -88,26 +93,6 @@ Browser* IsolatedWebAppBrowserTestHarness::GetBrowserFromFrame(
       content::WebContents::FromRenderFrameHost(frame));
   EXPECT_TRUE(browser);
   return browser;
-}
-
-void IsolatedWebAppBrowserTestHarness::CreateIframe(
-    content::RenderFrameHost* parent_frame,
-    const std::string& iframe_id,
-    const GURL& url,
-    const std::string& permissions_policy) {
-  EXPECT_EQ(true, content::EvalJs(
-                      parent_frame,
-                      content::JsReplace(R"(
-            new Promise(resolve => {
-              let f = document.createElement('iframe');
-              f.id = $1;
-              f.src = $2;
-              f.allow = $3;
-              f.addEventListener('load', () => resolve(true));
-              document.body.appendChild(f);
-            });
-        )",
-                                         iframe_id, url, permissions_policy)));
 }
 
 content::RenderFrameHost* IsolatedWebAppBrowserTestHarness::OpenApp(
@@ -174,6 +159,25 @@ content::RenderFrameHost* OpenIsolatedWebApp(Profile* profile,
   return ui_test_utils::NavigateToURLWithDisposition(
       app_window, app->start_url(), WindowOpenDisposition::NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+}
+
+void CreateIframe(content::RenderFrameHost* parent_frame,
+                  const std::string& iframe_id,
+                  const GURL& url,
+                  const std::string& permissions_policy) {
+  EXPECT_EQ(true, content::EvalJs(
+                      parent_frame,
+                      content::JsReplace(R"(
+            new Promise(resolve => {
+              let f = document.createElement('iframe');
+              f.id = $1;
+              f.src = $2;
+              f.allow = $3;
+              f.addEventListener('load', () => resolve(true));
+              document.body.appendChild(f);
+            });
+        )",
+                                         iframe_id, url, permissions_policy)));
 }
 
 TestSignedWebBundle::TestSignedWebBundle(

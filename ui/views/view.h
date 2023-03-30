@@ -24,7 +24,8 @@
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/accessibility/ax_enums.mojom-forward.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
@@ -65,7 +66,6 @@ class Insets;
 
 namespace ui {
 struct AXActionData;
-struct AXNodeData;
 class ColorProvider;
 class Compositor;
 class InputMethod;
@@ -292,14 +292,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // TODO(crbug.com/1289902): The |event| parameter is being removed. Do not add
   // new callers.
-  using DropCallback =
-      base::OnceCallback<void(const ui::DropTargetEvent& event,
-                              ui::mojom::DragOperation& output_drag_op)>;
-
-  using DropCallbackWithAnimation = base::OnceCallback<void(
+  using DropCallback = base::OnceCallback<void(
       const ui::DropTargetEvent& event,
       ui::mojom::DragOperation& output_drag_op,
-      std::unique_ptr<ui::LayerTreeOwner> old_layer_owner)>;
+      std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner)>;
 
   METADATA_HEADER_BASE(View);
 
@@ -872,47 +868,72 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the mirrored position of the child Views if the parent View uses a
   // right-to-left UI layout.
 
-  // Convert a point from the coordinate system of one View to another.
+  // Converts a point from the coordinate system of one View to another.
   //
-  // |source| and |target| must be in the same widget, but doesn't need to be in
+  // |source| and |target| must be in the same widget, but don't need to be in
   // the same view hierarchy.
-  // Neither |source| nor |target| can be NULL.
+  // Neither |source| nor |target| can be null.
+  [[nodiscard]] static gfx::Point ConvertPointToTarget(const View* source,
+                                                       const View* target,
+                                                       const gfx::Point& point);
+  // The in-place version of this method is strongly discouraged, please use the
+  // by-value version above for improved const-compatability and readability.
   static void ConvertPointToTarget(const View* source,
                                    const View* target,
                                    gfx::Point* point);
 
-  [[nodiscard]] static gfx::Point ConvertPointToTarget(const View* source,
-                                                       const View* target,
-                                                       const gfx::Point& point);
-
-  // Convert |rect| from the coordinate system of |source| to the coordinate
+  // Converts |rect| from the coordinate system of |source| to the coordinate
   // system of |target|.
   //
-  // |source| and |target| must be in the same widget, but doesn't need to be in
+  // |source| and |target| must be in the same widget, but don't need to be in
   // the same view hierarchy.
-  // Neither |source| nor |target| can be NULL.
-  static void ConvertRectToTarget(const View* source,
-                                  const View* target,
-                                  gfx::RectF* rect);
+  // Neither |source| nor |target| can be null.
   [[nodiscard]] static gfx::RectF ConvertRectToTarget(const View* source,
                                                       const View* target,
                                                       const gfx::RectF& rect);
+  // The in-place version of this method is strongly discouraged, please use the
+  // by-value version above for improved const-compatability and readability.
+  static void ConvertRectToTarget(const View* source,
+                                  const View* target,
+                                  gfx::RectF* rect);
 
-  // Convert a point from a View's coordinate system to that of its Widget.
+  // Converts |rect| from the coordinate system of |source| to the
+  // coordinate system of |target|.
+  //
+  // |source| and |target| must be in the same widget, but don't need to be in
+  // the same view hierarchy.
+  // Neither |source| nor |target| can be null.
+  //
+  // Returns the enclosed rect with default allowed conversion error
+  // (0.00001f).
+  static gfx::Rect ConvertRectToTarget(const View* source,
+                                       const View* target,
+                                       gfx::Rect& rect);
+
+  // Converts a point from a View's coordinate system to that of its Widget.
   static void ConvertPointToWidget(const View* src, gfx::Point* point);
 
-  // Convert a point from the coordinate system of a View's Widget to that
+  // Converts a point from the coordinate system of a View's Widget to that
   // View's coordinate system.
   static void ConvertPointFromWidget(const View* dest, gfx::Point* p);
 
-  // Convert a point from a View's coordinate system to that of the screen.
+  // Converts a point from a View's coordinate system to that of the screen.
+  [[nodiscard]] static gfx::Point ConvertPointToScreen(const View* src,
+                                                       const gfx::Point& point);
+  // The in-place version of this method is strongly discouraged, please use the
+  // by-value version above for improved const-compatability and readability.
   static void ConvertPointToScreen(const View* src, gfx::Point* point);
 
-  // Convert a point from the screen coordinate system to that View's coordinate
-  // system.
+  // Converts a point from the screen coordinate system to that View's
+  // coordinate system.
+  [[nodiscard]] static gfx::Point ConvertPointFromScreen(
+      const View* src,
+      const gfx::Point& point);
+  // The in-place version of this method is strongly discouraged, please use the
+  // by-value version above for improved const-compatability and readability.
   static void ConvertPointFromScreen(const View* dst, gfx::Point* point);
 
-  // Convert a rect from a View's coordinate system to that of the screen.
+  // Converts a rect from a View's coordinate system to that of the screen.
   static void ConvertRectToScreen(const View* src, gfx::Rect* rect);
 
   // Applies transformation on the rectangle, which is in the view's coordinate
@@ -1417,12 +1438,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // uses View local coordinates.
   virtual DropCallback GetDropCallback(const ui::DropTargetEvent& event);
 
-  // Invoked during a drag and drop session when the user release the mouse.
-  // Similar to GetDropCallback() but the returned callback has access to the
-  // drag image layer if any animation is needed.
-  virtual DropCallbackWithAnimation GetDropCallbackWithAnimation(
-      const ui::DropTargetEvent& event);
-
   // Returns true if the mouse was dragged enough to start a drag operation.
   // delta_x and y are the distance the mouse was dragged.
   static bool ExceededDragThreshold(const gfx::Vector2d& delta);
@@ -1432,9 +1447,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Get the object managing the accessibility interface for this View.
   ViewAccessibility& GetViewAccessibility() const;
 
-  // Modifies |node_data| to reflect the current accessible state of this
-  // view.
-  virtual void GetAccessibleNodeData(ui::AXNodeData* node_data) {}
+  // Modifies |node_data| to reflect the current accessible state of this view.
+  // It accomplishes this by keeping the data up-to-date in response to the use
+  // of the accessible-property setters.
+  // NOTE: View authors should use the available property setters rather than
+  // overriding this function. Views which need to expose accessibility
+  // properties which are currently not supported View properties should ensure
+  // their view's `GetAccessibleNodeData` calls `GetAccessibleNodeData` on the
+  // parent class. This ensures that if an owning view customizes an accessible
+  // property, such as the name, role, or description, that customization is
+  // included in your view's `AXNodeData`.
+  virtual void GetAccessibleNodeData(ui::AXNodeData* node_data);
 
   // Sets/gets the accessible name.
   // The value of the accessible name is a localized, end-user-consumable string
@@ -1444,7 +1467,50 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // reader when that object gains focus and is critical to understanding the
   // purpose of that object non-visually.
   void SetAccessibleName(const std::u16string& name);
-  virtual const std::u16string& GetAccessibleName() const;
+  const std::u16string& GetAccessibleName() const;
+
+  // Sets the accessible name to the specified string and source type.
+  // To indicate that this view should never have an accessible name, e.g. to
+  // prevent screen readers from speaking redundant information, set the type to
+  // `kAttributeExplicitlyEmpty`. NOTE: Do not use `kAttributeExplicitlyEmpty`
+  // on a view which may or may not have a name depending on circumstances. Also
+  // please seek review from accessibility OWNERs when removing the name,
+  // especially for views which are focusable or otherwise interactive.
+  void SetAccessibleName(std::u16string name, ax::mojom::NameFrom name_from);
+
+  // Sets the accessible name of this view to that of `naming_view`. Often
+  // `naming_view` is a `views::Label`, but any view with an accessible name
+  // will work.
+  void SetAccessibleName(View* naming_view);
+
+  // Sets/gets the accessible role.
+  void SetAccessibleRole(const ax::mojom::Role role);
+  ax::mojom::Role GetAccessibleRole() const;
+
+  // Sets the accessible role along with a customized string to be used by
+  // assistive technologies to present the role. When there is no role
+  // description provided, assisitive technologies will use either the default
+  // role descriptions we provide (which are currently located in a number of
+  // places. See crbug.com/1290866) or the value provided by their platform. As
+  // a general rule, it is preferable to not override the role string. Please
+  // seek review from accessibility OWNERs when using this function.
+  void SetAccessibleRole(const ax::mojom::Role role,
+                         const std::u16string& role_description);
+
+  // Sets/gets the accessible description string.
+  void SetAccessibleDescription(const std::u16string& description);
+  const std::u16string& GetAccessibleDescription() const;
+
+  // Sets the accessible description to the specified string and source type.
+  // To remove the description and prevent alternatives (such as tooltip text)
+  // from being used, set the type to `kAttributeExplicitlyEmpty`
+  void SetAccessibleDescription(const std::u16string& description,
+                                ax::mojom::DescriptionFrom description_from);
+
+  // Sets the accessible description of this view to the accessible name of
+  // `describing_view`. Often `describing_view` is a `views::Label`, but any
+  // view with an accessible name will work.
+  void SetAccessibleDescription(View* describing_view);
 
   // Handle a request from assistive technology to perform an action on this
   // view. Returns true on success, but note that the success/failure is
@@ -1519,8 +1585,29 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accessibility -------------------------------------------------------------
 
+  // Convenience function to set common accessibility properties during view
+  // construction/initialization. It should only be used to define property
+  // values as part of the creation of this view; not to provide property-
+  // change updates. This function will only modify properties for which a value
+  // has been explicitly set.
+  void SetAccessibilityProperties(
+      absl::optional<ax::mojom::Role> role = absl::nullopt,
+      absl::optional<std::u16string> name = absl::nullopt,
+      absl::optional<std::u16string> description = absl::nullopt,
+      absl::optional<std::u16string> role_description = absl::nullopt,
+      absl::optional<ax::mojom::NameFrom> name_from = absl::nullopt,
+      absl::optional<ax::mojom::DescriptionFrom> description_from =
+          absl::nullopt);
+
   // Called when the accessible name of the View changed.
   virtual void OnAccessibleNameChanged(const std::u16string& new_name) {}
+
+  // Called by `SetAccessibleName` to allow subclasses to adjust the new name.
+  // Potential use cases include setting the accessible name to the tooltip
+  // text when the new name is empty and prepending/appending additional text
+  // to the new name.
+  virtual void AdjustAccessibleName(std::u16string& new_name,
+                                    ax::mojom::NameFrom& name_from) {}
 
   // Size and disposition ------------------------------------------------------
 
@@ -1760,6 +1847,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCache);
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCacheInRTL);
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithUnknownInvalidation);
+  FRIEND_TEST_ALL_PREFIXES(ViewTest, PauseAccessibilityEvents);
 
   // This is the default view layout. It is a very simple version of FillLayout,
   // which merely sets the bounds of the children to the content bounds. The
@@ -1897,23 +1985,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Coordinate conversion -----------------------------------------------------
 
-  // Convert a point in the view's coordinate to an ancestor view's coordinate
+  // Converts a point in the view's coordinate to an ancestor view's coordinate
   // system using necessary transformations. Returns whether the point was
   // successfully converted to the ancestor's coordinate system.
   bool ConvertPointForAncestor(const View* ancestor, gfx::Point* point) const;
 
-  // Convert a point in the ancestor's coordinate system to the view's
+  // Converts a point in the ancestor's coordinate system to the view's
   // coordinate system using necessary transformations. Returns whether the
   // point was successfully converted from the ancestor's coordinate system
   // to the view's coordinate system.
   bool ConvertPointFromAncestor(const View* ancestor, gfx::Point* point) const;
 
-  // Convert a rect in the view's coordinate to an ancestor view's coordinate
+  // Converts a rect in the view's coordinate to an ancestor view's coordinate
   // system using necessary transformations. Returns whether the rect was
   // successfully converted to the ancestor's coordinate system.
   bool ConvertRectForAncestor(const View* ancestor, gfx::RectF* rect) const;
 
-  // Convert a rect in the ancestor's coordinate system to the view's
+  // Converts a rect in the ancestor's coordinate system to the view's
   // coordinate system using necessary transformations. Returns whether the
   // rect was successfully converted from the ancestor's coordinate system
   // to the view's coordinate system.
@@ -2267,13 +2355,25 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Manages the accessibility interface for this View.
   mutable std::unique_ptr<ViewAccessibility> view_accessibility_;
 
+  // Updated by the accessibility property setters and returned by
+  // `GetAccessibleNodeData`.
+  std::unique_ptr<ui::AXNodeData> ax_node_data_;
+
+  // Used by `SetAccessibilityProperties` and to prevent accessibility
+  // property-change events from being fired during initialization of this view.
+  bool pause_accessibility_events_ = false;
+
   // Keeps track of whether accessibility checks for this View have run yet.
   // They run once inside ::OnPaint() to keep overhead low. The idea is that if
   // a View is ready to paint it should also be set up to be accessible.
   bool has_run_accessibility_paint_checks_ = false;
 
-  // The current accessible name.
+  // Accessible properties whose values are set by views using the accessible
+  // property setters, and used to populate the `AXNodeData` associated with
+  // this view and provided by `View::GetAccessibleNodeData`.
   std::u16string accessible_name_;
+  std::u16string accessible_description_;
+  ax::mojom::Role accessible_role_ = ax::mojom::Role::kUnknown;
 
   // Observers -----------------------------------------------------------------
 
@@ -2299,7 +2399,21 @@ template <typename LayoutManager>
 BuilderT&& SetLayoutManager(std::unique_ptr<LayoutManager> layout_manager) && {
   return std::move(this->SetLayoutManager(std::move(layout_manager)));
 }
-VIEW_BUILDER_PROPERTY(std::u16string, AccessibleName)
+
+VIEW_BUILDER_OVERLOAD_METHOD(SetAccessibleName, const std::u16string&)
+VIEW_BUILDER_OVERLOAD_METHOD(SetAccessibleName, View*)
+VIEW_BUILDER_OVERLOAD_METHOD(SetAccessibleName,
+                             std::u16string,
+                             ax::mojom::NameFrom)
+VIEW_BUILDER_OVERLOAD_METHOD(SetAccessibleDescription, const std::u16string&)
+VIEW_BUILDER_OVERLOAD_METHOD(SetAccessibleDescription, View*)
+VIEW_BUILDER_OVERLOAD_METHOD(SetAccessibleDescription,
+                             const std::u16string&,
+                             ax::mojom::DescriptionFrom)
+VIEW_BUILDER_OVERLOAD_METHOD(SetAccessibleRole, ax::mojom::Role)
+VIEW_BUILDER_OVERLOAD_METHOD(SetAccessibleRole,
+                             ax::mojom::Role,
+                             const std::u16string&)
 VIEW_BUILDER_PROPERTY(std::unique_ptr<Background>, Background)
 VIEW_BUILDER_PROPERTY(std::unique_ptr<Border>, Border)
 VIEW_BUILDER_PROPERTY(gfx::Rect, BoundsRect)

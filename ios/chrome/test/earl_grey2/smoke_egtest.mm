@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <TestLib/EarlGreyImpl/EarlGrey.h>
 #import <UIKit/UIKit.h>
 
 #import "base/ios/ios_util.h"
@@ -269,29 +268,13 @@
 
 // Tests hard kill(crash) through AppLaunchManager.
 - (void)testAppLaunchManagerForceRelaunchByKilling {
-  [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:GURL("chrome://version")];
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{}
-                                  disabled:{kRemoveCrashInfobar}
-                            relaunchPolicy:ForceRelaunchByKilling];
-  [ChromeEarlGrey
-      waitForSufficientlyVisibleElementWithMatcher:grey_text(@"Restore")];
-  [ChromeEarlGrey waitForMainTabCount:1];
-  [ChromeEarlGrey waitForIncognitoTabCount:0];
-}
-
-// Tests hard kill(crash) through AppLaunchManager.
-- (void)testAppLaunchManagerForceRelaunchByKillingNoRestoreInfobar {
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
   [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:GURL("chrome://about")];
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{kRemoveCrashInfobar}
-                                  disabled:{}
-                            relaunchPolicy:ForceRelaunchByKilling];
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:ForceRelaunchByKilling];
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey waitForIncognitoTabCount:1];
   [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]

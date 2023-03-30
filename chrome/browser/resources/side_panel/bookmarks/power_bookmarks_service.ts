@@ -4,8 +4,8 @@
 
 // This file contains business logic for power bookmarks side panel content.
 
-import {ImageServiceBrowserProxy} from '//resources/cr_components/image_service/browser_proxy.js';
-import {ClientId as ImageServiceClientId} from '//resources/cr_components/image_service/image_service.mojom-webui.js';
+import {PageImageServiceBrowserProxy} from '//resources/cr_components/page_image_service/browser_proxy.js';
+import {ClientId as PageImageServiceClientId} from '//resources/cr_components/page_image_service/page_image_service.mojom-webui.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PluralStringProxyImpl} from '//resources/js/plural_string_proxy.js';
 import {Url} from '//resources/mojo/url/mojom/url.mojom-webui.js';
@@ -152,12 +152,10 @@ export class PowerBookmarksService {
                   folder.children!));
       shownBookmarks = topLevelBookmarks;
     }
-    if (searchQuery) {
-      shownBookmarks = this.applySearchQuery_(searchQuery!, shownBookmarks);
+    if (searchQuery || labels.find((label) => label.active)) {
+      shownBookmarks =
+          this.applySearchQueryAndLabels_(labels, searchQuery, shownBookmarks);
     }
-    shownBookmarks = shownBookmarks.filter(
-        (b: chrome.bookmarks.BookmarkTreeNode) =>
-            this.nodeMatchesContentFilters_(b, labels));
     const sortChangedPosition =
         this.sortBookmarks(shownBookmarks, activeSortIndex);
     if (sortChangedPosition) {
@@ -416,9 +414,10 @@ export class PowerBookmarksService {
 
     // Fetch the representative image for this page, if possible.
     const {result} =
-        await ImageServiceBrowserProxy.getInstance().handler.getPageImageUrl(
-            ImageServiceClientId.Bookmarks, url,
-            {suggestImages: true, optimizationGuideImages: true});
+        await PageImageServiceBrowserProxy.getInstance()
+            .handler.getPageImageUrl(
+                PageImageServiceClientId.Bookmarks, url,
+                {suggestImages: true, optimizationGuideImages: true});
     if (result) {
       return result.imageUrl.url;
     }
@@ -438,8 +437,8 @@ export class PowerBookmarksService {
     return expanded;
   }
 
-  private applySearchQuery_(
-      searchQuery: string,
+  private applySearchQueryAndLabels_(
+      labels: Label[], searchQuery: string|undefined,
       shownBookmarks: chrome.bookmarks.BookmarkTreeNode[]) {
     let searchSpace: chrome.bookmarks.BookmarkTreeNode[] = [];
     // Search space should include all descendants of the shown bookmarks, in
@@ -449,10 +448,12 @@ export class PowerBookmarksService {
     });
     return searchSpace.filter(
         (bookmark: chrome.bookmarks.BookmarkTreeNode) =>
-            (bookmark.title &&
-             bookmark.title.toLocaleLowerCase().includes(searchQuery)) ||
-            (bookmark.url &&
-             bookmark.url.toLocaleLowerCase().includes(searchQuery)));
+            this.nodeMatchesContentFilters_(bookmark, labels) &&
+            (!searchQuery ||
+             (bookmark.title &&
+              bookmark.title.toLocaleLowerCase().includes(searchQuery!)) ||
+             (bookmark.url &&
+              bookmark.url.toLocaleLowerCase().includes(searchQuery!))));
   }
 
   private nodeMatchesContentFilters_(

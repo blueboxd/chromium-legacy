@@ -160,6 +160,7 @@
 #include "chrome/browser/ash/bruschetta/bruschetta_policy_handler.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_prefs.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_policy_handler.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/policy/handlers/configuration_policy_handler_ash.h"
@@ -378,6 +379,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAutoplayAllowlist,
     prefs::kAutoplayAllowlist,
     base::Value::Type::LIST },
+  { key::kScreenCaptureWithoutGestureAllowedForOrigins,
+    prefs::kScreenCaptureWithoutGestureAllowedForOrigins,
+    base::Value::Type::LIST },
+  { key::kFileOrDirectoryPickerWithoutGestureAllowedForOrigins,
+    prefs::kFileOrDirectoryPickerWithoutGestureAllowedForOrigins,
+    base::Value::Type::LIST },
   { key::kBasicAuthOverHttpEnabled,
     prefs::kBasicAuthOverHttpEnabled,
     base::Value::Type::BOOLEAN },
@@ -482,7 +489,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kGloballyScopeHTTPAuthCacheEnabled,
     base::Value::Type::BOOLEAN },
   { key::kHideWebStoreIcon,
-    prefs::kHideWebStoreIcon,
+    policy::policy_prefs::kHideWebStoreIcon,
     base::Value::Type::BOOLEAN },
   { key::kHomepageIsNewTabPage,
     prefs::kHomePageIsNewTabPage,
@@ -723,10 +730,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSafeBrowsingScoutReportingEnabled,
     base::Value::Type::BOOLEAN },
   { key::kForceGoogleSafeSearch,
-    prefs::kForceGoogleSafeSearch,
+    policy_prefs::kForceGoogleSafeSearch,
     base::Value::Type::BOOLEAN },
   { key::kForceYouTubeRestrict,
-    prefs::kForceYouTubeRestrict,
+    policy::policy_prefs::kForceYouTubeRestrict,
     base::Value::Type::INTEGER },
   { key::kDefaultCookiesSetting,
     prefs::kManagedDefaultCookiesSetting,
@@ -1334,9 +1341,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSecurityTokenSessionNotificationSeconds,
     prefs::kSecurityTokenSessionNotificationSeconds,
     base::Value::Type::INTEGER },
-  { key::kDeviceArcDataSnapshotHours,
-    arc::prefs::kArcSnapshotHours,
-    base::Value::Type::DICT },
   { key::kDeviceAllowMGSToStoreDisplayProperties,
     ash::prefs::kAllowMGSToStoreDisplayProperties,
     base::Value::Type::BOOLEAN },
@@ -1388,7 +1392,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kProjectorEnabled,
     ash::prefs::kProjectorAllowByPolicy,
     base::Value::Type::BOOLEAN },
-    { key::kProjectorDogfoodForFamilyLinkEnabled,
+  { key::kProjectorDogfoodForFamilyLinkEnabled,
     ash::prefs::kProjectorDogfoodForFamilyLinkEnabled,
     base::Value::Type::BOOLEAN },
   { key::kFloatingWorkspaceEnabled,
@@ -1424,6 +1428,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     { key::kScreensaverLockScreenImageDisplayIntervalSeconds,
     ash::ambient::prefs::kAmbientModeManagedScreensaverImageDisplayIntervalSeconds,
     base::Value::Type::INTEGER },
+  { key::kScreensaverLockScreenImages,
+    ash::ambient::prefs::kAmbientModeManagedScreensaverImages,
+    base::Value::Type::LIST },
+  { key::kUserAvatarCustomizationSelectorsEnabled,
+    ash::user_image::prefs::kUserAvatarCustomizationSelectorsEnabled,
+    base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)

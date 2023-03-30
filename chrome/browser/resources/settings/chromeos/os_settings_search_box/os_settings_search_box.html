@@ -20,7 +20,7 @@
   }
 
   :host-context(body.jelly-enabled):host {
-    --cr-toolbar-search-field-background: var(--cros-sys-input_field_dark);
+    --cr-toolbar-search-field-background: var(--cros-sys-input_field_on_base);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -115,14 +115,6 @@
 
   .pill-button-with-icon:hover {
     --text-color: var(--cros-text-color-prominent);
-  }
-
-  .pill-button-with-icon iron-icon {
-    fill: var(--cros-text-color-secondary);
-  }
-
-  .pill-button-with-icon:hover iron-icon {
-    fill: var(--cros-text-color-prominent);
   }
 
   #noSearchResultsContainer {

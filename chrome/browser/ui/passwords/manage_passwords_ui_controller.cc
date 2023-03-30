@@ -264,6 +264,14 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
     ClearPopUpFlagForBubble();
     passwords_data_.OnPasswordAutofilled(password_forms, origin,
                                          federated_matches);
+    // Don't close the existing bubble. Update the icon later.
+    if (bubble_status_ == BubbleStatus::SHOWN) {
+      bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
+    }
+    if (bubble_status_ != BubbleStatus::SHOWN_PENDING_ICON_UPDATE) {
+      UpdateBubbleAndIconVisibility();
+    }
+
     if (GetState() == password_manager::ui::MANAGE_STATE) {
       if (Browser* browser =
               chrome::FindBrowserWithWebContents(web_contents())) {
@@ -281,11 +289,6 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
         }
       }
     }
-    // Don't close the existing bubble. Update the icon later.
-    if (bubble_status_ == BubbleStatus::SHOWN)
-      bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
-    if (bubble_status_ != BubbleStatus::SHOWN_PENDING_ICON_UPDATE)
-      UpdateBubbleAndIconVisibility();
   }
 }
 
@@ -330,6 +333,10 @@ void ManagePasswordsUIController::OnShowMoveToAccountBubble(
 
 void ManagePasswordsUIController::OnBiometricAuthenticationForFilling(
     PrefService* prefs) {
+  // Existing dialog shouldn't be closed.
+  if (dialog_controller_) {
+    return;
+  }
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   const std::string promo_shown_counter =
       password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter;

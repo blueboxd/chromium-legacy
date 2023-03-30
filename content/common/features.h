@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -27,6 +28,11 @@ BASE_DECLARE_FEATURE(kOnShowWithPageVisibility);
 // keyboard currently visible.
 BASE_DECLARE_FEATURE(kOptimizeImmHideCalls);
 #endif  // BUILDFLAG(IS_ANDROID)
+
+// When enabled, when creating new proxies for all nodes in a `FrameTree`, one
+// IPC is sent to create all child frame proxies instead of sending one IPC per
+// proxy.
+BASE_DECLARE_FEATURE(kConsolidatedIPCForProxyCreation);
 
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kQueueNavigationsWhileWaitingForCommit);
 
@@ -63,6 +69,21 @@ BASE_DECLARE_FEATURE(kRestrictCanAccessDataForOriginToUIThread);
 
 // (crbug/1377753): Speculatively start service worker before BeforeUnload runs.
 BASE_DECLARE_FEATURE(kSpeculativeServiceWorkerStartup);
+
+#if BUILDFLAG(IS_ANDROID)
+// Monitor total private memory footprint and dispatch memory pressure signal
+// if the value exceeds the pre-defined threshold. (for Android 4GB devices)
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kUserLevelMemoryPressureSignalOn4GbDevices);
+
+// (for Android 6GB devices)
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kUserLevelMemoryPressureSignalOn6GbDevices);
+
+// Helper functions for UserLevelMemoryPressureSignal features.
+CONTENT_EXPORT base::TimeDelta
+MinimumIntervalOfUserLevelMemoryPressureSignalOn4GbDevices();
+CONTENT_EXPORT base::TimeDelta
+MinimumIntervalOfUserLevelMemoryPressureSignalOn6GbDevices();
+#endif
 
 // Please keep features in alphabetical order.
 

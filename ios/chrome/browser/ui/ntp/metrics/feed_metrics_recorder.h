@@ -10,6 +10,7 @@
 #import "base/time/time.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_refresh_state_tracker.h"
 
 class DiscoverFeedRefresher;
 @protocol FeedControlDelegate;
@@ -20,7 +21,7 @@ class Time;
 }
 
 // Records different metrics for the NTP feeds.
-@interface FeedMetricsRecorder : NSObject
+@interface FeedMetricsRecorder : NSObject <FeedRefreshStateTracker>
 
 // Delegate to get the currently selected feed.
 @property(nonatomic, weak) id<FeedControlDelegate> feedControlDelegate;
@@ -220,10 +221,6 @@ class Time;
 // Records a user action for the Following feed sort type being selected.
 - (void)recordFollowingFeedSortTypeSelected:(FollowingFeedSortType)sortType;
 
-// Returns YES if the user has engaged with the latest refreshed content. The
-// term "engaged" is an implementation detail of this class.
-- (BOOL)hasEngagedWithLatestRefreshedContent;
-
 #pragma mark - Follow
 
 // Record metrics for when the user request to follow/unfollow a website,
@@ -280,6 +277,11 @@ class Time;
 
 // Record metrics for when a user tapped on "Cancel" of the Sign-in promo UI.
 - (void)recordSignInPromoUICancelTapped;
+
+// Record metrics for when a user triggered a sign-in only flow from Discover
+// feed. `hasUserId` is YES when the user has one or more device-level
+// identities.
+- (void)recordShowSignInOnlyUIWithUserId:(BOOL)hasUserId;
 
 @end
 

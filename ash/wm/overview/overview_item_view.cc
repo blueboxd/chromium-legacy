@@ -13,14 +13,15 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/window_preview_view.h"
-#include "ash/wm/wm_highlight_item_border.h"
 #include "base/containers/contains.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/animation_builder.h"
@@ -77,11 +78,13 @@ OverviewItemView::OverviewItemView(
     views::Button::PressedCallback close_callback,
     aura::Window* window,
     bool show_preview)
-    : WindowMiniView(window),
+    : WindowMiniView(window, kWindowMargin),
       overview_item_(overview_item),
-      close_button_(header_view()->AddChildView(
-          std::make_unique<CloseButton>(std::move(close_callback),
-                                        CloseButton::Type::kLargeFloating))) {
+      close_button_(header_view()->AddChildView(std::make_unique<CloseButton>(
+          std::move(close_callback),
+          chromeos::features::IsJellyrollEnabled()
+              ? CloseButton::Type::kMediumFloating
+              : CloseButton::Type::kLargeFloating))) {
   DCHECK(overview_item_);
   // This should not be focusable. It's also to avoid accessibility error when
   // |window->GetTitle()| is empty.
@@ -184,6 +187,10 @@ void OverviewItemView::RefreshPreviewView() {
 }
 
 gfx::Rect OverviewItemView::GetHeaderBounds() const {
+  if (chromeos::features::IsJellyrollEnabled()) {
+    return WindowMiniView::GetHeaderBounds();
+  }
+
   // We want to align the edges of the image as shown below in the diagram. The
   // resource itself contains some padding, which is the distance from the edges
   // of the image to the edges of the vector icon. The icon keeps its size in
@@ -266,11 +273,11 @@ bool OverviewItemView::MaybeActivateHighlightedViewOnOverviewExit(
 }
 
 void OverviewItemView::OnViewHighlighted() {
-  UpdateBorderState(/*show=*/true);
+  UpdateFocusState(/*focus=*/true);
 }
 
 void OverviewItemView::OnViewUnhighlighted() {
-  UpdateBorderState(/*show=*/false);
+  UpdateFocusState(/*focus=*/false);
 }
 
 gfx::Point OverviewItemView::GetMagnifierFocusPointInScreen() {
@@ -339,7 +346,7 @@ void OverviewItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void OverviewItemView::OnThemeChanged() {
   WindowMiniView::OnThemeChanged();
-  UpdateBorderState(IsViewHighlighted());
+  UpdateFocusState(IsViewHighlighted());
 
   // If it's still showing the saved desk library, make sure overview item
   // window is not visible.

@@ -10,7 +10,6 @@ import {
 import * as dom from '../../dom.js';
 import {reportError} from '../../error.js';
 import * as expert from '../../expert.js';
-import {Flag} from '../../flag.js';
 import * as h264 from '../../h264.js';
 import {I18nString} from '../../i18n_string.js';
 import {LowStorageActionType, sendLowStorageEvent} from '../../metrics.js';
@@ -42,6 +41,7 @@ import {
   Resolution,
   VideoType,
 } from '../../type.js';
+import {getFpsRangeFromConstraints} from '../../util.js';
 import {WaitableEvent} from '../../waitable_event.js';
 import {StreamConstraints} from '../stream_constraints.js';
 import {StreamManager} from '../stream_manager.js';
@@ -89,10 +89,14 @@ const GRAB_GIF_FRAME_RATIO = 2;
 const TIME_LAPSE_INITIAL_SPEED = 5;
 
 /**
- * Number of maximum frames recorded in a specific speed time-lapse video. If
- * the current number of frames exceeds, the speed must be increasd.
+ * Maximum duration for the time-lapse video in seconds.
  */
-const TIME_LAPSE_MAX_FRAMES = 5 * 30;
+const TIME_LAPSE_MAX_DURATION = 60;
+
+/**
+ * Default number of fps in case it's not defined from the original video.
+ */
+const TIME_LAPSE_DEFAULT_FRAME_RATE = 30;
 
 
 /**
@@ -283,6 +287,7 @@ export class Video extends ModeBase {
       private readonly snapshotResolution: Resolution|null,
       facing: Facing,
       private readonly handler: VideoHandler,
+      private readonly frameRate: number,
   ) {
     super(video, facing);
 
@@ -387,11 +392,6 @@ export class Video extends ModeBase {
    * start/resume the recording.
    */
   private async startMonitorStorage(): Promise<boolean> {
-    // If the monitoring is not enabled, skip setting callback and return true
-    // to always allow users to start/resume recording.
-    if (!loadTimeData.getChromeFlag(Flag.LOW_STORAGE_WARNING)) {
-      return true;
-    }
     const onChange = (newState: StorageMonitorStatus) => {
       if (newState === StorageMonitorStatus.NORMAL) {
         this.toggleLowStorageWarning(false);
@@ -660,9 +660,7 @@ export class Video extends ModeBase {
 
   override stop(): void {
     this.stopped = true;
-    if (loadTimeData.getChromeFlag(Flag.LOW_STORAGE_WARNING)) {
-      ChromeHelper.getInstance().stopMonitorStorage();
-    }
+    ChromeHelper.getInstance().stopMonitorStorage();
     this.toggleLowStorageWarning(false);
     if (!state.get(state.State.RECORDING)) {
       return;
@@ -700,7 +698,8 @@ export class Video extends ModeBase {
     const gifSaver = await GifSaver.create(new Resolution(width, height));
     const canvas = new OffscreenCanvas(width, height);
     const context = assertInstanceof(
-        canvas.getContext('2d'), OffscreenCanvasRenderingContext2D);
+        canvas.getContext('2d', {willReadFrequently: true}),
+        OffscreenCanvasRenderingContext2D);
     if (videoTrack.readyState === 'ended') {
       throw new NoFrameError();
     }
@@ -741,17 +740,20 @@ export class Video extends ModeBase {
    */
   private async captureTimeLapse(param: h264.EncoderParameters):
       Promise<TimeLapseSaver> {
+    const fps =
+        this.frameRate > 0 ? this.frameRate : TIME_LAPSE_DEFAULT_FRAME_RATE;
     const encoderConfig = getVideoEncoderConfig(param, this.captureResolution);
     const saver = await TimeLapseSaver.create(
-        encoderConfig, this.captureResolution, TIME_LAPSE_INITIAL_SPEED);
+        encoderConfig, this.captureResolution, fps, TIME_LAPSE_INITIAL_SPEED);
     const video = this.video.video;
 
     // Handles time-lapse speed adjustment.
+    const maxFrames = TIME_LAPSE_MAX_DURATION * fps;
     let speed = TIME_LAPSE_INITIAL_SPEED;
-    let speedCheckpoint = speed * TIME_LAPSE_MAX_FRAMES;
+    let speedCheckpoint = speed * maxFrames;
     function updateSpeed() {
       speed = speed * 2;
-      speedCheckpoint = speed * TIME_LAPSE_MAX_FRAMES;
+      speedCheckpoint = speed * maxFrames;
       saver.updateSpeed(speed);
     }
 
@@ -900,8 +902,10 @@ export class VideoFactory extends ModeFactory {
     }
     assert(this.previewVideo !== null);
     assert(this.facing !== null);
+    const frameRate =
+        getFpsRangeFromConstraints(this.constraints.video.frameRate).minFps;
     return new Video(
         this.previewVideo, captureConstraints, this.captureResolution,
-        this.snapshotResolution, this.facing, this.handler);
+        this.snapshotResolution, this.facing, this.handler, frameRate);
   }
 }

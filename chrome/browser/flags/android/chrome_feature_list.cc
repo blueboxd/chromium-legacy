@@ -94,6 +94,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableManualFallbackForVirtualCards,
     &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
+    &autofill::features::kAutofillEnableNewCardArtAndNetworkImages,
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &autofill::features::kAutofillEnableVirtualCardMetadata,
@@ -114,6 +115,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kGenericSensorExtraClasses,
     &features::kAsyncSensorCalls,
     &features::kBackForwardCache,
+    &features::kBackForwardTransitions,
     &features::kHttpsOnlyMode,
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
@@ -157,6 +159,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &history::kOrganicRepeatableQueries,
     &history_clusters::internal::kJourneys,
     &kAdaptiveButtonInTopToolbar,
+    &kAdaptiveButtonInTopToolbarTranslate,
+    &kAdaptiveButtonInTopToolbarAddToBookmarks,
     &kAdaptiveButtonInTopToolbarCustomizationV2,
     &kAddEduAccountFromAccountSettingsForSupervisedUsers,
     &kAddToHomescreenIPH,
@@ -198,6 +202,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizable90MaximumHeight,
     &kCCTResizableForThirdParties,
     &kCCTResizableSideSheet,
+    &kCCTResizableSideSheetDiscoverFeedSettings,
     &kCCTResizableSideSheetForThirdParties,
     &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
@@ -224,6 +229,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchThinWebViewImplementation,
     &kDeferKeepScreenOnDuringGesture,
     &kDeferNotifyInMotion,
+    &kDelayTransitionsForAnimation,
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFocusOmniboxInIncognitoTabIntents,
@@ -298,7 +304,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabGridLayoutAndroid,
     &kTabSelectionEditorV2,
     &kTabStateV1Optimizations,
-    &kTabStripImprovements,
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
@@ -398,6 +403,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &webapps::features::kInstallableAmbientBadgeInfoBar,
     &webapps::features::kInstallableAmbientBadgeMessage,
     &webapps::features::kWebApkInstallFailureNotification,
+    &webapps::features::kWebApkInstallFailureRetry,
     &webapps::features::kWebApkUniqueId,
     &network::features::kPrivateStateTokens,
 };
@@ -427,6 +433,14 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 
 BASE_FEATURE(kAdaptiveButtonInTopToolbar,
              "AdaptiveButtonInTopToolbar",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAdaptiveButtonInTopToolbarTranslate,
+             "AdaptiveButtonInTopToolbarTranslate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAdaptiveButtonInTopToolbarAddToBookmarks,
+             "AdaptiveButtonInTopToolbarAddToBookmarks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAdaptiveButtonInTopToolbarCustomizationV2,
@@ -596,6 +610,10 @@ BASE_FEATURE(kCCTResizableSideSheet,
              "CCTResizableSideSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCCTResizableSideSheetDiscoverFeedSettings,
+             "CCTResizableSideSheetDiscoverFeedSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCCTResizableSideSheetForThirdParties,
              "CCTResizableSideSheetForThirdParties",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -707,6 +725,10 @@ BASE_FEATURE(kDeferKeepScreenOnDuringGesture,
 BASE_FEATURE(kDeferNotifyInMotion,
              "DeferNotifyInMotion",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDelayTransitionsForAnimation,
+             "DelayTransitionsForAnimation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDownloadAutoResumptionThrottling,
              "DownloadAutoResumptionThrottling",
@@ -977,10 +999,6 @@ BASE_FEATURE(kTabSelectionEditorV2,
 
 BASE_FEATURE(kTabStateV1Optimizations,
              "TabStateV1Optimizations",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kTabStripImprovements,
-             "TabStripImprovements",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDiscoverFeedMultiColumn,

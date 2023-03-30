@@ -426,7 +426,8 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
     TestWebFrameClient* web_frame_client,
     WebViewClient* web_view_client,
     void (*update_settings_func)(WebSettings*),
-    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode) {
+    absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+        fenced_frame_mode) {
   Reset();
 
   InitializeWebView(web_view_client, opener ? opener->View() : nullptr,
@@ -704,7 +705,8 @@ void WebViewHelper::Resize(const gfx::Size& size) {
 void WebViewHelper::InitializeWebView(
     WebViewClient* web_view_client,
     class WebView* opener,
-    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode) {
+    absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+        fenced_frame_mode) {
   web_view_client =
       CreateDefaultClientIfNeeded(web_view_client, owned_web_view_client_);
   web_view_ = To<WebViewImpl>(
@@ -836,7 +838,7 @@ void TestWebFrameClient::CommitNavigation(
 
   KURL url = info->url_request.Url();
   if (url.IsAboutSrcdocURL()) {
-    params->fallback_srcdoc_base_url = info->requestor_base_url;
+    params->fallback_base_url = info->requestor_base_url;
     TestWebFrameHelper::FillStaticResponseForSrcdocNavigation(frame_,
                                                               params.get());
   }
@@ -907,7 +909,8 @@ WebView* TestWebFrameClient::CreateNewWindow(
     const SessionStorageNamespaceId&,
     bool& consumed_user_gesture,
     const absl::optional<Impression>&,
-    const absl::optional<WebPictureInPictureWindowOptions>&) {
+    const absl::optional<WebPictureInPictureWindowOptions>&,
+    const WebURL&) {
   auto webview_helper = std::make_unique<WebViewHelper>();
   WebView* result = webview_helper->InitializeWithOpener(frame_);
   child_web_views_.push_back(std::move(webview_helper));

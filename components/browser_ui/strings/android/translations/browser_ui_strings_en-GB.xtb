@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Tap to return to <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2091887806945687916">Sound</translation>
+<translation id="2117655453726830283">Next slide</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="216989819110952009">Even with eyes protected by the green spectacles, Dorothy and her friends were at first dazzled by the</translation>
 <translation id="2176704795966505152">Show zoom option in main menu</translation>
@@ -85,7 +86,7 @@
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="2490684707762498678">Managed by <ph name="APP_NAME" /></translation>
-<translation id="2498359688066513246">Help &amp; feedback</translation>
+<translation id="2498359688066513246">Help and feedback</translation>
 <translation id="2501278716633472235">Go back</translation>
 <translation id="2546283357679194313">Cookies and site data</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie blocked}other{# cookies blocked}}</translation>
@@ -114,6 +115,7 @@
 <translation id="3008272652534848354">Reset permissions</translation>
 <translation id="301521992641321250">Automatically blocked</translation>
 <translation id="3069226013421428034">Allow third-party sign-in for a specific site.</translation>
+<translation id="310297983047869047">Previous slide</translation>
 <translation id="3109724472072898302">Collapsed</translation>
 <translation id="3114012059975132928">Video player</translation>
 <translation id="3115898365077584848">Show info</translation>
@@ -220,7 +222,6 @@
 <translation id="509133520954049755">Request desktop view</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="5123685120097942451">Incognito tab</translation>
-<translation id="5134599672855298214">Request mobile view (recommended)</translation>
 <translation id="5186036860380548585">Option available near top of the screen</translation>
 <translation id="5197729504361054390">The contacts that you select will be shared with <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Last visited today</translation>

@@ -1,57 +1,104 @@
 <style include="common cros-button-style">
-  cr-dialog::part(dialog) {
-    width: 600px;
+  :host {
+    --cros-tab-slider-track-color: var(--cros-button-stroke-color-secondary);
   }
+
+  cr-dialog::part(dialog) {
+    padding-bottom: 28px;
+    width: 642px;
+  }
+
   #zoneSelector {
-    background-color: var(--cros-sys-system_on_base);
-    border-radius: 18px;
+    background-color: var(--cros-tab-slider-track-color);
+    border-radius: 24px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(0,1fr));
     grid-template-rows: minmax(0,1fr);
+    margin-block-end: 28px;
     width: 100%;
   }
-  .zone-button {
-    border-style: none;
+
+  paper-ripple {
+    border-radius: 24px;
+    color: rgba(var(--cros-ripple-color-rgb), 1);
+    --paper-ripple-opacity: var(--cros-button-primary-ripple-opacity);
+  }
+
+  .zone-tab {
+    -webkit-tap-highlight-color: transparent;
+    border: 2px solid var(--cros-tab-slider-track-color);
+    border-radius: 24px;
+    box-sizing: border-box;
+    color: var(--cros-sys-on_primary_container, var(--cros-button-label-color-secondary));
+    cursor: pointer;
+    font: var(--cros-button-2-font);
     height: 100%;
+    position: relative;
     width: 100%;
   }
+
+  .zone-tab[aria-checked=true] {
+    background-color: var(--cros-sys-primary, var(--cros-button-background-color-primary));
+    color: var(--cros-sys-on_primary, var(--cros-button-label-color-primary));
+  }
+
   .zone-title-container {
     align-items: center;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 6px 0 6px 0;
     width: 100%;
   }
-  color-icon {
-    margin-inline-end: 10px;
+
+  .zone-title-container > color-icon {
+    height: auto;
+    margin-inline-start: 8px;
+    width: auto;
   }
+
   #zoneTitle {
-    max-width: calc(100% - 40px);
+    margin-inline: 4px 8px;
+    text-align: center;
+    word-break: break-all;
     word-wrap: break-word;
   }
 </style>
 <cr-dialog id="dialog" on-close="closeZoneCustomizationDialog_">
   <div slot="body">
+    <iron-a11y-keys id="zoneKeys" keys="left right enter" on-keys-pressed="onZoneKeysPress_">
+    </iron-a11y-keys>
     <iron-selector
         id="zoneSelector"
         selected="0"
         selected-item="{{ironSelectedZone_}}">
       <template is="dom-repeat" items="[[zoneIdxs_]]" as="zoneIdx">
-        <cr-button
-            class="zone-button tab-slider"
-            tabindex$="[[getTabIndex_(zoneIdx)]]"
-            on-click="onClickZoneButton_">
+        <div
+            id$="[[zoneIdx]]"
+            class="zone-tab"
+            tabindex$="[[getZoneTabIndex_(zoneIdx)]]"
+            data-zone-idx$="[[zoneIdx]]"
+            on-click="onClickZoneTab_"
+            aria-checked$="[[getZoneAriaChecked_(zoneIdx, zoneSelected_)]]"
+            role="tab">
+          <paper-ripple fit></paper-ripple>
           <div class="zone-title-container">
             <color-icon color-id="[[getColorId_(zoneIdx, zoneColors_)]]"></color-icon>
             <div id="zoneTitle">[[getZoneTitle_(zoneIdx)]]</div>
           </div>
-        </cr-button>
+        </div>
       </template>
     </iron-selector>
-    <!-- TODO(b/265855838): Add color selector -->
-    <cr-button on-click="setZoneOneToRed_">[temp] Red</cr-button>
-  </div>
-  <div slot="button-container">
-    <cr-button class="primary" id="dialogCloseButton" on-click="closeZoneCustomizationDialog_">
-      $i18n{dismissButtonText}
-    </cr-button>
+    <color-selector
+        is-customized-dialog
+        selected-color="[[getSelectedColor_(zoneSelected_, zoneColors_)]]"
+        on-wallpaper-color-selected="onWallpaperColorSelected_"
+        on-preset-color-selected="onPresetColorSelected_">
+      <div slot="button-container" class="customization-button-container">
+        <cr-button class="primary action-button" id="dialogCloseButton"
+            on-click="closeZoneCustomizationDialog_">
+          $i18n{dismissButtonText}
+        </cr-button>
+      </div>
+    </color-selector>
   </div>
 </cr-dialog>

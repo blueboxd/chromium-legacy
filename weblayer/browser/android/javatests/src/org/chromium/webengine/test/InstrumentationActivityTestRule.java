@@ -9,10 +9,10 @@ import static org.chromium.content_public.browser.test.util.TestThreadUtils.runO
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.test.InstrumentationRegistry;
 
 import org.junit.Assert;
 
@@ -49,10 +49,13 @@ public class InstrumentationActivityTestRule
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setComponent(
-                new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                        InstrumentationActivity.class));
+        intent.setComponent(getShellComponentName());
         launchActivity(intent);
+    }
+
+    public ComponentName getShellComponentName() {
+        return new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                InstrumentationActivity.class);
     }
 
     public void finish() {

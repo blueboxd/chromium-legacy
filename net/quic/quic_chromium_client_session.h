@@ -20,6 +20,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/strings/string_piece.h"
@@ -366,7 +367,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // is asynchronous, i.e. it returned quic::QUIC_PENDING, and remains valid
     // until |OnRendezvouResult()| fires or |push_handle_->Cancel()| is
     // invoked.
-    quic::QuicClientPushPromiseIndex::TryHandle* push_handle_ = nullptr;
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #addr-of
+    RAW_PTR_EXCLUSION quic::QuicClientPushPromiseIndex::TryHandle*
+        push_handle_ = nullptr;
     CompletionOnceCallback push_callback_;
     std::unique_ptr<QuicChromiumClientStream::Handle> push_stream_;
 
@@ -748,6 +752,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnKeyUpdate(quic::KeyUpdateReason reason) override;
   std::unique_ptr<quic::QuicPathValidationContext>
   CreateContextForMultiPortPath() override;
+  void MigrateToMultiPortPath(
+      std::unique_ptr<quic::QuicPathValidationContext> context) override;
 
   // QuicChromiumPacketReader::Visitor methods:
   bool OnReadError(int result, const DatagramClientSocket* socket) override;

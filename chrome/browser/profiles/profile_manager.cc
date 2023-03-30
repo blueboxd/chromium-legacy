@@ -76,6 +76,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
@@ -514,7 +515,7 @@ Profile* ProfileManager::MaybeForceOffTheRecordMode(Profile* profile) {
     return nullptr;
   if (profile->IsGuestSession() || profile->IsSystemProfile() ||
       IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
-          IncognitoModePrefs::Availability::kForced) {
+          policy::IncognitoModeAvailability::kForced) {
     return profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   }
   return profile;
@@ -984,6 +985,16 @@ base::FilePath ProfileManager::GetPrimaryUserProfilePath() {
 base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
+  DCHECK(profiles::IsMultipleProfilesEnabled());
+  int next_directory = local_state->GetInteger(prefs::kProfilesNumCreated);
+  base::FilePath new_path = GetNextExpectedProfileDirectoryPath();
+  local_state->SetInteger(prefs::kProfilesNumCreated, ++next_directory);
+  return new_path;
+}
+
+base::FilePath ProfileManager::GetNextExpectedProfileDirectoryPath() {
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
 
   DCHECK(profiles::IsMultipleProfilesEnabled());
 
@@ -997,7 +1008,6 @@ base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
 #else
   new_path = new_path.Append(profile_name);
 #endif
-  local_state->SetInteger(prefs::kProfilesNumCreated, ++next_directory);
   return new_path;
 }
 

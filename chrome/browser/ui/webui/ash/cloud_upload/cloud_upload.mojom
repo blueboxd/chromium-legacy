@@ -7,7 +7,6 @@ module ash.cloud_upload.mojom;
 // The selected action when the user closes the dialog.
 enum UserAction {
   kCancel,
-  kSetUpGoogleDrive,
   kSetUpOneDrive,
   kUploadToGoogleDrive,
   kUploadToOneDrive,
@@ -21,8 +20,6 @@ enum DialogPage {
   kFileHandlerDialog,
   // Set up OneDrive (multi-page).
   kOneDriveSetup,
-  // Set up Google Drive (one-page confirmation screen).
-  kGoogleDriveSetup,
   // Confirm that the user wants to move the file to OneDrive.
   kMoveConfirmationOneDrive,
   // Confirm that the user wants to move the file to Google Drive.
@@ -50,7 +47,7 @@ struct DialogArgs {
 
   // The local file tasks the user can pick from to open the files. Displayed in
   // the `kFileHandlerDialog` dialog.
-  array<DialogTask> tasks;
+  array<DialogTask> local_tasks;
 
   // True if the setup flow is running for the first time. False if running
   // fixup flow.

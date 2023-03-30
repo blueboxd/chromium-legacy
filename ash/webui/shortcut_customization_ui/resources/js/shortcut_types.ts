@@ -24,6 +24,7 @@ import {AcceleratorConfigurationProviderInterface, AcceleratorResultData, Accele
  * ui::Accelerator and ui::KeyEvent.
  */
 export enum Modifier {
+  NONE = 0,
   SHIFT = 1 << 1,
   CONTROL = 1 << 2,
   ALT = 1 << 3,
@@ -198,6 +199,7 @@ export interface ShortcutProviderInterface extends
   getAccelerators(): Promise<{config: MojoAcceleratorConfig}>;
   getAcceleratorLayoutInfos(): Promise<{layoutInfos: MojoLayoutInfo[]}>;
   isMutable(source: AcceleratorSource): Promise<{isMutable: boolean}>;
+  hasLauncherButton(): Promise<{hasLauncherButton: boolean}>;
   removeAccelerator(
       source: AcceleratorSource, action: number,
       accelerator: Accelerator): Promise<{result: AcceleratorResultData}>;

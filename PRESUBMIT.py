@@ -161,7 +161,7 @@ _BANNED_JAVA_IMPORTS : Sequence[BanRule] = (
       ),
     ),
     BanRule(
-      'import android.support.test.rule.UiThreadTestRule;',
+      'import androidx.test.rule.UiThreadTestRule;',
       (
        'Do not use UiThreadTestRule, just use '
        '@org.chromium.base.test.UiThreadTest on test methods that should run '
@@ -169,14 +169,14 @@ _BANNED_JAVA_IMPORTS : Sequence[BanRule] = (
       ),
     ),
     BanRule(
-      'import android.support.test.annotation.UiThreadTest;',
-      ('Do not use android.support.test.annotation.UiThreadTest, use '
+      'import androidx.test.annotation.UiThreadTest;',
+      ('Do not use androidx.test.annotation.UiThreadTest, use '
        'org.chromium.base.test.UiThreadTest instead. See '
        'https://crbug.com/1111893.',
       ),
     ),
     BanRule(
-      'import android.support.test.rule.ActivityTestRule;',
+      'import androidx.test.rule.ActivityTestRule;',
       (
        'Do not use ActivityTestRule, use '
        'org.chromium.base.test.BaseActivityTestRule instead.',
@@ -1170,7 +1170,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'/^\s*(import|export|module)\b',
+      r'/^\s*(export\s|import\s+["<:\w]|module(;|\s+[:\w]))',
       (
         'Modules are disallowed for now due to lack of toolchain support.',
       ),
@@ -1518,7 +1518,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ],
     ),
     BanRule(
-      r'\bchartorune\b',
+      r'/\bchartorune\b',
       (
         'chartorune is not memory-safe, unless you can guarantee the input ',
         'string is always null-terminated. Otherwise, please use charntorune ',
@@ -1530,16 +1530,16 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         # Exceptions to this rule should have a fuzzer.
       ],
     ),
-  BanRule(
-    r'/\b#include "base/atomicops\.h"\b',
-    (
-      'Do not use base::subtle atomics, but std::atomic, which are simpler to '
-      'use, have better understood, clearer and richer semantics, and are '
-      'harder to mis-use. See details in base/atomicops.h.'
+    BanRule(
+      r'/\b#include "base/atomicops\.h"\b',
+      (
+        'Do not use base::subtle atomics, but std::atomic, which are simpler '
+        'to use, have better understood, clearer and richer semantics, and are '
+        'harder to mis-use. See details in base/atomicops.h.',
+      ),
+      False,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
-    False,
-    [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
-  ),
 )
 
 _BANNED_MOJOM_PATTERNS : Sequence[BanRule] = (
@@ -4180,8 +4180,8 @@ def _CheckAndroidTestAnnotationUsage(input_api, output_api):
         results.append(
             output_api.PresubmitError(
                 'Annotations in android.test.suitebuilder.annotation have been'
-                ' deprecated since API level 24. Please use android.support.test.filters'
-                ' from //third_party/android_support_test_runner:runner_java instead.'
+                ' deprecated since API level 24. Please use androidx.test.filters'
+                ' from //third_party/androidx:androidx_test_runner_java instead.'
                 ' Contact yolandyan@chromium.org if you have any questions.',
                 errors))
     return results
@@ -6841,3 +6841,31 @@ def CheckNoJsInIos(input_api, output_api):
             'scripts on iOS.', error_paths))
 
     return results
+
+def CheckLibcxxRevisionsMatch(input_api, output_api):
+    """Check to make sure the libc++ version matches across deps files."""
+    # Disable check for changes to sub-repositories.
+    if input_api.PresubmitLocalPath() != input_api.change.RepositoryRoot():
+      return []
+
+    DEPS_FILES = [ 'DEPS', 'buildtools/deps_revisions.gni' ]
+
+    file_filter = lambda f: f.LocalPath().replace(
+            input_api.os_path.sep, '/') in DEPS_FILES
+    changed_deps_files = input_api.AffectedFiles(file_filter=file_filter)
+    if not changed_deps_files:
+        return []
+
+    def LibcxxRevision(file):
+        file = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                      *file.split('/'))
+        return input_api.re.search(
+                r'libcxx_revision.*[:=].*[\'"](\w+)[\'"]',
+                input_api.ReadFile(file)).group(1)
+
+    if len(set([LibcxxRevision(f) for f in DEPS_FILES])) == 1:
+        return []
+
+    return [output_api.PresubmitError(
+        'libcxx_revision not equal across %s' % ', '.join(DEPS_FILES),
+        changed_deps_files)]

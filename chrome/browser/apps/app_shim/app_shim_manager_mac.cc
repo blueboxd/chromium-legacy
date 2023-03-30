@@ -501,6 +501,9 @@ void AppShimManager::OnShimLaunchRequested(
 void AppShimManager::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   DCHECK(crx_file::id_util::IdIsValid(bootstrap->GetAppId()));
+  if (app_shim_observer_) {
+    app_shim_observer_->OnShimProcessConnected(bootstrap->GetAppShimPid());
+  }
   switch (bootstrap->GetLaunchType()) {
     case chrome::mojom::AppShimLaunchType::kNormal: {
       const base::FilePath profile_path = bootstrap->GetProfilePath();
@@ -767,6 +770,11 @@ void AppShimManager::OnShimProcessConnectedAndAllLaunchesDone(
     std::unique_ptr<AppShimHostBootstrap> bootstrap,
     ProfileState* profile_state,
     chrome::mojom::AppShimLaunchResult result) {
+  if (app_shim_observer_) {
+    app_shim_observer_->OnShimProcessConnectedAndAllLaunchesDone(
+        bootstrap->GetAppShimPid(), result);
+  }
+
   // If we failed because the profile was locked, launch the profile manager.
   if (result == chrome::mojom::AppShimLaunchResult::kProfileLocked)
     LaunchProfilePicker();
@@ -1062,6 +1070,9 @@ void AppShimManager::OnShimFocus(AppShimHost* host) {
 }
 
 void AppShimManager::OnShimReopen(AppShimHost* host) {
+  if (app_shim_observer_) {
+    app_shim_observer_->OnShimReopen(host->GetAppShimPid());
+  }
   auto found_app = apps_.find(host->GetAppId());
   DCHECK(found_app != apps_.end());
   AppState* app_state = found_app->second.get();
@@ -1084,6 +1095,9 @@ void AppShimManager::OnShimOpenedFiles(
   LoadAndLaunchApp(
       app_state->IsMultiProfile() ? base::FilePath() : host->GetProfilePath(),
       params, base::DoNothing());
+  if (app_shim_observer_) {
+    app_shim_observer_->OnShimOpenedURLs(host->GetAppShimPid());
+  }
 }
 
 void AppShimManager::OnShimSelectedProfile(AppShimHost* host,
@@ -1104,6 +1118,9 @@ void AppShimManager::OnShimOpenedUrls(AppShimHost* host,
   LoadAndLaunchApp(
       app_state->IsMultiProfile() ? base::FilePath() : host->GetProfilePath(),
       params, base::DoNothing());
+  if (app_shim_observer_) {
+    app_shim_observer_->OnShimOpenedURLs(host->GetAppShimPid());
+  }
 }
 
 void AppShimManager::OnShimOpenAppWithOverrideUrl(AppShimHost* host,
@@ -1378,8 +1395,9 @@ void AppShimManager::UpdateApplicationDockMenu(Profile* profile,
 AppShimManager::ProfileState* AppShimManager::GetOrCreateProfileState(
     Profile* profile,
     const web_app::AppId& app_id) {
-  if (web_app::AppShimLaunchDisabled())
+  if (web_app::AppShimCreationAndLaunchDisabledForTest()) {
     return nullptr;
+  }
 
   const bool is_multi_profile = delegate_->AppIsMultiProfile(profile, app_id);
   const base::FilePath profile_path =

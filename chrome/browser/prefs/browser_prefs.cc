@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/constants/ash_constants.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/branding_buildflags.h"
@@ -51,7 +52,7 @@
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_origin_decider.h"
+#include "chrome/browser/preloading/prefetch/prefetch_service/prefetch_origin_decider.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
@@ -75,6 +76,7 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
+#include "chrome/browser/ui/side_panel/side_panel_prefs.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
@@ -277,6 +279,7 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
+#include "chrome/browser/ui/webui/side_panel/companion/promo_handler.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_prefs.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
@@ -367,6 +370,7 @@
 #include "chrome/browser/ash/login/signin/signin_error_notifier.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_manager.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_prefs.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
@@ -381,6 +385,7 @@
 #include "chrome/browser/ash/policy/external_data/handlers/device_wallpaper_image_external_data_handler.h"
 #include "chrome/browser/ash/policy/handlers/adb_sideloading_allowance_mode_policy_handler.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/screensaver_images_policy_handler.h"
 #include "chrome/browser/ash/policy/handlers/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/ash/policy/reporting/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/ash/policy/reporting/arc_app_install_event_logger.h"
@@ -823,6 +828,12 @@ const char kGlanceablesSignoutScreenshotDuration[] =
 const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Deprecated 03/2023
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kDarkLightModeNudgeLeftToShowCount[] =
+    "ash.dark_light_mode.educational_nudge";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1116,6 +1127,12 @@ void RegisterProfilePrefsForMigration(
   // Deprecated 03/2023.
   registry->RegisterTimePref(
       kGoogleSearchDomainMixingMetricsEmitterLastMetricsTime, base::Time());
+
+  // Deprecated 03/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kDarkLightModeNudgeLeftToShowCount,
+                                ash::kDarkLightModeNudgeMaxShownCount);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace
@@ -1417,7 +1434,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   prefetch::RegisterPredictionOptionsProfilePrefs(registry);
-  PrefetchProxyOriginDecider::RegisterPrefs(registry);
+  PrefetchOriginDecider::RegisterPrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry, locale);
   privacy_sandbox::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
@@ -1465,6 +1482,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   extensions::ExtensionsUI::RegisterProfilePrefs(registry);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   extensions::shared_storage::RegisterProfilePrefs(registry);
+  policy::ScreensaverImagesPolicyHandler::RegisterPrefs(registry);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   extensions::PermissionsManager::RegisterProfilePrefs(registry);
   extensions::RuntimeAPI::RegisterPrefs(registry);
@@ -1527,6 +1545,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   BrowserFeaturePromoSnoozeService::RegisterProfilePrefs(registry);
   captions::LiveTranslateController::RegisterProfilePrefs(registry);
   ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
+  companion::PromoHandler::RegisterProfilePrefs(registry);
   DeviceServiceImpl::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   DriveService::RegisterProfilePrefs(registry);
@@ -1636,6 +1655,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
   ash::settings::OSSettingsUI::RegisterProfilePrefs(registry);
   ash::StartupUtils::RegisterOobeProfilePrefs(registry);
+  ash::user_image::prefs::RegisterProfilePrefs(registry);
   ash::UserImageSyncObserver::RegisterProfilePrefs(registry);
   ChromeMetricsServiceClient::RegisterProfilePrefs(registry);
   crostini::prefs::RegisterProfilePrefs(registry);
@@ -1714,12 +1734,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterBooleanPref(
       webauthn::pref_names::kRemoteProxiedRequestsAllowed, false);
 
-  // When in RTL mode, the side panel should default to the left of the screen.
-  // Otherwise, the side panel should default to the right side of the screen.
-  // TODO(dljames): Add enum values kAlternateSide / kDefaultSide that will
-  // replace false and true respectively.
-  registry->RegisterBooleanPref(prefs::kSidePanelHorizontalAlignment,
-                                base::i18n::IsRTL() ? false : true);
+  side_panel_prefs::RegisterProfilePrefs(registry);
 #endif
 
   registry->RegisterBooleanPref(webauthn::pref_names::kAllowWithBrokenCerts,
@@ -2172,6 +2187,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 03/2023
   profile_prefs->ClearPref(
       kGoogleSearchDomainMixingMetricsEmitterLastMetricsTime);
+
+// Added 03/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kDarkLightModeNudgeLeftToShowCount);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

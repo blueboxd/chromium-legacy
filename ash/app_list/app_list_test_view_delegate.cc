@@ -52,7 +52,6 @@ void AppListTestViewDelegate::OpenSearchResult(
   if (launch_type == ash::AppListLaunchType::kAppSearchResult) {
     switch (launched_from) {
       case ash::AppListLaunchedFrom::kLaunchedFromSearchBox:
-      case ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
       case ash::AppListLaunchedFrom::kLaunchedFromRecentApps:
         RecordAppLaunched(launched_from);
         return;
@@ -60,6 +59,8 @@ void AppListTestViewDelegate::OpenSearchResult(
       case ash::AppListLaunchedFrom::kLaunchedFromShelf:
       case ash::AppListLaunchedFrom::kLaunchedFromContinueTask:
         return;
+      case ash::AppListLaunchedFrom::DEPRECATED_kLaunchedFromSuggestionChip:
+        NOTREACHED();
     }
   }
 }
@@ -193,6 +194,11 @@ bool AppListTestViewDelegate::IsInTabletMode() {
 }
 
 AppListNotifier* AppListTestViewDelegate::GetNotifier() {
+  return nullptr;
+}
+
+std::unique_ptr<ScopedIphSession>
+AppListTestViewDelegate::CreateLauncherSearchIphSession() {
   return nullptr;
 }
 

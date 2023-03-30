@@ -37,7 +37,8 @@ HistoryDeleteDirectivesModelTypeController::
           syncer::HISTORY_DELETE_DIRECTIVES,
           model_type_store_service->GetStoreFactory(),
           GetSyncableServiceFromHistoryService(history_service),
-          dump_stack),
+          dump_stack,
+          DelegateMode::kLegacyFullSyncModeOnly),
       helper_(syncer::HISTORY_DELETE_DIRECTIVES, sync_service, pref_service) {}
 
 HistoryDeleteDirectivesModelTypeController::
@@ -64,14 +65,13 @@ void HistoryDeleteDirectivesModelTypeController::LoadModels(
 }
 
 void HistoryDeleteDirectivesModelTypeController::Stop(
-    syncer::ShutdownReason shutdown_reason,
+    syncer::SyncStopMetadataFate fate,
     StopCallback callback) {
   DCHECK(CalledOnValidThread());
 
   sync_service_observation_.Reset();
 
-  SyncableServiceBasedModelTypeController::Stop(shutdown_reason,
-                                                std::move(callback));
+  SyncableServiceBasedModelTypeController::Stop(fate, std::move(callback));
 }
 
 void HistoryDeleteDirectivesModelTypeController::OnStateChanged(

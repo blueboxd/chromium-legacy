@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 
 BASE_FEATURE(kDefaultBrowserBlueDotPromo,
              "DefaultBrowserBlueDotPromo",
@@ -48,6 +48,14 @@ BASE_FEATURE(kDefaultBrowserIntentsShowSettings,
              "DefaultBrowserIntentsShowSettings",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kIOSBrowserEditMenuMetrics,
+             "IOSBrowserEditMenuMetrics",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDefaultBrowserRefactoringPromoManager,
+             "kDefaultBrowserRefactoringPromoManager",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kIOSCustomBrowserEditMenu,
              "IOSCustomBrowserEditMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -71,10 +79,6 @@ bool ShouldShowPartialTranslateInIncognito() {
 BASE_FEATURE(kIOSNewOmniboxImplementation,
              "kIOSNewOmniboxImplementation",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kRemoveCrashInfobar,
-             "RemoveCrashInfobar",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIOSLocationBarUseNativeContextMenu,
              "IOSLocationBarUseNativeContextMenu",
@@ -122,6 +126,10 @@ BASE_FEATURE(kEnableShortenedPasswordAutoFillInstruction,
 
 BASE_FEATURE(kUseSFSymbolsInOmnibox,
              "UseSFSymbolsInOmnibox",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSFSymbolsFollowUp,
+             "SFSymbolsFollowUp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCalendarExperienceKit,
@@ -189,31 +197,6 @@ bool ShouldAddToHomeScreen(bool in_incognito) {
       kAddToHomeScreen, kAddToHomeScreenDisableIncognitoParam, false);
 }
 
-BASE_FEATURE(kBringYourOwnTabsIOS,
-             "BringYourOwnTabsIOS",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-const char kBringYourOwnTabsIOSParam[] = "bottom-message";
-
-BringYourOwnTabsPromptType GetBringYourOwnTabsPromptType() {
-  if (base::FeatureList::IsEnabled(kBringYourOwnTabsIOS)) {
-    bool showBottomMessagePrompt = base::GetFieldTrialParamByFeatureAsBool(
-        kBringYourOwnTabsIOS, kBringYourOwnTabsIOSParam, false);
-    return showBottomMessagePrompt ? BringYourOwnTabsPromptType::kBottomMessage
-                                   : BringYourOwnTabsPromptType::kHalfSheet;
-  }
-  return BringYourOwnTabsPromptType::kDisabled;
-}
-
-BASE_FEATURE(kIndicateAccountStorageErrorInAccountCell,
-             "IndicatePassphraseErrorForSignedInUser",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsIndicateAccountStorageErrorInAccountCellEnabled() {
-  return base::FeatureList::IsEnabled(
-      kIndicateAccountStorageErrorInAccountCell);
-}
-
 BASE_FEATURE(kNewNTPOmniboxLayout,
              "kNewNTPOmniboxLayout",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -221,3 +204,11 @@ BASE_FEATURE(kNewNTPOmniboxLayout,
 BASE_FEATURE(kEnableEmailInBookmarksReadingListSnackbar,
              "EnableEmailInBookmarksReadingListSnackbar",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIndicateSyncErrorInOverflowMenu,
+             "IndicateSyncErrorInOverflowMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsIndicateSyncErrorInOverflowMenuEnabled() {
+  return base::FeatureList::IsEnabled(kIndicateSyncErrorInOverflowMenu);
+}

@@ -99,7 +99,9 @@ class NavigationURLLoaderTest : public testing::Test {
             absl::nullopt /* web_bundle_token */,
             blink::mojom::NavigationInitiatorActivationAndAdStatus::
                 kDidNotStartWithTransientActivation,
-            false /* is_container_initiated */);
+            false /* is_container_initiated */,
+            false /* is_fullscreen_requested */,
+            false /* has_storage_access */);
     auto common_params = blink::CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
@@ -137,6 +139,7 @@ class NavigationURLLoaderTest : public testing::Test {
         browser_context_.get(), storage_partition, std::move(request_info),
         nullptr, nullptr, nullptr, delegate,
         NavigationURLLoader::LoaderType::kRegular, mojo::NullRemote(),
+        /* trust_token_observer=*/mojo::NullRemote(),
         /* url_loader_network_observer */ mojo::NullRemote(),
         /*devtools_observer=*/mojo::NullRemote());
   }

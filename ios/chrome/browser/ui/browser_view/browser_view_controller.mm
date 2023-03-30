@@ -18,7 +18,6 @@
 #import "base/task/sequenced_task_runner.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
@@ -26,12 +25,14 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/help_commands.h"
+#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
@@ -57,14 +58,11 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_view.h"
 #import "ios/chrome/browser/ui/lens/lens_coordinator.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
@@ -103,8 +101,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/find_in_page/find_in_page_api.h"
 #import "ios/public/provider/chrome/browser/fullscreen/fullscreen_api.h"
-#import "ios/public/provider/chrome/browser/voice_search/voice_search_api.h"
-#import "ios/public/provider/chrome/browser/voice_search/voice_search_controller.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"
@@ -225,8 +221,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   PrerenderService* _prerenderService;
 
   // Used to display the Voice Search UI.  Nil if not visible.
-  // TODO(crbug.com/1329104): Move voice search controller/coordinator to
-  // BrowserCoordinator
   id<VoiceSearchController> _voiceSearchController;
 
   // YES if new tab is animating in.
@@ -451,6 +445,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // The coordinator for all NTPs in the BVC. Only used if kSingleNtp is enabled.
 @property(nonatomic, strong) NewTabPageCoordinator* ntpCoordinator;
 
+// Provider used to offload SceneStateBrowserAgent usage from BVC.
+@property(nonatomic, strong) SafeAreaProvider* safeAreaProvider;
+
 @end
 
 @implementation BrowserViewController
@@ -507,6 +504,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _webStateList = dependencies.webStateList;
     _readingModel = dependencies.readingModel;
     _identityManager = dependencies.identityManager;
+    _voiceSearchController = dependencies.voiceSearchController;
+    self.secondaryToolbarContainerCoordinator =
+        dependencies.secondaryToolbarContainerCoordinator;
+    self.safeAreaProvider = dependencies.safeAreaProvider;
 
     dependencies.lensCoordinator.delegate = self;
 
@@ -538,12 +539,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (UIView*)contentArea {
   return self.browserContainerViewController.view;
-}
-
-// TODO(crbug.com/1329104): Move voice search controller/coordinator to
-// BrowserCoordinator, remove this as a public property.
-- (BOOL)isPlayingTTS {
-  return _voiceSearchController.audioPlaying;
 }
 
 // TODO(crbug.com/1329093): Remove this property. Also not a public property.
@@ -700,16 +695,17 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // the self.view.safeAreaInsets are cleared when the view has moved (like with
 // thumbstrip, starting with iOS 15) or if it is unattached ( for example on the
 // incognito BVC when the normal BVC is the one active or vice versa). Attached
-// or unttached, going to the window through the SceneState for the self.browser
-// solves both issues.
+// or unattached, going to the window through the SceneState for the
+// self.browser solves both issues.
 - (UIEdgeInsets)rootSafeAreaInsets {
   if (_isShutdown) {
     return UIEdgeInsetsZero;
   }
-  // TODO(crbug.com/1329096): Create an external provider thingy for this.
-  UIView* view =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState().window;
-  return view ? view.safeAreaInsets : self.view.safeAreaInsets;
+  UIEdgeInsets safeArea = self.safeAreaProvider.safeArea;
+
+  return UIEdgeInsetsEqualToEdgeInsets(safeArea, UIEdgeInsetsZero)
+             ? self.view.safeAreaInsets
+             : safeArea;
 }
 
 - (CGFloat)headerOffset {
@@ -837,9 +833,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.findInPageCommandsHandler closeFindInPage];
   [self.textZoomHandler closeTextZoom];
   [[self viewForWebState:self.currentWebState] endEditing:NO];
-
-  // Ensure that voice search objects are created.
-  [self ensureVoiceSearchControllerCreated];
 
   // Present voice search.
   [_voiceSearchController
@@ -987,7 +980,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.secondaryToolbarCoordinator = nil;
   _sideSwipeController = nil;
   [_voiceSearchController disconnect];
-  _voiceSearchController = nil;
   _fullscreenDisabler = nullptr;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
@@ -1519,10 +1511,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/880672): Finish ToolbarContainer work.
   if (base::FeatureList::IsEnabled(
           toolbar_container::kToolbarContainerEnabled)) {
-    self.secondaryToolbarContainerCoordinator =
-        [[ToolbarContainerCoordinator alloc]
-            initWithBrowser:self.browser
-                       type:ToolbarContainerType::kSecondary];
     self.secondaryToolbarContainerCoordinator.toolbarCoordinators =
         @[ self.secondaryToolbarCoordinator ];
     [self.secondaryToolbarContainerCoordinator start];
@@ -1617,15 +1605,24 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Sets up the constraints on the toolbar.
 - (void)addConstraintsToPrimaryToolbar {
   NSLayoutYAxisAnchor* topAnchor;
-  // On iPad, the toolbar is underneath the tab strip.
-  // On iPhone, it is underneath the top of the screen.
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    topAnchor = self.tabStripView.bottomAnchor;
-  } else {
-    topAnchor = [self view].topAnchor;
-    // TODO(crbug.com/1423799): Dcheck added for investigation purposes, remove
+  // On iPhone, the toolbar is underneath the top of the screen.
+  // On iPad, it depends:
+  // - if the window is compact, it is like iPhone, underneath the top of the
+  // screen.
+  // - if the window is regular, it is underneath the tab strip.
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE ||
+      ![self canShowTabStrip]) {
+    topAnchor = self.view.topAnchor;
+    // TODO(crbug.com/1423799): Dchecks added for investigation purposes, remove
     // once crash root cause is found.
-    DCHECK(![self canShowTabStrip]);
+    DCHECK(self.view);
+    DCHECK(topAnchor);
+  } else {
+    topAnchor = self.tabStripView.bottomAnchor;
+    // TODO(crbug.com/1423799): Dchecks added for investigation purposes, remove
+    // once crash root cause is found.
+    DCHECK(self.tabStripView);
+    DCHECK(topAnchor);
   }
 
   // Only add leading and trailing constraints once as they are never updated.
@@ -1646,6 +1643,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Create a constraint for the vertical positioning of the toolbar.
   UIView* primaryView = self.primaryToolbarCoordinator.viewController.view;
+  // TODO(crbug.com/1423799): Dcheck added for investigation purposes, remove
+  // once crash root cause is found.
+  DCHECK(primaryView.topAnchor);
   self.primaryToolbarOffsetConstraint =
       [primaryView.topAnchor constraintEqualToAnchor:topAnchor];
 
@@ -2081,31 +2081,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _lastTapPoint = [[view superview] convertPoint:viewCoordinate
                                           toView:self.view];
   _lastTapTime = CACurrentMediaTime();
-
-  // This is a workaround for a bug in iOS multiwindow, in which you can touch a
-  // webView without the window getting the keyboard focus.
-  // The result is that a field in the new window gains focus, but keyboard
-  // typing continue to happen in the other window.
-  // TODO(crbug.com/1109124): Remove this workaround.
-  SceneStateBrowserAgent::FromBrowser(self.browser)
-      ->GetSceneState()
-      .appState.lastTappedWindow = view.window;
-}
-
-#pragma mark - Private Methods: Voice Search
-
-// Lazily instantiates `_voiceSearchController`.
-- (void)ensureVoiceSearchControllerCreated {
-  if (_voiceSearchController)
-    return;
-
-  // TODO(crbug.com/1329104): Move voice search controller to
-  // BrowserCoordinator, potentially refactoring to a coordinator.
-  _voiceSearchController =
-      ios::provider::CreateVoiceSearchController(self.browser);
-  if (self.primaryToolbarCoordinator) {
-    _voiceSearchController.dispatcher = self.loadQueryCommandsHandler;
-  }
 }
 
 #pragma mark - Private Methods: Reading List
@@ -2118,8 +2093,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   for (URLWithTitle* urlWithTitle in URLs) {
     [self addURLToReadingList:urlWithTitle.URL withTitle:urlWithTitle.title];
   }
-
-  [self.toolbarCommandsHandler triggerToolsMenuButtonAnimation];
 
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
 
@@ -2529,7 +2502,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)displaySavedPasswordList {
   [self.applicationCommandsHandler
       showSavedPasswordsSettingsFromViewController:self
-                                  showCancelButton:YES];
+                                  showCancelButton:YES
+                                startPasswordCheck:NO];
 }
 
 #pragma mark - WebStateContainerViewProvider
@@ -2640,35 +2614,23 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 #pragma mark - OverscrollActionsControllerDelegate methods.
-// TODO(crbug.com/1272486) : Separate action handling for overscroll from UI
-// management.
 
-- (void)overscrollActionsController:(OverscrollActionsController*)controller
-                   didTriggerAction:(OverscrollAction)action {
-  switch (action) {
-    case OverscrollAction::NEW_TAB:
-      base::RecordAction(base::UserMetricsAction("MobilePullGestureNewTab"));
-      [self.applicationCommandsHandler
-          openURLInNewTab:[OpenNewTabCommand
-                              commandWithIncognito:_isOffTheRecord]];
-      break;
-    case OverscrollAction::CLOSE_TAB:
-      base::RecordAction(base::UserMetricsAction("MobilePullGestureCloseTab"));
-      [self.browserCoordinatorCommandsHandler closeCurrentTab];
-      break;
-    case OverscrollAction::REFRESH:
-      base::RecordAction(base::UserMetricsAction("MobilePullGestureReload"));
-      // Instruct the SnapshotTabHelper to ignore the next load event.
-      // Attempting to snapshot while the overscroll "bounce back" animation is
-      // occurring will cut the animation short.
-      DCHECK(self.currentWebState);
-      SnapshotTabHelper::FromWebState(self.currentWebState)->IgnoreNextLoad();
-      _webNavigationBrowserAgent->Reload();
-      break;
-    case OverscrollAction::NONE:
-      NOTREACHED();
-      break;
-  }
+- (void)overscrollActionNewTab:(OverscrollActionsController*)controller {
+  [self.applicationCommandsHandler
+      openURLInNewTab:[OpenNewTabCommand commandWithIncognito:_isOffTheRecord]];
+}
+
+- (void)overscrollActionCloseTab:(OverscrollActionsController*)controller {
+  [self.browserCoordinatorCommandsHandler closeCurrentTab];
+}
+
+- (void)overscrollActionRefresh:(OverscrollActionsController*)controller {
+  // Instruct the SnapshotTabHelper to ignore the next load event.
+  // Attempting to snapshot while the overscroll "bounce back" animation is
+  // occurring will cut the animation short.
+  DCHECK(self.currentWebState);
+  SnapshotTabHelper::FromWebState(self.currentWebState)->IgnoreNextLoad();
+  _webNavigationBrowserAgent->Reload();
 }
 
 - (BOOL)shouldAllowOverscrollActionsForOverscrollActionsController:
@@ -2999,15 +2961,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self addURLsToReadingList:command.URLs];
 }
 
-// TODO(crbug.com/1329104): Move voice search handling to BrowserCoordinator
-- (void)preloadVoiceSearch {
-  // Preload VoiceSearchController and views and view controllers needed
-  // for voice search.
-  [self ensureVoiceSearchControllerCreated];
-  [_voiceSearchController prepareToAppear];
-}
-
-- (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type {
+- (void)prepareForOverflowMenuPresentation {
   DCHECK(self.browserState);
   DCHECK(self.visible || self.dismissingModal);
 
@@ -3021,9 +2975,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Allow the non-modal promo scheduler to close the promo.
   [self.nonModalPromoScheduler logPopupMenuEntered];
 
-  if (type == PopupMenuCommandTypeToolsMenu) {
-    [_bubblePresenter toolsMenuDisplayed];
-  }
+  [_bubblePresenter toolsMenuDisplayed];
 }
 
 #pragma mark - TabConsumer (Public)

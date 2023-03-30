@@ -150,7 +150,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   tableViewBlueDotItem.showNotificationDot = YES;
   tableViewBlueDotItem.text = @"I have a blue dot badge!";
   tableViewBlueDotItem.iconImage =
-      [UIImage imageNamed:@"default_browser_world"];
+      DefaultSettingsRootSymbol(kDefaultBrowserSymbol);
   [model addItem:tableViewBlueDotItem
       toSectionWithIdentifier:SectionIdentifierText];
 
@@ -169,7 +169,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewImageItem* textImageItem =
       [[TableViewImageItem alloc] initWithType:ItemTypeTextAccessoryImage];
   textImageItem.title = @"Image Item with History Image";
-  textImageItem.image = [UIImage imageNamed:@"show_history"];
+  textImageItem.image =
+      DefaultSymbolWithPointSize(kHistorySymbol, kSymbolActionPointSize);
   [model addItem:textImageItem toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewTabsSearchSuggestedHistoryItem* searchHistorySuggestedItem =
@@ -242,7 +243,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textActionButtonColorItem.disableButtonIntrinsicWidth = YES;
   textActionButtonColorItem.buttonBackgroundColor = [UIColor lightGrayColor];
   textActionButtonColorItem.buttonTextColor =
-    [UIColor colorNamed:@"settings_catalog_example_text"];
+      [UIColor colorNamed:kSolidBlackColor];
   textActionButtonColorItem.buttonText = @"Do something, different Colors";
   [model addItem:textActionButtonColorItem
       toSectionWithIdentifier:SectionIdentifierText];
@@ -280,15 +281,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewDetailIconItem* detailIconItem =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
   detailIconItem.text = @"Detail Icon Item Cell";
-  detailIconItem.iconImage =
-      [UIImage imageNamed:@"settings_article_suggestions"];
+  detailIconItem.iconImage = DefaultSettingsRootSymbol(kDiscoverSymbol);
   detailIconItem.detailText = @"Short";
   [model addItem:detailIconItem toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewDetailIconItem* detailIconItemVerticalTextLayout =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
   detailIconItemVerticalTextLayout.iconImage =
-      [UIImage imageNamed:@"settings_article_suggestions"];
+      DefaultSettingsRootSymbol(kDiscoverSymbol);
   detailIconItemVerticalTextLayout.text = @"Detail Icon Item Cell";
   detailIconItemVerticalTextLayout.detailText = @"Short subtitle";
   detailIconItemVerticalTextLayout.textLayoutConstraintAxis =
@@ -340,7 +340,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textEditItemBothIcons.fieldNameLabelText = @"Edit Text Item";
   textEditItemBothIcons.textFieldValue = @" with edit and custom icons";
   textEditItemBothIcons.identifyingIcon =
-      [UIImage imageNamed:@"table_view_cell_check_mark"];
+      DefaultSymbolTemplateWithPointSize(kCheckmarkCircleFillSymbol, 13);
   textEditItemBothIcons.textFieldEnabled = YES;
   [model addItem:textEditItemBothIcons
       toSectionWithIdentifier:SectionIdentifierText];
@@ -350,7 +350,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textEditItemIconButton.fieldNameLabelText = @"Edit Text Item";
   textEditItemIconButton.textFieldValue = @" icon is a button.";
   textEditItemIconButton.identifyingIcon =
-      [UIImage imageNamed:@"table_view_cell_check_mark"];
+      DefaultSymbolTemplateWithPointSize(kCheckmarkCircleFillSymbol, 13);
   textEditItemIconButton.identifyingIconEnabled = YES;
   textEditItemIconButton.textFieldEnabled = NO;
   [model addItem:textEditItemIconButton
@@ -443,7 +443,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   tableViewInfoButtonItemWithLeadingImage.text = @"Info button item";
   tableViewInfoButtonItemWithLeadingImage.statusText = @"Status";
   tableViewInfoButtonItemWithLeadingImage.iconImage =
-      [UIImage imageNamed:@"settings_article_suggestions"];
+      DefaultSettingsRootSymbol(kDiscoverSymbol);
   [model addItem:tableViewInfoButtonItemWithLeadingImage
       toSectionWithIdentifier:SectionIdentifierSettings];
 
@@ -478,7 +478,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   checkFinished.enabled = YES;
   checkFinished.indicatorHidden = YES;
   checkFinished.trailingImage =
-      [UIImage imageNamed:@"table_view_cell_check_mark"];
+      DefaultSymbolTemplateWithPointSize(kCheckmarkCircleFillSymbol, 13);
   [model addItem:checkFinished
       toSectionWithIdentifier:SectionIdentifierSettings];
 
@@ -493,7 +493,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   checkFinishedWithLeadingImage.enabled = YES;
   checkFinishedWithLeadingImage.indicatorHidden = YES;
   checkFinishedWithLeadingImage.trailingImage =
-      [UIImage imageNamed:@"table_view_cell_check_mark"];
+      DefaultSymbolTemplateWithPointSize(kCheckmarkCircleFillSymbol, 13);
   [model addItem:checkFinishedWithLeadingImage
       toSectionWithIdentifier:SectionIdentifierSettings];
 
@@ -654,7 +654,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item = [[TableViewURLItem alloc] initWithType:ItemTypeURLWithBadgeImage];
   item.title = @"Photos - Google Photos";
   item.URL = [[CrURL alloc] initWithGURL:GURL("https://photos.google.com/")];
-  item.badgeImage = [UIImage imageNamed:@"table_view_cell_check_mark"];
+  item.badgeImage =
+      DefaultSymbolTemplateWithPointSize(kCheckmarkCircleFillSymbol, 13);
   [model addItem:item toSectionWithIdentifier:SectionIdentifierURL];
 
   item =

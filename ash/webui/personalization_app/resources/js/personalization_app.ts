@@ -108,6 +108,7 @@ export {GooglePhotosPhotos, GooglePhotosPhotosRow, GooglePhotosPhotosSection} fr
 export {GooglePhotosSharedAlbumDialog, AcceptEvent} from './wallpaper/google_photos_shared_album_dialog_element.js';
 export {GooglePhotosZeroState} from './wallpaper/google_photos_zero_state_element.js';
 export {LocalImages} from './wallpaper/local_images_element.js';
+export {TimeOfDayAcceptEvent, TimeOfDayWallpaperDialog} from './wallpaper/time_of_day_wallpaper_dialog_element.js';
 export {isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage} from './wallpaper/utils.js';
 export * from './wallpaper/wallpaper_actions.js';
 export {WallpaperCollections} from './wallpaper/wallpaper_collections_element.js';
@@ -115,7 +116,7 @@ export {selectGooglePhotosAlbum, cancelPreviewWallpaper, confirmPreviewWallpaper
 export {WallpaperError} from './wallpaper/wallpaper_error_element.js';
 export {WallpaperFullscreen} from './wallpaper/wallpaper_fullscreen_element.js';
 export {WallpaperGridItem} from './wallpaper/wallpaper_grid_item_element.js';
-export {getDarkLightImageTiles, getRegularImageTiles, WallpaperImages} from './wallpaper/wallpaper_images_element.js';
+export {getImageTiles, WallpaperImages} from './wallpaper/wallpaper_images_element.js';
 export {setWallpaperProviderForTesting} from './wallpaper/wallpaper_interface_provider.js';
 export {WallpaperObserver} from './wallpaper/wallpaper_observer.js';
 export {WallpaperPreview} from './wallpaper/wallpaper_preview_element.js';

@@ -29,6 +29,7 @@
 #include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/common/features.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -237,9 +238,12 @@ void IsolateAllSitesForTesting(base::CommandLine* command_line) {
 }
 
 bool CanSameSiteMainFrameNavigationsChangeRenderFrameHosts() {
-  // TODO(crbug.com/936696): Also return true when RenderDocument for main frame
-  // is enabled.
-  return CanSameSiteMainFrameNavigationsChangeSiteInstances();
+  return ShouldCreateNewHostForAllFrames() ||
+         CanSameSiteMainFrameNavigationsChangeSiteInstances();
+}
+
+bool WillSameSiteNavigationsChangeRenderFrameHosts() {
+  return ShouldCreateNewHostForAllFrames();
 }
 
 bool CanSameSiteMainFrameNavigationsChangeSiteInstances() {

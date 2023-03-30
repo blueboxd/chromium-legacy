@@ -65,6 +65,16 @@ testing::Matcher<const DrawQuad*> HasTransform(const gfx::Transform& transform);
 // Matches a DrawQuad with expected SharedQuadState::opacity.
 testing::Matcher<const DrawQuad*> HasOpacity(float opacity);
 
+// Matches a DrawQuad with expected SharedQuadState::are_contents_opaque.
+testing::Matcher<const DrawQuad*> AreContentsOpaque(bool opaque);
+
+// Matches a DrawQuad with expected SharedQuadState::layer_id.
+testing::Matcher<const DrawQuad*> HasLayerId(uint32_t layer_id);
+
+// Matches a DrawQuad with expected SharedQuadState::layer_namespace_id.
+testing::Matcher<const DrawQuad*> HasLayerNamespaceId(
+    uint32_t layer_namespace_id);
+
 }  // namespace viz
 
 #endif  // COMPONENTS_VIZ_TEST_DRAW_QUAD_MATCHERS_H_

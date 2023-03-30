@@ -1241,8 +1241,10 @@ TEST_P(ImagePaintTimingDetectorTest, LargestImagePaint_FullViewportImage) {
 
 TEST_P(ImagePaintTimingDetectorTest, LargestImagePaint_Detached_Frame) {
 #if BUILDFLAG(IS_ANDROID)
-  if (RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    // TODO(crbug.com/1353921): This test is flaky on Android. Fix it.
+  if (RuntimeEnabledFeatures::SolidColorLayersEnabled() ||
+      RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
+    // TODO(crbug.com/1353921, crbug.com/1414885):
+    // This test is flaky on Android. Fix it.
     // https://chrome-swarming.appspot.com/task?id=60c68038be22f011
     // The first EXPECT_EQ(0u, events.size()) below failed.
     return;
@@ -1293,7 +1295,8 @@ class ImagePaintTimingDetectorFencedFrameTest
         features::kFencedFrames, {{"implementation_type", "mparch"}});
   }
 
-  void InitializeFencedFrameRoot(mojom::blink::FencedFrameMode mode) {
+  void InitializeFencedFrameRoot(
+      blink::FencedFrame::DeprecatedFencedFrameMode mode) {
     web_view_helper_.InitializeWithOpener(/*opener=*/nullptr,
                                           /*frame_client=*/nullptr,
                                           /*view_client=*/nullptr,
@@ -1322,7 +1325,8 @@ INSTANTIATE_PAINT_TEST_SUITE_P(ImagePaintTimingDetectorFencedFrameTest);
 
 TEST_P(ImagePaintTimingDetectorFencedFrameTest, NotReported) {
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-  InitializeFencedFrameRoot(mojom::blink::FencedFrameMode::kDefault);
+  InitializeFencedFrameRoot(
+      blink::FencedFrame::DeprecatedFencedFrameMode::kDefault);
   GetDocument().SetBaseURLOverride(KURL("https://test.com"));
   SetBodyInnerHTML(R"HTML(
       <body></body>

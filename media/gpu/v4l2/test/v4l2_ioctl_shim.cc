@@ -91,12 +91,23 @@ std::ostream& operator<<(std::ostream& ostream,
 // Logs whether given ioctl request |request_code| succeeded
 // or failed given |ret|.
 void LogIoctlResult(int ret, int request_code) {
-  PLOG_IF(ERROR, ret != kIoctlOk && errno != EAGAIN)
-      << "Ioctl request failed for " << V4L2RequestCodeToString(request_code)
-      << ".";
-  PLOG_IF(INFO, ret != kIoctlOk && errno == EAGAIN)
-      << "Ioctl request failed for " << V4L2RequestCodeToString(request_code)
-      << "with error code EAGAIN.";
+  if (ret != kIoctlOk) {
+    switch (errno) {
+      case EAGAIN:
+        LOG(INFO) << "Ioctl request failed for "
+                  << V4L2RequestCodeToString(request_code)
+                  << " with error code EAGAIN.";
+        break;
+      case EBUSY:
+        LOG(WARNING) << "Ioctl request returned EBUSY for "
+                     << V4L2RequestCodeToString(request_code)
+                     << " and should be retried.";
+        break;
+      default:
+        LOG(ERROR) << "Ioctl request failed for "
+                   << V4L2RequestCodeToString(request_code) << ".";
+    }
+  }
   VLOG_IF(4, ret == kIoctlOk)
       << V4L2RequestCodeToString(request_code) << " succeeded.";
 }
@@ -113,8 +124,8 @@ void LogIoctlResultForEnum(int ret, int request_code) {
   }
 }
 
-MmapedBuffer::MmapedBuffer(const base::PlatformFile ioctl_fd,
-                           const struct v4l2_buffer& v4l2_buffer)
+MmappedBuffer::MmappedBuffer(const base::PlatformFile ioctl_fd,
+                             const struct v4l2_buffer& v4l2_buffer)
     : num_planes_(v4l2_buffer.length), buffer_id_(0) {
   for (uint32_t i = 0; i < num_planes_; ++i) {
     void* start_addr =
@@ -126,31 +137,31 @@ MmapedBuffer::MmapedBuffer(const base::PlatformFile ioctl_fd,
         << ") and offset(" << std::hex << v4l2_buffer.m.planes[i].m.mem_offset
         << ").";
 
-    mmaped_planes_.emplace_back(start_addr, v4l2_buffer.m.planes[i].length);
+    mmapped_planes_.emplace_back(start_addr, v4l2_buffer.m.planes[i].length);
   }
 }
 
-MmapedBuffer::~MmapedBuffer() {
-  for (const auto& [start_addr, length, bytes_used] : mmaped_planes_)
+MmappedBuffer::~MmappedBuffer() {
+  for (const auto& [start_addr, length, bytes_used] : mmapped_planes_) {
     munmap(start_addr, length);
+  }
 }
 
 V4L2Queue::V4L2Queue(enum v4l2_buf_type type,
                      uint32_t fourcc,
                      const gfx::Size& size,
-                     uint32_t num_planes,
                      enum v4l2_memory memory,
                      uint32_t num_buffers)
     : type_(type),
       fourcc_(fourcc),
       num_buffers_(num_buffers),
       display_size_(size),
-      num_planes_(num_planes),
+      num_planes_(1),
       memory_(memory) {}
 
 V4L2Queue::~V4L2Queue() = default;
 
-scoped_refptr<MmapedBuffer> V4L2Queue::GetBuffer(const size_t index) const {
+scoped_refptr<MmappedBuffer> V4L2Queue::GetBuffer(const size_t index) const {
   DCHECK_LT(index, buffers_.size());
 
   return buffers_[index];
@@ -377,7 +388,8 @@ bool V4L2IoctlShim::SetFmt(const std::unique_ptr<V4L2Queue>& queue) const {
 
 bool V4L2IoctlShim::GetFmt(const enum v4l2_buf_type type,
                            gfx::Size* coded_size,
-                           uint32_t* num_planes) const {
+                           uint32_t* num_planes,
+                           uint32_t* fourcc) const {
   struct v4l2_format fmt;
 
   memset(&fmt, 0, sizeof(fmt));
@@ -387,6 +399,7 @@ bool V4L2IoctlShim::GetFmt(const enum v4l2_buf_type type,
 
   coded_size->SetSize(fmt.fmt.pix_mp.width, fmt.fmt.pix_mp.height);
   *num_planes = fmt.fmt.pix_mp.num_planes;
+  *fourcc = fmt.fmt.pix_mp.pixelformat;
 
   LOG(INFO) << type << " - VIDIOC_G_FMT: " << fmt.fmt.pix_mp;
 
@@ -467,11 +480,11 @@ bool V4L2IoctlShim::QBuf(const std::unique_ptr<V4L2Queue>& queue,
   v4l2_buffer.m.planes = planes.data();
   v4l2_buffer.length = queue->num_planes();
 
-  scoped_refptr<MmapedBuffer> buffer = queue->GetBuffer(buffer_id);
+  scoped_refptr<MmappedBuffer> buffer = queue->GetBuffer(buffer_id);
 
   for (uint32_t i = 0; i < queue->num_planes(); ++i) {
-    v4l2_buffer.m.planes[i].length = buffer->mmaped_planes()[i].length;
-    v4l2_buffer.m.planes[i].bytesused = buffer->mmaped_planes()[i].bytes_used;
+    v4l2_buffer.m.planes[i].length = buffer->mmapped_planes()[i].length;
+    v4l2_buffer.m.planes[i].bytesused = buffer->mmapped_planes()[i].bytes_used;
     v4l2_buffer.m.planes[i].data_offset = 0;
   }
 
@@ -607,10 +620,20 @@ bool V4L2IoctlShim::MediaRequestIocQueue(
 bool V4L2IoctlShim::MediaRequestIocReinit(
     const std::unique_ptr<V4L2Queue>& queue) const {
   int req_fd = queue->media_request_fd();
+  constexpr uint32_t kMaxRetries = 16;
+  uint32_t retries = 0;
 
-  const bool ret = Ioctl(MEDIA_REQUEST_IOC_REINIT, req_fd);
+  do {
+    if (Ioctl(MEDIA_REQUEST_IOC_REINIT, req_fd)) {
+      return true;
+    }
 
-  return ret;
+    usleep(1 << retries);
+  } while (++retries < kMaxRetries);
+
+  LOG(ERROR) << "MediaRequestIocReinit ioctl call timed out.";
+
+  return false;
 }
 
 bool V4L2IoctlShim::FindMediaDevice() {
@@ -713,7 +736,7 @@ bool V4L2IoctlShim::QueryAndMmapQueueBuffers(
     std::unique_ptr<V4L2Queue>& queue) const {
   DCHECK_EQ(queue->memory(), V4L2_MEMORY_MMAP);
 
-  MmapedBuffers buffers;
+  MmappedBuffers buffers;
 
   for (uint32_t i = 0; i < queue->num_buffers(); ++i) {
     struct v4l2_buffer v4l_buffer;
@@ -729,7 +752,7 @@ bool V4L2IoctlShim::QueryAndMmapQueueBuffers(
     const bool ret = Ioctl(VIDIOC_QUERYBUF, &v4l_buffer);
     DCHECK(ret);
 
-    buffers.emplace_back(base::MakeRefCounted<MmapedBuffer>(
+    buffers.emplace_back(base::MakeRefCounted<MmappedBuffer>(
         decode_fd_.GetPlatformFile(), v4l_buffer));
   }
 

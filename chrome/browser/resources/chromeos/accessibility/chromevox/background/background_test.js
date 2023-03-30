@@ -5,7 +5,10 @@
 // Include test fixture.
 GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
-GEN_INCLUDE(['../testing/fake_objects.js']);
+GEN_INCLUDE([
+  '../../common/testing/documents.js',
+  '../testing/fake_objects.js',
+]);
 
 /**
  * Test fixture for Background.
@@ -50,6 +53,8 @@ ChromeVoxBackgroundTest = class extends ChromeVoxE2ETest {
         '/chromevox/background/page_load_sound_handler.js');
     await importModule(
         'PointerHandler', '/chromevox/background/pointer_handler.js');
+    await importModule(
+        'TtsBackground', '/chromevox/background/tts_background.js');
     await importModule(
         ['BrailleKeyEvent', 'BrailleKeyCommand'],
         '/chromevox/common/braille/braille_key_types.js');
@@ -1386,7 +1391,8 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'NodeVsSubnode', async function() {
   await mockFeedback.replay();
 });
 
-AX_TEST_F('ChromeVoxBackgroundTest', 'NativeFind', async function() {
+// TODO(crbug.com/1419811): Flaky.
+AX_TEST_F('ChromeVoxBackgroundTest', 'DISABLED_NativeFind', async function() {
   const mockFeedback = this.createMockFeedback();
   const site = `
     <a href="#">grape</a>
@@ -3114,7 +3120,8 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'SwipeLeftRight2', async function() {
 
 // TODO(crbug.com/1228418) - Improve the generation of summaries across ChromeOS
 AX_TEST_F(
-    'ChromeVoxBackgroundTest', 'AlertDialogAutoSummaryTextContent',
+    // TODO(crbug.com/1419811): Test is flaky.
+    'ChromeVoxBackgroundTest', 'DISABLED_AlertDialogAutoSummaryTextContent',
     async function() {
       this.resetContextualOutput();
       const mockFeedback = this.createMockFeedback();
@@ -3813,9 +3820,11 @@ AX_TEST_F(
       await mockFeedback.replay();
     });
 
-AX_TEST_F('ChromeVoxBackgroundTest', 'SelectWithOptGroup', async function() {
-  const mockFeedback = this.createMockFeedback();
-  const site = `
+// TODO(crbug.com/1427939): Flaky.
+AX_TEST_F(
+    'ChromeVoxBackgroundTest', 'DISABLED_SelectWithOptGroup', async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
     <select>
       <optgroup label="Theropods">
           <option>Tyrannosaurus</option>
@@ -3824,18 +3833,18 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'SelectWithOptGroup', async function() {
       </optgroup>
     </select>
   `;
-  await this.runWithLoadedTree(site);
-  mockFeedback.expectSpeech('Tyrannosaurus', 'has pop up', 'Collapsed')
-      .call(doCmd('forceClickOnCurrentItem'))
-      .expectSpeech('Tyrannosaurus')
-      .call(press(KeyCode.DOWN))
-      .expectSpeech('Velociraptor')
-      .call(press(KeyCode.DOWN))
-      .expectSpeech('Deinonychus')
-      .call(press(KeyCode.UP))
-      .expectSpeech('Velociraptor');
-  await mockFeedback.replay();
-});
+      await this.runWithLoadedTree(site);
+      mockFeedback.expectSpeech('Tyrannosaurus', 'has pop up', 'Collapsed')
+          .call(doCmd('forceClickOnCurrentItem'))
+          .expectSpeech('Tyrannosaurus')
+          .call(press(KeyCode.DOWN))
+          .expectSpeech('Velociraptor')
+          .call(press(KeyCode.DOWN))
+          .expectSpeech('Deinonychus')
+          .call(press(KeyCode.UP))
+          .expectSpeech('Velociraptor');
+      await mockFeedback.replay();
+    });
 
 AX_TEST_F('ChromeVoxBackgroundTest', 'GroupNavigation', async function() {
   const mockFeedback = this.createMockFeedback();
@@ -4151,3 +4160,19 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'NestedImages', async function() {
       .expectSpeech('end');
   await mockFeedback.replay();
 });
+
+AX_TEST_F(
+    'ChromeVoxBackgroundTest', 'ToggleSpeechWithAnnouncement',
+    async function() {
+      const mockFeedback = this.createMockFeedback();
+      const root =
+          await this.runWithLoadedTree(Documents.autofocus + Documents.button);
+
+      // The test will not finish unless this method is called.
+      this.addCallbackPostMethod(
+          TtsBackground, 'toggleSpeechWithAnnouncement', this.newCallback(),
+          () => true /** remove callback */);
+
+      mockFeedback.call(doCmd('toggleSpeechOnOrOff')).expectSpeech(/.*off.*/);
+      await mockFeedback.replay();
+    });

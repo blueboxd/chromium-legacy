@@ -163,7 +163,7 @@ TEST_F(PageTimelineMonitorUnitTest, TestOnlyRecordTabs) {
   EXPECT_EQ(entries2.size(), 0UL);
 }
 
-TEST_F(PageTimelineMonitorUnitTest, TestUpdateFaviconInBackground) {
+TEST_F(PageTimelineMonitorUnitTest, TestUpdateTitleOrFaviconInBackground) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
   ukm::SourceId mock_source_id = ukm::NoURLSourceId();
   mock_graph.page->SetType(performance_manager::PageType::kTab);
@@ -171,30 +171,22 @@ TEST_F(PageTimelineMonitorUnitTest, TestUpdateFaviconInBackground) {
   mock_graph.page->SetIsVisible(false);
   mock_graph.page->SetLifecycleStateForTesting(mojom::LifecycleState::kRunning);
 
-  monitor()->OnIsVisibleChanged(mock_graph.page.get());
-  monitor()->OnPageLifecycleStateChanged(mock_graph.page.get());
-  monitor()->OnFaviconUpdated(mock_graph.page.get());
+  // Collect one slice before updating, one after.
+  TriggerCollectSlice();
 
-  EXPECT_TRUE(monitor()
-                  ->page_node_info_map_[mock_graph.page.get()]
-                  ->updated_title_or_favicon_in_background);
-}
+  PageLiveStateDecorator::Data* data =
+      PageLiveStateDecorator::Data::GetOrCreateForPageNode(
+          mock_graph.page.get());
+  data->SetUpdatedTitleOrFaviconInBackgroundForTesting(true);
 
-TEST_F(PageTimelineMonitorUnitTest, TestUpdateTitleInBackground) {
-  MockSinglePageInSingleProcessGraph mock_graph(graph());
-  ukm::SourceId mock_source_id = ukm::NoURLSourceId();
-  mock_graph.page->SetType(performance_manager::PageType::kTab);
-  mock_graph.page->SetUkmSourceId(mock_source_id);
-  mock_graph.page->SetIsVisible(false);
-  mock_graph.page->SetLifecycleStateForTesting(mojom::LifecycleState::kRunning);
-
-  monitor()->OnIsVisibleChanged(mock_graph.page.get());
-  monitor()->OnPageLifecycleStateChanged(mock_graph.page.get());
-  monitor()->OnTitleUpdated(mock_graph.page.get());
-
-  EXPECT_TRUE(monitor()
-                  ->page_node_info_map_[mock_graph.page.get()]
-                  ->updated_title_or_favicon_in_background);
+  TriggerCollectSlice();
+  auto entries = test_ukm_recorder()->GetEntriesByName(
+      ukm::builders::PerformanceManager_PageTimelineState::kEntryName);
+  EXPECT_EQ(entries.size(), 2UL);
+  test_ukm_recorder()->ExpectEntryMetric(
+      entries[0], "ChangedFaviconOrTitleInBackground", false);
+  test_ukm_recorder()->ExpectEntryMetric(
+      entries[1], "ChangedFaviconOrTitleInBackground", true);
 }
 
 TEST_F(PageTimelineMonitorUnitTest, TestUpdateLifecycleState) {
@@ -409,7 +401,7 @@ TEST_F(PageTimelineMonitorUnitTest, TestIsActiveTab) {
   test_ukm_recorder()->ExpectEntryMetric(entries[1], "IsActiveTab", 1);
 }
 
-TEST_F(PageTimelineMonitorUnitTest, TestResidentSetSize) {
+TEST_F(PageTimelineMonitorUnitTest, TestMemory) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
   ukm::SourceId mock_source_id = ukm::NoURLSourceId();
   mock_graph.page->SetType(performance_manager::PageType::kTab);
@@ -417,12 +409,14 @@ TEST_F(PageTimelineMonitorUnitTest, TestResidentSetSize) {
   mock_graph.page->SetIsVisible(true);
   mock_graph.page->SetLifecycleStateForTesting(mojom::LifecycleState::kRunning);
   mock_graph.frame->SetResidentSetKbEstimate(123);
+  mock_graph.frame->SetPrivateFootprintKbEstimate(456);
 
   TriggerCollectSlice();
   auto entries = test_ukm_recorder()->GetEntriesByName(
       ukm::builders::PerformanceManager_PageTimelineState::kEntryName);
   EXPECT_EQ(entries.size(), 1UL);
   test_ukm_recorder()->ExpectEntryMetric(entries[0], "ResidentSetSize", 123);
+  test_ukm_recorder()->ExpectEntryMetric(entries[0], "PrivateFootprint", 456);
 }
 
 TEST_F(PageTimelineMonitorUnitTest, TestUpdatePageNodeBeforeTypeChange) {

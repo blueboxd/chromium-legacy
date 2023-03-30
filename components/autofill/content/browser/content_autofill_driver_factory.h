@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/content/browser/content_autofill_router.h"
@@ -51,8 +52,8 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver {
   // WebContentsObserver events.
   class Observer : public base::CheckedObserver {
    public:
-    // Called during destruction of the ContentAutofillDriverFactory. No
-    // members of `factory` should be accessed in this event handler.
+    // Called during destruction of the ContentAutofillDriverFactory. It can,
+    // e.g., be used to reset `ScopedObservation`s observing `this`.
     virtual void OnContentAutofillDriverFactoryDestroyed(
         ContentAutofillDriverFactory& factory) {}
 
@@ -125,8 +126,8 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver {
   // Should be empty at destruction time because its elements are erased in
   // RenderFrameDeleted(). In case it is not empty, is must be destroyed before
   // |router_| because ~ContentAutofillDriver() may access |router_|.
-  std::unordered_map<content::RenderFrameHost*,
-                     std::unique_ptr<ContentAutofillDriver>>
+  base::flat_map<content::RenderFrameHost*,
+                 std::unique_ptr<ContentAutofillDriver>>
       driver_map_;
 
   base::ObserverList<Observer> observers_;

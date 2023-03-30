@@ -77,7 +77,6 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
       base::Time validation_time,
       const std::string& code);
   bool GetSecurityTokenPinRequestCanceled() const;
-  void HardlockPod(const AccountId& account_id);
   void OnFocusPod(const AccountId& account_id);
   void OnNoPodFocused();
   void LoadWallpaper(const AccountId& account_id);
@@ -101,7 +100,6 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void ShowParentAccessHelpApp();
   void ShowLockScreenNotificationSettings();
   void FocusOobeDialog();
-  void NotifyUserActivity();
 
   // Enable or disable authentication for the debug overlay.
   enum class ForceFailAuth { kOff, kImmediate, kDelayed };

@@ -104,11 +104,37 @@ suite('AutofillSectionUiTest', function() {
 
     await flushTasks();
 
+    // Imitate disabling sync.
+    changeListener(autofillManager.data.addresses, [], [], undefined);
+
+    {
+      const dialog = await initiateRemoving(section, 0);
+      assertTrue(
+          !isVisible(dialog.$.accountAddressDescription),
+          'account notice should be invisible for non-account address');
+      assertTrue(
+          isVisible(dialog.$.localAddressDescription),
+          'sync is disabled, an appropriate message should be visible');
+      assertTrue(
+          !isVisible(dialog.$.syncAddressDescription),
+          'sync is disabled, an appropriate message should be visible');
+      dialog.$.dialog.close();
+      // Make sure closing clean-ups are finished.
+      await eventToPromise('close', dialog.$.dialog);
+    }
+
+    await flushTasks();
+
+    changeListener(autofillManager.data.addresses, [], [], {
+      email: 'stub-user@example.com',
+      isSyncEnabledForAutofillProfiles: true,
+    });
+
     {
       const dialog = await initiateRemoving(section, 1);
       assertTrue(
           isVisible(dialog.$.accountAddressDescription),
-          'account notice should be invisible for non-account address');
+          'account notice should be visible for non-account address');
       assertTrue(
           !isVisible(dialog.$.localAddressDescription),
           'non-account messages should not be visible');
@@ -236,7 +262,7 @@ suite('AutofillSectionAddressTests', function() {
     const addressList = section.$.addressList;
     const row = addressList.children[0];
     assertTrue(!!row);
-    const menuButton = row!.querySelector<HTMLElement>('#addressMenu');
+    const menuButton = row!.querySelector<HTMLElement>('.address-menu');
     assertTrue(!!menuButton);
     menuButton!.click();
     flush();

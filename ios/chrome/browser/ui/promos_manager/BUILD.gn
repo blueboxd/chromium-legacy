@@ -7,6 +7,7 @@ source_set("promos") {
   sources = [
     "bannered_promo_view_provider.h",
     "promo_protocol.h",
+    "promos_manager_ui_handler.h",
     "standard_promo_action_handler.h",
     "standard_promo_alert_handler.h",
     "standard_promo_alert_provider.h",
@@ -52,8 +53,12 @@ source_set("promos_manager") {
   public_deps = [
     ":promos",
     "//base",
+    "//components/feature_engagement/public",
     "//ios/chrome/app:tests_hook",
+    "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/promos_manager",
+    "//ios/chrome/browser/promos_manager:factory",
+    "//ios/chrome/browser/promos_manager:features",
     "//ios/chrome/browser/promos_manager:types",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//third_party/abseil-cpp:absl",

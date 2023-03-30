@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -219,7 +220,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       ResourcePool::InUsePoolResource resource =
           resource_pool_->AcquireResource(
               tiles[i]->desired_texture_size(),
-              raster_buffer_provider_->GetResourceFormat(),
+              raster_buffer_provider_->GetFormat(),
               client_->GetTargetColorParams(gfx::ContentColorUsage::kSRGB)
                   .color_space);
       raster_buffer_provider_->AcquireBufferForRaster(
@@ -306,7 +307,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   ActivationStateAsValue();
 
-  void ActivationStateAsValueInto(base::trace_event::TracedValue* state);
+  void ActivationStateAsValueInto(base::trace_event::TracedValue* state) const;
   int num_of_tiles_with_checker_images() const {
     return num_of_tiles_with_checker_images_;
   }
@@ -324,6 +325,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   void set_active_url(const GURL& url) { active_url_ = url; }
 
+  std::string GetHungCommitDebugInfo() const;
+
  protected:
   friend class Tile;
   // Must be called by tile during destruction.
@@ -337,7 +340,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
     MemoryUsage(size_t memory_bytes, size_t resource_count);
 
     static MemoryUsage FromConfig(const gfx::Size& size,
-                                  viz::ResourceFormat format);
+                                  viz::SharedImageFormat format);
     static MemoryUsage FromTile(const Tile* tile);
 
     MemoryUsage& operator+=(const MemoryUsage& other);
@@ -405,7 +408,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void MarkTilesOutOfMemory(
       std::unique_ptr<RasterTilePriorityQueue> queue) const;
 
-  viz::ResourceFormat DetermineResourceFormat(const Tile* tile) const;
+  viz::SharedImageFormat DetermineFormat(const Tile* tile) const;
 
   void DidFinishRunningTileTasksRequiredForActivation();
   void DidFinishRunningTileTasksRequiredForDraw();

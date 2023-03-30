@@ -25,10 +25,11 @@ source_set("browser_container") {
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/screen_time:buildflags",
+    "//ios/chrome/browser/shared/coordinator/alert",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
-    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/link_to_text",
     "//ios/chrome/browser/ui/overlays",
     "//ios/chrome/browser/ui/partial_translate",
@@ -63,6 +64,7 @@ source_set("ui") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/util",
+    "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/link_to_text",
     "//ios/chrome/browser/ui/partial_translate",
     "//ios/chrome/common/ui/util",
@@ -119,6 +121,26 @@ source_set("unit_tests") {
   ]
 }
 
+source_set("eg2_tests") {
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [ "browser_edit_menu_handler_egtest.mm" ]
+  deps = [
+    ":eg_test_support+eg2",
+    "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/ui/partial_translate:eg_test_support+eg2",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/web/public/test:element_selector",
+    "//ios/web/public/test/http_server:http_server",
+    "//net:test_support",
+  ]
+  frameworks = [ "UIKit.framework" ]
+}
+
 source_set("eg_test_support+eg2") {
   configs += [
     "//build/config/compiler:enable_arc",
@@ -130,7 +152,7 @@ source_set("eg_test_support+eg2") {
     "edit_menu_app_interface.h",
     "edit_menu_app_interface_stub.mm",
   ]
-  deps = [ "//ios/third_party/earl_grey2:test_lib" ]
+  deps = [ "//ios/testing/earl_grey:eg_test_support+eg2" ]
 }
 
 source_set("eg_app_support+eg2") {

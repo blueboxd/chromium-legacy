@@ -384,14 +384,18 @@ class FormForestTest : public content::RenderViewHostTestHarness {
         blink::mojom::PermissionsPolicyFeature::kSharedAutofill,
         {blink::OriginWithPossibleWildcards(origin,
                                             /*has_subdomain_wildcard=*/false)},
-        false, false)};
+        /*self_if_matches=*/absl::nullopt,
+        /*matches_all_origins=*/false,
+        /*matches_opaque_src=*/false)};
   }
 
   // Explicitly disallows shared-autofill on all origins.
   static blink::ParsedPermissionsPolicy DisallowSharedAutofill() {
     return {blink::ParsedPermissionsPolicyDeclaration(
-        blink::mojom::PermissionsPolicyFeature::kSharedAutofill, {}, false,
-        false)};
+        blink::mojom::PermissionsPolicyFeature::kSharedAutofill,
+        /*allowed_origins=*/{}, /*self_if_matches=*/absl::nullopt,
+        /*matches_all_origins=*/false,
+        /*matches_opaque_src=*/false)};
   }
 
   MockContentAutofillDriver* NavigateFrame(content::RenderFrameHost* rfh,
@@ -1550,11 +1554,12 @@ TEST_F(FormForestTestUnflatten, MainOriginPolicy) {
       WithValues(GetMockedForm("main"), Profile(0)),
       WithValues(GetMockedForm("child1"), Profile(1)),
       WithValues(GetMockedForm("child2"), Profile(2))};
-  // Clear sensitive fields.
-  for (size_t i = 2; i < expectation[0].fields.size(); ++i) {
-    expectation[0].fields[i].value.clear();
-    expectation[1].fields[i].value.clear();
-  }
+  // Clear sensitive fields: the credit card number (field index 2) and CVC
+  // (field index 5) in the two main-origin forms.
+  expectation[0].fields[2].value.clear();
+  expectation[0].fields[5].value.clear();
+  expectation[1].fields[2].value.clear();
+  expectation[1].fields[5].value.clear();
   EXPECT_THAT(GetRendererFormsOfBrowserForm("main", Origin(kIframeUrl),
                                             FieldTypeMap("main")),
               UnorderedArrayEquals(expectation));

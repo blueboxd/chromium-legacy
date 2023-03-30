@@ -19,7 +19,6 @@
 #include "chromeos/ash/components/dbus/anomaly_detector/anomaly_detector_client.h"
 #include "chromeos/ash/components/dbus/arc/arc_appfuse_provider_client.h"
 #include "chromeos/ash/components/dbus/arc/arc_camera_client.h"
-#include "chromeos/ash/components/dbus/arc/arc_data_snapshotd_client.h"
 #include "chromeos/ash/components/dbus/arc/arc_keymaster_client.h"
 #include "chromeos/ash/components/dbus/arc/arc_keymint_client.h"
 #include "chromeos/ash/components/dbus/arc/arc_midis_client.h"
@@ -55,6 +54,7 @@
 #include "chromeos/ash/components/dbus/os_install/os_install_client.h"
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_client.h"
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
+#include "chromeos/ash/components/dbus/printscanmgr/printscanmgr_client.h"
 #include "chromeos/ash/components/dbus/private_computing/private_computing_client.h"
 #include "chromeos/ash/components/dbus/resourced/resourced_client.h"
 #include "chromeos/ash/components/dbus/rgbkbd/rgbkbd_client.h"
@@ -140,7 +140,6 @@ void InitializeDBus() {
   InitializeDBusClient<AnomalyDetectorClient>(bus);
   InitializeDBusClient<ArcAppfuseProviderClient>(bus);
   InitializeDBusClient<ArcCameraClient>(bus);
-  InitializeDBusClient<ArcDataSnapshotdClient>(bus);
   InitializeDBusClient<ArcKeymasterClient>(bus);
   InitializeDBusClient<ArcKeyMintClient>(bus);
   InitializeDBusClient<ArcMidisClient>(bus);
@@ -185,6 +184,7 @@ void InitializeDBus() {
   InitializeDBusClient<OsInstallClient>(bus);
   InitializeDBusClient<PatchPanelClient>(bus);
   InitializeDBusClient<PciguardClient>(bus);
+  InitializeDBusClient<PrintscanmgrClient>(bus);
   InitializeDBusClient<PrivateComputingClient>(bus);
   InitializeDBusClient<chromeos::PermissionBrokerClient>(bus);
   InitializeDBusClient<chromeos::PowerManagerClient>(bus);
@@ -297,6 +297,7 @@ void ShutdownDBus() {
   }
   chromeos::PowerManagerClient::Shutdown();
   chromeos::PermissionBrokerClient::Shutdown();
+  PrintscanmgrClient::Shutdown();
   PciguardClient::Shutdown();
   PatchPanelClient::Shutdown();
   PrivateComputingClient::Shutdown();
@@ -341,7 +342,6 @@ void ShutdownDBus() {
   ArcMidisClient::Shutdown();
   ArcKeyMintClient::Shutdown();
   ArcKeymasterClient::Shutdown();
-  ArcDataSnapshotdClient::Shutdown();
   ArcCameraClient::Shutdown();
   ArcAppfuseProviderClient::Shutdown();
   AnomalyDetectorClient::Shutdown();

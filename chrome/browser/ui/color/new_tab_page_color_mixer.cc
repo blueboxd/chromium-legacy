@@ -142,8 +142,9 @@ void AddGeneratedThemeComprehensiveColors(ui::ColorMixer& mixer) {
   mixer[kColorNewTabPageChipForeground] =
       select_topmost_element_foreground_color;
   mixer[kColorNewTabPageModuleItemBackground] = {kColorNewTabPageBackground};
-  mixer[kColorNewTabPageHistoryClustersModuleItemBackground] = {
-      kColorNewTabPageBackground};
+  mixer[kColorNewTabPageHistoryClustersModuleItemBackground] =
+      SelectBasedOnWhiteNtpBackground(gfx::kGoogleGrey100,
+                                      kColorNewTabPageBackground);
   mixer[kColorNewTabPageModuleControlBorder] = SelectBasedOnWhiteNtpBackground(
       gfx::kGoogleGrey300, kColorNewTabPageBackground);
   mixer[kColorNewTabPageMostVisitedForeground] = SelectBasedOnDarkInput(
@@ -305,8 +306,7 @@ void AddNewTabPageColorMixer(ui::ColorProvider* provider,
       ui::SetAlpha(gfx::kGoogleGrey900,
                    (dark_mode ? /* % opacity */ 0.32 : 0.28) * SK_AlphaOPAQUE);
 
-  if (base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme) ||
-      base::FeatureList::IsEnabled(
+  if (base::FeatureList::IsEnabled(
           ntp_features::kNtpComprehensiveThemeRealbox)) {
     if (dark_mode) {
       mixer[kColorRealboxBackground] = {kColorToolbarBackgroundSubtleEmphasis};
@@ -324,7 +324,7 @@ void AddNewTabPageColorMixer(ui::ColorProvider* provider,
                                    gfx::kGoogleGrey900),
         /* 10% opacity */ 0.1 * SK_AlphaOPAQUE);
     mixer[kColorRealboxResultsDimSelected] = {
-        kColorOmniboxResultsBackgroundSelected};
+        kColorOmniboxResultsTextDimmedSelected};
     mixer[kColorRealboxResultsForeground] = {kColorOmniboxText};
     mixer[kColorRealboxResultsForegroundDimmed] = {
         kColorOmniboxResultsTextDimmed};
@@ -334,35 +334,6 @@ void AddNewTabPageColorMixer(ui::ColorProvider* provider,
     mixer[kColorRealboxResultsUrl] = {kColorOmniboxResultsUrl};
     mixer[kColorRealboxResultsUrlSelected] = {kColorOmniboxResultsUrlSelected};
     mixer[kColorRealboxSearchIconBackground] = {kColorOmniboxResultsIcon};
-  }
-
-  if (base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme)) {
-    // For details see `kRealboxMatchOmniboxThemeVariations` in
-    // chrome/browser/about_flags.cc.
-    switch (base::GetFieldTrialParamByFeatureAsInt(
-        ntp_features::kRealboxMatchOmniboxTheme,
-        ntp_features::kRealboxMatchOmniboxThemeVariantParam, 0)) {
-      case 0:
-        mixer[kColorRealboxBackground] = {
-            kColorToolbarBackgroundSubtleEmphasis};
-        mixer[kColorRealboxBackgroundHovered] = {
-            kColorToolbarBackgroundSubtleEmphasisHovered};
-        break;
-      // NTP background on steady state and Omnibox steady state background on
-      // hover.
-      case 1:
-        mixer[kColorRealboxBackground] = {kColorNewTabPageBackground};
-        mixer[kColorRealboxBackgroundHovered] = {
-            kColorToolbarBackgroundSubtleEmphasisHovered};
-        break;
-      // NTP background on steady state and Omnibox active state background on
-      // hover.
-      case 2:
-        mixer[kColorRealboxBackground] = {kColorNewTabPageBackground};
-        mixer[kColorRealboxBackgroundHovered] = {
-            kColorOmniboxResultsBackground};
-        break;
-    }
   }
 
   AddWebThemeNewTabPageColors(mixer, dark_mode);
@@ -437,7 +408,7 @@ void AddWebThemeNewTabPageColors(ui::ColorMixer& mixer, bool dark_mode) {
   mixer[kColorNewTabPageIconButtonBackgroundActive] = {
       dark_mode ? gfx::kGoogleGrey300 : gfx::kGoogleGrey700};
   mixer[kColorNewTabPageLink] = {dark_mode ? gfx::kGoogleBlue300
-                                           : SkColorSetRGB(0x06, 0x37, 0x74)};
+                                           : gfx::kGoogleBlue700};
   mixer[kColorNewTabPageMicBorderColor] = {dark_mode ? gfx::kGoogleGrey100
                                                      : gfx::kGoogleGrey300};
   mixer[kColorNewTabPageMicIconColor] = {dark_mode ? gfx::kGoogleGrey100

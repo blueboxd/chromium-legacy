@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
 
 #import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
@@ -15,14 +17,14 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
+#import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_coordinator.h"
@@ -169,6 +171,11 @@ using password_manager::WarningType;
 
   [self.baseNavigationController pushViewController:self.passwordsViewController
                                            animated:YES];
+
+  // When kIOSPasswordCheckup is enabled, start a password check.
+  if (password_manager::features::IsPasswordCheckupEnabled()) {
+    [self checkSavedPasswords];
+  }
 }
 
 - (void)stop {
@@ -204,7 +211,8 @@ using password_manager::WarningType;
   DCHECK(!self.passwordCheckupCoordinator);
   self.passwordCheckupCoordinator = [[PasswordCheckupCoordinator alloc]
       initWithBaseNavigationController:self.baseNavigationController
-                               browser:self.browser];
+                               browser:self.browser
+                          reauthModule:self.reauthModule];
   self.passwordCheckupCoordinator.delegate = self;
   [self.passwordCheckupCoordinator start];
 }
@@ -339,6 +347,8 @@ using password_manager::WarningType;
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   self.passwordSettingsCoordinator.delegate = self;
+
+  base::RecordAction(base::UserMetricsAction("PasswordManager_OpenSettings"));
   [self.passwordSettingsCoordinator start];
 }
 

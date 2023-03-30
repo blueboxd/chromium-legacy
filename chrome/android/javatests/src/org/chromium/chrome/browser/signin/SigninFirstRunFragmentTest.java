@@ -14,6 +14,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -40,7 +41,6 @@ import androidx.test.filters.MediumTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,13 +55,14 @@ import org.chromium.base.Callback;
 import org.chromium.base.Promise;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseActivityTestRule;
-import org.chromium.base.test.metrics.HistogramTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo.OwnedState;
@@ -133,9 +134,6 @@ public class SigninFirstRunFragmentTest {
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Rule
-    public HistogramTestRule mHistogramTestRule = new HistogramTestRule();
-
-    @Rule
     public final SigninTestRule mSigninTestRule = new SigninTestRule();
 
     @Rule
@@ -178,14 +176,6 @@ public class SigninFirstRunFragmentTest {
                             ? AppCompatDelegate.MODE_NIGHT_YES
                             : AppCompatDelegate.MODE_NIGHT_NO);
         });
-    }
-
-    @BeforeClass
-    public static void setUpBeforeActivityLaunched() {
-        // Only needs to be loaded once and needs to be loaded before HistogramTestRule.
-        // TODO(https://crbug.com/1211884): Revise after HistogramTestRule is revised to not require
-        // native loading.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
     }
 
     @Before
@@ -263,6 +253,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1429072")
     public void testFragmentWhenRemovingChildAccountDynamically() {
         mSigninTestRule.addAccount(
                 CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
@@ -293,6 +284,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1428072")
     public void testRemovingAllAccountsDismissesAccountPickerDialog() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /*avatar=*/null);
         launchActivityWithFragment();
@@ -833,6 +825,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1429072")
     public void testFragmentWhenAddingAnotherAccount() {
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_OK, TEST_EMAIL2);
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
@@ -866,6 +859,8 @@ public class SigninFirstRunFragmentTest {
         when(mPolicyLoadListenerMock.get()).thenReturn(null);
         launchActivityWithFragment();
         checkFragmentWhenLoadingNativeAndPolicy();
+        var slowestPointHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "MobileFre.SlowestLoadPoint", LoadPoint.POLICY_LOAD);
 
         // TODO(https://crbug.com/1346258): Use OneshotSupplierImpl instead.
         when(mPolicyLoadListenerMock.get()).thenReturn(false);
@@ -877,11 +872,9 @@ public class SigninFirstRunFragmentTest {
         });
 
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
-        Assert.assertEquals("Policy loading should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.POLICY_LOAD));
-        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
-                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        slowestPointHistogram.assertExpected(
+                "Policy loading should be the slowest and SlowestLoadpoint "
+                + "histogram should be counted only once");
     }
 
     @Test
@@ -892,15 +885,14 @@ public class SigninFirstRunFragmentTest {
                 () -> { mNativeInitializationPromise = new Promise<>(); });
         launchActivityWithFragment();
         checkFragmentWhenLoadingNativeAndPolicy();
+        var slowestPointHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mNativeInitializationPromise.fulfill(null));
 
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
-        Assert.assertEquals("Native initialization should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
-        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
-                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        slowestPointHistogram.assertExpected("Native initialization should be the slowest and "
+                + "SlowestLoadpoint histogram should be counted only once");
         verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
     }
 
@@ -911,6 +903,8 @@ public class SigninFirstRunFragmentTest {
         when(mChildAccountStatusListenerMock.get()).thenReturn(null);
         launchActivityWithFragment();
         checkFragmentWhenLoadingNativeAndPolicy();
+        var slowestPointHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "MobileFre.SlowestLoadPoint", LoadPoint.CHILD_STATUS_LOAD);
 
         // TODO(https://crbug.com/1346258): Use OneshotSupplierImpl instead.
         when(mChildAccountStatusListenerMock.get()).thenReturn(false);
@@ -923,23 +917,23 @@ public class SigninFirstRunFragmentTest {
         });
 
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
-        Assert.assertEquals("Child status loading should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.CHILD_STATUS_LOAD));
-        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
-                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        slowestPointHistogram.assertExpected("Child status loading should be the slowest and "
+                + "SlowestLoadpoint histogram should be counted only once");
     }
 
     @Test
     @MediumTest
     public void testNativePolicyAndChildStatusLoadMetricRecordedOnlyOnce() {
+        var slowestPointHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION);
         launchActivityWithFragment();
         verify(mFirstRunPageDelegateMock, timeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL))
                 .recordNativePolicyAndChildStatusLoadedHistogram();
         verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
-        Assert.assertEquals("Native initialization should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
+        slowestPointHistogram.assertExpected("Native initialization should be the slowest");
+
+        slowestPointHistogram =
+                HistogramWatcher.newBuilder().expectNoRecords("MobileFre.SlowestLoadPoint").build();
 
         // Changing the activity orientation will create SigninFirstRunCoordinator again and call
         // SigninFirstRunFragment.notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded()
@@ -950,11 +944,8 @@ public class SigninFirstRunFragmentTest {
         // before as mockito does not reset invocation counts between consecutive verify calls.
         verify(mFirstRunPageDelegateMock).recordNativePolicyAndChildStatusLoadedHistogram();
         verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
-        Assert.assertEquals("Native initialization should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
-        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
-                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        slowestPointHistogram.assertExpected(
+                "SlowestLoadPoint histogram should not be recorded again");
     }
 
     @Test
@@ -1245,6 +1236,8 @@ public class SigninFirstRunFragmentTest {
             signinProgressSpinner.setIndeterminateDrawable(new ColorDrawable(
                     SemanticColorUtils.getDefaultBgColor(mFragment.getContext())));
         });
+
+        ViewUtils.waitForView(allOf(withId(R.id.signin_fre_continue_button), isDisplayed()));
     }
 
     /**

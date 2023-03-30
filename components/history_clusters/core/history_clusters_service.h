@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "base/functional/callback.h"
@@ -85,7 +84,6 @@ class HistoryClustersService : public base::SupportsUserData,
   // percentile, and we do synchronous lookups as the user types in the omnibox.
   using KeywordMap =
       std::unordered_map<std::u16string, history::ClusterKeywordData>;
-  using URLKeywordSet = std::unordered_set<std::string>;
 
   // `url_loader_factory` is allowed to be nullptr, like in unit tests.
   HistoryClustersService(
@@ -186,12 +184,6 @@ class HistoryClustersService : public base::SupportsUserData,
   absl::optional<history::ClusterKeywordData> DoesQueryMatchAnyCluster(
       const std::string& query);
 
-  // Returns true if `url_keyword` matches a URL in a significant cluster. This
-  // may kick off a cache refresh while still immediately returning false.
-  // `url_keyword` is derived from a given URL by ComputeURLKeywordForLookup().
-  // SRP URLs canonicalized by TemplateURLService should be passed in directly.
-  bool DoesURLMatchAnyCluster(const std::string& url_keyword);
-
   // Clears `all_keywords_cache_` and cancels any pending tasks to populate it.
   void ClearKeywordCache();
 
@@ -219,11 +211,20 @@ class HistoryClustersService : public base::SupportsUserData,
       base::ElapsedTimer total_latency_timer,
       base::Time begin_time,
       std::unique_ptr<KeywordMap> keyword_accumulator,
-      std::unique_ptr<URLKeywordSet> url_keyword_accumulator,
       KeywordMap* cache,
-      URLKeywordSet* url_cache,
       std::vector<history::Cluster> clusters,
       QueryClustersContinuationParams continuation_params);
+
+  // Reads the "all keywords" and short keyword caches from prefs and
+  // deserializes them.
+  void LoadCachesFromPrefs();
+  // Serializes and writes the short keyword cache to prefs.
+  void WriteShortCacheToPrefs();
+  // Serializes and writes the "all keywords" cache to prefs.
+  void WriteAllCacheToPrefs();
+
+  // Whether keyword caches should persisted via the pref service.
+  const bool persist_caches_to_prefs_;
 
   // True if Journeys is enabled based on field trial and locale checks.
   const bool is_journeys_enabled_;
@@ -244,7 +245,6 @@ class HistoryClustersService : public base::SupportsUserData,
   // the cache was generated so we can periodically re-generate.
   // TODO(tommycli): Make a smarter mechanism for regenerating the cache.
   KeywordMap all_keywords_cache_;
-  URLKeywordSet all_url_keywords_cache_;
   base::Time all_keywords_cache_timestamp_;
 
   // Like above, but will represent the clusters newer than
@@ -258,7 +258,6 @@ class HistoryClustersService : public base::SupportsUserData,
   // TODO(manukh) This is a "band aid" fix to missing keywords for recent
   //  visits.
   KeywordMap short_keyword_cache_;
-  URLKeywordSet short_url_keywords_cache_;
   base::Time short_keyword_cache_timestamp_;
 
   // Tracks the current keyword task. Will be `nullptr` or
@@ -288,6 +287,9 @@ class HistoryClustersService : public base::SupportsUserData,
   VisitDeletionObserver visit_deletion_observer_;
 
   ContextClustererHistoryServiceObserver context_clusterer_observer_;
+
+  // Used to store keyword caches across restarts.
+  raw_ptr<PrefService> pref_service_ = nullptr;
 
   // Weak pointers issued from this factory never get invalidated before the
   // service is destroyed.

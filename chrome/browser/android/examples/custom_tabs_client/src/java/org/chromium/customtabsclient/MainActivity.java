@@ -12,6 +12,8 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Insets;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -23,10 +25,13 @@ import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.view.WindowMetrics;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -94,7 +99,7 @@ public class MainActivity
 
     /** Extra that enables the maximization button on the side sheet Custom Tab toolbar. */
     public static final String EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION =
-            "androix.browser.customtabs.extra.EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION";
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION";
 
     /**
      * Minimal height the bottom sheet CCT should show is half of the display height.
@@ -152,14 +157,14 @@ public class MainActivity
     public static final int ACTIVITY_SIDE_SHEET_POSITION_END = 2;
 
     public static final String EXTRA_ACTIVITY_SIDE_SHEET_POSITION =
-            "androidx.browser.customtabs.extra.EXTRA_ACTIVITY_SIDE_SHEET_POSITION";
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_POSITION";
 
     public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT = 0;
     public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_BOTTOM = 1;
     public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE = 2;
 
     public static final String EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR =
-            "androidx.browser.customtabs.extra.EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR";
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR";
 
     /**
      * Once per second, asks the framework for the process importance, and logs any change.
@@ -214,6 +219,28 @@ public class MainActivity
                 Log.w(TAG,
                         "onGreatestScrollPercentageIncreased: scrollPercentage = "
                                 + args.getInt("scrollPercentage"));
+                // CustomTabsConnection#ON_RESIZED_CALLBACK
+            } else if (callbackName.equals("onResized")) {
+                // CustomTabsConnection#ON_RESIZED_SIZE_EXTRA
+                Log.w(TAG, "onResized: size = " + args.getInt("size"));
+                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_CALLBACK
+            } else if (callbackName.equals("onActivityLayout")) {
+                Log.w(TAG,
+                        "onActivityLayout:"
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_LEFT_EXTRA
+                                + " left = "
+                                + args.getInt("left")
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_TOP_EXTRA
+                                + " top = "
+                                + args.getInt("top")
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_RIGHT_EXTRA
+                                + " right = "
+                                + args.getInt("right")
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_BOTTOM_EXTRA
+                                + " bottom = "
+                                + args.getInt("bottom")
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_STATE_EXTRA
+                                + " state = " + args.getInt("state"));
             }
         }
     }
@@ -566,7 +593,8 @@ public class MainActivity
     }
 
     private void initializeBreakpointSlider() {
-        int maxBreakpointDp = getMaximumPossibleSizeDp();
+        int maxBreakpointDp =
+                (int) (getMaximumPossibleSizePx() / getResources().getDisplayMetrics().density);
         mPcctBreakpointSlider = findViewById(R.id.pcct_breakpoint_slider);
         mPcctBreakpointLabel = findViewById(R.id.pcct_breakpoint_slider_label);
         mPcctBreakpointSlider.setMax(maxBreakpointDp);
@@ -761,7 +789,7 @@ public class MainActivity
                 }
                 if (!mBackgroundInteractCheckbox.isChecked()) {
                     customTabsIntent.intent.putExtra(
-                            "androix.browser.customtabs.extra.ENABLE_BACKGROUND_INTERACTION",
+                            "androidx.browser.customtabs.extra.ENABLE_BACKGROUND_INTERACTION",
                             BACKGROUND_INTERACT_OFF_VALUE);
                 }
 
@@ -904,7 +932,7 @@ public class MainActivity
         actionIntent.putExtra(Intent.EXTRA_EMAIL, "example@example.com");
         actionIntent.putExtra(Intent.EXTRA_SUBJECT, "example");
         PendingIntent pi =
-                PendingIntent.getActivity(this, 0, actionIntent, PendingIntent.FLAG_MUTABLE);
+                PendingIntent.getActivity(this, 0, actionIntent, PendingIntent.FLAG_IMMUTABLE);
         Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.baseline_send_white);
         builder.setActionButton(icon, "send email", pi, true);
     }
@@ -947,20 +975,29 @@ public class MainActivity
     }
 
     private @Px int getMaximumPossibleSizePx() {
-        @Px
-        int res = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Rect rect = this.getWindowManager().getMaximumWindowMetrics().getBounds();
-            res = Math.max(rect.width(), rect.height());
+            WindowMetrics windowMetrics = getWindowManager().getCurrentWindowMetrics();
+            Insets navbarInsets = windowMetrics.getWindowInsets().getInsets(
+                    WindowInsets.Type.navigationBars() | WindowInsets.Type.displayCutout());
+            int navbarWidth = navbarInsets.left + navbarInsets.right;
+            Rect windowBounds = getWindowManager().getCurrentWindowMetrics().getBounds();
+            int width = windowBounds.width() - navbarWidth;
+            int height = windowMetrics.getBounds().height();
+            return Math.max(width, height);
         } else {
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            this.getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
-            res = Math.max(displayMetrics.widthPixels, displayMetrics.heightPixels);
-        }
-        return res;
-    }
+            Display display = getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int width = size.x;
 
-    private int getMaximumPossibleSizeDp() {
-        return (int) (getMaximumPossibleSizePx() / getResources().getDisplayMetrics().density);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            if (isInMultiWindowMode()) {
+                display.getMetrics(displayMetrics);
+            } else {
+                display.getRealMetrics(displayMetrics);
+            }
+            int height = displayMetrics.heightPixels;
+            return Math.max(width, height);
+        }
     }
 }

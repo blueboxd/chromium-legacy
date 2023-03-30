@@ -595,8 +595,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutRect NoOverflowRect() const;
   LayoutRect LayoutOverflowRect() const {
     NOT_DESTROYED();
-    DCHECK(!RuntimeEnabledFeatures::LayoutNGPrintingEnabled() ||
-           !IsLayoutMultiColumnSet());
+    DCHECK(!IsLayoutMultiColumnSet());
     return LayoutOverflowIsSet()
                ? overflow_->layout_overflow->LayoutOverflowRect()
                : NoOverflowRect();
@@ -807,10 +806,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return Size().Height();
   }
-
-  // TODO(crbug.com/962299): This is incorrect in some cases.
-  int PixelSnappedOffsetWidth(const Element*) const final;
-  int PixelSnappedOffsetHeight(const Element*) const final;
 
   bool UsesOverlayScrollbars() const;
 
@@ -1449,12 +1444,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return StyleRef().IsHorizontalWritingMode() ? IntrinsicSize().Height()
                                                 : IntrinsicSize().Width();
   }
+  // TODO(1229581): Remove this function, and intrinsic_content_logical_height_.
   virtual LayoutUnit IntrinsicContentLogicalHeight() const {
     NOT_DESTROYED();
-    DCHECK(!RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
-    return HasOverrideIntrinsicContentLogicalHeight()
-               ? OverrideIntrinsicContentLogicalHeight()
-               : intrinsic_content_logical_height_;
+    NOTREACHED();
+    return LayoutUnit();
   }
 
   // Whether or not the element shrinks to its intrinsic width (rather than
@@ -1738,35 +1732,17 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool IsCustomItem() const;
   bool IsCustomItemShrinkToFit() const;
 
-  bool IsFlexItemIncludingDeprecatedAndNG() const {
-    NOT_DESTROYED();
-    return IsFlexItemCommon() &&
-           Parent()->IsFlexibleBoxIncludingDeprecatedAndNG();
-  }
-
-  // TODO(dgrogan): Replace the rest of the calls to IsFlexItem with
-  // IsFlexItemIncludingNG when all the callsites can handle an item with an NG
-  // parent.
-  bool IsFlexItem() const {
-    NOT_DESTROYED();
-    return IsFlexItemCommon() && Parent()->IsFlexibleBox();
-  }
+  // TODO(1229581): Rename this function.
   bool IsFlexItemIncludingNG() const {
     NOT_DESTROYED();
-    return IsFlexItemCommon() && Parent()->IsFlexibleBoxIncludingNG();
-  }
-  bool IsFlexItemCommon() const {
-    NOT_DESTROYED();
-    return !IsInline() && !IsOutOfFlowPositioned() && Parent();
+    return !IsInline() && !IsOutOfFlowPositioned() && Parent() &&
+           Parent()->IsFlexibleBoxIncludingNG();
   }
 
-  bool IsGridItem() const {
-    NOT_DESTROYED();
-    return Parent() && Parent()->IsLayoutGrid();
-  }
+  // TODO(1229581): Rename this function.
   bool IsGridItemIncludingNG() const {
     NOT_DESTROYED();
-    return Parent() && Parent()->IsLayoutGridIncludingNG();
+    return Parent() && Parent()->IsLayoutNGGrid();
   }
 
   bool IsMathItem() const {
@@ -2152,6 +2128,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool HasAnchorScrollTranslation() const;
   PhysicalOffset AnchorScrollTranslationOffset() const;
 
+  bool HasScrollbarGutters(ScrollbarOrientation orientation) const;
+
   // This should be called when the border-box size of this box is changed.
   void SizeChanged();
 
@@ -2375,7 +2353,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
            StyleRef().IsScrollbarGutterAuto();
   }
 
-  bool HasScrollbarGutters(ScrollbarOrientation orientation) const;
   NGPhysicalBoxStrut ComputeScrollbarsInternal(
       ShouldClampToContentBox = kDoNotClampToContentBox,
       OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize,

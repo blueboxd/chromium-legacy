@@ -83,6 +83,18 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiEnabledInFledge;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiFledgeExtensionsEnabled;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kPrivateAggregationApiMaxBudgetPerScope;
+
+enum class SharedStorageWorkletImplementationType {
+  // The worklet thread is created via base::SequenceBound, and JS bindings are
+  // added with native v8 and/or Gin library.
+  kLegacy,
+
+  // Use the blink worklet pattern (i.e. blink::ThreadedWorkletMessagingProxy,
+  // blink::WorkerThread, IDL, etc.) to create the thread and add JS bindings.
+  kBlinkStyle,
+};
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPI);
 // Maximum number of URLs allowed to be included in the input parameter for
@@ -138,6 +150,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
 // main frame has fenced frame depth 1, etc).
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kSharedStorageMaxAllowedFencedFrameDepthForSelectURL;
+// The implementation type of the worklet.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    SharedStorageWorkletImplementationType>
+    kSharedStorageWorkletImplementationType;
 
 // If enabled, limits the number of times per origin per pageload that
 // `sharedStorage.selectURL()` is allowed to be invoked.
@@ -776,6 +792,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // rather than token count.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTimedHTMLParserBudget);
 
+// If enabled, the HTMLDocumentParser will only check its budget after parsing a
+// commonly slow token or for one out of 10 fast tokens. Note that this feature
+// is a no-op if kTimedHTMLParserBudget is disabled.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCheckHTMLParserBudgetLessOften);
+
 // Allows reading/writing unsanitized content from/to the clipboard. Currently,
 // it is only applicable to HTML format. See crbug.com/1268679.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClipboardUnsanitizedContent);
@@ -1055,6 +1076,18 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kMemoryCacheStrongReferenceFilterImages);
+
+// If enabled, renderers look for cached resources from another renderer
+// that has the same process isolation policies. Note that renderers don't
+// use cached resources in other rendereres yet, just record histograms.
+// See https://crbug.com/1414262
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kRemoteResourceCache);
+
+// Kill-switch for the fetch keepalive request infra migration.
+// If enabled, all keepalive requests will be proxied via the browser process.
+// Design Doc: https://bit.ly/chromium-keepalive-migration
+// Tracker: https://crbug.com/1356128
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kKeepAliveInBrowserMigration);
 
 }  // namespace features
 }  // namespace blink

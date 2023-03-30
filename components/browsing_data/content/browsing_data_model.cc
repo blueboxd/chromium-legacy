@@ -10,8 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
 #include "components/services/storage/shared_storage/shared_storage_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "services/network/network_context.h"
 #include "services/network/public/mojom/clear_data_filter.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
@@ -133,7 +135,7 @@ struct StorageRemoverHelper {
   size_t callbacks_seen_ = 0;
 
   raw_ptr<content::StoragePartition> storage_partition_;
-  raw_ptr<BrowsingDataModel::Delegate> delegate_;
+  raw_ptr<BrowsingDataModel::Delegate, DanglingUntriaged> delegate_;
   base::WeakPtrFactory<StorageRemoverHelper> weak_ptr_factory_{this};
 };
 
@@ -389,6 +391,25 @@ BrowsingDataModel::Iterator BrowsingDataModel::end() const {
 BrowsingDataModel::~BrowsingDataModel() = default;
 
 void BrowsingDataModel::BuildFromDisk(
+    content::BrowserContext* browser_context,
+    std::unique_ptr<Delegate> delegate,
+    base::OnceCallback<void(std::unique_ptr<BrowsingDataModel>)>
+        complete_callback) {
+  BuildFromStoragePartition(browser_context->GetDefaultStoragePartition(),
+                            std::move(delegate), std::move(complete_callback));
+}
+
+void BrowsingDataModel::BuildFromNonDefaultStoragePartition(
+    content::StoragePartition* storage_partition,
+    std::unique_ptr<Delegate> delegate,
+    base::OnceCallback<void(std::unique_ptr<BrowsingDataModel>)>
+        complete_callback) {
+  DCHECK(!storage_partition->GetConfig().is_default());
+  BuildFromStoragePartition(storage_partition, std::move(delegate),
+                            std::move(complete_callback));
+}
+
+void BrowsingDataModel::BuildFromStoragePartition(
     content::StoragePartition* storage_partition,
     std::unique_ptr<Delegate> delegate,
     base::OnceCallback<void(std::unique_ptr<BrowsingDataModel>)>

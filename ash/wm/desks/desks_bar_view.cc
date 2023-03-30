@@ -521,7 +521,10 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
 
   if (features::IsDarkLightModeEnabled()) {
     SetBorder(std::make_unique<views::HighlightBorder>(
-        /*corner_radius=*/0, views::HighlightBorder::Type::kHighlightBorder2,
+        /*corner_radius=*/0,
+        chromeos::features::IsJellyrollEnabled()
+            ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+            : views::HighlightBorder::Type::kHighlightBorder2,
         /*use_light_colors=*/false));
   }
 
@@ -956,6 +959,10 @@ const char* DesksBarView::GetClassName() const {
 void DesksBarView::Layout() {
   if (is_bounds_animation_on_going_)
     return;
+
+  if (!overview_grid_) {
+    return;
+  }
 
   // Scroll buttons are kept |kScrollViewMinimumHorizontalPadding| away from
   // the edge of the scroll view. So the horizontal padding of the scroll view

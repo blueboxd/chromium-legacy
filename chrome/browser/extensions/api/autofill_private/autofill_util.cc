@@ -74,12 +74,12 @@ autofill_private::AddressSource ConvertProfileSource(
     autofill::AutofillProfile::Source source) {
   switch (source) {
     case autofill::AutofillProfile::Source::kLocalOrSyncable:
-      return autofill_private::AddressSource::ADDRESS_SOURCE_LOCAL_OR_SYNCABLE;
+      return autofill_private::AddressSource::kLocalOrSyncable;
     case autofill::AutofillProfile::Source::kAccount:
-      return autofill_private::AddressSource::ADDRESS_SOURCE_ACCOUNT;
+      return autofill_private::AddressSource::kAccount;
     default:
       NOTREACHED();
-      return autofill_private::AddressSource::ADDRESS_SOURCE_NONE;
+      return autofill_private::AddressSource::kNone;
   }
 }
 
@@ -143,28 +143,52 @@ autofill_private::CountryEntry CountryToCountryEntry(
 }
 
 std::string CardNetworkToIconResourceIdString(const std::string& network) {
-  if (network == autofill::kAmericanExpressCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_AMEX";
-  if (network == autofill::kDinersCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_DINERS";
-  if (network == autofill::kDiscoverCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_DISCOVER";
-  if (network == autofill::kEloCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_ELO";
-  if (network == autofill::kJCBCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_JCB";
-  if (network == autofill::kMasterCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_MASTERCARD";
-  if (network == autofill::kMirCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_MIR";
-  if (network == autofill::kTroyCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_TROY";
-  if (network == autofill::kUnionPay)
-    return "chrome://theme/IDR_AUTOFILL_CC_UNIONPAY";
-  if (network == autofill::kVisaCard)
-    return "chrome://theme/IDR_AUTOFILL_CC_VISA";
+  bool metadata_icon = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillEnableNewCardArtAndNetworkImages);
 
-  return "chrome://theme/IDR_AUTOFILL_CC_GENERIC";
+  if (network == autofill::kAmericanExpressCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_AMEX"
+                         : "chrome://theme/IDR_AUTOFILL_CC_AMEX";
+  }
+  if (network == autofill::kDinersCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_DINERS"
+                         : "chrome://theme/IDR_AUTOFILL_CC_DINERS";
+  }
+  if (network == autofill::kDiscoverCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_DISCOVER"
+                         : "chrome://theme/IDR_AUTOFILL_CC_DISCOVER";
+  }
+  if (network == autofill::kEloCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_ELO"
+                         : "chrome://theme/IDR_AUTOFILL_CC_ELO";
+  }
+  if (network == autofill::kJCBCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_JCB"
+                         : "chrome://theme/IDR_AUTOFILL_CC_JCB";
+  }
+  if (network == autofill::kMasterCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_MASTERCARD"
+                         : "chrome://theme/IDR_AUTOFILL_CC_MASTERCARD";
+  }
+  if (network == autofill::kMirCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_MIR"
+                         : "chrome://theme/IDR_AUTOFILL_CC_MIR";
+  }
+  if (network == autofill::kTroyCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_TROY"
+                         : "chrome://theme/IDR_AUTOFILL_CC_TROY";
+  }
+  if (network == autofill::kUnionPay) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_UNIONPAY"
+                         : "chrome://theme/IDR_AUTOFILL_CC_UNIONPAY";
+  }
+  if (network == autofill::kVisaCard) {
+    return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_VISA"
+                         : "chrome://theme/IDR_AUTOFILL_CC_VISA";
+  }
+
+  return metadata_icon ? "chrome://theme/IDR_AUTOFILL_METADATA_CC_GENERIC"
+                       : "chrome://theme/IDR_AUTOFILL_CC_GENERIC";
 }
 
 autofill_private::CreditCardEntry CreditCardToCreditCardEntry(

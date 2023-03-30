@@ -70,7 +70,6 @@ source_set("unit_tests") {
     "//chromeos/ash/components/dbus/session_manager",
     "//chromeos/ash/components/dbus/shill:test_support",
     "//chromeos/ash/components/dbus/system_clock:unit_tests",
-    "//chromeos/ash/components/dbus/update_engine:unit_tests",
     "//chromeos/ash/components/dbus/userdataauth",
     "//chromeos/ash/components/dbus/userdataauth:userdataauth_proto",
     "//chromeos/ash/components/install_attributes:test_support",
@@ -94,6 +93,16 @@ source_set("unit_tests") {
     "userdataauth/install_attributes_client_unittest.cc",
     "userdataauth/userdataauth_client_unittest.cc",
   ]
+}
+
+# TODO(b/273117306): The below protos generate to
+# gen/chromeos/ash/components/dbus/* which is the equivalent of
+# *this build file*. This forces us to redefine proto_out_dir every
+# time and jump through hoops for importing protos. To minimise
+# configuration a better approach uses the default gen location
+# gen/third_party/cros_system_api/dbus/* and avoids the below cfg.
+config("system_api_proto_include_cfg") {
+  include_dirs = [ "${root_gen_dir}/chromeos/ash/components/dbus" ]
 }
 
 proto_library("metrics_event_proto") {
@@ -133,6 +142,14 @@ proto_library("vm_sk_forwarding_proto") {
   ]
 
   proto_out_dir = "chromeos/ash/components/dbus/vm_sk_forwarding"
+}
+
+proto_library("vm_wl_proto") {
+  sources = [ "//third_party/cros_system_api/dbus/vm_wl/wl.proto" ]
+  proto_out_dir = "chromeos/ash/components/dbus/vm_wl"
+  proto_deps = [ ":vm_applications_apps_proto" ]
+  import_dirs = [ "//third_party/cros_system_api/dbus" ]
+  extra_configs = [ ":system_api_proto_include_cfg" ]
 }
 
 proto_library("vm_permission_service_proto") {

@@ -46,32 +46,43 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
       buttonAriaDescription: String,
       count: Number,
       description: String,
+      title: String,
+      url: String,
+
       hasBadges_: {
         type: Boolean,
         reflectToAttribute: true,
       },
+
       hasDescriptions_: {
         type: Boolean,
         computed: 'computeHasDescriptions_(hasBadges_, description)',
         reflectToAttribute: true,
       },
+
       isFolder_: {
         computed: 'computeIsFolder_(count)',
         type: Boolean,
         value: false,
         reflectToAttribute: true,
       },
+
       size: {
         observer: 'onSizeChanged_',
         reflectToAttribute: true,
         type: String,
         value: CrUrlListItemSize.MEDIUM,
       },
-      title: String,
-      url: String,
+
       imageUrls: {
+        observer: 'resetFirstImageLoaded_',
         type: Array,
         value: () => [],
+      },
+
+      firstImageLoaded_: {
+        type: Boolean,
+        value: false,
       },
     };
   }
@@ -87,6 +98,7 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
   override title: string;
   url?: string;
   imageUrls: string[];
+  private firstImageLoaded_: boolean;
 
   override ready() {
     super.ready();
@@ -94,6 +106,28 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
     this.addEventListener('pointerdown', () => this.setActiveState_(true));
     this.addEventListener('pointerup', () => this.setActiveState_(false));
     this.addEventListener('pointerleave', () => this.setActiveState_(false));
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this.resetFirstImageLoaded_();
+  }
+
+  private resetFirstImageLoaded_() {
+    this.firstImageLoaded_ = false;
+    const image = this.shadowRoot!.querySelector('img');
+    if (!image) {
+      return;
+    }
+
+    if (image.complete) {
+      this.firstImageLoaded_ = true;
+      return;
+    }
+
+    image.addEventListener('load', () => {
+      this.firstImageLoaded_ = true;
+    }, {once: true});
   }
 
   private computeHasDescriptions_(): boolean {
@@ -126,7 +160,7 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
   }
 
   private shouldShowImageUrl_(_url: string, index: number) {
-    return index <= 2;
+    return index <= 1;
   }
 
   private onBadgesSlotChange_() {
@@ -151,7 +185,17 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
   private shouldShowUrlImage_(): boolean {
     return this.url !== undefined &&
         !(this.size === CrUrlListItemSize.COMPACT ||
-          this.imageUrls.length === 0);
+          this.imageUrls.length === 0) &&
+        this.firstImageLoaded_;
+  }
+
+  private shouldShowFolderImages_(): boolean {
+    return this.size !== CrUrlListItemSize.COMPACT;
+  }
+
+  private shouldShowFolderIcon_(): boolean {
+    return this.size === CrUrlListItemSize.COMPACT ||
+        this.imageUrls.length === 0;
   }
 
   private shouldShowFolderCount_(): boolean {

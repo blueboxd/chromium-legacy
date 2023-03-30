@@ -105,6 +105,7 @@
 #include "chrome/browser/ash/sync/sync_mojo_service_factory_ash.h"
 #include "chrome/browser/ash/telemetry_extension/diagnostics_service_ash.h"
 #include "chrome/browser/ash/telemetry_extension/probe_service_ash.h"
+#include "chrome/browser/ash/telemetry_extension/telemetry_event_service_ash.h"
 #include "chrome/browser/ash/video_conference/video_conference_manager_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -250,6 +251,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
 #if BUILDFLAG(USE_CUPS)
       printing_metrics_ash_(std::make_unique<PrintingMetricsAsh>()),
 #endif  // BUILDFLAG(USE_CUPS)
+      telemetry_event_service_ash_(
+          std::make_unique<ash::TelemetryEventServiceAsh>()),
       probe_service_ash_(std::make_unique<ash::ProbeServiceAsh>()),
       remoting_ash_(std::make_unique<RemotingAsh>()),
       resource_manager_ash_(std::make_unique<ResourceManagerAsh>()),
@@ -768,13 +771,11 @@ void CrosapiAsh::BindSpeechRecognition(
 void CrosapiAsh::BindStableVideoDecoderFactory(
     mojo::GenericPendingReceiver receiver) {
 #if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
-  // TODO(b/171813538): if launching out-of-process video decoding for LaCrOS
-  // with Finch, we may need to tell LaCrOS somehow if this feature is enabled
-  // in ash-chrome. Otherwise, we may run into a situation in which the feature
-  // is enabled for LaCrOS but not for ash-chrome.
   auto r = receiver.As<media::stable::mojom::StableVideoDecoderFactory>();
-  if (r && base::FeatureList::IsEnabled(media::kUseOutOfProcessVideoDecoding))
+  if (r && base::FeatureList::IsEnabled(
+               media::kExposeOutOfProcessVideoDecodingToLacros)) {
     content::LaunchStableVideoDecoderFactory(std::move(r));
+  }
 #endif  // BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
 }
 
@@ -798,6 +799,11 @@ void CrosapiAsh::BindSyncService(
 void CrosapiAsh::BindTaskManager(
     mojo::PendingReceiver<mojom::TaskManager> receiver) {
   task_manager_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindTelemetryEventService(
+    mojo::PendingReceiver<mojom::TelemetryEventService> receiver) {
+  telemetry_event_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindTelemetryProbeService(

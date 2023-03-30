@@ -10,6 +10,7 @@
 
 #import "base/functional/callback.h"
 #import "base/mac/foundation_util.h"
+#import "base/notreached.h"
 #import "base/ranges/algorithm.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/values.h"
@@ -157,16 +158,18 @@ using UserDecision =
           fieldIdentifier:(NSString*)fieldIdentifier
                   frameID:(NSString*)frameID
         completionHandler:(nullable void (^)(void))completionHandler {
+  autofill::AutofillJavaScriptFeature* feature =
+      autofill::AutofillJavaScriptFeature::GetInstance();
   web::WebFrame* frame =
-      web::GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
-  autofill::AutofillJavaScriptFeature::GetInstance()
-      ->ClearAutofilledFieldsForForm(frame, _lastFormActivityUniqueFormID,
-                                     _lastFormActivityUniqueFieldID,
-                                     base::BindOnce(^(NSString*) {
-                                       if (completionHandler) {
-                                         completionHandler();
-                                       }
-                                     }));
+      feature->GetWebFramesManager(_webState)->GetFrameWithId(
+          base::SysNSStringToUTF8(frameID));
+  feature->ClearAutofilledFieldsForForm(frame, _lastFormActivityUniqueFormID,
+                                        _lastFormActivityUniqueFieldID,
+                                        base::BindOnce(^(NSString*) {
+                                          if (completionHandler) {
+                                            completionHandler();
+                                          }
+                                        }));
 }
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
@@ -725,6 +728,14 @@ using UserDecision =
 - (void)sharedPasswordController:(SharedPasswordController*)controller
              didAcceptSuggestion:(FormSuggestion*)suggestion {
   // No op.
+}
+
+- (BOOL)shouldShowAccountStorageNotice {
+  return false;
+}
+
+- (void)showAccountStorageNotice:(void (^)())completion {
+  NOTREACHED_NORETURN();
 }
 
 @end

@@ -30,6 +30,7 @@ namespace google_apis::tasks {
 namespace {
 
 constexpr char kTaskListId[] = "random-task-list-id";
+constexpr char kTaskId[] = "random-task-id";
 
 // Helper class to temporary override `GaiaUrls` singleton.
 class GaiaUrlsOverrider {
@@ -109,7 +110,27 @@ TEST_F(TasksApiRequestsTest, ListTaskListsRequest) {
 
   EXPECT_TRUE(future.Get().has_value());
   EXPECT_EQ(last_request().method, net::test_server::METHOD_GET);
-  EXPECT_EQ(last_request().GetURL(), GetListTaskListsUrl());
+  EXPECT_EQ(last_request().GetURL(),
+            GetListTaskListsUrl(/*max_results=*/100, /*page_token=*/""));
+  EXPECT_TRUE(future.Get().value());
+  EXPECT_EQ(future.Get().value()->items().size(), 2u);
+}
+
+TEST_F(TasksApiRequestsTest, ListTaskListsWithOptionalArgsRequest) {
+  set_test_file_path("tasks/task_lists.json");
+
+  base::test::TestFuture<
+      base::expected<std::unique_ptr<TaskLists>, ApiErrorCode>>
+      future;
+  auto request = std::make_unique<ListTaskListsRequest>(
+      request_sender(), future.GetCallback(), /*page_token=*/"qwerty");
+  request_sender()->StartRequestWithAuthRetry(std::move(request));
+  ASSERT_TRUE(future.Wait());
+
+  EXPECT_TRUE(future.Get().has_value());
+  EXPECT_EQ(last_request().method, net::test_server::METHOD_GET);
+  EXPECT_EQ(last_request().GetURL(),
+            GetListTaskListsUrl(/*max_results=*/100, /*page_token=*/"qwerty"));
   EXPECT_TRUE(future.Get().value());
   EXPECT_EQ(future.Get().value()->items().size(), 2u);
 }
@@ -141,7 +162,31 @@ TEST_F(TasksApiRequestsTest, ListTasksRequest) {
 
   EXPECT_TRUE(future.Get().has_value());
   EXPECT_EQ(last_request().method, net::test_server::METHOD_GET);
-  EXPECT_EQ(last_request().GetURL(), GetListTasksUrl(kTaskListId));
+  EXPECT_EQ(last_request().GetURL(),
+            GetListTasksUrl(kTaskListId, /*include_completed=*/false,
+                            /*max_results=*/100,
+                            /*page_token=*/""));
+  EXPECT_TRUE(future.Get().value());
+  EXPECT_EQ(future.Get().value()->items().size(), 2u);
+}
+
+TEST_F(TasksApiRequestsTest, ListTasksWithOptionalArgsRequest) {
+  set_test_file_path("tasks/tasks.json");
+
+  base::test::TestFuture<base::expected<std::unique_ptr<Tasks>, ApiErrorCode>>
+      future;
+  auto request =
+      std::make_unique<ListTasksRequest>(request_sender(), future.GetCallback(),
+                                         kTaskListId, /*page_token=*/"qwerty");
+  request_sender()->StartRequestWithAuthRetry(std::move(request));
+  ASSERT_TRUE(future.Wait());
+
+  EXPECT_TRUE(future.Get().has_value());
+  EXPECT_EQ(last_request().method, net::test_server::METHOD_GET);
+  EXPECT_EQ(last_request().GetURL(),
+            GetListTasksUrl(kTaskListId, /*include_completed=*/false,
+                            /*max_results=*/100,
+                            /*page_token=*/"qwerty"));
   EXPECT_TRUE(future.Get().value());
   EXPECT_EQ(future.Get().value()->items().size(), 2u);
 }
@@ -158,6 +203,37 @@ TEST_F(TasksApiRequestsTest, ListTasksRequestHandlesError) {
 
   EXPECT_FALSE(future.Get().has_value());
   EXPECT_EQ(future.Get().error(), HTTP_NOT_FOUND);
+}
+
+TEST_F(TasksApiRequestsTest, PatchTaskRequest) {
+  set_test_file_path("tasks/task.json");
+
+  base::test::TestFuture<ApiErrorCode> future;
+  auto request = std::make_unique<PatchTaskRequest>(
+      request_sender(), future.GetCallback(), kTaskListId, kTaskId,
+      Task::Status::kCompleted);
+  request_sender()->StartRequestWithAuthRetry(std::move(request));
+  ASSERT_TRUE(future.Wait());
+
+  EXPECT_EQ(future.Get(), HTTP_SUCCESS);
+  EXPECT_EQ(last_request().method, net::test_server::METHOD_PATCH);
+  EXPECT_EQ(last_request().GetURL(), GetPatchTaskUrl(kTaskListId, kTaskId));
+  EXPECT_EQ(last_request().headers.at("Content-Type"),
+            "application/json; charset=utf-8");
+  EXPECT_EQ(last_request().content, "{\"status\":\"completed\"}");
+}
+
+TEST_F(TasksApiRequestsTest, PatchTaskRequestHandlesError) {
+  set_test_file_path("tasks/invalid_file_to_simulate_404_error.json");
+
+  base::test::TestFuture<ApiErrorCode> future;
+  auto request = std::make_unique<PatchTaskRequest>(
+      request_sender(), future.GetCallback(), kTaskListId, kTaskId,
+      Task::Status::kCompleted);
+  request_sender()->StartRequestWithAuthRetry(std::move(request));
+  ASSERT_TRUE(future.Wait());
+
+  EXPECT_EQ(future.Get(), HTTP_NOT_FOUND);
 }
 
 }  // namespace google_apis::tasks

@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Napauta, niin palaat tänne: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="2091887806945687916">Ääni</translation>
+<translation id="2117655453726830283">Seuraava dia</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="216989819110952009">Vihreistä silmälaseista huolimatta Dorothy ja ystävät sokaistuivat aluksi</translation>
 <translation id="2176704795966505152">Zoomausvaihtoehdon näyttäminen päävalikossa</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">Laajennettu – tiivistä klikkaamalla.</translation>
 <translation id="2586657967955657006">Leikepöytä</translation>
 <translation id="2597457036804169544">Älä käytä tummaa teemaa sivustoilla</translation>
+<translation id="2606760465469169465">Vahvista automaattisesti</translation>
 <translation id="2621115761605608342">Salli JavaScript tietyllä sivustolla.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2677748264148917807">Poistu</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">Nollaa luvat</translation>
 <translation id="301521992641321250">Estetty automaattisesti</translation>
 <translation id="3069226013421428034">Salli kolmannen osapuolen sisäänkirjautuminen tietylle sivustolle.</translation>
+<translation id="310297983047869047">Edellinen dia</translation>
 <translation id="3109724472072898302">Tiivistetty</translation>
 <translation id="3114012059975132928">Videosoitin</translation>
 <translation id="3115898365077584848">Näytä tiedot</translation>
@@ -219,11 +222,11 @@
 <translation id="509133520954049755">Pyydä tietokonenäkymää</translation>
 <translation id="5100237604440890931">Tiivistetty – laajenna klikkaamalla.</translation>
 <translation id="5123685120097942451">Incognito-välilehti</translation>
-<translation id="5134599672855298214">Pyydä mobiilinäkymää (suositus)</translation>
 <translation id="5186036860380548585">Toiminto on käytettävissä näytön yläosassa</translation>
 <translation id="5197729504361054390"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saa valitsemasi yhteystiedot.</translation>
 <translation id="5216942107514965959">Viimeksi avattu tänään</translation>
 <translation id="5225463052809312700">Käynnistä kamera</translation>
+<translation id="5229337741799419985">Asetus toimii paljastamatta henkilöllisyyttäsi tai sallimatta sivustojen nähdä selaushistoriaasi</translation>
 <translation id="5234764350956374838">Hylkää</translation>
 <translation id="5264323282659631142">Poista <ph name="CHIP_LABEL" /></translation>
 <translation id="528192093759286357">Poistu koko näytön tilasta vetämällä näytön yläreunasta ja koskettamalla Takaisin-painiketta.</translation>
@@ -310,6 +313,7 @@
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6689172468748959065">Profiilikuvat</translation>
 <translation id="6697925417670533197">Aktiiviset lataukset</translation>
+<translation id="6701547804986694515">Avaamasi sivusto voi tallentaa Chromeen tietoja, jotka vahvistavat, ettet ole botti. Kun jatkat selaamista, sivustot voivat Chromen avulla tarkistaa edelliseltä avaamasi sivustolta, että olet todennäköisesti oikea ihminen.</translation>
 <translation id="6722828510648505498">Estä henkilöllisyyspalveluiden sisäänkirjautumiskehotteet.</translation>
 <translation id="6746124502594467657">Siirrä alas</translation>
 <translation id="6749077623962119521">Nollataanko luvat?</translation>
@@ -427,6 +431,7 @@
 <translation id="8751914237388039244">Valitse kuva</translation>
 <translation id="8801436777607969138">Estä JavaScript tietyllä sivustolla.</translation>
 <translation id="8803526663383843427">Toiminnon ollessa päällä</translation>
+<translation id="8805385115381080995">Selaaminen on nopeampaa, koska sivusto ei todennäköisesti pyydä sinua vahvistamaan, että olet oikea ihminen</translation>
 <translation id="8816026460808729765">Estä sivustoja käyttämästä tunnistimia</translation>
 <translation id="8823559166155093873">Estä evästeet</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -450,5 +455,6 @@
 <translation id="9162462602695099906">Tämä sivu on vaarallinen</translation>
 <translation id="9201023452444595544">Kaikki offline-data poistetaan</translation>
 <translation id="930525582205581608">Unohdetaanko tämä sivusto?</translation>
+<translation id="947156494302904893">Avaamasi sivustot voivat vahvistaa, että olet oikea ihminen etkä botti</translation>
 <translation id="967624055006145463">Tallennettu data</translation>
 </translationbundle>

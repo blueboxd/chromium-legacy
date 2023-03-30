@@ -63,8 +63,9 @@ class TestNotificationPlatformBridgeDelegator
     notification_ids_.insert(notification.id());
     strings.title = notification.title();
     strings.message = notification.message();
-    for (const message_center::ButtonInfo& button : notification.buttons())
+    for (const message_center::ButtonInfo& button : notification.buttons()) {
       strings.buttons.push_back(button.title);
+    }
     notifications_[notification.id()] = strings;
     delegates_[notification.id()] = notification.delegate();
   }
@@ -1076,7 +1077,7 @@ TEST_F(SystemNotificationManagerTest, HandleIOTaskProgressCopy) {
   status.bytes_transferred = 0;
   status.sources.emplace_back(CreateTestFile("volume/src_file.txt"),
                               absl::nullopt);
-  status.destination_folder = CreateTestFile("volume/dest_dir/");
+  status.SetDestinationFolder(CreateTestFile("volume/dest_dir/"));
 
   // Send the copy begin/queued progress.
   auto* notification_manager = GetSystemNotificationManager();
@@ -1125,7 +1126,7 @@ TEST_F(SystemNotificationManagerTest, HandleIOTaskProgressExtract) {
   status.bytes_transferred = 0;
   status.sources.emplace_back(CreateTestFile("volume/src_file.zip"),
                               absl::nullopt);
-  status.destination_folder = CreateTestFile("volume/src_file/");
+  status.SetDestinationFolder(CreateTestFile("volume/src_file/"));
 
   // Send the copy begin/queued progress.
   auto* notification_manager = GetSystemNotificationManager();
@@ -1175,7 +1176,7 @@ TEST_F(SystemNotificationManagerTest, CancelButtonIOTask) {
   auto src = CreateTestFile("volume/src_file.txt");
   status.sources.emplace_back(src, absl::nullopt);
   auto dst = CreateTestFile("volume/dest_dir/");
-  status.destination_folder = dst;
+  status.SetDestinationFolder(dst);
 
   auto task = std::make_unique<file_manager::io_task::CopyOrMoveIOTask>(
       file_manager::io_task::OperationType::kCopy,

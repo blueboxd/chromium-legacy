@@ -24,6 +24,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 
 Permissions that you've already given to websites and apps may apply to this account. You can manage your Google Accounts in <ph name="SETTINGS_LINK_BEGIN" />Settings<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Downloading ...</translation>
+<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium was connected to an HID device}=1{Chromium is connected to an HID device}other{Chromium is connected to HID devices}}</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
 <translation id="17264556997921157">You can see and remove topics of interest that sites use to show you ads. Chromium estimates your interests based on your recent browsing history.</translation>
 <translation id="1733725117201708356">Chromium will soon delete browsing data</translation>
@@ -81,7 +82,6 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="2928420929544864228">Installation complete.</translation>
 <translation id="2977470724722393594">Chromium is up to date</translation>
 <translation id="2977506796191543575">If a site tries to steal your password, or when you download a harmful file, Chromium may also send URLs, including bits of page content, to Safe Browsing</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium is connected to a HID device}other{Chromium is connected to HID devices}}</translation>
 <translation id="3032706164202344641">Chromium can't check your passwords. Try again later.</translation>
 <translation id="3032787606318309379">Adding to Chromium ...</translation>
 <translation id="3038232873781883849">Waiting to install…</translation>

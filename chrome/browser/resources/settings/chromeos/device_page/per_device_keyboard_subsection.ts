@@ -33,9 +33,9 @@ import {routes} from '../os_settings_routes.js';
 import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router} from '../router.js';
 
-import {mojoTimeDelta} from './fake_input_device_data.js';
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
-import {InputDeviceSettingsProviderInterface, Keyboard} from './input_device_settings_types.js';
+import {InputDeviceSettingsProviderInterface, Keyboard, KeyboardSettings} from './input_device_settings_types.js';
+import {settingsAreEqual} from './input_device_settings_utils.js';
 import {getTemplate} from './per_device_keyboard_subsection.html.js';
 
 const SettingsPerDeviceKeyboardSubsectionElementBase =
@@ -75,61 +75,6 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
         },
       },
 
-      enableAutoRepeatPref: {
-        type: Object,
-        value() {
-          return {
-            key: 'fakeEnableAutoRepeatPref',
-            type: chrome.settingsPrivate.PrefType.BOOLEAN,
-            value: true,
-          };
-        },
-      },
-
-      autoRepeatDelaysPref: {
-        type: Object,
-        value() {
-          return {
-            key: 'fakeAutoRepeatDelaysPref',
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: 500,
-          };
-        },
-      },
-
-      autoRepeatIntervalsPref: {
-        type: Object,
-        value() {
-          return {
-            key: 'fakeAutoRepeatIntervalsPref',
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: 50,
-          };
-        },
-      },
-
-      /**
-       * Auto-repeat delays (in ms) for the corresponding slider values, from
-       * long to short. The values were chosen to provide a large range while
-       * giving several options near the defaults.
-       */
-      autoRepeatDelays: {
-        type: Array,
-        value: [2000, 1500, 1000, 500, 300, 200, 150],
-        readOnly: true,
-      },
-
-      /**
-       * Auto-repeat intervals (in ms) for the corresponding slider values, from
-       * long to short. The slider itself is labeled "rate", the inverse of
-       * interval, and goes from slow (long interval) to fast (short interval).
-       */
-      autoRepeatIntervals: {
-        type: Array,
-        value: [2000, 1000, 500, 300, 200, 100, 50, 30, 20],
-        readOnly: true,
-      },
-
       keyboard: {
         type: Object,
       },
@@ -146,7 +91,7 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
         type: Object,
         value: () => new Set<Setting>([
           Setting.kKeyboardFunctionKeys,
-          Setting.kKeyboardAutoRepeat,
+          Setting.kKeyboardRemapKeys,
         ]),
       },
 
@@ -174,21 +119,20 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
       return;
     }
 
-    // If there is more than one keyboard, focus on the first one.
+    if (this.keyboard.isExternal) {
+      this.supportedSettingIds.add(Setting.kKeyboardBlockMetaFkeyRewrites);
+    }
+
+    // If multiple keyboards are available, focus on the first one.
     if (this.keyboardIndex === 0) {
       this.attemptDeepLink();
     }
   }
 
   protected keyboard: Keyboard;
-  private autoRepeatDelays: number[];
-  private autoRepeatIntervals: number[];
   private route_: Route = routes.PER_DEVICE_KEYBOARD;
   private topRowAreFunctionKeysPref: chrome.settingsPrivate.PrefObject;
   private blockMetaFunctionKeyRewritesPref: chrome.settingsPrivate.PrefObject;
-  private enableAutoRepeatPref: chrome.settingsPrivate.PrefObject;
-  private autoRepeatDelaysPref: chrome.settingsPrivate.PrefObject;
-  private autoRepeatIntervalsPref: chrome.settingsPrivate.PrefObject;
   private remapKeyboardKeysSublabel: string;
   private isInitialized: boolean = false;
   private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface =
@@ -196,20 +140,16 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
   private keyboardIndex: number;
 
   private updateSettingsToCurrentPrefs(): void {
+    // `updateSettingsToCurrentPrefs` gets called when the `keyboard` object
+    // gets updated. This subsection element can be reused multiple times so we
+    // need to reset `isInitialized` so we do not make unneeded API calls.
+    this.isInitialized = false;
     this.set(
         'topRowAreFunctionKeysPref.value',
         this.keyboard.settings.topRowAreFkeys);
     this.set(
         'blockMetaFunctionKeyRewritesPref.value',
         this.keyboard.settings.suppressMetaFkeyRewrites);
-    this.set(
-        'enableAutoRepeatPref.value', this.keyboard.settings.autoRepeatEnabled);
-    this.set(
-        'autoRepeatDelaysPref.value',
-        Number(this.keyboard.settings.autoRepeatDelay.microseconds) / 1000);
-    this.set(
-        'autoRepeatIntervalsPref.value',
-        Number(this.keyboard.settings.autoRepeatInterval.microseconds) / 1000);
     this.isInitialized = true;
   }
 
@@ -226,18 +166,21 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
   }
 
   private onSettingsChanged(): void {
-    // TODO(wangdanny): Implement onSettingsChanged.
     if (!this.isInitialized) {
       return;
     }
-    this.keyboard.settings = {
+
+    const newSettings: KeyboardSettings = {
       ...this.keyboard.settings,
-      autoRepeatEnabled: this.enableAutoRepeatPref.value,
       topRowAreFkeys: this.topRowAreFunctionKeysPref.value,
-      autoRepeatDelay: mojoTimeDelta(this.autoRepeatDelaysPref.value),
-      autoRepeatInterval: mojoTimeDelta(this.autoRepeatIntervalsPref.value),
       suppressMetaFkeyRewrites: this.blockMetaFunctionKeyRewritesPref.value,
     };
+
+    if (settingsAreEqual(newSettings, this.keyboard.settings)) {
+      return;
+    }
+
+    this.keyboard.settings = newSettings;
     this.inputDeviceSettingsProvider.setKeyboardSettings(
         this.keyboard.id, this.keyboard.settings);
   }

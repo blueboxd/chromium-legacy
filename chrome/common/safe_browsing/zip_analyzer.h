@@ -10,9 +10,12 @@
 
 #include "base/files/file.h"
 #include "base/functional/callback.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
+#include "base/memory/raw_ptr.h"
 #include "third_party/zlib/google/zip_reader.h"
 
 namespace safe_browsing {
+class RarAnalyzer;
 
 struct ArchiveAnalyzerResults;
 using FinishedAnalysisCallback = base::OnceCallback<void()>;
@@ -36,6 +39,7 @@ class ZipAnalyzer {
             GetTempFileCallback get_temp_file_callback,
             ArchiveAnalyzerResults* results);
 
+ private:
   // Ensures that the `zip_file` and `temp_file` are both valid and should
   // be analyzed.
   void FilePreChecks(base::File temp_file);
@@ -44,6 +48,13 @@ class ZipAnalyzer {
   // nested archive is found. Waits for that archive to be analyzed
   // before continuing.
   void AnalyzeZipFile();
+
+  // Checks the `file_type` and creates a new analyzer if the file is a
+  // nested archive. Returns true when a new analyzer is created, and
+  // false when one is not.
+  bool AnalyzeNestedArchive(
+      safe_browsing::DownloadFileType_InspectionType file_type,
+      base::FilePath path);
 
   // Called from `nested_zip_analyzer_` using
   // `finished_analysis_callback_`. If unsuccessful, records unpacked
@@ -59,14 +70,17 @@ class ZipAnalyzer {
   base::File zip_file_;
   base::File temp_file_;
   zip::ZipReader reader_;
-  ArchiveAnalyzerResults* results_;
+  raw_ptr<ArchiveAnalyzerResults> results_;
 
   FinishedAnalysisCallback finished_analysis_callback_;
   GetTempFileCallback get_temp_file_callback_;
 
-  // The below analyzers are used to unpack nested archives. The
-  // `zip_analyzer` uses DFS to unpacked nested archives.
+  // The below analyzers are used to unpack nested archives using
+  // DFS.
+  // TODO(crbug.com/1426164) Create a common class to hold all analyzers.
   std::unique_ptr<safe_browsing::ZipAnalyzer> nested_zip_analyzer_;
+  std::unique_ptr<safe_browsing::RarAnalyzer> nested_rar_analyzer_;
+
   base::WeakPtrFactory<ZipAnalyzer> weak_factory_{this};
 };
 

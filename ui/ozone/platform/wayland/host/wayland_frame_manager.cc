@@ -11,7 +11,9 @@
 #include "base/containers/adapters.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/time/time.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_backing.h"
@@ -33,6 +35,8 @@ constexpr uint32_t kMaxFramesInFlight = 3u;
 
 constexpr base::TimeDelta kPresentationFlushTimerDuration =
     base::Milliseconds(160);
+constexpr base::TimeDelta kPresentationFlushTimerStopThreshold =
+    kPresentationFlushTimerDuration / 10;
 
 constexpr char kBoundsRectNanOrInf[] =
     "Overlay bounds_rect is invalid (NaN or infinity).";
@@ -345,13 +349,15 @@ void WaylandFrameManager::ApplySurfaceConfigure(
   surface->set_viewport_destination(config.bounds_rect.size());
   surface->set_opacity(config.opacity);
   surface->set_blending(config.enable_blend);
-  surface->set_rounded_clip_bounds(config.rounded_clip_bounds);
+  surface->set_rounded_clip_bounds(
+      config.rounded_clip_bounds.value_or(gfx::RRectF()));
   surface->set_overlay_priority(config.priority_hint);
   surface->set_background_color(config.background_color);
   surface->set_contains_video(
       config.priority_hint == gfx::OverlayPriorityHint::kHardwareProtection ||
       config.priority_hint == gfx::OverlayPriorityHint::kVideo);
-  surface->set_color_space(config.color_space);
+  surface->set_color_space(
+      config.color_space.value_or(gfx::ColorSpace::CreateSRGB()));
   if (set_opaque_region) {
     std::vector<gfx::Rect> region_px = {
         gfx::Rect(gfx::ToRoundedSize(config.bounds_rect.size()))};
@@ -843,8 +849,35 @@ void WaylandFrameManager::UpdatePresentationFlushTimer() {
           FROM_HERE, kPresentationFlushTimerDuration, this,
           &WaylandFrameManager::OnPresentationFlushTimerFired);
     }
-  } else {
-    presentation_flush_timer_.Stop();
+
+    return;
+  }
+
+  if (presentation_flush_timer_.IsRunning()) {
+    // There is no queued presentation. Decide whether to stop the presentation
+    // flush timer.
+    //
+    // If we unconditionally stop the timer here, it is logically correct, but
+    // often results in frequent timer starts and stops. Imagine we have
+    // interleaved submissions and presentations:
+    //   submission_1 - presentation_1 - submission_2 - presetnation_2 - ...
+    // Then we will always start timer when we get presentation_i, and stop
+    // timer when we get submission_(i+1), at which point we send an
+    // OnSubmission IPC carrying both submission_(i+1) and presentation_i.
+    //
+    // In order to reduce timer starts/stops, here we choose not to stop the
+    // timer, except for one case: when it gets close enough to the target time
+    // of the timer. The reason is that if we don't stop the timer in this case,
+    // it is likely to fire before the next submission, resulting in either
+    //   (1) a no-op (if no presentation arrives before timer firing); or
+    //   (2) an extra OnPresentation IPC (if a presentation arrives before timer
+    //   firing), which could have been piggybacked by the next submission. This
+    //   is an expensive case that we want to avoid.
+    const base::TimeDelta remaining_delay =
+        presentation_flush_timer_.desired_run_time() - base::TimeTicks::Now();
+    if (remaining_delay <= kPresentationFlushTimerStopThreshold) {
+      presentation_flush_timer_.Stop();
+    }
   }
 }
 

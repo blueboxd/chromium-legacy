@@ -8,6 +8,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/switch.h"
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/audio/mic_gain_slider_controller.h"
 #include "ash/system/audio/mic_gain_slider_view.h"
@@ -18,6 +19,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler_stub.h"
@@ -257,6 +259,7 @@ class UnifiedAudioDetailedViewControllerTest
   std::unique_ptr<UnifiedSystemTrayController> tray_controller_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<AudioDetailedView> audio_detailed_view_;
+  base::HistogramTester histogram_tester_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -440,14 +443,7 @@ TEST_P(UnifiedAudioDetailedViewControllerTest,
   // view first.
   GetAudioDetailedView();
   EXPECT_EQ(1u, toggles_map_.size());
-
-  if (!IsQsRevampEnabled()) {
-    views::ToggleButton* toggle =
-        (views::ToggleButton*)toggles_map_[internal_mic.id]->children()[1];
-    EXPECT_TRUE(toggle->GetIsOn());
-  } else {
-    EXPECT_TRUE(noise_cancellation_button());
-  }
+  noise_cancellation_button()->GetIsOn();
 }
 
 TEST_P(UnifiedAudioDetailedViewControllerTest,
@@ -468,15 +464,15 @@ TEST_P(UnifiedAudioDetailedViewControllerTest,
   GetAudioDetailedView();
   EXPECT_EQ(1u, toggles_map_.size());
 
-  if (!IsQsRevampEnabled()) {
-    views::ToggleButton* toggle =
-        (views::ToggleButton*)toggles_map_[internal_mic.id]->children()[1];
-    auto widget = CreateFramelessTestWidget();
-    widget->SetContentsView(toggle);
+  views::ToggleButton* toggle = noise_cancellation_button();
+  auto widget = CreateFramelessTestWidget();
+  widget->SetContentsView(toggle);
 
-    // The toggle loaded the pref correctly.
-    EXPECT_FALSE(toggle->GetIsOn());
-    EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
+  // The toggle loaded the pref correctly.
+  EXPECT_FALSE(toggle->GetIsOn());
+  EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
+
+  if (!IsQsRevampEnabled()) {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_NONE);
@@ -490,13 +486,6 @@ TEST_P(UnifiedAudioDetailedViewControllerTest,
     views::test::ButtonTestApi(toggle).NotifyClick(press);
     EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
   } else {
-    auto widget = CreateFramelessTestWidget();
-    widget->SetContentsView(noise_cancellation_button());
-
-    // The toggle loaded the pref correctly.
-    EXPECT_FALSE(noise_cancellation_button()->GetIsOn());
-    EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
-
     // For QsRevamp, the entire row of `noise_cancellation_view_` is clickable.
     ToggleNoiseCancellation();
     EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
@@ -549,12 +538,16 @@ TEST_P(UnifiedAudioDetailedViewControllerTest,
     EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
 
     cras_audio_handler_->SetNoiseCancellationState(
-        /*noise_cancellation_on=*/false);
+        /*noise_cancellation_on=*/false,
+        CrasAudioHandler::AudioSettingsChangeSource::kSystemTray);
 
     EXPECT_EQ(1u, toggles_map_.size());
     // The toggle updates the pref correctly.
     EXPECT_FALSE(noise_cancellation_button()->GetIsOn());
     EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
+    histogram_tester_.ExpectBucketCount(
+        CrasAudioHandler::kNoiseCancellationEnabledSourceHistogramName,
+        CrasAudioHandler::AudioSettingsChangeSource::kSystemTray, 1);
   } else {
     auto widget = CreateFramelessTestWidget();
     widget->SetContentsView(noise_cancellation_button());
@@ -564,11 +557,15 @@ TEST_P(UnifiedAudioDetailedViewControllerTest,
     EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
 
     cras_audio_handler_->SetNoiseCancellationState(
-        /*noise_cancellation_on=*/false);
+        /*noise_cancellation_on=*/false,
+        CrasAudioHandler::AudioSettingsChangeSource::kSystemTray);
 
     // The noise cancellation button updates the pref correctly.
     EXPECT_FALSE(noise_cancellation_button()->GetIsOn());
     EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
+    histogram_tester_.ExpectBucketCount(
+        CrasAudioHandler::kNoiseCancellationEnabledSourceHistogramName,
+        CrasAudioHandler::AudioSettingsChangeSource::kSystemTray, 1);
   }
 }
 

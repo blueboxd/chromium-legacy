@@ -134,17 +134,13 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   NGBlockNode GetRenderedLegend() const;
   NGBlockNode GetFieldsetContent() const;
 
-  bool IsNGTableCell() const {
-    return box_->IsTableCell() && !box_->IsTableCellLegacy();
-  }
+  bool IsNGTableCell() const { return box_->IsTableCell(); }
 
   bool IsContainingBlockNGGrid() const {
     return box_->ContainingBlock()->IsLayoutNGGrid();
   }
-  bool IsFrameSet() const { return box_->IsLayoutNGFrameSet(); }
-  bool IsParentNGFrameSet() const {
-    return box_->Parent()->IsLayoutNGFrameSet();
-  }
+  bool IsFrameSet() const { return box_->IsFrameSet(); }
+  bool IsParentNGFrameSet() const { return box_->Parent()->IsFrameSet(); }
   bool IsParentNGGrid() const { return box_->Parent()->IsLayoutNGGrid(); }
 
   // Return true if this block node establishes an inline formatting context.

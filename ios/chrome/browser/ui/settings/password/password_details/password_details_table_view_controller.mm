@@ -10,6 +10,7 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
+#import "components/password_manager/core/common/password_manager_constants.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -52,8 +53,11 @@
 namespace {
 
 using base::UmaHistogramEnumeration;
+using password_manager::constants::kMaxPasswordNoteLength;
+using password_manager::metrics_util::LogPasswordNoteActionInSettings;
 using password_manager::metrics_util::LogPasswordSettingsReauthResult;
 using password_manager::metrics_util::PasswordCheckInteraction;
+using password_manager::metrics_util::PasswordNoteAction;
 using password_manager::metrics_util::ReauthResult;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -85,8 +89,6 @@ const CGFloat kSymbolSize = 15;
 const CGFloat kRecommendationSymbolSize = 22;
 // Minimal amount of characters in password note to display the warning.
 const int kMinNoteCharAmountForWarning = 901;
-// Maximal amount of characters that a password note can contain.
-const int kMaxNoteCharAmount = 1000;
 
 }  // namespace
 
@@ -318,19 +320,11 @@ const int kMaxNoteCharAmount = 1000;
 
   // During editing password is exposed so eye icon shouldn't be shown.
   if (!self.tableView.editing) {
-    if (UseSymbols()) {
-      UIImage* image =
-          [self isPasswordShown]
-              ? DefaultSymbolWithPointSize(kHideActionSymbol, kSymbolSize)
-              : DefaultSymbolWithPointSize(kShowActionSymbol, kSymbolSize);
-      item.identifyingIcon = image;
-    } else {
-      NSString* image = [self isPasswordShown]
-                            ? @"infobar_hide_password_icon"
-                            : @"infobar_reveal_password_icon";
-      item.identifyingIcon = [[UIImage imageNamed:image]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    }
+    UIImage* image =
+        [self isPasswordShown]
+            ? DefaultSymbolWithPointSize(kHideActionSymbol, kSymbolSize)
+            : DefaultSymbolWithPointSize(kShowActionSymbol, kSymbolSize);
+    item.identifyingIcon = image;
     item.identifyingIconEnabled = YES;
     item.identifyingIconAccessibilityLabel = l10n_util::GetNSString(
         [self isPasswordShown] ? IDS_IOS_SETTINGS_PASSWORD_HIDE_BUTTON
@@ -383,10 +377,8 @@ const int kMaxNoteCharAmount = 1000;
   item.detailText = l10n_util::GetNSString(
       IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED);
   item.image = [self compromisedIcon];
-  if (UseSymbols()) {
-    item.imageViewTintColor = [UIColor
-        colorNamed:IsPasswordGroupingEnabled() ? kRed500Color : kRedColor];
-  }
+  item.imageViewTintColor = [UIColor
+      colorNamed:IsPasswordGroupingEnabled() ? kRed500Color : kRedColor];
   return item;
 }
 
@@ -445,8 +437,9 @@ const int kMaxNoteCharAmount = 1000;
     int password = IsPasswordGroupingEnabled() ? section : 0;
     NSString* footerText =
         self.passwordDetailsInfoItems[password].isNoteFooterShown
-            ? l10n_util::GetNSString(
-                  IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION)
+            ? l10n_util::GetNSStringF(
+                  IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION,
+                  base::NumberToString16(kMaxPasswordNoteLength))
             : @"";
     [footer setSubtitle:footerText];
   }
@@ -505,6 +498,13 @@ const int kMaxNoteCharAmount = 1000;
         [self.applicationCommandsHandler closeSettingsUIAndOpenURL:command];
       }
       break;
+    case PasswordDetailsItemTypeNote: {
+      UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+      TableViewMultiLineTextEditCell* textFieldCell =
+          base::mac::ObjCCastStrict<TableViewMultiLineTextEditCell>(cell);
+      [textFieldCell.textView becomeFirstResponder];
+      break;
+    }
     case PasswordDetailsItemTypeChangePasswordRecommendation:
     case PasswordDetailsItemTypeDeleteButton:
     case PasswordDetailsItemTypeMoveToAccountButton:
@@ -540,7 +540,8 @@ const int kMaxNoteCharAmount = 1000;
 
 - (BOOL)tableView:(UITableView*)tableView
     shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
-  return !self.editing;
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+  return !self.editing || itemType == PasswordDetailsItemTypeNote;
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -617,7 +618,10 @@ const int kMaxNoteCharAmount = 1000;
       [cell setTag:indexPath.section];
       break;
     }
-    case PasswordDetailsItemTypeNote:
+    case PasswordDetailsItemTypeNote: {
+      cell.selectionStyle = UITableViewCellSelectionStyleNone;
+      break;
+    }
     case PasswordDetailsItemTypeNoteFooter:
     case PasswordDetailsItemTypeWebsite:
     case PasswordDetailsItemTypeFederation:
@@ -701,7 +705,7 @@ const int kMaxNoteCharAmount = 1000;
   [self setOrExtendAuthValidityTimer];
   // Update save button state based on the note's length and validity of other
   // input fields.
-  BOOL noteValid = tableViewItem.text.length <= kMaxNoteCharAmount;
+  BOOL noteValid = tableViewItem.text.length <= kMaxPasswordNoteLength;
   tableViewItem.validText = noteValid;
   self.shouldEnableEditDoneButton =
       noteValid && [self checkIfValidUsernames] && [self checkIfValidPasswords];
@@ -727,8 +731,9 @@ const int kMaxNoteCharAmount = 1000;
         base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(footer);
     NSString* footerText =
         shouldDisplayNoteFooter
-            ? l10n_util::GetNSString(
-                  IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION)
+            ? l10n_util::GetNSStringF(
+                  IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION,
+                  base::NumberToString16(kMaxPasswordNoteLength))
             : @"";
     [textFooter setSubtitle:footerText];
   }
@@ -762,13 +767,9 @@ const int kMaxNoteCharAmount = 1000;
 
 // Applies tint colour and resizes image.
 - (UIImage*)compromisedIcon {
-  if (UseSymbols()) {
-    return DefaultSymbolTemplateWithPointSize(IsPasswordGroupingEnabled()
-                                                  ? kErrorCircleFillSymbol
-                                                  : kWarningFillSymbol,
-                                              kRecommendationSymbolSize);
-  }
-  return [UIImage imageNamed:@"round_settings_unsafe_state"];
+  return DefaultSymbolTemplateWithPointSize(
+      IsPasswordGroupingEnabled() ? kErrorCircleFillSymbol : kWarningFillSymbol,
+      kRecommendationSymbolSize);
 }
 
 // Shows reauthentication dialog if needed. If the reauthentication is
@@ -813,7 +814,7 @@ const int kMaxNoteCharAmount = 1000;
                                  handler:showPasswordHandler];
   } else {
     DCHECK(self.handler);
-    [self.handler showPasscodeDialog];
+    [self.handler showPasscodeDialogForReason:PasscodeDialogReasonShowPassword];
   }
 }
 
@@ -825,16 +826,9 @@ const int kMaxNoteCharAmount = 1000;
       self.passwordDetailsInfoItems[_passwordIndexToReveal]
           .passwordTextItem.textFieldValue =
           self.passwords[_passwordIndexToReveal].password;
-      if (UseSymbols()) {
-        self.passwordDetailsInfoItems[_passwordIndexToReveal]
-            .passwordTextItem.identifyingIcon =
-            DefaultSymbolWithPointSize(kHideActionSymbol, kSymbolSize);
-      } else {
-        self.passwordDetailsInfoItems[_passwordIndexToReveal]
-            .passwordTextItem.identifyingIcon =
-            [[UIImage imageNamed:@"infobar_hide_password_icon"]
-                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-      }
+      self.passwordDetailsInfoItems[_passwordIndexToReveal]
+          .passwordTextItem.identifyingIcon =
+          DefaultSymbolWithPointSize(kHideActionSymbol, kSymbolSize);
       self.passwordDetailsInfoItems[_passwordIndexToReveal]
           .passwordTextItem.identifyingIconAccessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDE_BUTTON);
@@ -977,7 +971,7 @@ const int kMaxNoteCharAmount = 1000;
 
   for (NSUInteger i = 0; i < self.passwordDetailsInfoItems.count; i++) {
     if (self.passwordDetailsInfoItems[i].passwordNoteItem.text.length >
-        kMaxNoteCharAmount) {
+        kMaxPasswordNoteLength) {
       return NO;
     }
   }
@@ -1114,8 +1108,9 @@ const int kMaxNoteCharAmount = 1000;
                 initWithType:PasswordDetailsItemTypeNoteFooter];
         footer.subtitle =
             passwordItem.isNoteFooterShown
-                ? l10n_util::GetNSString(
-                      IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION)
+                ? l10n_util::GetNSStringF(
+                      IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION,
+                      base::NumberToString16(kMaxPasswordNoteLength))
                 : @"";
         [model setFooter:footer forSectionWithIdentifier:sectionForPassword];
       }
@@ -1163,15 +1158,20 @@ const int kMaxNoteCharAmount = 1000;
 }
 
 // Moves password at specified index from profile store to account store.
-- (void)moveCredentialToAccountStore:(int)passwordIndex {
+- (void)moveCredentialToAccountStore:(int)passwordIndex
+                          anchorView:(UIView*)anchorView {
   DCHECK_GE(passwordIndex, 0);
   DCHECK(self.handler);
 
-  [self.handler moveCredentialToAccountStore:self.passwords[passwordIndex]];
-  [self showToast:l10n_util::GetNSStringF(
-                      IDS_IOS_PASSWORD_SAVED_TO_ACCOUNT_SNACKBAR_MESSAGE,
-                      base::SysNSStringToUTF16(self.userEmail))
-       forSuccess:YES];
+  __weak __typeof(self) weakSelf = self;
+  NSString* toastMessage = l10n_util::GetNSStringF(
+      IDS_IOS_PASSWORD_SAVED_TO_ACCOUNT_SNACKBAR_MESSAGE,
+      base::SysNSStringToUTF16(self.userEmail));
+  [self.handler moveCredentialToAccountStore:self.passwords[passwordIndex]
+                                  anchorView:anchorView
+                             movedCompletion:^{
+                               [weakSelf showToast:toastMessage forSuccess:YES];
+                             }];
 }
 
 // Navigates to password manager list view when the timeout for a valid
@@ -1213,16 +1213,9 @@ const int kMaxNoteCharAmount = 1000;
     self.passwordDetailsInfoItems[_passwordIndexToReveal]
         .passwordTextItem.textFieldValue = kMaskedPassword;
 
-    if (UseSymbols()) {
-      self.passwordDetailsInfoItems[_passwordIndexToReveal]
-          .passwordTextItem.identifyingIcon =
-          DefaultSymbolWithPointSize(kShowActionSymbol, kSymbolSize);
-    } else {
-      self.passwordDetailsInfoItems[_passwordIndexToReveal]
-          .passwordTextItem.identifyingIcon =
-          [[UIImage imageNamed:@"infobar_reveal_password_icon"]
-              imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    }
+    self.passwordDetailsInfoItems[_passwordIndexToReveal]
+        .passwordTextItem.identifyingIcon =
+        DefaultSymbolWithPointSize(kShowActionSymbol, kSymbolSize);
     self.passwordDetailsInfoItems[_passwordIndexToReveal]
         .passwordTextItem.identifyingIconAccessibilityLabel =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON);
@@ -1364,11 +1357,13 @@ const int kMaxNoteCharAmount = 1000;
   // With password notes feature enabled the authentication happens during
   // navigation from the password list view to the password details view.
   if (IsPasswordNotesWithBackupEnabled()) {
-    [self moveCredentialToAccountStore:passwordIndex];
+    [self moveCredentialToAccountStore:passwordIndex anchorView:view];
     return;
   }
 
   if (![self.reauthModule canAttemptReauth]) {
+    [self.handler
+        showPasscodeDialogForReason:PasscodeDialogReasonMovePasswordToAccount];
     return;
   }
   __weak __typeof(self) weakSelf = self;
@@ -1382,7 +1377,7 @@ const int kMaxNoteCharAmount = 1000;
           return;
         }
 
-        [self moveCredentialToAccountStore:passwordIndex];
+        [self moveCredentialToAccountStore:passwordIndex anchorView:view];
       };
   [self.reauthModule
       attemptReauthWithLocalizedReason:
@@ -1450,6 +1445,21 @@ const int kMaxNoteCharAmount = 1000;
       "PasswordManager.iOS.PasswordDetails.CopyDetailsFailed", failure);
 }
 
+- (void)logChangeBetweenOldNote:(NSString*)oldNote
+                    currentNote:(NSString*)currentNote {
+  PasswordNoteAction action;
+  if (oldNote == currentNote) {
+    action = PasswordNoteAction::kNoteNotChanged;
+  } else if (oldNote.length != 0 && currentNote.length != 0) {
+    action = PasswordNoteAction::kNoteEditedInEditDialog;
+  } else if (oldNote.length == 0) {
+    action = PasswordNoteAction::kNoteAddedInEditDialog;
+  } else {
+    action = PasswordNoteAction::kNoteRemovedInEditDialog;
+  }
+  LogPasswordNoteActionInSettings(action);
+}
+
 #pragma mark - Public
 
 - (void)passwordEditingConfirmed {
@@ -1465,6 +1475,7 @@ const int kMaxNoteCharAmount = 1000;
     if (IsPasswordNotesWithBackupEnabled()) {
       self.passwords[i].note =
           self.passwordDetailsInfoItems[i].passwordNoteItem.text;
+      [self logChangeBetweenOldNote:oldNote currentNote:self.passwords[i].note];
     }
     [self.delegate passwordDetailsViewController:self
                           didEditPasswordDetails:self.passwords[i]

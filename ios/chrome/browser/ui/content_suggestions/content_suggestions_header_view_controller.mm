@@ -14,7 +14,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/lens_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -52,7 +53,6 @@ using base::UserMetricsAction;
 namespace {
 
 NSString* const kScribbleFakeboxElementId = @"fakebox";
-NSString* const kSignOutIdentityIconName = @"sign_out_icon";
 
 }  // namespace
 
@@ -307,7 +307,9 @@ NSString* const kSignOutIdentityIconName = @"sign_out_icon";
 // Initialize and add a search field tap target and a voice search button.
 - (void)addFakeOmnibox {
   self.fakeOmnibox = [[UIButton alloc] init];
-  [self.fakeOmnibox setAdjustsImageWhenHighlighted:NO];
+  // TODO(crbug.com/1418068): Remove after minimum version required is >=
+  // iOS 15 and refactor with UIButtonConfiguration.
+  SetAdjustsImageWhenHighlighted(self.fakeOmnibox, NO);
 
   // Set isAccessibilityElement to NO so that Voice Search button is accessible.
   [self.fakeOmnibox setIsAccessibilityElement:NO];
@@ -458,24 +460,12 @@ NSString* const kSignOutIdentityIconName = @"sign_out_icon";
 
 - (void)fakeTapViewTapped {
   base::RecordAction(base::UserMetricsAction("MobileFakeViewNTPTapped"));
-  [self logOmniboxAction];
-  [self.delegate focusFakebox];
+  [self.commandHandler fakeboxTapped];
 }
 
 - (void)fakeboxTapped {
   base::RecordAction(base::UserMetricsAction("MobileFakeboxNTPTapped"));
-  [self logOmniboxAction];
-  [self.delegate focusFakebox];
-}
-
-- (void)logOmniboxAction {
-  if (self.isStartShowing) {
-    UMA_HISTOGRAM_ENUMERATION("IOS.ContentSuggestions.ActionOnStartSurface",
-                              IOSContentSuggestionsActionType::kFakebox);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("IOS.ContentSuggestions.ActionOnNTP",
-                              IOSContentSuggestionsActionType::kFakebox);
-  }
+  [self.commandHandler fakeboxTapped];
 }
 
 - (void)focusAccessibilityOnOmnibox {
@@ -666,7 +656,7 @@ NSString* const kSignOutIdentityIconName = @"sign_out_icon";
   if (!self.isShowing)
     return;
 
-  [self.delegate focusFakebox];
+  [self.commandHandler fakeboxTapped];
 }
 
 - (void)setVoiceSearchIsEnabled:(BOOL)voiceSearchIsEnabled {
@@ -680,12 +670,9 @@ NSString* const kSignOutIdentityIconName = @"sign_out_icon";
 
 - (void)setSignedOutAccountImage {
   if (base::FeatureList::IsEnabled(switches::kIdentityStatusConsistency)) {
-    if (UseSymbols()) {
-      self.identityDiscImage = DefaultSymbolTemplateWithPointSize(
-          kPersonCropCircleSymbol, ntp_home::kSignedOutIdentityIconDimension);
-    } else {
-      self.identityDiscImage = [UIImage imageNamed:kSignOutIdentityIconName];
-    }
+    self.identityDiscImage = DefaultSymbolTemplateWithPointSize(
+        kPersonCropCircleSymbol, ntp_home::kSignedOutIdentityIconDimension);
+
     self.identityDiscAccessibilityLabel =
         l10n_util::GetNSString(IDS_IOS_IDENTITY_DISC_SIGNED_OUT);
   } else {

@@ -13,6 +13,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -64,7 +65,10 @@ class SystemUIComponentsStyleViewerView::ComponentButton
       : views::LabelButton(pressed_callback, name) {
     SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
     SetBorder(std::make_unique<views::HighlightBorder>(
-        0, views::HighlightBorder::Type::kHighlightBorder1,
+        0,
+        chromeos::features::IsJellyrollEnabled()
+            ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+            : views::HighlightBorder::Type::kHighlightBorder1,
         /*use_light_color=*/false));
     label()->SetSubpixelRenderingEnabled(false);
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
@@ -167,7 +171,7 @@ void SystemUIComponentsStyleViewerView::CreateAndShowWidget() {
       u"RadioButtonGroup",
       base::BindRepeating(&CreateRadioButtonGroupInstancesGridView));
   viewer_view->AddComponent(
-      u"KnobSwitch", base::BindRepeating(&CreateKnobSwitchInstancesGridView));
+      u"Switch", base::BindRepeating(&CreateSwitchInstancesGridView));
   viewer_view->AddComponent(
       u"TabSlider", base::BindRepeating(&CreateTabSliderInstancesGridView));
   viewer_view->AddComponent(

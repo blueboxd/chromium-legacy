@@ -160,6 +160,8 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
   gpu_preferences.enable_unsafe_webgpu =
       command_line->HasSwitch(switches::kEnableUnsafeWebGPU);
   gpu_preferences.use_webgpu_adapter = ParseWebGPUAdapterName(command_line);
+  gpu_preferences.use_webgpu_power_preference =
+      ParseWebGPUPowerPreference(command_line);
   if (command_line->HasSwitch(switches::kEnableDawnBackendValidation)) {
     auto value = command_line->GetSwitchValueASCII(
         switches::kEnableDawnBackendValidation);
@@ -202,11 +204,6 @@ GrContextType ParseGrContextType() {
 #if BUILDFLAG(SKIA_USE_DAWN)
   if (base::FeatureList::IsEnabled(features::kSkiaDawn))
     return GrContextType::kDawn;
-#endif
-
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
-  if (base::FeatureList::IsEnabled(features::kMetal))
-    return GrContextType::kMetal;
 #endif
 
   if (features::IsUsingVulkan())
@@ -273,6 +270,29 @@ WebGPUAdapterName ParseWebGPUAdapterName(
     }
   }
   return WebGPUAdapterName::kDefault;
+}
+
+WebGPUPowerPreference ParseWebGPUPowerPreference(
+    const base::CommandLine* command_line) {
+  if (command_line->HasSwitch(switches::kUseWebGPUPowerPreference)) {
+    auto value =
+        command_line->GetSwitchValueASCII(switches::kUseWebGPUPowerPreference);
+    if (value.empty()) {
+      return WebGPUPowerPreference::kDefaultLowPower;
+    } else if (value == "default-low-power") {
+      return WebGPUPowerPreference::kDefaultLowPower;
+    } else if (value == "default-high-performance") {
+      return WebGPUPowerPreference::kDefaultHighPerformance;
+    } else if (value == "force-low-power") {
+      return WebGPUPowerPreference::kForceLowPower;
+    } else if (value == "force-high-performance") {
+      return WebGPUPowerPreference::kForceHighPerformance;
+    } else {
+      DLOG(ERROR) << "Invalid switch " << switches::kUseWebGPUPowerPreference
+                  << "=" << value << ".";
+    }
+  }
+  return WebGPUPowerPreference::kDefaultLowPower;
 }
 
 }  // namespace gles2

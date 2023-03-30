@@ -6,13 +6,22 @@ import("//build/config/android/rules.gni")
 import("//chrome/android/features/android_library_factory_tmpl.gni")
 
 android_library("java") {
-  sources = [ "android/java/src/org/chromium/chrome/browser/recent_tabs/RestoreTabsFeatureHelper.java" ]
+  sources = [
+    "android/java/src/org/chromium/chrome/browser/recent_tabs/ForeignSessionHelper.java",
+    "android/java/src/org/chromium/chrome/browser/recent_tabs/RestoreTabsFeatureHelper.java",
+  ]
 
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/tab:java",
+    "//content/public/android:content_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//url:gurl_java",
   ]
-  resources_package = "org.chromium.chrome.recent_tabs"
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 android_library_factory("factory_java") {
@@ -20,6 +29,11 @@ android_library_factory("factory_java") {
 
   deps = [
     ":java",
+    "//chrome/browser/profiles/android:java",
     "//chrome/browser/recent_tabs/internal:java",
   ]
+}
+
+generate_jni("jni_headers") {
+  sources = [ "android/java/src/org/chromium/chrome/browser/recent_tabs/ForeignSessionHelper.java" ]
 }

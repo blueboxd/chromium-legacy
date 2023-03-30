@@ -81,6 +81,11 @@ std::unique_ptr<cc::ScopedPauseRendering> EmptyChromeClient::PauseRendering(
   return nullptr;
 }
 
+absl::optional<int> EmptyChromeClient::GetMaxRenderBufferBounds(
+    LocalFrame& frame) const {
+  return absl::nullopt;
+}
+
 void EmptyChromeClient::OpenTextDataListChooser(HTMLInputElement&) {}
 
 void EmptyChromeClient::OpenFileChooser(LocalFrame*,
@@ -122,7 +127,8 @@ void EmptyLocalFrameClient::BeginNavigation(
     const LocalFrameToken* initiator_frame_token,
     std::unique_ptr<SourceLocation>,
     mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>,
-    bool is_container_initiated) {}
+    bool is_container_initiated,
+    bool is_fullscreen_requested) {}
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
 
@@ -144,8 +150,7 @@ RemoteFrame* EmptyLocalFrameClient::AdoptPortal(HTMLPortalElement*) {
 
 RemoteFrame* EmptyLocalFrameClient::CreateFencedFrame(
     HTMLFencedFrameElement*,
-    mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>,
-    mojom::blink::FencedFrameMode) {
+    mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>) {
   return nullptr;
 }
 

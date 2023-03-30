@@ -49,6 +49,10 @@ BASE_DECLARE_FEATURE(kDisplayOpenLinkAsProfile);
 
 BASE_DECLARE_FEATURE(kEvDetailsInPageInfo);
 
+#if !defined(ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+BASE_DECLARE_FEATURE(kGetTheMostOutOfChrome);
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 BASE_DECLARE_FEATURE(kLightweightExtensionOverrideConfirmations);
 #endif

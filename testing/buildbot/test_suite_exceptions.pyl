@@ -511,6 +511,7 @@
       'linux-rel-cft': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+	  '--test-launcher-filter-file=../../testing/buildbot/filters/cft.blink_web_tests.filter',
         ],
         'swarming': {
           'shards': 8,
@@ -527,6 +528,9 @@
         },
       },
       'mac-rel-cft': {
+       "args": [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/cft.blink_web_tests.filter',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -578,6 +582,7 @@
         'args': [
           '--target',
           'Release_x64',
+	  '--test-launcher-filter-file=../../testing/buildbot/filters/cft.blink_web_tests.filter',
         ],
         'swarming': {
           "shards": 12,
@@ -615,6 +620,9 @@
       'Win10 Tests x64 (dbg)',
       'devtools_frontend_linux_blink_light_rel',
       'devtools_frontend_linux_blink_light_rel_fastbuild',
+      'linux-rel-cft',
+      'mac-rel-cft',
+      'win-rel-cft',
     ],
     'modifications': {
       'Linux Tests': {
@@ -664,9 +672,6 @@
         },
       },
       'Mac12 Tests': {
-        'args': [
-          '--driver-logging',
-        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -1028,7 +1033,7 @@
       },
       'Linux MSan Tests': {
         'swarming': {
-          'shards': 15,
+          'shards': 23,
         },
       },
       'Linux Tests': {
@@ -1227,6 +1232,13 @@
           'shards': 20,  # crbug.com/1361887
         },
       },
+      'win-arm64-rel': {
+        # Surface Pros aren't using 100% scaling, which some browser tests
+        # rely on.
+        'args': [
+          '--force-device-scale-factor=1',
+        ],
+      },
       'win-asan': {
          # Tests shows tests run faster with fewer retries by using fewer jobs crbug.com/1411912
         'args': [
@@ -1415,6 +1427,11 @@
         'ci_only': True,
         'experiment_percentage': 100,
       },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.chrome_public_test_apk.filter',
+        ],
+      },
       'android-arm64-proguard-rel': {
         'swarming': {
           'shards': 25,
@@ -1442,7 +1459,7 @@
         ],
         'ci_only': True, # https://crbug.com/1233700
       },
-      'android-pie-arm64-rel-swarming': {
+      'android-pie-arm64-rel-dev': {
         'swarming': {
           'service_account': 'chrome-gold-dev@chops-service-accounts.iam.gserviceaccount.com'
         },
@@ -2040,7 +2057,7 @@
         },
       },
       # https://crbug.com/1255940
-      'mac-rel-swarming': {
+      'mac-rel-dev': {
         'swarming': {
           'dimension_sets': [
             {
@@ -3067,6 +3084,7 @@
       'linux-win_cross-rel',  # Sets enable_nacl=false, https://crbug.com/774186
       'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
       'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
+      'win-arm64-rel',  # Not available on arm64.
     ],
   },
   'net_unittests': {
@@ -3688,6 +3706,9 @@
   },
   'system_webview_wpt': {
     'modifications': {
+      'android-pie-arm64-wpt-rel-non-cq': {
+        'experiment_percentage': 100,
+      },
       'android-webview-pie-x86-wpt-fyi-rel': {
         'args': [
           '--log-wptreport',
@@ -3919,7 +3940,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.unit_tests.filter',
         ],
       },
-      'android-pie-arm64-rel-swarming': {
+      'android-pie-arm64-rel-dev': {
         'swarming': {
           'shards': 8,
         },
@@ -3943,6 +3964,11 @@
         'swarming': {
           'inverse_quickrun_shards': 2,
         },
+      },
+      'win-arm64-rel': {
+        'args': [
+          '--top-chrome-touch-ui=disabled',
+        ],
       },
     },
   },
@@ -4204,6 +4230,17 @@
         ],
       },
     },
+    'replacements': {
+      # --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL
+      # flag is suspected for flakiness on MacBook Pro 2019,
+      # so use the old --force_high_performance_gpu flag there
+      # crbug.com/1421053, crbug.com/1424896, crbug.com/1251724
+      'Mac FYI Experimental Retina Release (AMD)': {
+        'args': {
+          '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        },
+      },
+    },
   },
   'webgl2_conformance_validating_tests': {
     'remove_from': [
@@ -4304,6 +4341,17 @@
         'args': [
           '--enable-metal-debug-layers',
         ],
+      },
+    },
+    'replacements': {
+      # --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL
+      # flag is suspected for flakiness on MacBook Pro 2019,
+      # so use the old --force_high_performance_gpu flag there
+      # crbug.com/1421053, crbug.com/1424896, crbug.com/1251724
+      'Mac FYI Experimental Retina Release (AMD)': {
+        'args': {
+          '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        },
       },
     },
   },
@@ -4525,6 +4573,24 @@
         'swarming': {
           'inverse_quickrun_shards': 12,
         },
+      },
+    },
+  },
+  'weblayer_browsertests': {
+    'modifications': {
+      'android-12-x64-rel': {
+        'ci_only': True,
+      },
+      # If you change this, make similar changes in android-x86-code-coverage below
+      'android-nougat-x86-rel': {
+        'ci_only': True,
+      },
+      'android-pie-arm64-rel': {
+        'ci_only': True,
+      },
+      # Keep this same as android-nougat-x86-rel above
+      'android-x86-code-coverage': {
+        'ci_only': True,
       },
     },
   },

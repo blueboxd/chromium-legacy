@@ -156,11 +156,6 @@ ash::ParentCodeValidationResult LoginScreenClientImpl::ValidateParentAccessCode(
       .ValidateParentAccessCode(account_id, access_code, validation_time);
 }
 
-void LoginScreenClientImpl::HardlockPod(const AccountId& account_id) {
-  if (delegate_)
-    delegate_->HandleHardlockPod(account_id);
-}
-
 void LoginScreenClientImpl::OnFocusPod(const AccountId& account_id) {
   if (delegate_)
     delegate_->HandleOnFocusPod(account_id);
@@ -378,14 +373,6 @@ void LoginScreenClientImpl::SetPublicSessionKeyboardLayout(
   }
   ash::LoginScreen::Get()->GetModel()->SetPublicSessionKeyboardLayouts(
       account_id, locale, result);
-}
-
-void LoginScreenClientImpl::OnUserActivity() {
-  if (ash::LoginDisplayHost::default_host()) {
-    ash::LoginDisplayHost::default_host()
-        ->GetExistingUserController()
-        ->ResetAutoLoginTimer();
-  }
 }
 
 views::Widget* LoginScreenClientImpl::GetLoginWindowWidget() {

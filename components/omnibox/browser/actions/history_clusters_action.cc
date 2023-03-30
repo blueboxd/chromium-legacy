@@ -168,8 +168,8 @@ void HistoryClustersAction::Execute(ExecutionContext& context) const {
   OmniboxAction::Execute(context);
 }
 
-int32_t HistoryClustersAction::GetID() const {
-  return static_cast<int32_t>(OmniboxActionId::HISTORY_CLUSTERS);
+OmniboxActionId HistoryClustersAction::ActionId() const {
+  return OmniboxActionId::HISTORY_CLUSTERS;
 }
 
 #if defined(SUPPORT_PEDALS_VECTOR_ICONS)
@@ -185,9 +185,7 @@ HistoryClustersAction::GetJavaObject() const {
 }
 
 void HistoryClustersAction::CreateOrUpdateJavaObject(const std::string& query) {
-  j_omnibox_action_.Reset(BuildHistoryClustersAction(
-      GetID(), strings_.hint, strings_.suggestion_contents,
-      strings_.accessibility_suffix, strings_.accessibility_hint, url_, query));
+  j_omnibox_action_.Reset(BuildHistoryClustersAction(strings_.hint, query));
 }
 #endif
 
@@ -256,17 +254,6 @@ void AttachHistoryClustersActions(
       if (matched_keyword_data) {
         match.actions.push_back(base::MakeRefCounted<HistoryClustersAction>(
             query, std::move(matched_keyword_data.value()),
-            /*takes_over_match=*/false));
-      }
-    } else if (GetConfig().omnibox_action_on_urls) {
-      // We do the URL stripping here, because we need it to both execute the
-      // query, as well as to feed it into the action chip so the chip navigates
-      // to the right place (with the query pre-populated).
-      std::string url_keyword =
-          history_clusters::ComputeURLKeywordForLookup(match.destination_url);
-      if (service->DoesURLMatchAnyCluster(url_keyword)) {
-        match.actions.push_back(base::MakeRefCounted<HistoryClustersAction>(
-            url_keyword, history::ClusterKeywordData(),
             /*takes_over_match=*/false));
       }
     }

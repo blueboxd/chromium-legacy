@@ -34,6 +34,7 @@
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/resource_cache.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-shared.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
@@ -139,7 +140,8 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
       std::unique_ptr<blink::WebPolicyContainer> policy_container,
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
-      network::mojom::WebSandboxFlags = network::mojom::WebSandboxFlags::kNone);
+      network::mojom::WebSandboxFlags = network::mojom::WebSandboxFlags::kNone,
+      const WebURL& base_url = WebURL());
 
   // Used to create a provisional local frame. Currently, it's possible for a
   // provisional navigation not to commit (i.e. it might turn into a download),
@@ -448,6 +450,13 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
 
   void AddInspectorIssue(mojom::InspectorIssueCode code) {
     AddInspectorIssueImpl(code);
+  }
+
+  void AddGenericIssue(mojom::GenericIssueErrorType error_type,
+                       int violating_node_id,
+                       const WebString& violating_node_attribute) {
+    AddGenericIssueImpl(error_type, violating_node_id,
+                        violating_node_attribute);
   }
 
   void AddGenericIssue(mojom::GenericIssueErrorType error_type,
@@ -921,6 +930,10 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
       base::RepeatingCallback<void(const blink::WebHitTestResult&)>
           callback) = 0;
 
+  // Sets a ResourceCache hosted by another frame.
+  virtual void SetResourceCacheRemote(
+      CrossVariantMojoRemote<mojom::ResourceCacheInterfaceBase> remote) = 0;
+
  protected:
   explicit WebLocalFrame(mojom::TreeScopeType scope,
                          const LocalFrameToken& frame_token)
@@ -939,7 +952,10 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
   virtual void AddGenericIssueImpl(
       blink::mojom::GenericIssueErrorType error_type,
       int violating_node_id) = 0;
-
+  virtual void AddGenericIssueImpl(
+      blink::mojom::GenericIssueErrorType error_type,
+      int violating_node_id,
+      const WebString& violating_node_attribute) = 0;
   virtual void CreateFrameWidgetInternal(
       base::PassKey<WebLocalFrame> pass_key,
       CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>

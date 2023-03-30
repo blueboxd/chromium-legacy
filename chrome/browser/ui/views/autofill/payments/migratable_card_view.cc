@@ -47,7 +47,10 @@ MigratableCardView::MigratableCardView(
                    .release());
 
   checkbox_uncheck_text_container_ =
-      AddChildView(std::make_unique<views::View>());
+      AddChildView(views::Builder<views::View>()
+                       .SetBackground(views::CreateThemedSolidBackground(
+                           ui::kColorBubbleFooterBackground))
+                       .Build());
   views::BoxLayout* layout = checkbox_uncheck_text_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical,
@@ -80,12 +83,6 @@ std::string MigratableCardView::GetGuid() const {
 std::u16string MigratableCardView::GetCardIdentifierString() const {
   return migratable_credit_card_.credit_card()
       .CardIdentifierStringForAutofillDisplay();
-}
-
-void MigratableCardView::OnThemeChanged() {
-  View::OnThemeChanged();
-  checkbox_uncheck_text_container_->SetBackground(views::CreateSolidBackground(
-      GetColorProvider()->GetColor(ui::kColorBubbleFooterBackground)));
 }
 
 std::unique_ptr<views::View>
@@ -124,7 +121,7 @@ MigratableCardView::GetMigratableCardDescriptionView(
         // format.
         views::InkDrop::Get(checkbox_)->SetMode(
             views::InkDropHost::InkDropMode::OFF);
-        checkbox_->SetAssociatedLabel(card_description.get());
+        checkbox_->SetAccessibleName(card_description.get());
       }
       break;
     }

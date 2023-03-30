@@ -175,7 +175,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     _items = [[NSMutableArray<TabSwitcherItem*> alloc] init];
     _selectedEditingItemIDs = [[NSMutableSet<NSString*> alloc] init];
     _selectedSharableEditingItemIDs = [[NSMutableSet<NSString*> alloc] init];
-    _showsSelectionUpdates = YES;
     _dropAnimationInProgress = NO;
     _localDragActionInProgress = NO;
     _notSelectedTabCellOpacity = 1.0;
@@ -398,18 +397,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self.selectedEditingItemIDs removeAllObjects];
     [self.selectedSharableEditingItemIDs removeAllObjects];
 
-    // After transition from other modes to the normal mode, the
-    // selection border doesn't show around the selection item. The
-    // collection view needs to be updated with the selected item again
-    // for it to appear correctly.
-    NSUInteger selectedIndex = self.selectedIndex;
-    if (selectedIndex != NSNotFound) {
-      [self.collectionView
-          selectItemAtIndexPath:CreateIndexPath(selectedIndex)
-                       animated:NO
-                 scrollPosition:UICollectionViewScrollPositionNone];
-      [self updateFractionVisibleOfLastItem];
-    }
+    // After transition from other modes to the normal mode, the selection
+    // border doesn't show around the selected item, because reloading
+    // operations like `reloadSections` loose the selected items. The
+    // collection view needs to be updated with the selected item again for it
+    // to appear correctly.
+    [self deselectAllCollectionViewItemsAnimated:NO];
+    [self selectCollectionViewItemWithID:self.selectedItemID
+                                animated:NO
+                          scrollPosition:UICollectionViewScrollPositionNone];
+    [self updateFractionVisibleOfLastItem];
+
     self.searchText = nil;
   }
 }
@@ -487,13 +485,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self animateEmptyStateIn];
     return;
   }
-  UICollectionViewScrollPosition scrollPosition =
-      (self.currentLayout == self.horizontalLayout)
-          ? UICollectionViewScrollPositionCenteredHorizontally
-          : UICollectionViewScrollPositionTop;
-  [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                                    animated:NO
-                              scrollPosition:scrollPosition];
+
+  [self deselectAllCollectionViewItemsAnimated:NO];
+  [self selectCollectionViewItemWithID:self.selectedItemID animated:NO];
+
   // Update the delegate, in case it wasn't set when `items` was populated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   [self removeEmptyStateAnimated:NO];
@@ -535,6 +530,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                 atIndexPath:(NSIndexPath*)indexPath {
   switch (_mode) {
     case TabGridModeNormal: {
+      // The Regular Tabs grid has a button to inform about the hidden inactive
+      // tabs.
       DCHECK(IsInactiveTabsEnabled());
       InactiveTabsButtonHeader* header = [collectionView
           dequeueReusableSupplementaryViewOfKind:kind
@@ -580,6 +577,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       }
       return headerView;
     }
+    case TabGridModeInactive:
+      // The Inactive Tabs grid doesn’t have a header.
+      NOTREACHED();
+      return nil;
   }
 }
 
@@ -676,10 +677,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       if (!IsInactiveTabsEnabled() || self.inactiveTabsCount == 0) {
         return CGSizeZero;
       }
+      // The Regular Tabs grid has a button to inform about the hidden inactive
+      // tabs.
       return [self inactiveTabsButtonHeaderSize];
     case TabGridModeSelection:
       return CGSizeZero;
-    case TabGridModeSearch:
+    case TabGridModeSearch: {
       if (_searchText.length == 0) {
         return CGSizeZero;
       }
@@ -689,6 +692,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                            ? kGridHeaderAccessibilityHeight
                            : kGridHeaderHeight;
       return CGSizeMake(collectionView.bounds.size.width, height);
+    }
+    case TabGridModeInactive:
+      // The Inactive Tabs grid doesn’t have a header.
+      return CGSizeZero;
   }
 }
 
@@ -762,6 +769,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   MenuScenarioHistogram scenario;
   if (_mode == TabGridModeSearch) {
     scenario = MenuScenarioHistogram::kTabGridSearchResult;
+  } else if (_mode == TabGridModeInactive) {
+    scenario = MenuScenarioHistogram::kInactiveTabsEntry;
   } else if (self.currentLayout == self.horizontalLayout) {
     scenario = MenuScenarioHistogram::kThumbStrip;
   } else {
@@ -1159,10 +1168,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   self.selectedItemID = selectedItemID;
   [self.selectedEditingItemIDs removeAllObjects];
   [self.selectedSharableEditingItemIDs removeAllObjects];
+
   [self reloadTabs];
-  [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                                    animated:NO
-                              scrollPosition:UICollectionViewScrollPositionTop];
+
+  [self deselectAllCollectionViewItemsAnimated:NO];
+  [self selectCollectionViewItemWithID:self.selectedItemID animated:NO];
+
   if ([self shouldShowEmptyState]) {
     [self animateEmptyStateIn];
   } else {
@@ -1204,20 +1215,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self removeEmptyStateAnimated:YES];
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
   };
-  NSString* previouslySelectedItemID = self.selectedItemID;
+
   auto completion = ^(BOOL finished) {
-    [self.collectionView
-        deselectItemAtIndexPath:CreateIndexPath([self
-                                    indexOfItemWithID:previouslySelectedItemID])
-                       animated:NO];
-    UICollectionViewScrollPosition scrollPosition =
-        (self.currentLayout == self.horizontalLayout)
-            ? UICollectionViewScrollPositionCenteredHorizontally
-            : UICollectionViewScrollPositionNone;
-    [self.collectionView
-        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                     animated:NO
-               scrollPosition:scrollPosition];
+    [self deselectAllCollectionViewItemsAnimated:NO];
+    [self selectCollectionViewItemWithID:self.selectedItemID animated:NO];
+
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
 
     // Check `index` boundaries in order to filter out possible race
@@ -1245,10 +1247,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)removeItemWithID:(NSString*)removedItemID
           selectedItemID:(NSString*)selectedItemID {
   NSUInteger index = [self indexOfItemWithID:removedItemID];
+
+  // Do not remove if not showing the item (i.e. showing search results).
   if (index == NSNotFound) {
-    // Do not remove if not showing the item (i.e. showing search results).
+    [self selectItemWithID:selectedItemID];
     return;
   }
+
   auto modelUpdates = ^{
     [self.items removeObjectAtIndex:index];
     self.selectedItemID = selectedItemID;
@@ -1266,10 +1271,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   __weak __typeof(self) weakSelf = self;
   auto completion = ^(BOOL finished) {
     if (weakSelf.items.count > 0) {
-      [weakSelf.collectionView
-          selectItemAtIndexPath:CreateIndexPath(weakSelf.selectedIndex)
-                       animated:NO
-                 scrollPosition:UICollectionViewScrollPositionNone];
+      [self deselectAllCollectionViewItemsAnimated:NO];
+      [self selectCollectionViewItemWithID:weakSelf.selectedItemID
+                                  animated:NO
+                            scrollPosition:UICollectionViewScrollPositionNone];
     }
     [weakSelf.delegate gridViewController:weakSelf
                        didChangeItemCount:weakSelf.items.count];
@@ -1294,14 +1299,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   if ([self.selectedItemID isEqualToString:selectedItemID])
     return;
 
-  [self.collectionView
-      deselectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                     animated:NO];
+  [self deselectAllCollectionViewItemsAnimated:NO];
+
   self.selectedItemID = selectedItemID;
-  [self.collectionView
-      selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                   animated:NO
-             scrollPosition:UICollectionViewScrollPositionNone];
+  [self selectCollectionViewItemWithID:self.selectedItemID
+                              animated:NO
+                        scrollPosition:UICollectionViewScrollPositionNone];
   [self updateVisibleCellsOpacity];
 }
 
@@ -1364,12 +1367,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                        [weakSelf.collectionView reloadItemsAtIndexPaths:@[
                          CreateIndexPath(weakSelf.selectedIndex)
                        ]];
-                       [weakSelf.collectionView
-                           selectItemAtIndexPath:CreateIndexPath(
-                                                     weakSelf.selectedIndex)
-                                        animated:NO
-                                  scrollPosition:
-                                      UICollectionViewScrollPositionNone];
+                       [self deselectAllCollectionViewItemsAnimated:NO];
+                       [self
+                           selectCollectionViewItemWithID:weakSelf
+                                                              .selectedItemID
+                                                 animated:NO
+                                           scrollPosition:
+                                               UICollectionViewScrollPositionNone];
                      }
                      completion:nil];
   };
@@ -1407,7 +1411,19 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     // The header should appear or disappear. Reload the section.
     NSIndexSet* openTabsSection =
         [NSIndexSet indexSetWithIndex:kOpenTabsSectionIndex];
-    [self.collectionView reloadSections:openTabsSection];
+    // Prevent the animation, as it leads to a jarrying effect when closing all
+    // inactive tabs: the inactive tabs view controller gets popped, and the
+    // underlying regular Tab Grid moves tabs up.
+    // Note: this could be revisited when supporting iPad, as the user could
+    // have closed all inactive tabs in a different window.
+    [UIView performWithoutAnimation:^{
+      [self.collectionView reloadSections:openTabsSection];
+    }];
+    // Make sure to restore the selection. `reloadSections` cleared it.
+    // https://developer.apple.com/forums/thread/656529
+    [self selectCollectionViewItemWithID:self.selectedItemID
+                                animated:NO
+                          scrollPosition:UICollectionViewScrollPositionNone];
   } else {
     // The header just needs to be updated with the new count.
     NSIndexPath* indexPath =
@@ -1539,6 +1555,49 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 #pragma mark - Private
+
+// Selects the collection view's item with `itemID`.
+- (void)selectCollectionViewItemWithID:(NSString*)itemID
+                              animated:(BOOL)animated
+                        scrollPosition:
+                            (UICollectionViewScrollPosition)scrollPosition {
+  NSUInteger itemIndex = [self indexOfItemWithID:itemID];
+
+  // Check `itemIndex` boundaries in order to filter out possible race
+  // conditions while mutating the collection.
+  if (itemIndex == NSNotFound || itemIndex >= self.items.count) {
+    return;
+  }
+
+  NSIndexPath* itemIndexPath = CreateIndexPath(itemIndex);
+
+  [self.collectionView selectItemAtIndexPath:itemIndexPath
+                                    animated:animated
+                              scrollPosition:scrollPosition];
+}
+
+// Selects the collection view's item with `itemID`.
+- (void)selectCollectionViewItemWithID:(NSString*)itemID
+                              animated:(BOOL)animated {
+  UICollectionViewScrollPosition scrollPosition =
+      (self.currentLayout == self.horizontalLayout)
+          ? UICollectionViewScrollPositionCenteredHorizontally
+          : UICollectionViewScrollPositionTop;
+
+  [self selectCollectionViewItemWithID:itemID
+                              animated:animated
+                        scrollPosition:scrollPosition];
+}
+
+// Deselects all the collection view items.
+- (void)deselectAllCollectionViewItemsAnimated:(BOOL)animated {
+  NSArray<NSIndexPath*>* indexPathsForSelectedItems =
+      [self.collectionView indexPathsForSelectedItems];
+  for (NSIndexPath* itemIndexPath in indexPathsForSelectedItems) {
+    [self.collectionView deselectItemAtIndexPath:itemIndexPath
+                                        animated:animated];
+  }
+}
 
 - (void)voiceOverStatusDidChange {
   self.collectionView.dragInteractionEnabled =

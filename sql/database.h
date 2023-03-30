@@ -21,6 +21,7 @@
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
@@ -174,17 +175,6 @@ struct COMPONENT_EXPORT(SQL) DatabaseOptions {
   // Like any other schema change, changing the mmap status invalidates all
   // pre-compiled SQL statements.
   bool mmap_alt_status_discouraged = false;
-
-  // If true, enables the enforcement of foreign key constraints.
-  //
-  // The use of foreign key constraints is discouraged for Chrome code. See
-  // README.md for details and recommended replacements.
-  //
-  // If this option is false, foreign key schema operations succeed, but foreign
-  // keys are not enforced. Foreign key enforcement can still be enabled later
-  // by executing PRAGMA foreign_keys=true. sql::Database() will eventually
-  // disallow executing arbitrary PRAGMA statements.
-  bool enable_foreign_keys_discouraged = false;
 
   // If true, enables SQL views (a discouraged feature) for this database.
   //
@@ -446,10 +436,9 @@ class COMPONENT_EXPORT(SQL) Database {
   // Close() should still be called at some point.
   void Poison();
 
-  // Raze() the database and Poison() the handle.  Returns the return
-  // value from Raze().
-  // TODO(shess): Rename to RazeAndPoison().
-  bool RazeAndClose();
+  // `Raze()` the database and `Poison()` the handle. Returns the return
+  // value from `Raze()`.
+  bool RazeAndPoison();
 
   // Delete the underlying database files associated with |path|. This should be
   // used on a database which is not opened by any Database instance. Open
@@ -720,7 +709,7 @@ class COMPONENT_EXPORT(SQL) Database {
     kNone = 0,
 
     // Retry if the database error handler is invoked and closes the database.
-    // Database error handlers that call RazeAndClose() take advantage of this.
+    // Database error handlers that call RazeAndPoison() take advantage of this.
     kRetryOnPoision = 1,
 
     // Open an in-memory database. Used by OpenInMemory().
@@ -745,7 +734,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // called on the object.
   void ConfigureSqliteDatabaseObject();
 
-  // Internal close function used by Close() and RazeAndClose().
+  // Internal close function used by Close() and RazeAndPoison().
   // |forced| indicates that orderly-shutdown checks should not apply.
   void CloseInternal(bool forced);
 
@@ -813,7 +802,7 @@ class COMPONENT_EXPORT(SQL) Database {
 
     // Destroys the compiled statement and sets it to nullptr. The statement
     // will no longer be active. |forced| is used to indicate if
-    // orderly-shutdown checks should apply (see Database::RazeAndClose()).
+    // orderly-shutdown checks should apply (see Database::RazeAndPoison()).
     void Close(bool forced);
 
     // Construct a ScopedBlockingCall to annotate IO calls, but only if
@@ -946,7 +935,9 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // The actual sqlite database. Will be null before Init has been called or if
   // Init resulted in an error.
-  sqlite3* db_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION sqlite3* db_ = nullptr;
 
   // TODO(shuagga@microsoft.com): Make `options_` const after removing all
   // setters.
@@ -976,7 +967,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // with Open().
   bool in_memory_ = false;
 
-  // |true| if the Database was closed using RazeAndClose().  Used
+  // |true| if the Database was closed using RazeAndPoison().  Used
   // to enable diagnostics to distinguish calls to never-opened
   // databases (incorrect use of the API) from calls to once-valid
   // databases.

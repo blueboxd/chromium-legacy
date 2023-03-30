@@ -181,6 +181,8 @@ enum OptimizationTarget {
   OPTIMIZATION_TARGET_SEGMENTATION_DEVICE_SWITCHER = 27;
   // Target for segmentation: Adaptive toolbar button.
   OPTIMIZATION_TARGET_SEGMENTATION_ADAPTIVE_TOOLBAR = 28;
+  // Target for segmentation: Determine users who are tabletproductivity users.
+  OPTIMIZATION_TARGET_SEGMENTATION_TABLET_PRODUCTIVITY_USER = 29;
 }
 
 // The model engine versions that can be used to do model inference.
@@ -217,6 +219,8 @@ enum ModelEngineVersion {
   MODEL_ENGINE_VERSION_TFLITE_2_11 = 10;
   // A model using only operations that are supported by TensorflowLite 2.12.0.
   MODEL_ENGINE_VERSION_TFLITE_2_12 = 11;
+  // A model using only operations that are supported by TensorflowLite 2.13.0.
+  MODEL_ENGINE_VERSION_TFLITE_2_13 = 12;
 }
 
 // The set of parameters that the server can use to vary the served model for

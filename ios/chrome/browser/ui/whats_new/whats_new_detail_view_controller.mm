@@ -8,9 +8,9 @@
 
 #import "base/ios/ios_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/elements/instruction_view.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/elements/instruction_view.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_detail_view_action_handler.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_detail_view_delegate.h"
 #import "ios/chrome/common/button_configuration_util.h"
@@ -353,8 +353,6 @@ NSString* const kWhatsNewScrollViewAccessibilityIdentifier =
                           forState:UIControlStateNormal];
     _primaryActionButton.accessibilityIdentifier =
         kWhatsNewPrimaryActionAccessibilityIdentifier;
-    _primaryActionButton.contentEdgeInsets =
-        UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
     [_primaryActionButton setBackgroundColor:[UIColor colorNamed:kBlueColor]];
     [_primaryActionButton
         setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
@@ -386,6 +384,9 @@ NSString* const kWhatsNewScrollViewAccessibilityIdentifier =
       UIEdgeInsets titleInsets = UIEdgeInsetsMake(0, kButtonHorizontalMargin, 0,
                                                   kButtonHorizontalMargin);
       SetTitleEdgeInsets(_primaryActionButton, titleInsets);
+      UIEdgeInsets contentInsets =
+          UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+      SetContentEdgeInsets(_primaryActionButton, contentInsets);
     }
 
     [_primaryActionButton addTarget:self

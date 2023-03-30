@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -383,10 +384,10 @@ DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
 
   const viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
   const viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
-  base::MappedReadOnlyRegion shm = viz::bitmap_allocation::AllocateSharedBitmap(
-      size_, format.resource_format());
+  base::MappedReadOnlyRegion shm =
+      viz::bitmap_allocation::AllocateSharedBitmap(size_, format);
   auto bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
-      id, std::move(shm), size_, format.resource_format());
+      id, std::move(shm), size_, format);
   RegisteredBitmap registered = {
       bitmap, bitmap_registrar->RegisterSharedBitmapId(id, bitmap)};
   return registered;
@@ -464,7 +465,7 @@ DrawingBuffer::GetUnacceleratedStaticBitmapImage(bool flip_y) {
   if (!bitmap.tryAllocN32Pixels(size_.width(), size_.height()))
     return nullptr;
   ReadFramebufferIntoBitmapPixels(static_cast<uint8_t*>(bitmap.getPixels()));
-  auto sk_image = SkImage::MakeFromBitmap(bitmap);
+  auto sk_image = SkImages::RasterFromBitmap(bitmap);
 
   bool origin_top_left =
       flip_y ? opengl_flip_y_extension_ : !opengl_flip_y_extension_;
@@ -504,7 +505,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
       static_cast<uint8_t*>(registered.bitmap->memory()));
 
   *out_resource = viz::TransferableResource::MakeSoftware(
-      registered.bitmap->id(), size_, viz::RGBA_8888);
+      registered.bitmap->id(), size_, viz::SinglePlaneFormat::kRGBA_8888);
   out_resource->color_space = back_color_buffer_->color_space;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -698,7 +699,7 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
     if (!black_bitmap.tryAllocN32Pixels(size_.width(), size_.height()))
       return nullptr;
     black_bitmap.eraseARGB(0, 0, 0, 0);
-    sk_sp<SkImage> black_image = SkImage::MakeFromBitmap(black_bitmap);
+    sk_sp<SkImage> black_image = SkImages::RasterFromBitmap(black_bitmap);
     if (!black_image)
       return nullptr;
     return UnacceleratedStaticBitmapImage::Create(black_image);

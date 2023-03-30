@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_bottom_toolbar.h"
 
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
@@ -202,8 +203,9 @@
 }
 
 - (void)setScrollViewScrolledToEdge:(BOOL)scrolledToEdge {
-  if (!UseSymbols() || scrolledToEdge == _scrolledToEdge)
+  if (scrolledToEdge == _scrolledToEdge) {
     return;
+  }
 
   _scrolledToEdge = scrolledToEdge;
 
@@ -259,13 +261,8 @@
   // zero rect frame. An arbitrary non-zero frame fixes this issue.
   _toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
   _toolbar.translatesAutoresizingMaskIntoConstraints = NO;
-  if (UseSymbols()) {
-    [self createScrolledBackgrounds];
-    _toolbar.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-  } else {
-    _toolbar.barStyle = UIBarStyleBlack;
-    _toolbar.translucent = YES;
-  }
+  [self createScrolledBackgrounds];
+  _toolbar.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
   // Remove the border of UIToolbar.
   [_toolbar setShadowImage:[[UIImage alloc] init]
         forToolbarPosition:UIBarPositionAny];
@@ -285,22 +282,15 @@
                            target:nil
                            action:nil];
 
-  if (UseSymbols()) {
-    if (@available(iOS 15, *)) {
-      _smallNewTabButton = [[TabGridNewTabButton alloc] initWithLargeSize:NO];
-    } else {
-      _smallNewTabButton = [[TabGridNewTabButton alloc]
-          initWithRegularImage:[UIImage
-                                   imageNamed:@"tab_grid_new_tab_button_ios14"]
-                incognitoImage:
-                    [UIImage
-                        imageNamed:@"tab_grid_new_tab_button_incognito_ios14"]];
-    }
+  if (@available(iOS 15, *)) {
+    _smallNewTabButton = [[TabGridNewTabButton alloc] initWithLargeSize:NO];
   } else {
     _smallNewTabButton = [[TabGridNewTabButton alloc]
-        initWithRegularImage:[UIImage imageNamed:@"new_tab_toolbar_button"]
+        initWithRegularImage:[UIImage
+                                 imageNamed:@"tab_grid_new_tab_button_ios14"]
               incognitoImage:
-                  [UIImage imageNamed:@"new_tab_toolbar_button_incognito"]];
+                  [UIImage
+                      imageNamed:@"tab_grid_new_tab_button_incognito_ios14"]];
   }
 
   _smallNewTabButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -340,42 +330,32 @@
   ];
 
   // For other layout, display a floating new tab button.
-  if (UseSymbols()) {
-    if (@available(iOS 15, *)) {
-      _largeNewTabButton = [[TabGridNewTabButton alloc] initWithLargeSize:YES];
+  if (@available(iOS 15, *)) {
+    _largeNewTabButton = [[TabGridNewTabButton alloc] initWithLargeSize:YES];
 
-      // When a11y font size is used, long press on UIBarButtonItem will show a
-      // built-in a11y modal panel with image and title if set. The size is not
-      // taken into account.
+    // When a11y font size is used, long press on UIBarButtonItem will show a
+    // built-in a11y modal panel with image and title if set. The size is not
+    // taken into account.
+    if (base::FeatureList::IsEnabled(kSFSymbolsFollowUp)) {
       _newTabButtonItem.image =
           CustomSymbolWithPointSize(kPlusCircleFillSymbol, 0);
     } else {
-      UIImage* regularImage =
-          [UIImage imageNamed:@"tab_grid_new_tab_floating_button_ios14"];
-      UIImage* incognitoImage = [UIImage
-          imageNamed:@"tab_grid_new_tab_floating_button_incognito_ios14"];
-      _largeNewTabButton =
-          [[TabGridNewTabButton alloc] initWithRegularImage:regularImage
-                                             incognitoImage:incognitoImage];
-
-      // When a11y font size is used, long press on UIBarButtonItem will show a
-      // built-in a11y modal panel with image and title if set. The size is not
-      // taken into account.
-      _newTabButtonItem.image = DefaultSymbolWithPointSize(kPlusSymbol, 0);
+      _newTabButtonItem.image =
+          CustomSymbolWithPointSize(kLegacyPlusCircleFillSymbol, 0);
     }
   } else {
-    UIImage* incognitoImage =
-        [UIImage imageNamed:@"new_tab_floating_button_incognito"];
-    _largeNewTabButton = [[TabGridNewTabButton alloc]
-        initWithRegularImage:[UIImage imageNamed:@"new_tab_floating_button"]
-              incognitoImage:incognitoImage];
+    UIImage* regularImage =
+        [UIImage imageNamed:@"tab_grid_new_tab_floating_button_ios14"];
+    UIImage* incognitoImage = [UIImage
+        imageNamed:@"tab_grid_new_tab_floating_button_incognito_ios14"];
+    _largeNewTabButton =
+        [[TabGridNewTabButton alloc] initWithRegularImage:regularImage
+                                           incognitoImage:incognitoImage];
 
     // When a11y font size is used, long press on UIBarButtonItem will show a
-    // built-in a11y modal panel with image and title if set. The image will be
-    // normalized into a bi-color image, so the incognito image is suitable
-    // because it has a transparent "+". Use the larger image for higher
-    // resolution.
-    _newTabButtonItem.image = incognitoImage;
+    // built-in a11y modal panel with image and title if set. The size is not
+    // taken into account.
+    _newTabButtonItem.image = DefaultSymbolWithPointSize(kPlusSymbol, 0);
   }
   _largeNewTabButton.translatesAutoresizingMaskIntoConstraints = NO;
   _largeNewTabButton.page = self.page;

@@ -17,6 +17,10 @@ found in the LICENSE file.
     padding-inline-start: var(--cr-section-indent-width);
   }
 
+  .indented {
+    margin-inline-start: 32px;
+  }
+
   .settings-box {
     margin-inline-end: var(--cr-section-padding);
     padding-inline-end: 0;
@@ -155,6 +159,20 @@ found in the LICENSE file.
   </cr-link-row>
 </div>
 <h2>$i18n{chromeVoxBrailleLabel}</h2>
+<div class="sub-item">
+  <settings-toggle-button
+      id="brailleWordWrapToggle"
+      class="settings-box continuation"
+      pref="{{prefs.settings.a11y.chromevox.braille_word_wrap}}"
+      label="$i18n{chromeVoxBrailleWordWrap}">
+  </settings-toggle-button>
+  <settings-toggle-button
+      id="menuBrailleCommandsToggle"
+      class="settings-box continuation"
+      pref="{{prefs.settings.a11y.chromevox.menu_braille_commands}}"
+      label="$i18n{chromeVoxMenuBrailleCommands}">
+  </settings-toggle-button>
+</div>
 <cr-expand-button id="developerOptionsExpandButton" class="hr"
     expanded="{{developerOptionsExpanded_}}">
   <h2 id="developerOptionsHeading">$i18n{chromeVoxDeveloperOptionsLabel}</h2>
@@ -185,5 +203,24 @@ found in the LICENSE file.
         pref="{{prefs.settings.a11y.chromevox.enable_event_stream_logging}}"
         label="$i18n{chromeVoxEnableEventStreamLogging}">
     </settings-toggle-button>
+    <cr-link-row class="settings-box"
+        label="$i18n{chromeVoxEventLogLink}"
+        sub-label="$i18n{chromeVoxEventLogDescription}"
+        on-click="onEventLogTap_" external embedded>
+    </cr-link-row>
+    <template is="dom-if" if="[[prefs.settings.a11y.chromevox.enable_event_stream_logging.value]]">
+      <div class="indented">
+        <template is="dom-repeat" items="[[eventStreamFilters_]]">
+          <settings-toggle-button
+              id="[[item]]"
+              class="settings-box"
+              pref="[[getEventStreamFilterPref_(item, prefs.settings.a11y.chromevox.event_stream_filters)]]"
+              label="[[item]]"
+              on-settings-boolean-control-change="onEventStreamFilterPrefChanged_"
+              no-set-pref>
+          </settings-toggle-button>
+        </template>
+      </div>
+    </template>
   </div>
 </iron-collapse>

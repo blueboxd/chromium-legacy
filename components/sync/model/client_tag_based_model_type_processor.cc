@@ -110,7 +110,8 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
   }
 
   if (CheckForInvalidPersistedMetadata(*batch)) {
-    if (IsInitialSyncDone(model_type_state.initial_sync_state())) {
+    if (IsInitialSyncAtLeastPartiallyDone(
+            model_type_state.initial_sync_state())) {
       entity_tracker_ = std::make_unique<ProcessorEntityTracker>(
           model_type_state, batch->TakeAllMetadata());
     } else {
@@ -880,9 +881,12 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
       bridge_->CreateMetadataChangeList();
   DCHECK(model_ready_to_sync_);
 
-  // Check that the worker correctly marked initial sync as done for this
-  // update.
-  DCHECK(IsInitialSyncDone(model_type_state.initial_sync_state()));
+  // Check that the worker correctly marked initial sync as (at least) partially
+  // done for this update.
+  DCHECK(IsInitialSyncDone(model_type_state.initial_sync_state()) ||
+         (ApplyUpdatesImmediatelyTypes().Has(type_) &&
+          IsInitialSyncAtLeastPartiallyDone(
+              model_type_state.initial_sync_state())));
 
   // Ensure that this is the initial sync, and it was not already marked done.
   DCHECK(HasClearAllDirective(gc_directive) || !entity_tracker_);
@@ -997,7 +1001,10 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     UpdateResponseDataList updates) {
   DCHECK(model_ready_to_sync_);
-  DCHECK(IsInitialSyncDone(model_type_state.initial_sync_state()));
+  DCHECK(IsInitialSyncDone(model_type_state.initial_sync_state()) ||
+         (ApplyUpdatesImmediatelyTypes().Has(type_) &&
+          IsInitialSyncAtLeastPartiallyDone(
+              model_type_state.initial_sync_state())));
   DCHECK(entity_tracker_);
 
   ClientTagBasedRemoteUpdateHandler updates_handler(type_, bridge_,
@@ -1239,32 +1246,17 @@ bool ClientTagBasedModelTypeProcessor::CheckForInvalidPersistedMetadata(
   // validated.
   CHECK(!entity_tracker_);
 
+  const sync_pb::ModelTypeState& model_type_state =
+      metadata.GetModelTypeState();
   const EntityMetadataMap& metadata_map = metadata.GetAllMetadata();
 
-  // Check that there's no entity metadata unless the initial sync is at least
-  // started.
-  if (!IsInitialSyncAtLeastPartiallyDone(
-          metadata.GetModelTypeState().initial_sync_state()) &&
-      !metadata_map.empty()) {
-    base::UmaHistogramEnumeration(
-        "Sync.ModelTypeEntityMetadataWithoutInitialSync",
-        ModelTypeHistogramValue(type_));
-
-    ClearAllProvidedMetadataAndResetState(metadata_map);
-    // Not having `entity_tracker_` results in doing the initial sync again.
-    CHECK(!entity_tracker_);
-    return false;
-  }
-
   // Check if ClearMetadataWhileStopped() was called before ModelReadyToSync().
-  // If so, clear the metadata from storage (using bridge's
+  // If so, clear the metadata from storage (using the bridge's
   // ApplyStopSyncChanges()).
   if (pending_clear_metadata_) {
     pending_clear_metadata_ = false;
-    // Avoid calling bridge if there's nothing to clear.
-    // TODO(crbug.com/1423326): Also check for empty ModelTypeState (maybe via
-    // ByteSizeLong()?)
-    if (!metadata_map.empty()) {
+    // Avoid calling the bridge if there's nothing to clear.
+    if (model_type_state.ByteSizeLong() > 0 || !metadata_map.empty()) {
       LogClearMetadataWhileStoppedHistogram(type_, /*is_delayed_call=*/true);
       // This will incur an I/O operation by asking the bridge to clear the
       // metadata in storage.
@@ -1275,6 +1267,21 @@ bool ClientTagBasedModelTypeProcessor::CheckForInvalidPersistedMetadata(
     }
     // Else: There was nothing to clear.
     return true;
+  }
+
+  // Check that there's no entity metadata unless the initial sync is at least
+  // started.
+  if (!IsInitialSyncAtLeastPartiallyDone(
+          model_type_state.initial_sync_state()) &&
+      !metadata_map.empty()) {
+    base::UmaHistogramEnumeration(
+        "Sync.ModelTypeEntityMetadataWithoutInitialSync",
+        ModelTypeHistogramValue(type_));
+
+    ClearAllProvidedMetadataAndResetState(metadata_map);
+    // Not having `entity_tracker_` results in doing the initial sync again.
+    CHECK(!entity_tracker_);
+    return false;
   }
 
   // Check that there are no duplicate client tags.

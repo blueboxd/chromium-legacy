@@ -774,6 +774,8 @@ class CORE_EXPORT LocalFrameView final
 
   void ForAllChildLocalFrameViews(base::FunctionRef<void(LocalFrameView&)>);
 
+  void NotifyElementWithRememberedSizeDisconnected(Element*);
+
  protected:
   void FrameRectsChanged(const gfx::Rect&) override;
   void SelfVisibleChanged() override;
@@ -1183,6 +1185,11 @@ class CORE_EXPORT LocalFrameView final
   // TODO(yotha): unify these into one HeapHashMap.
   Member<HeapHashSet<Member<LayoutObject>>> pending_transform_updates_;
   Member<HeapHashSet<Member<LayoutObject>>> pending_opacity_updates_;
+
+  // These are elements that were disconnected while having a remembered
+  // size. We need to clear the remembered at resize observer timing,
+  // assuming they are still disconnected.
+  HeapHashSet<WeakMember<Element>> disconnected_elements_with_remembered_size_;
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;

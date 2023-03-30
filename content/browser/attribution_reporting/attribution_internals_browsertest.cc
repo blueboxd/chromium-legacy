@@ -15,6 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
@@ -55,6 +57,15 @@
 #include "services/network/public/cpp/trigger_attestation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/origin.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "components/attribution_reporting/os_support.mojom.h"
+#include "content/browser/attribution_reporting/attribution_input_event.h"
+#include "content/browser/attribution_reporting/attribution_os_level_manager_android.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
+#include "content/browser/attribution_reporting/os_registration.h"
+#endif
 
 namespace content {
 
@@ -411,6 +422,42 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
 
+#if BUILDFLAG(IS_ANDROID)
+IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
+                       OsRegistrationsShown) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  static constexpr char kScript[] = R"(
+    const table = document.querySelector('#osRegistrationTable')
+        .shadowRoot.querySelector('tbody');
+
+    const obs = new MutationObserver((_, obs) => {
+      if (table.children.length === 1 &&
+          table.children[0].children[1]?.innerText === 'OS Source' &&
+          table.children[0].children[2]?.innerText === 'https://a.test/' &&
+          table.children[0].children[3]?.innerText === 'https://b.test' &&
+          table.children[0].children[4]?.innerText === 'false' &&
+          table.children[0].children[5]?.innerText === 'Passed to OS') {
+        obs.disconnect();
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {childList: true, subtree: true, characterData: true});
+  )";
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(kScript, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+
+  manager()->NotifyOsRegistration(
+      OsRegistration(GURL("https://a.test"),
+                     url::Origin::Create(GURL("https://b.test")),
+                     AttributionInputEvent()),
+      /*is_debug_key_allowed=*/false,
+      attribution_reporting::mojom::OsRegistrationResult::kPassedToOs);
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithNoReports_NoReportsDisplayed) {
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
@@ -471,6 +518,68 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   ClickRefreshButton();
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
+
+IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
+                       WebUIShownWithManager_OsSupportDisabled) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  static constexpr char kScript[] = R"(
+    const status = document.getElementById('os-support');
+    const setTitleIfDone = (_, obs) => {
+      if (status.innerText === 'disabled') {
+        if (obs) {
+          obs.disconnect();
+        }
+        document.title = $1;
+        return true;
+      }
+      return false;
+    };
+    if (!setTitleIfDone()) {
+      const obs = new MutationObserver(setTitleIfDone);
+      obs.observe(status, {childList: true, subtree: true, characterData: true});
+    }
+  )";
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(kScript, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+#if BUILDFLAG(IS_ANDROID)
+IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
+                       WebUIShownWithManager_OsSupportEnabled) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  static constexpr char kScript[] = R"(
+    const status = document.getElementById('os-support');
+    const setTitleIfDone = (_, obs) => {
+      if (status.innerText === 'enabled') {
+        if (obs) {
+          obs.disconnect();
+        }
+        document.title = $1;
+        return true;
+      }
+      return false;
+    };
+    if (!setTitleIfDone()) {
+      const obs = new MutationObserver(setTitleIfDone);
+      obs.observe(status, {childList: true, subtree: true, characterData: true});
+    }
+  )";
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(kScript, kCompleteTitle)));
+
+  AttributionOsLevelManagerAndroid::ScopedOsSupportForTesting
+      scoped_os_support_setting(
+          attribution_reporting::mojom::OsSupport::kEnabled);
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithPendingReports_ReportsDisplayed) {

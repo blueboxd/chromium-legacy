@@ -17,7 +17,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -35,7 +37,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -53,7 +57,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -72,7 +78,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -91,7 +99,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -117,7 +127,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -135,7 +147,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -153,7 +167,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -172,7 +188,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -191,7 +209,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -217,7 +237,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -235,7 +257,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -253,7 +277,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -272,7 +298,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -291,7 +319,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -742,7 +772,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff"
             }
           ],
           "dimension_sets": [
@@ -784,7 +814,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff"
             }
           ],
           "dimension_sets": [
@@ -826,7 +856,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff"
             }
           ],
           "dimension_sets": [
@@ -869,7 +899,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff"
             }
           ],
           "dimension_sets": [
@@ -912,7 +942,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff"
             }
           ],
           "dimension_sets": [
@@ -958,7 +988,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff"
             }
           ],
           "dimension_sets": [
@@ -1002,7 +1032,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff"
             }
           ],
           "dimension_sets": [

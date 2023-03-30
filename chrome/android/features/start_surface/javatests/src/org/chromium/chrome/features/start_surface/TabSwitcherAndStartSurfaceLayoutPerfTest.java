@@ -17,9 +17,9 @@ import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVA
 import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
 
 import android.os.Build.VERSION_CODES;
-import android.support.test.InstrumentationRegistry;
 
 import androidx.annotation.Nullable;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
@@ -121,7 +121,10 @@ public class TabSwitcherAndStartSurfaceLayoutPerfTest {
             mWaitingTime = 1000;
             mTabNumCap = 0;
         }
-        assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled(
+                    mActivityTestRule.getActivity()));
+        });
 
         CriteriaHelper.pollUiThread(
                 mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);

@@ -29,8 +29,15 @@ BASE_DECLARE_FEATURE(kBiometricAuthenticationForFilling);
 BASE_DECLARE_FEATURE(kBiometricAuthenticationInSettings);
 #endif
 BASE_DECLARE_FEATURE(kBiometricTouchToFill);
+BASE_DECLARE_FEATURE(kDisablePasswordsDropdownForCvcFields);
 BASE_DECLARE_FEATURE(kEnableOverwritingPlaceholderUsernames);
+
 BASE_DECLARE_FEATURE(kEnablePasswordsAccountStorage);
+inline constexpr base::FeatureParam<int>
+    kMaxAccountStorageNewFeatureIconImpressions = {
+        &kEnablePasswordsAccountStorage,
+        "max_account_storage_new_feature_icon_impressions", 5};
+
 BASE_DECLARE_FEATURE(kEnablePasswordGenerationForClearTextFields);
 BASE_DECLARE_FEATURE(kEnablePasswordManagerWithinFencedFrame);
 BASE_DECLARE_FEATURE(kFillingAcrossAffiliatedWebsites);
@@ -93,7 +100,7 @@ BASE_DECLARE_FEATURE(kPasswordGenerationPreviewOnHover);
 // If true, then password strength indicator will display a minimized state for
 // passwords with more than 5 characters as long as they are weak. Otherwise,
 // the full dropdown will be displayed as long as the password is weak.
-constexpr base::FeatureParam<bool>
+inline constexpr base::FeatureParam<bool>
     kPasswordStrengthIndicatorWithMinimizedState = {
         &kPasswordStrengthIndicator, "strength_indicator_minimized", false};
 
@@ -103,13 +110,13 @@ extern const base::FeatureParam<int> kMigrationVersion;
 // Current version of the GMS Core API errors lists. Users save this value on
 // eviction due to error and will only be re-enrolled to the experiment if the
 // configured version is greater than the saved one.
-constexpr base::FeatureParam<int> kGmsApiErrorListVersion = {
+inline constexpr base::FeatureParam<int> kGmsApiErrorListVersion = {
     &kUnifiedPasswordManagerAndroid, "api_error_list_version", 1};
 
 // Current list of the GMS Core API error codes that should be ignored and not
 // result in user eviction.
 // Errors to ignore: AUTH_ERROR_RESOLVABLE, AUTH_ERROR_UNRESOLVABLE
-constexpr base::FeatureParam<std::string> kIgnoredGmsApiErrors = {
+inline constexpr base::FeatureParam<std::string> kIgnoredGmsApiErrors = {
     &kUnifiedPasswordManagerAndroid, "ignored_api_errors", "11005,11006"};
 
 // Current list of the GMS Core API error codes considered retriable.
@@ -117,7 +124,7 @@ constexpr base::FeatureParam<std::string> kIgnoredGmsApiErrors = {
 // Retriable errors: NETWORK_ERROR, API_NOT_CONNECTED,
 // CONNECTION_SUSPENDED_DURING_CALL, RECONNECTION_TIMED_OUT,
 // BACKEND_GENERIC
-constexpr base::FeatureParam<std::string> kRetriableGmsApiErrors = {
+inline constexpr base::FeatureParam<std::string> kRetriableGmsApiErrors = {
     &kUnifiedPasswordManagerAndroid, "retriable_api_errors",
     "7,17,20,22,11009"};
 
@@ -128,27 +135,29 @@ constexpr base::FeatureParam<std::string> kRetriableGmsApiErrors = {
 
 // Fallback on AddLogin and UpdateLogin operations. This is default behaviour
 // since M103.
-constexpr base::FeatureParam<bool> kFallbackOnModifyingOperations = {
+inline constexpr base::FeatureParam<bool> kFallbackOnModifyingOperations = {
     &kUnifiedPasswordManagerAndroid, "fallback_on_modifying_operations", true};
 
 // Fallback on RemoveLogin* operations.
-constexpr base::FeatureParam<bool> kFallbackOnRemoveOperations = {
+inline constexpr base::FeatureParam<bool> kFallbackOnRemoveOperations = {
     &kUnifiedPasswordManagerAndroid, "fallback_on_remove_operations", false};
 
 // Fallback on FillMatchingLogins which is needed to perform autofill and could
 // affect user experience.
-constexpr base::FeatureParam<bool> kFallbackOnUserAffectingReadOperations = {
-    &kUnifiedPasswordManagerAndroid,
-    "fallback_on_user_affecting_read_operations", false};
+inline constexpr base::FeatureParam<bool>
+    kFallbackOnUserAffectingReadOperations = {
+        &kUnifiedPasswordManagerAndroid,
+        "fallback_on_user_affecting_read_operations", false};
 
 // Fallback on GetAllLogins* and GetAutofillableLogins operations which are
 // needed for certain features (e.g. PhishGuard) but do not affect the core
 // experience.
-constexpr base::FeatureParam<bool> kFallbackOnNonUserAffectingReadOperations = {
-    &kUnifiedPasswordManagerAndroid,
-    "fallback_on_non_user_affecting_read_operations", false};
+inline constexpr base::FeatureParam<bool>
+    kFallbackOnNonUserAffectingReadOperations = {
+        &kUnifiedPasswordManagerAndroid,
+        "fallback_on_non_user_affecting_read_operations", false};
 
-constexpr base::FeatureParam<UpmExperimentVariation>::Option
+inline constexpr base::FeatureParam<UpmExperimentVariation>::Option
     kUpmExperimentVariationOption[] = {
         {UpmExperimentVariation::kEnableForSyncingUsers, "0"},
         {UpmExperimentVariation::kShadowSyncingUsers, "1"},
@@ -156,7 +165,7 @@ constexpr base::FeatureParam<UpmExperimentVariation>::Option
         {UpmExperimentVariation::kEnableForAllUsers, "3"},
 };
 
-constexpr base::FeatureParam<UpmExperimentVariation>
+inline constexpr base::FeatureParam<UpmExperimentVariation>
     kUpmExperimentVariationParam{&kUnifiedPasswordManagerAndroid, "stage",
                                  UpmExperimentVariation::kEnableForSyncingUsers,
                                  &kUpmExperimentVariationOption};

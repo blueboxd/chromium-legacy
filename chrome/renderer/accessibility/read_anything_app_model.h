@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_ACCESSIBILITY_READ_ANYTHING_APP_MODEL_H_
 #define CHROME_RENDERER_ACCESSIBILITY_READ_ANYTHING_APP_MODEL_H_
 
+#include "base/containers/contains.h"
 #include "chrome/common/accessibility/read_anything.mojom.h"
 #include "chrome/common/accessibility/read_anything_constants.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -16,7 +17,6 @@ class AXSerializableTree;
 class AXTreeObserver;
 }  // namespace ui
 
-class ReadAnythingAppControllerTest;
 // A class that holds state for the ReadAnythingAppController for the Read
 // Anything WebUI app.
 class ReadAnythingAppModel {
@@ -26,6 +26,7 @@ class ReadAnythingAppModel {
   ReadAnythingAppModel(const ReadAnythingAppModel& other) = delete;
   ReadAnythingAppModel& operator=(const ReadAnythingAppModel&) = delete;
 
+  // TODO(b/1266555): Ensure there is proper test coverage for all methods.
   // Theme
   const std::string& font_name() const { return font_name_; }
   float font_size() const { return font_size_; }
@@ -42,34 +43,20 @@ class ReadAnythingAppModel {
   int32_t end_offset() const { return end_offset_; }
 
   bool distillation_in_progress() const { return distillation_in_progress_; }
+  bool loading() const { return loading_; }
   const ukm::SourceId& active_ukm_source_id() const {
     return active_ukm_source_id_;
   }
   const ui::AXTreeID& active_tree_id() const { return active_tree_id_; }
 
-  const std::vector<ui::AXTreeUpdate>& pending_updates() const {
-    return pending_updates_;
-  }
-
-#if DCHECK_IS_ON()
-  const ui::AXTreeID& pending_updates_bundle_id() const {
-    return pending_updates_bundle_id_;
-  }
-  void SetPendingUpdatesBundleId(ui::AXTreeID id) {
-    pending_updates_bundle_id_ = id;
-  }
-#endif
-
   void SetDistillationInProgress(bool distillation) {
     distillation_in_progress_ = distillation;
   }
+  void SetLoading(bool loading) { loading_ = loading; }
   void SetActiveUkmSourceId(ukm::SourceId source_id) {
     active_ukm_source_id_ = source_id;
   }
   void SetActiveTreeId(ui::AXTreeID tree_id) { active_tree_id_ = tree_id; }
-
-  void SetStart(ui::AXNodeID start_node_id, int32_t start_offset);
-  void SetEnd(ui::AXNodeID end_node_id, int32_t end_offset);
 
   const std::vector<ui::AXNodeID>& content_node_ids() const {
     return content_node_ids_;
@@ -77,13 +64,20 @@ class ReadAnythingAppModel {
   const std::set<ui::AXNodeID>& display_node_ids() const {
     return display_node_ids_;
   }
+  const std::set<ui::AXNodeID>& selection_node_ids() const {
+    return selection_node_ids_;
+  }
 
   ui::AXNode* GetAXNode(ui::AXNodeID ax_node_id) const;
+  bool IsNodeIgnoredForReadAnything(ui::AXNodeID ax_node_id) const;
+  bool NodeIsContentNode(ui::AXNodeID ax_node_id) const;
   void OnThemeChanged(read_anything::mojom::ReadAnythingThemePtr new_theme);
 
-  void ResetSelection();
   void InsertDisplayNode(ui::AXNodeID node);
+  void InsertSelectionNode(ui::AXNodeID node);
   void Reset(const std::vector<ui::AXNodeID>& content_node_ids);
+  void UpdateSelection();
+  bool SelectionInsideDisplayNodes();
 
   const std::unique_ptr<ui::AXSerializableTree>& GetTreeFromId(
       ui::AXTreeID tree_id) const;
@@ -94,7 +88,7 @@ class ReadAnythingAppModel {
 
   void EraseTree(ui::AXTreeID tree_id);
 
-  void UnserializePendingUpdates();
+  void UnserializePendingUpdates(ui::AXTreeID tree_id);
 
   void ClearPendingUpdates();
 
@@ -102,18 +96,28 @@ class ReadAnythingAppModel {
                                   const std::vector<ui::AXTreeUpdate>& updates,
                                   ui::AXTreeObserver* tree_observer);
 
+  std::map<ui::AXTreeID, std::vector<ui::AXTreeUpdate>>&
+  GetPendingUpdatesForTesting();
+
+  std::map<ui::AXTreeID, std::unique_ptr<ui::AXSerializableTree>>*
+  GetTreesForTesting();
+
  private:
-  friend ReadAnythingAppControllerTest;
   double GetLetterSpacingValue(
       read_anything::mojom::LetterSpacing letter_spacing) const;
   double GetLineSpacingValue(
       read_anything::mojom::LineSpacing line_spacing) const;
-  void AddPendingUpdates(const std::vector<ui::AXTreeUpdate>& updates);
 
-  void UnserializeUpdates(std::vector<ui::AXTreeUpdate> updates,
+  void ResetSelection();
+
+  void AddPendingUpdates(const ui::AXTreeID tree_id,
+                         const std::vector<ui::AXTreeUpdate>& updates);
+
+  void UnserializeUpdates(const std::vector<ui::AXTreeUpdate>& updates,
                           const ui::AXTreeID& tree_id);
 
-  size_t NumTreesForTesting() const;
+  const std::vector<ui::AXTreeUpdate>& GetOrCreatePendingUpdateAt(
+      ui::AXTreeID tree_id);
 
   // State.
   // AXTrees of web contents in the browser’s tab strip.
@@ -131,25 +135,27 @@ class ReadAnythingAppModel {
   // new distillation requests during that time.
   bool distillation_in_progress_ = false;
 
-  // A queue of pending updates on the active AXTree, which will be
-  // unserialized once distillation completes.
-  std::vector<ui::AXTreeUpdate> pending_updates_;
+  // Loading should be set to true if we are in the process of distilling the
+  // active tree for the first time.
+  bool loading_ = false;
 
-#if DCHECK_IS_ON()
-  // The bundle ID for the pending updates.
-  ui::AXTreeID pending_updates_bundle_id_ = ui::AXTreeIDUnknown();
-#endif
+  // A mapping of a tree ID to a queue of pending updates on the active AXTree,
+  // which will be unserialized once distillation completes.
+  std::map<ui::AXTreeID, std::vector<ui::AXTreeUpdate>> pending_updates_map_;
 
   // The node IDs identified as main by the distiller. These are static text
   // nodes when generated by Screen2x. When generated by the rules-based
   // distiller, these are heading or paragraph subtrees.
   std::vector<ui::AXNodeID> content_node_ids_;
 
-  // The node IDs that are displayed in the Read Anything app. This contains
-  // all ancestors and descendants of each content node. Or, if no content
-  // nodes were identified, this contains all nodes between the start and end
-  // nodes of the selection.
+  // This contains all ancestors and descendants of each content node. These
+  // nodes will be displayed in the Read Anything app if there is no user
+  // selection or if the users selection is contained within these nodes.
   std::set<ui::AXNodeID> display_node_ids_;
+
+  // If the user's selection contains nodes outside of display_node_ids, this
+  // contains all nodes between the start and end nodes of the selection.
+  std::set<ui::AXNodeID> selection_node_ids_;
 
   // Theme information.
   std::string font_name_ = string_constants::kReadAnythingDefaultFontName;

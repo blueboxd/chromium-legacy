@@ -733,7 +733,22 @@ RunOtherNamedProcessTypeMain(const std::string& process_type,
     base::HangWatcher::CreateHangWatcherInstance();
     unregister_thread_closure = base::HangWatcher::RegisterThread(
         base::HangWatcher::ThreadType::kMainThread);
-    base::HangWatcher::GetInstance()->Start();
+    bool start_hang_watcher_now;
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+    // On Linux/ChromeOS, the HangWatcher can't start until after the sandbox is
+    // initialized, because the sandbox can't be started with multiple threads.
+    // TODO(mpdenton): start the HangWatcher after the sandbox is initialized.
+    // Currently there are no sandboxed processes that aren't launched from the
+    // zygote so this doesn't disable the HangWatcher anywhere.
+    start_hang_watcher_now = sandbox::policy::IsUnsandboxedSandboxType(
+        sandbox::policy::SandboxTypeFromCommandLine(
+            *main_function_params.command_line));
+#else
+    start_hang_watcher_now = true;
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+    if (start_hang_watcher_now) {
+      base::HangWatcher::GetInstance()->Start();
+    }
   }
 
   for (size_t i = 0; i < std::size(kMainFunctions); ++i) {
@@ -941,26 +956,10 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
 
   RegisterPathProvider();
 
-#if BUILDFLAG(IS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
-  if (process_type.empty()) {
-    TRACE_EVENT0("startup", "InitializeICU");
-    // In browser process load ICU data files from disk.
-    if (!base::i18n::InitializeICU()) {
-      return TerminateForFatalInitializationError();
-    }
-  } else {
-    // In child process map ICU data files loaded by browser process.
-    int icu_data_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
-    if (icu_data_fd == -1) {
-      return TerminateForFatalInitializationError();
-    }
-    auto icu_data_region = g_fds->GetRegion(kAndroidICUDataDescriptor);
-    if (!base::i18n::InitializeICUWithFileDescriptor(icu_data_fd,
-                                                     icu_data_region)) {
-      return TerminateForFatalInitializationError();
-    }
-  }
-#else
+// On Android, InitializeICU() is called from content_jni_onload.cc
+// so that it is available before Content::main() is called.
+// https://crbug.com/1418738
+#if !BUILDFLAG(IS_ANDROID)
   if (!base::i18n::InitializeICU())
     return TerminateForFatalInitializationError();
 #endif  // BUILDFLAG(IS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)

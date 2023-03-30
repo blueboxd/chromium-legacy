@@ -2254,7 +2254,7 @@ absl::optional<TimelineOffset> Animation::GetEffectiveTimelineOffset(
 Animation::RangeBoundary* Animation::ToRangeBoundary(
     absl::optional<TimelineOffset> timeline_offset) {
   if (!timeline_offset) {
-    return MakeGarbageCollected<RangeBoundary>("auto");
+    return MakeGarbageCollected<RangeBoundary>("normal");
   }
 
   TimelineRangeOffset* timeline_range_offset =
@@ -2300,6 +2300,13 @@ void Animation::OnRangeUpdate() {
   if (start_time_) {
     UpdateStartTimeForViewTimeline();
   }
+
+  UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
+
+  SetCompositorPending(false);
+
+  // Inform devtools of a potential change to the play state.
+  NotifyProbe();
 }
 
 void Animation::CancelAnimationOnCompositor() {

@@ -85,7 +85,7 @@ bool AllocatorState::IsValid() const {
   if (!metadata_addr || !slot_to_metadata_addr)
     return false;
 
-  if (num_lightweight_detector_metadata > kMaxMetadata) {
+  if (num_lightweight_detector_metadata > kMaxLightweightMetadata) {
     return false;
   }
 
@@ -177,6 +177,12 @@ AllocatorState::SlotMetadata& AllocatorState::GetLightweightSlotMetadataById(
     LightweightDetector::MetadataId id,
     SlotMetadata* metadata_arr) {
   return metadata_arr[id % num_lightweight_detector_metadata];
+}
+
+bool AllocatorState::HasLightweightMetadataForId(
+    LightweightDetector::MetadataId id,
+    SlotMetadata* metadata_arr) {
+  return GetLightweightSlotMetadataById(id, metadata_arr).lightweight_id == id;
 }
 
 }  // namespace internal

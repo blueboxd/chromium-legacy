@@ -12,6 +12,7 @@
 #include "base/types/id_type.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/smart_card.mojom.h"
@@ -49,6 +50,9 @@ class SmartCardProviderPrivateAPI
 
   ~SmartCardProviderPrivateAPI() override;
 
+  mojo::PendingRemote<device::mojom::SmartCardContextFactory>
+  GetSmartCardContextFactory();
+
   // device::mojom::SmartCardContextFactory overrides:
   void CreateContext(CreateContextCallback) override;
 
@@ -58,6 +62,7 @@ class SmartCardProviderPrivateAPI
       base::TimeDelta timeout,
       std::vector<device::mojom::SmartCardReaderStateInPtr> reader_states,
       GetStatusChangeCallback callback) override;
+  void Cancel(CancelCallback callback) override;
   void Connect(const std::string& reader,
                device::mojom::SmartCardShareMode share_mode,
                device::mojom::SmartCardProtocolsPtr preferred_protocols,
@@ -78,6 +83,8 @@ class SmartCardProviderPrivateAPI
       RequestId request_id,
       std::vector<device::mojom::SmartCardReaderStateOutPtr> reader_states,
       device::mojom::SmartCardResultPtr result);
+  void ReportCancelResult(RequestId request_id,
+                          device::mojom::SmartCardResultPtr result);
   void ReportConnectResult(RequestId request_id,
                            Handle scard_handle,
                            device::mojom::SmartCardProtocol active_protocol,
@@ -88,6 +95,16 @@ class SmartCardProviderPrivateAPI
   void SetResponseTimeLimitForTesting(base::TimeDelta);
 
  private:
+  template <typename Callback>
+  struct PendingResult {
+    base::OneShotTimer timer;
+    Callback callback;
+  };
+
+  template <typename Callback>
+  using PendingResultMap =
+      std::map<RequestId, std::unique_ptr<PendingResult<Callback>>>;
+
   // BrowserContextKeyedAPI:
   static const bool kServiceIsCreatedWithBrowserContext = false;
   static const char* service_name() { return "SmartCardProviderPrivateAPI"; }
@@ -119,10 +136,23 @@ class SmartCardProviderPrivateAPI
                             RequestId request_id);
   void OnGetStatusChangeTimeout(const std::string& provider_extension_id,
                                 RequestId request_id);
+  void OnCancelTimeout(const std::string& provider_extension_id,
+                       RequestId request_id);
   void OnConnectTimeout(const std::string& provider_extension_id,
                         RequestId request_id);
   void OnDisconnectTimeout(const std::string& provider_extension_id,
                            RequestId request_id);
+
+  template <typename ResultPtr, typename Callback>
+  void DispatchEventWithTimeout(
+      const std::string& event_name,
+      extensions::events::HistogramValue histogram_value,
+      base::OnceCallback<void(ResultPtr)> callback,
+      PendingResultMap<Callback>& pending_results,
+      void (SmartCardProviderPrivateAPI::*OnTimeout)(const std::string&,
+                                                     RequestId),
+      base::Value::List event_arguments = base::Value::List(),
+      absl::optional<base::TimeDelta> timeout = absl::nullopt);
 
   device::mojom::SmartCardConnectResultPtr CreateSmartCardConnection(
       Handle handle,
@@ -132,31 +162,24 @@ class SmartCardProviderPrivateAPI
 
   base::TimeDelta response_time_limit_{base::Minutes(5)};
 
-  struct PendingEstablishContext;
-  std::map<RequestId, std::unique_ptr<PendingEstablishContext>>
-      pending_establish_context_;
+  PendingResultMap<CreateContextCallback> pending_establish_context_;
 
   struct PendingReleaseContext;
   std::map<RequestId, std::unique_ptr<PendingReleaseContext>>
       pending_release_context_;
 
-  struct PendingListReaders;
-  std::map<RequestId, std::unique_ptr<PendingListReaders>>
-      pending_list_readers_;
-
-  struct PendingGetStatusChange;
-  std::map<RequestId, std::unique_ptr<PendingGetStatusChange>>
-      pending_get_status_change_;
-
-  struct PendingConnect;
-  std::map<RequestId, std::unique_ptr<PendingConnect>> pending_connect_;
-
-  struct PendingDisconnect;
-  std::map<RequestId, std::unique_ptr<PendingDisconnect>> pending_disconnect_;
+  PendingResultMap<ListReadersCallback> pending_list_readers_;
+  PendingResultMap<GetStatusChangeCallback> pending_get_status_change_;
+  PendingResultMap<CancelCallback> pending_cancel_;
+  PendingResultMap<ConnectCallback> pending_connect_;
+  PendingResultMap<DisconnectCallback> pending_disconnect_;
 
   RequestId::Generator request_id_generator_;
   const raw_ref<content::BrowserContext> browser_context_;
   const raw_ref<EventRouter> event_router_;
+
+  mojo::ReceiverSet<device::mojom::SmartCardContextFactory>
+      context_factory_receivers_;
 
   mojo::ReceiverSet<device::mojom::SmartCardContext, ContextId>
       context_receivers_;
@@ -212,6 +235,17 @@ class SmartCardProviderPrivateReportGetStatusChangeResultFunction
   DECLARE_EXTENSION_FUNCTION(
       "smartCardProviderPrivate.reportGetStatusChangeResult",
       SMARTCARDPROVIDERPRIVATE_REPORTGETSTATUSCHANGERESULT)
+};
+
+class SmartCardProviderPrivateReportCancelResultFunction
+    : public ExtensionFunction {
+ private:
+  // ExtensionFunction:
+  ~SmartCardProviderPrivateReportCancelResultFunction() override;
+  ResponseAction Run() override;
+
+  DECLARE_EXTENSION_FUNCTION("smartCardProviderPrivate.reportCancelResult",
+                             SMARTCARDPROVIDERPRIVATE_REPORTCANCELRESULT)
 };
 
 class SmartCardProviderPrivateReportConnectResultFunction

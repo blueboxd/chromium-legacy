@@ -50,8 +50,12 @@ class IdentityDialogController
   void ShowFailureDialog(content::WebContents* rp_web_contents,
                          const std::string& top_frame_for_display,
                          const std::string& idp_for_display,
+                         const content::IdentityProviderMetadata& idp_metadata,
                          DismissCallback dismiss_callback) override;
   void ShowIdpSigninFailureDialog(base::OnceClosure dismiss_callback) override;
+
+  std::string GetTitle() const override;
+  absl::optional<std::string> GetSubtitle() const override;
 
   // AccountSelectionView::Delegate:
   void OnAccountSelected(const GURL& idp_config_url,

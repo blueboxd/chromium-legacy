@@ -10,10 +10,6 @@ namespace policy {
 
 namespace features {
 
-BASE_FEATURE(kDefaultChromeAppsMigration,
-             "EnableDefaultAppsMigration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kLoginEventReporting,
              "LoginEventReporting",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -31,6 +27,10 @@ BASE_FEATURE(kDmTokenDeletion,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kListPoliciesAcceptCommaSeparatedStringsAndroid,
+             "ListPoliciesAcceptCommaSeparatedStringsAndroid",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPolicyLogsPageAndroid,
              "PolicyLogsPageAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);

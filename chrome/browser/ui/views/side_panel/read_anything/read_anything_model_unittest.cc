@@ -43,6 +43,9 @@ class MockReadAnythingModelObserver : public ReadAnythingModel::Observer {
                read_anything::mojom::LineSpacing line_spacing,
                read_anything::mojom::LetterSpacing letter_spacing),
               (override));
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  MOCK_METHOD(void, ScreenAIServiceReady, (), (override));
+#endif
 };
 
 class ReadAnythingModelTest : public TestWithBrowserView {
@@ -258,6 +261,24 @@ TEST_F(ReadAnythingModelTest, DefaultIndexSetOnSetSelectedFontByIndex) {
   size_t testIndex = 2;
   model_->SetSelectedFontByIndex(testIndex);
   EXPECT_EQ(testIndex, GetFontModel()->GetDefaultIndexForTesting().value());
+}
+
+TEST_F(ReadAnythingModelTest, FontModelHasDefaultNullOptColors) {
+  EXPECT_FALSE(GetFontModel()->GetDropdownForegroundColorIdAt(0).has_value());
+  EXPECT_FALSE(GetFontModel()->GetDropdownBackgroundColorIdAt(0).has_value());
+}
+
+TEST_F(ReadAnythingModelTest, FontModelSetsDropdownAndForegroundColors) {
+  ReadAnythingColorsModel* color_model = model_->GetColorsModel();
+  ReadAnythingColorsModel::ColorInfo color_info = color_model->GetColorsAt(2);
+
+  GetFontModel()->SetForegroundColorId(color_info.foreground_color_id);
+  GetFontModel()->SetBackgroundColorId(color_info.dropdown_color_id);
+
+  EXPECT_EQ(color_info.foreground_color_id,
+            GetFontModel()->GetDropdownForegroundColorIdAt(0).value());
+  EXPECT_EQ(color_info.dropdown_color_id,
+            GetFontModel()->GetDropdownBackgroundColorIdAt(0).value());
 }
 
 #endif  // !defined(ADDRESS_SANITIZER)

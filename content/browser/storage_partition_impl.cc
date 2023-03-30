@@ -75,6 +75,7 @@
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
+#include "content/browser/loader/keep_alive_url_loader_service.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/navigation_or_document_handle.h"
@@ -1097,28 +1098,84 @@ class StoragePartitionImpl::ServiceWorkerCookieAccessObserver
         std::move(observer));
   }
 
-  void OnCookiesAccessed(
-      network::mojom::CookieAccessDetailsPtr details) override {
+  void OnCookiesAccessed(std::vector<network::mojom::CookieAccessDetailsPtr>
+                             details_vector) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
-        storage_partition_->GetServiceWorkerContext();
-    std::vector<GlobalRenderFrameHostId> destinations =
-        *service_worker_context->GetWindowClientFrameRoutingIds(
-            blink::StorageKey::CreateFirstParty(
-                url::Origin::Create(details->url)));
-    if (destinations.empty()) {
-      return;
-    }
+    for (auto& details : details_vector) {
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
+          storage_partition_->GetServiceWorkerContext();
+      std::vector<GlobalRenderFrameHostId> destinations =
+          *service_worker_context->GetWindowClientFrameRoutingIds(
+              blink::StorageKey::CreateFirstParty(
+                  url::Origin::Create(details->url)));
+      if (destinations.empty()) {
+        return;
+      }
 
-    for (GlobalRenderFrameHostId frame_id : destinations) {
-      if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(frame_id)) {
-        rfh->OnCookiesAccessed(mojo::Clone(details));
+      for (GlobalRenderFrameHostId frame_id : destinations) {
+        if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(frame_id)) {
+          rfh->OnCookiesAccessed(mojo::Clone(details_vector));
+        }
       }
     }
   }
 
   // `storage_partition_` owns this object via UniqueReceiverSet
   // (service_worker_cookie_observers_).
+  raw_ptr<StoragePartitionImpl> storage_partition_;
+};
+
+class StoragePartitionImpl::ServiceWorkerTrustTokenAccessObserver
+    : public network::mojom::TrustTokenAccessObserver {
+ public:
+  explicit ServiceWorkerTrustTokenAccessObserver(
+      StoragePartitionImpl* storage_partition)
+      : storage_partition_(storage_partition) {}
+
+ private:
+  void Clone(mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>
+                 observer) override {
+    storage_partition_->service_worker_trust_token_observers_.Add(
+        std::make_unique<ServiceWorkerTrustTokenAccessObserver>(
+            storage_partition_),
+        std::move(observer));
+  }
+
+  void OnTrustTokensAccessed(
+      network::mojom::TrustTokenAccessDetailsPtr details) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
+        storage_partition_->GetServiceWorkerContext();
+
+    url::Origin origin;
+    switch (details->which()) {
+      case network::mojom::TrustTokenAccessDetails::Tag::kIssuance:
+        origin = details->get_issuance()->origin;
+        break;
+      case network::mojom::TrustTokenAccessDetails::Tag::kRedemption:
+        origin = details->get_redemption()->origin;
+        break;
+      case network::mojom::TrustTokenAccessDetails::Tag::kSigning:
+        origin = details->get_signing()->origin;
+        break;
+    }
+
+    std::vector<GlobalRenderFrameHostId> destinations =
+        *service_worker_context->GetWindowClientFrameRoutingIds(
+            blink::StorageKey::CreateFirstParty(origin));
+    if (destinations.empty()) {
+      return;
+    }
+
+    for (GlobalRenderFrameHostId frame_id : destinations) {
+      if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(frame_id)) {
+        rfh->OnTrustTokensAccessed(mojo::Clone(details));
+      }
+    }
+  }
+
+  // `storage_partition_` owns this object via UniqueReceiverSet
+  // (service_worker_trust_token_observers_).
   raw_ptr<StoragePartitionImpl> storage_partition_;
 };
 
@@ -1357,6 +1414,12 @@ void StoragePartitionImpl::Initialize(
         std::make_unique<BrowsingTopicsURLLoaderService>();
   }
 
+  if (base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
+    keep_alive_url_loader_service_ =
+        std::make_unique<KeepAliveURLLoaderService>();
+  }
+
   cookie_store_manager_ =
       std::make_unique<CookieStoreManager>(service_worker_context_);
   // Unit tests use the LoadAllSubscriptions() callback to crash early if
@@ -1367,9 +1430,10 @@ void StoragePartitionImpl::Initialize(
 
   bucket_manager_ = std::make_unique<BucketManager>(this);
 
-  // The Conversion Measurement API is not available in Incognito mode.
-  if (!is_in_memory() &&
-      base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
+  if (base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
+    // The Conversion Measurement API is not available in Incognito mode, but
+    // this is enforced by the `AttributionManagerImpl` itself for better error
+    // reporting and metrics.
     attribution_manager_ = std::make_unique<AttributionManagerImpl>(
         this, path, special_storage_policy_);
   }
@@ -1683,6 +1747,12 @@ BrowsingTopicsURLLoaderService*
 StoragePartitionImpl::GetBrowsingTopicsURLLoaderService() {
   DCHECK(initialized_);
   return browsing_topics_url_loader_service_.get();
+}
+
+KeepAliveURLLoaderService*
+StoragePartitionImpl::GetKeepAliveURLLoaderService() {
+  DCHECK(initialized_);
+  return keep_alive_url_loader_service_.get();
 }
 
 CookieStoreManager* StoragePartitionImpl::GetCookieStoreManager() {
@@ -2139,6 +2209,7 @@ void StoragePartitionImpl::OnClearSiteData(
     const std::string& header_value,
     int load_flags,
     const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
+    bool partitioned_state_allowed_only,
     OnClearSiteDataCallback callback) {
   DCHECK(initialized_);
   auto browser_context_getter = base::BindRepeating(
@@ -2154,7 +2225,8 @@ void StoragePartitionImpl::OnClearSiteData(
 
   ClearSiteDataHandler::HandleHeader(
       browser_context_getter, web_contents_getter, url, header_value,
-      load_flags, cookie_partition_key, storage_key, std::move(callback));
+      load_flags, cookie_partition_key, storage_key,
+      partitioned_state_allowed_only, std::move(callback));
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -3117,6 +3189,15 @@ StoragePartitionImpl::CreateCookieAccessObserverForServiceWorker() {
   return remote;
 }
 
+mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
+StoragePartitionImpl::CreateTrustTokenAccessObserverForServiceWorker() {
+  mojo::PendingRemote<network::mojom::TrustTokenAccessObserver> remote;
+  service_worker_trust_token_observers_.Add(
+      std::make_unique<ServiceWorkerTrustTokenAccessObserver>(this),
+      remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
 void StoragePartitionImpl::OpenLocalStorageForProcess(
     int process_id,
     const blink::StorageKey& storage_key,
@@ -3163,20 +3244,7 @@ absl::optional<blink::StorageKey> StoragePartitionImpl::CalculateStorageKey(
     return absl::nullopt;
   }
 
-  // Determine if we should allow partitioned StorageKeys.
-  //
-  // If this is a main frame navigation then the value of
-  // third_party_storage_partitioning_enabled is irrelevant because main frames
-  // are always first-party by definition. If this is a subframe navigation
-  // then the main frame will have the correct value.
-  bool third_party_storage_partitioning_enabled = false;
-  if (!frame_host->is_main_frame()) {
-    third_party_storage_partitioning_enabled =
-        frame_host->IsMainFrameThirdPartyStoragePartitioningEnabled();
-  }
-
-  return frame_host->CalculateStorageKey(
-      origin, nonce, third_party_storage_partitioning_enabled);
+  return frame_host->CalculateStorageKey(origin, nonce);
 }
 
 StoragePartitionImpl::URLLoaderNetworkContext::URLLoaderNetworkContext(

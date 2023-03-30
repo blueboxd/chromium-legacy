@@ -106,19 +106,7 @@ if (current_toolchain == default_toolchain) {
 
   android_resources("chrome_app_java_resources") {
     sources = chrome_java_resources
-    sources += [
-      "//chrome/android/java/res_app/layout/main.xml",
-      "//chrome/android/java/res_chromium/drawable-hdpi/fre_product_logo.png",
-      "//chrome/android/java/res_chromium/drawable-hdpi/product_logo_name.png",
-      "//chrome/android/java/res_chromium/drawable-mdpi/fre_product_logo.png",
-      "//chrome/android/java/res_chromium/drawable-mdpi/product_logo_name.png",
-      "//chrome/android/java/res_chromium/drawable-xhdpi/fre_product_logo.png",
-      "//chrome/android/java/res_chromium/drawable-xhdpi/product_logo_name.png",
-      "//chrome/android/java/res_chromium/drawable-xxhdpi/fre_product_logo.png",
-      "//chrome/android/java/res_chromium/drawable-xxhdpi/product_logo_name.png",
-      "//chrome/android/java/res_chromium/drawable-xxxhdpi/fre_product_logo.png",
-      "//chrome/android/java/res_chromium/drawable-xxxhdpi/product_logo_name.png",
-    ]
+    sources += [ "//chrome/android/java/res_app/layout/main.xml" ]
 
     deps = [
       ":chrome_base_module_resources",
@@ -209,6 +197,7 @@ if (current_toolchain == default_toolchain) {
       ":app_hooks_java",
       "//chrome/browser/accessibility/hierarchysnapshotter/android:delegate_public_impl_java",
       "//chrome/browser/feed/android:hooks_public_impl_java",
+      "//chrome/browser/feedback/android:delegate_public_impl_java",
       "//chrome/browser/lens:delegate_public_impl_java",
       "//chrome/browser/locale:delegate_public_impl_java",
       "//chrome/browser/partnerbookmarks:delegate_public_impl_java",
@@ -292,6 +281,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/first_run/android:java",
       "//chrome/browser/flags:java",
       "//chrome/browser/fullscreen/android:java",
+      "//chrome/browser/gesturenav/android:java",
       "//chrome/browser/gsa:java",
       "//chrome/browser/history_clusters:java",
       "//chrome/browser/history_clusters:java_resources",
@@ -400,6 +390,7 @@ if (current_toolchain == default_toolchain) {
       "//components/browser_ui/util/android:java",
       "//components/browser_ui/webshare/android:java",
       "//components/browser_ui/widget/android:java",
+      "//components/browsing_data/core:java",
       "//components/commerce/core:proto_java",
       "//components/commerce/core/android:core_java",
       "//components/component_updater/android:background_task_update_scheduler_java",
@@ -588,8 +579,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser:sharing_send_message_result_generated_enum",
       "//chrome/browser/notifications/scheduler/public:jni_enums",
       "//chrome/browser/ui:duplicate_download_enums_java",
-      "//components/browsing_data/core:browsing_data_utils_java",
-      "//components/browsing_data/core:clear_browsing_data_tab_java",
       "//components/contextual_search/core/browser:quick_action_category_enum_javagen",
       "//components/dom_distiller/core:distiller_type_java",
       "//components/ntp_tiles:ntp_tiles_enums_java",
@@ -923,6 +912,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/profiles/android:junit",
       "//chrome/browser/quick_delete:java",
       "//chrome/browser/quick_delete:junit",
+      "//chrome/browser/recent_tabs:java",
       "//chrome/browser/recent_tabs/internal:junit",
       "//chrome/browser/safety_check/android:java",
       "//chrome/browser/safety_check/android:junit",
@@ -1090,8 +1080,6 @@ if (current_toolchain == default_toolchain) {
       "//third_party/android_deps:guava_android_java",
       "//third_party/android_deps:material_design_java",
       "//third_party/android_deps:protobuf_lite_runtime_java",
-      "//third_party/android_support_test_runner:rules_java",
-      "//third_party/android_support_test_runner:runner_java",
       "//third_party/androidx:androidx_activity_activity_java",
       "//third_party/androidx:androidx_appcompat_appcompat_java",
       "//third_party/androidx:androidx_browser_browser_java",
@@ -1101,6 +1089,8 @@ if (current_toolchain == default_toolchain) {
       "//third_party/androidx:androidx_swiperefreshlayout_swiperefreshlayout_java",
       "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_ext_junit_java",
+      "//third_party/androidx:androidx_test_monitor_java",
+      "//third_party/androidx:androidx_test_rules_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/blink/public:blink_headers_java",
       "//third_party/blink/public/mojom:android_mojo_bindings_java",
@@ -1155,9 +1145,10 @@ if (current_toolchain == default_toolchain) {
       "//components/offline_items_collection/core:core_java",
       "//content/public/android:content_main_dex_java",
       "//content/public/test/android:content_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_browser_browser_java",
+      "//third_party/androidx:androidx_test_monitor_java",
+      "//third_party/androidx:androidx_test_runner_java",
       "//third_party/junit:junit",
       "//url:gurl_java",
     ]
@@ -1203,9 +1194,10 @@ if (current_toolchain == default_toolchain) {
       "//net/android:net_java_test_support",
       "//third_party/android_deps:espresso_java",
       "//third_party/android_media:android_media_resources",
-      "//third_party/android_support_test_runner:runner_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_browser_browser_java",
+      "//third_party/androidx:androidx_test_monitor_java",
+      "//third_party/androidx:androidx_test_runner_java",
       "//third_party/blink/public/mojom:android_mojo_bindings_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",
@@ -1265,7 +1257,6 @@ if (current_toolchain == default_toolchain) {
       "javatests/src/org/chromium/chrome/browser/tab/WebContentsStateBridgeTest.java",
       "javatests/src/org/chromium/chrome/browser/tab/state/FilePersistedTabDataStorageTest.java",
       "javatests/src/org/chromium/chrome/browser/tab/state/PersistedTabDataTest.java",
-      "javatests/src/org/chromium/chrome/browser/tab/state/PriceDropMetricsLoggerTest.java",
       "javatests/src/org/chromium/chrome/browser/tabmodel/AsyncTabCreationParamsManagerTest.java",
       "javatests/src/org/chromium/chrome/browser/tabmodel/RestoreMigrateTest.java",
       "javatests/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
@@ -1348,11 +1339,11 @@ if (current_toolchain == default_toolchain) {
       "//third_party/android_deps:guava_android_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
-      "//third_party/android_support_test_runner:rules_java",
-      "//third_party/android_support_test_runner:runner_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_browser_browser_java",
       "//third_party/androidx:androidx_core_core_java",
+      "//third_party/androidx:androidx_test_monitor_java",
+      "//third_party/androidx:androidx_test_rules_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/blink/public:blink_headers_java",
       "//third_party/hamcrest:hamcrest_core_java",
@@ -1566,6 +1557,7 @@ if (current_toolchain == default_toolchain) {
       "//components/browser_ui/util/android:java",
       "//components/browser_ui/widget/android:java",
       "//components/browser_ui/widget/android:test_support_java",
+      "//components/browsing_data/core:java",
       "//components/commerce/core:proto_java",
       "//components/commerce/core/android:core_java",
       "//components/content_settings/android:content_settings_enums_java",
@@ -1681,12 +1673,12 @@ if (current_toolchain == default_toolchain) {
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_sdk:android_test_runner_java",
-      "//third_party/android_support_test_runner:rules_java",
-      "//third_party/android_support_test_runner:runner_java",
       "//third_party/androidx:androidx_activity_activity_java",
       "//third_party/androidx:androidx_browser_browser_java",
       "//third_party/androidx:androidx_collection_collection_java",
       "//third_party/androidx:androidx_preference_preference_java",
+      "//third_party/androidx:androidx_test_monitor_java",
+      "//third_party/androidx:androidx_test_rules_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/androidx:androidx_test_uiautomator_uiautomator_java",
       "//third_party/androidx:androidx_viewpager2_viewpager2_java",
@@ -1799,10 +1791,10 @@ if (current_toolchain == default_toolchain) {
       "//content/public/android:content_java",
       "//content/public/test/android:content_java_test_support",
       "//net/android:net_java_test_support",
-      "//third_party/android_support_test_runner:rules_java",
-      "//third_party/android_support_test_runner:runner_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_browser_browser_java",
+      "//third_party/androidx:androidx_test_monitor_java",
+      "//third_party/androidx:androidx_test_rules_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/androidx:androidx_test_uiautomator_uiautomator_java",
       "//third_party/junit",
@@ -1925,26 +1917,6 @@ if (current_toolchain == default_toolchain) {
         ]
       }
     }
-  }
-
-  # Overrides icon / name defined in chrome_app_java_resources.
-  android_resources("chrome_public_apk_resources") {
-    resource_overlay = true
-    sources = [
-      "java/res_chromium/drawable-hdpi/fre_product_logo.png",
-      "java/res_chromium/drawable-hdpi/product_logo_name.png",
-      "java/res_chromium/drawable-mdpi/fre_product_logo.png",
-      "java/res_chromium/drawable-mdpi/product_logo_name.png",
-      "java/res_chromium/drawable-xhdpi/fre_product_logo.png",
-      "java/res_chromium/drawable-xhdpi/product_logo_name.png",
-      "java/res_chromium/drawable-xxhdpi/fre_product_logo.png",
-      "java/res_chromium/drawable-xxhdpi/product_logo_name.png",
-      "java/res_chromium/drawable-xxxhdpi/fre_product_logo.png",
-      "java/res_chromium/drawable-xxxhdpi/product_logo_name.png",
-    ]
-
-    # Dep needed to ensure override works properly.
-    deps = [ ":chrome_app_java_resources" ]
   }
 
   # Overrides icon / name defined in chrome_base_module_resources.
@@ -2935,7 +2907,7 @@ if (current_toolchain == default_toolchain) {
       "//base:base_java_test_support",
       "//chrome/test/android:chrome_java_test_pagecontroller",
       "//content/public/test/android:content_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
+      "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/androidx:androidx_test_uiautomator_uiautomator_java",
       "//third_party/hamcrest:hamcrest_library_java",
@@ -2999,7 +2971,7 @@ if (current_toolchain == default_toolchain) {
       "//base:base_java_test_support",
       "//chrome/test/android:chrome_java_test_pagecontroller",
       "//content/public/test/android:content_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
+      "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/junit",
     ]
@@ -3570,7 +3542,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/notifications/PushMessagingServiceBridge.java",
     "java/src/org/chromium/chrome/browser/notifications/scheduler/DisplayAgent.java",
     "java/src/org/chromium/chrome/browser/notifications/scheduler/NotificationSchedulerTask.java",
-    "java/src/org/chromium/chrome/browser/ntp/ForeignSessionHelper.java",
     "java/src/org/chromium/chrome/browser/ntp/RecentTabsPagePrefs.java",
     "java/src/org/chromium/chrome/browser/ntp/RecentlyClosedBridge.java",
     "java/src/org/chromium/chrome/browser/offlinepages/AutoFetchNotifier.java",

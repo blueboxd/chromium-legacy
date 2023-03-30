@@ -8,11 +8,11 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
-import android.support.test.internal.util.AndroidRunnerParams;
 
 import androidx.annotation.CallSuper;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
+import androidx.test.internal.util.AndroidRunnerParams;
 
 import org.junit.rules.MethodRule;
 import org.junit.rules.TestRule;
@@ -46,14 +46,6 @@ import java.util.List;
  *  and {@link #isIgnored} to add SkipChecks and PreTesthook.
  */
 public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
-    // Mockito sometimes gets confused about where to put mocks. Just tell it
-    // explicitly. Hopefully only temporary while we are migrating our test
-    // infra to use the latest androidx.test:runner. See
-    // https://crbug.com/1223832
-    static {
-        System.setProperty("org.mockito.android.target",
-                InstrumentationRegistry.getTargetContext().getCacheDir().getPath());
-    }
     private static final String TAG = "BaseJUnit4ClassRunnr";
 
     private static final String EXTRA_TRACE_FILE =

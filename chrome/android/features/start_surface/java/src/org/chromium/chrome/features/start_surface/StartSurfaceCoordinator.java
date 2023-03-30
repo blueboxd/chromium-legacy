@@ -6,7 +6,6 @@ package org.chromium.chrome.features.start_surface;
 
 import android.app.Activity;
 import android.os.SystemClock;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -714,9 +713,6 @@ public class StartSurfaceCoordinator implements StartSurface {
             if (ChromeFeatureList.sStartSurfaceReturnTime.isEnabled()) {
                 ReturnToChromeUtil.cacheReturnTimeFromSegmentation();
             }
-            if (!TextUtils.isEmpty(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue())) {
-                ReturnToChromeUtil.cacheSegmentationResult();
-            }
         }
     }
 
@@ -888,8 +884,11 @@ public class StartSurfaceCoordinator implements StartSurface {
                             mMultiWindowModeStateDispatcher, mScrimCoordinator, mView,
                             mDynamicResourceLoaderSupplier, mSnackbarManager, mModalDialogManager);
         } else {
-            mTabSwitcherModule = new SingleTabSwitcherCoordinator(
-                    mActivity, mView.getCarouselTabSwitcherContainer(), mTabModelSelector);
+            // We always pass the parameter isTablet to be false here since StartSurfaceCoordinator
+            // is only created on phones.
+            mTabSwitcherModule = new SingleTabSwitcherCoordinator(mActivity,
+                    mView.getCarouselTabSwitcherContainer(), mTabModelSelector,
+                    /* isTablet= */ false, /* mostRecentTab= */ null);
         }
         boolean isScrollableMVTEnabled =
                 !ReturnToChromeUtil.shouldImproveStartWhenFeedIsDisabled(mActivity);

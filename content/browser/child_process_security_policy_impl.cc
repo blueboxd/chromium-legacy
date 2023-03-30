@@ -1317,19 +1317,14 @@ bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
-    SiteInstance* site_instance,
+    RenderProcessHost* process,
     const scoped_refptr<network::ResourceRequestBody>& body) {
-  DCHECK(site_instance);
+  CHECK(process);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  int child_id = site_instance->GetProcess()->GetID();
-
-  StoragePartition* storage_partition =
-      site_instance->GetBrowserContext()->GetStoragePartition(site_instance);
-  const storage::FileSystemContext* file_system_context =
-      storage_partition->GetFileSystemContext();
-
-  return CanReadRequestBody(child_id, file_system_context, body);
+  return CanReadRequestBody(
+      process->GetID(), process->GetStoragePartition()->GetFileSystemContext(),
+      body);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile(
@@ -2469,7 +2464,9 @@ void ChildProcessSecurityPolicyImpl::AddDefaultIsolatedOriginIfNeeded(
   // Since there was no prior record for this BrowsingInstance, track that this
   // origin should use the default isolation model.
   origin_isolation_by_browsing_instance_[browsing_instance_id].emplace_back(
-      OriginAgentClusterIsolationState::CreateForDefaultIsolation(), origin);
+      OriginAgentClusterIsolationState::CreateForDefaultIsolation(
+          browser_context),
+      origin);
 }
 
 void ChildProcessSecurityPolicyImpl::

@@ -59,6 +59,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_test_utils.h"
+#include "ui/views/widget/any_widget_observer.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -661,6 +662,24 @@ TEST_F(WindowFloatTest, FloatWindowWorkAreaConsiderations) {
             docked_magnifier_controller->GetMagnifierHeightForTesting());
 }
 
+// Tests that if we unminimize a window that was floated and another window has
+// since been floated, unminimizing the window would not float it.
+TEST_F(WindowFloatTest, UnminimzeWithFloatedWindow) {
+  // Create two windows and float the second one and then minimize it.
+  auto window1 = CreateAppWindow();
+  auto window2 = CreateFloatedWindow();
+  WindowState::Get(window2.get())->Minimize();
+
+  ASSERT_EQ(window1.get(), window_util::GetActiveWindow());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window1.get())->IsFloated());
+
+  // On unminimizing `window2`, we do not float it even if its pre-minimized
+  // state is floated, as doing so would unfloat `window1`.
+  WindowState::Get(window2.get())->Unminimize();
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsFloated());
+}
+
 // Test that floated window are not blocking keyboard events when it's on an
 // inactive desk.
 TEST_F(WindowFloatTest, FloatWindowShouldNotBlockKeyboardEvents) {
@@ -710,6 +729,33 @@ TEST_F(WindowFloatTest, FloatWindowActivationActivatesBelongingDesk) {
   waiter.Wait();
   // Verify `desk_1` is now activated.
   EXPECT_TRUE(desk_1->is_active());
+}
+
+// Tests that if a float window was activated before changing desks, it will be
+// activated when returning to that desk.
+TEST_F(WindowFloatTest, FloatWindowActivatesWhenChangingDesks) {
+  auto* desks_controller = DesksController::Get();
+
+  // Create a floated window on desk 1. We expect this window to be active later
+  // when we return to desk 1.
+  std::unique_ptr<aura::Window> floated_window1 = CreateFloatedWindow();
+  ASSERT_TRUE(WindowState::Get(floated_window1.get())->IsActive());
+
+  // Create a new desk with a floated window and a normal window. The normal
+  // window should be activated.
+  NewDesk();
+  ActivateDesk(desks_controller->desks()[1].get());
+  std::unique_ptr<aura::Window> floated_window2 = CreateFloatedWindow();
+  std::unique_ptr<aura::Window> normal_window = CreateAppWindow();
+  ASSERT_TRUE(WindowState::Get(normal_window.get())->IsActive());
+
+  // Switch to desk 1, the first floated window should be active.
+  ActivateDesk(desks_controller->desks()[0].get());
+  EXPECT_TRUE(WindowState::Get(floated_window1.get())->IsActive());
+
+  // Switch to desk 2, the normal window should be active.
+  ActivateDesk(desks_controller->desks()[1].get());
+  EXPECT_TRUE(WindowState::Get(normal_window.get())->IsActive());
 }
 
 // Test when we combine desks, floated window is updated on overview.
@@ -1373,6 +1419,33 @@ TEST_F(TabletWindowFloatTest, UntuckWindowOnActivation) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
 }
 
+// Tests that when we switch desks, a tucked window gets untucked.
+TEST_F(TabletWindowFloatTest, UntuckWindowOnDeskChange) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  auto* desks_controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  ActivateDesk(desks_controller->desks()[1].get());
+
+  // Create a floated window on the second desk and fling it.
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  const gfx::Rect pre_tucked_bounds = window->bounds();
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  ASSERT_TRUE(desks_util::BelongsToActiveDesk(window.get()));
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+  ASSERT_TRUE(Shell::Get()->float_controller()->IsFloatedWindowTuckedForTablet(
+      window.get()));
+
+  // Activate desk 1. The window is still floated but is hidden and not tucked.
+  ActivateDesk(desks_controller->desks()[0].get());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_EQ(pre_tucked_bounds, window->bounds());
+  EXPECT_FALSE(Shell::Get()->float_controller()->IsFloatedWindowTuckedForTablet(
+      window.get()));
+}
+
 // Tests that the tucked window is invisible while it is fully tucked.
 TEST_F(TabletWindowFloatTest, TuckedWindowVisibility) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
@@ -1400,6 +1473,28 @@ TEST_F(TabletWindowFloatTest, TuckedWindowVisibility) {
   wm::ActivateWindow(window.get());
   ShellTestApi().WaitForWindowFinishAnimating(window.get());
   EXPECT_TRUE(window->IsVisible());
+}
+
+// Tests that the floated window is visible when it is untucked.
+TEST_F(TabletWindowFloatTest, UntuckedWindowVisibility) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  // Long duration for tuck animation, to allow it to be interrupted.
+  ui::ScopedAnimationDurationScaleMode test_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+
+  // Fling to tuck the window. Press the untuck handle before the window
+  // finishes the tuck animation. Test that the window is visible.
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  auto* float_controller = Shell::Get()->float_controller();
+  views::Widget* tuck_handle_widget =
+      float_controller->GetTuckHandleWidget(window.get());
+  ASSERT_TRUE(tuck_handle_widget);
+  GetEventGenerator()->GestureTapAt(
+      tuck_handle_widget->GetWindowBoundsInScreen().CenterPoint());
+  ASSERT_TRUE(window->IsVisible());
+  EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
 }
 
 // Tests that the expected window gets activation after tucking a floated
@@ -1613,6 +1708,27 @@ TEST_F(TabletWindowFloatTest, TapOnEdgeDoesNotUntuck) {
   EXPECT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
 }
 
+// Tests that the tuck handle tap target is larger than its bounds.
+TEST_F(TabletWindowFloatTest, TuckHandleTapTarget) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  auto* float_controller = Shell::Get()->float_controller();
+
+  // Tuck the window in the bottom right.
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // Tap somewhere slightly outside the tuck handle widget. Verify that the
+  // tucked window is untucked.
+  const gfx::Rect tuck_handle_bounds =
+      float_controller->GetTuckHandleWidget(window.get())
+          ->GetWindowBoundsInScreen();
+  GetEventGenerator()->GestureTapAt(tuck_handle_bounds.origin() -
+                                    gfx::Vector2d(5, 5));
+  EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+}
+
 // Tests that the tuck handle is offscreen in overview mode.
 TEST_F(TabletWindowFloatTest, TuckHandleOffscreenInOverview) {
   const gfx::Rect display_bounds =
@@ -1697,6 +1813,31 @@ TEST_F(TabletWindowFloatTest, FlingVertical) {
   ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kTopRight);
   EXPECT_EQ(0, user_action_tester_.GetActionCount(kTuckUserAction));
+}
+
+// Tests that the tuck education nudge appears when the window is first floated.
+TEST_F(TabletWindowFloatTest, BasicTuckNudge) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  std::unique_ptr<aura::Window> window = CreateAppWindow();
+
+  // Add observer to check that the tuck education nudge was created.
+  views::NamedWidgetShownWaiter widget_waiter(
+      views::test::AnyWidgetTestPasskey{}, "TuckEducationNudgeWidget");
+
+  // Float window using accelerator.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+
+  // If waiter never sees the tuck education nudge, it will hang forever, and
+  // the test will fail.
+  widget_waiter.WaitIfNeededAndGet();
+
+  // Nudge should dismiss properly after animations end.
+  EXPECT_TRUE(window->children().empty());
+
+  // TODO(hewer): Add a callback to check that the nudge has properly dismissed
+  // after the bounce animations and timer have ended.
 }
 
 using TabletWindowFloatSplitviewTest = TabletWindowFloatTest;

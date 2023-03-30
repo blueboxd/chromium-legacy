@@ -290,6 +290,9 @@ CHAR_LIMIT guidelines:
       <message name="IDS_SIGN_IN_TO_CHROME_DISABLED_SUMMARY" desc="A descriptive line of text that appears under the 'Sign in to Chrome' option, in Chrome Settings on Android. The text explains why 'Sign in to Chrome' is disabled. 'Administrator' refers to the IT administrator of the company/organization that owns the user’s device.">
         Disabled by the administrator of this device
       </message>
+      <message name="IDS_SIGN_IN_TO_CHROME_DISABLED_BY_USER_SUMMARY" desc="A descriptive line of text that appears when a user tries to signin when signin is disabled by the Google Services option in settings. The text explains why 'Sign in to Chrome' is not available.">
+        Not available on your device
+      </message>
       <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_TITLE" desc="Title of Google activity controls preference in signed in accounts settings screen">
         Google activity controls
       </message>
@@ -2623,11 +2626,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_NOTIFICATION_WEBAPK_INSTALL_FAILED" desc="Indicates that the WebAPK install was unsuccessful.">
         Couldn’t install <ph name="WEBAPK_NAME">%1$s<ex>Progressive Web Apps</ex></ph>.
       </message>
-      <message name="IDS_NOTIFICATION_WEBAPK_INSTALL_FAILED_CONTENTS_GENERAL" desc="Indicates that the WebAPK install was unsuccessful.">
+      <message name="IDS_NOTIFICATION_WEBAPK_INSTALL_FAILED_CONTENTS_GENERAL" desc="Message content indicates that the WebAPK install was unsuccessful for a general reason.">
         Something went wrong.
       </message>
-      <message name="IDS_WEBAPK_INSTALL_FAILED_ACTION_OPEN" desc="Indicates that the WebAPK install was unsuccessful.">
+      <message name="IDS_WEBAPK_INSTALL_FAILED_ACTION_OPEN" desc="The label of the button which upon click would open the site user was trying to install as PWA. ">
         Go back to site
+      </message>
+      <message name="IDS_WEBAPK_INSTALL_FAILED_ACTION_RETRY" desc="The label of the button which upon click would retry installing the PWA" translateable="false">
+        Try again
       </message>
       <message name="IDS_IPH_PWA_INSTALL_AVAILABLE_TEXT" desc="The in-product-help message for PWAs that can be installed to the device.">
         Install this app
@@ -3526,6 +3532,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_VOICE_SEARCH" desc="Title name for the voice search option in the preference.">
         Voice search
       </message>
+      <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_ADD_TO_BOOKMARKS" desc="Title name for the add to bookmarks option in the preference.">
+        Add to bookmarks
+      </message>
+      <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_TRANSLATE" desc="Title name for the translate option in the preference.">
+        Translate
+      </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_BASED_ON_YOUR_USAGE" desc="Title name for the based on your usage option in the preference.">
         Based on your usage
       </message>
@@ -3543,6 +3555,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_VOICE_SEARCH_IPH" desc="An in-product-help message for the voice search button.">
         Quickly search with your voice. To edit this shortcut, touch and hold.
+      </message>
+      <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_ADD_TO_BOOKMARKS_IPH" desc="An in-product-help message for the add to bookmarks button.">
+        Quickly bookmark this page. To edit this shortcut, touch and hold.
+      </message>
+      <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_TRANSLATE_IPH" desc="An in-product-help message for the voice search button.">
+        Quickly translate this page. To edit this shortcut, touch and hold.
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_NEW_TAB_IPH_SETTINGS" desc="An in-product-help message for the new tab button referring to toolbar settings.">
         Quickly open a new tab. To edit this shortcut, go to Settings.
@@ -4851,7 +4869,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Sharing content types -->
-      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT" desc="The label used to describe that the content type being shared is a text.">
+      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT" desc="This will be used as a placeholder in the message 'Can't share [content type].' so it should be lower-case unless this is a language where nouns are upper case." meaning="text as placeholder">
         text
       </message>
 
@@ -5678,6 +5696,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_QUICK_DELETE_DIALOG_DESCRIPTION" desc="Description of the dialog when asking users to confirm deleting the last 15 minutes of browsing data.">
         Following data from the last 15 minutes will be deleted
+      </message>
+      <message name="IDS_QUICK_DELETE_SNACKBAR_MESSAGE" desc="Text inside the snackbar which is shown once the user confirms deletion via the 'Delete last 15 minutes' option present inside the three dots menu.">
+        Deleted history, cookies, and other data
       </message>
     </messages>
   </release>

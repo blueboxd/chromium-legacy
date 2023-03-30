@@ -46,7 +46,6 @@
 <translation id="1075079914415273530">Agricultura e silvicultura</translation>
 <translation id="1080116354587839789">Ajustar à largura</translation>
 <translation id="1081061862829655580">Tabuleiro 19</translation>
-<translation id="1088860948719068836">Adicionar nome no cartão</translation>
 <translation id="1089439967362294234">Alterar palavra-passe</translation>
 <translation id="1096545575934602868">Este campo não deve ter mais de <ph name="MAX_ITEMS_LIMIT" /> entradas. Todas as restantes entradas serão rejeitadas.</translation>
 <translation id="1100782917270858593">Botão Retomar percurso, prima Enter para retomar o percurso e ver atividade relevante no seu Histórico do Chrome</translation>
@@ -277,7 +276,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1572765991610098222"><ph name="WIDTH" /> x <ph name="HEIGHT" /> pol.</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Ocorreu um erro ao apresentar esta página Web.</translation>
-<translation id="1584492003828271317">À medida que navega, a personalização de um anúncio que lhe é mostrado depende desta definição, dos anúncios sugeridos por sites, das definições de cookies e de se o site que está a ver personaliza os anúncios</translation>
+<translation id="1584492003828271317">À medida que navega, a personalização de um anúncio que lhe é mostrado depende desta definição, dos anúncios sugeridos por sites, das definições de cookies e de o site que está a ver personalizar ou não os anúncios</translation>
 <translation id="1586541204584340881">As extensões que instalou.</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Acesso aos dados locais</translation>
@@ -339,14 +338,12 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1721424275792716183">* Campo de preenchimento obrigatório</translation>
 <translation id="1725591448053514783">Envelope You 6</translation>
 <translation id="1727613060316725209">O certificado é válido</translation>
-<translation id="1727741090716970331">Adicionar número de cartão válido</translation>
 <translation id="1728677426644403582">Está a ver a fonte de uma página Web</translation>
 <translation id="173080396488393970">Este tipo de cartão não é suportado</translation>
 <translation id="1732445923934584865">Pedir antes pessoalmente</translation>
 <translation id="1733064249834771892">tipos de letra</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Experimente contactar o gestor do sistema.</translation>
-<translation id="1736158756193183352"><ph name="BEGIN_LINK" />A iniciar sessão<ph name="END_LINK" /> na rede</translation>
 <translation id="1736420071277903564">Computador</translation>
 <translation id="1740951997222943430">Introduza um mês de expiração válido</translation>
 <translation id="1741613555002899862">A política tem de ser especificada, bem como uma string válida quando a DnsOverHttpsMode é <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -387,6 +384,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1822540298136254167">Os Websites que visita e o tempo despendido nos mesmos.</translation>
 <translation id="1824402189105105503">Oitavo rolo</translation>
 <translation id="1826516787628120939">A verificar</translation>
+<translation id="1826968372364864056">Limpar formulário</translation>
 <translation id="1828959155404624835">Aluguer de carros</translation>
 <translation id="1834321415901700177">Este site contém programas prejudiciais</translation>
 <translation id="1838374766361614909">Limpar pesquisa</translation>
@@ -498,6 +496,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2119867082804433120">Perfurar na parte inferior direita</translation>
 <translation id="2122719317867821810">Esta política está a funcionar conforme esperado, mas um valor em conflito está definido noutro local e foi substituído por esta política.</translation>
 <translation id="2126374524350484896">Criador do PDF:</translation>
+<translation id="2128262927290305126">Na sua Conta Google <ph name="ACCOUNT" /></translation>
 <translation id="2130448033692577677">Os modelos que especificou podem não ser aplicados porque a política DnsOverHttpsMode não está definida.</translation>
 <translation id="2130699163006053678">A3x7</translation>
 <translation id="2135799067377889518">Vestuário para homem</translation>
@@ -543,6 +542,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2219735899272417925">É necessário repor o dispositivo</translation>
 <translation id="2224337661447660594">Sem Internet</translation>
 <translation id="2225927550500503913">Cartão virtual ativado</translation>
+<translation id="2226636330183131181"><ph name="BEGIN_LINK" />Iniciar sessão<ph name="END_LINK" /> na rede Wi-Fi</translation>
 <translation id="2239100178324503013">Enviar agora</translation>
 <translation id="2241693394036365668">É transferido um ficheiro</translation>
 <translation id="2246264294482514010">10 x 12 pol.</translation>
@@ -628,6 +628,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2469153820345007638">Ordem de 1 para N</translation>
 <translation id="2470767536994572628">Quando edita anotações, este documento volta à vista de página única e à respetiva rotação original.</translation>
 <translation id="2479410451996844060">URL de pesquisa inválido.</translation>
+<translation id="2480300195898055381">Na sua Conta Google, <ph name="USER_EMAIL" /></translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="248348093745724435">Políticas do computador</translation>
 <translation id="2491120439723279231">O certificado do servidor contém erros.</translation>
@@ -683,6 +684,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="259821504105826686">Arte fotográfica e digital</translation>
 <translation id="2601150049980261779">Filmes de romance</translation>
 <translation id="2604589665489080024">Música pop</translation>
+<translation id="2606760465469169465">Validação automática</translation>
 <translation id="2610561535971892504">Clique para copiar</translation>
 <translation id="2617988307566202237">O Chrome <ph name="BEGIN_EMPHASIS" />não guardará<ph name="END_EMPHASIS" /> as seguintes informações:
           <ph name="BEGIN_LIST" />
@@ -808,6 +810,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2951588413176968965">A minha caixa de correio</translation>
 <translation id="2952820037279740115">Fechar todas as janelas de navegação anónima</translation>
 <translation id="2952904171810469095">A2x5</translation>
+<translation id="2954624054936281172">Tabela dos métodos de pagamento guardados</translation>
 <translation id="295526156371527179">Aviso: esta política não foi unida como dicionário, conforme especificado pela política, porque não é um dicionário.</translation>
 <translation id="2955913368246107853">Fechar barra de localização</translation>
 <translation id="2958544468932521864">Críquete</translation>
@@ -839,6 +842,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3029752078111257850">Notícias do mundo</translation>
 <translation id="3037177537145227281">Monitorizar o preço</translation>
 <translation id="3037605927509011580">Ah, bolas!!</translation>
+<translation id="3041450980936463495">Pode usar moradas guardadas entre produtos Google. Esta morada foi guardada na sua Conta Google (<ph name="ACCOUNT" />).</translation>
 <translation id="3041612393474885105">Informações do certificado</translation>
 <translation id="305162504811187366">Histórico do Ambiente de Trabalho Remoto do Chrome, incluindo datas/horas, anfitriões e IDs de sessão de cliente</translation>
 <translation id="3052964831964880138"><ph name="PRODUCT_NAME" />: descida do preço de <ph name="PRICE_DROP" /></translation>
@@ -867,7 +871,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Experimente executar o Diagnóstico de conetividade<ph name="END_LINK" />.</translation>
 <translation id="3121994479408824897">Ir para <ph name="DOMAIN" /></translation>
-<translation id="3137507986424712703">{COUNT,plural, =0{Sem}=1{dados de início de sessão para 1 conta}other{dados de início de sessão para # contas}}</translation>
 <translation id="3141093262818886744">Abrir mesmo assim</translation>
 <translation id="3141641372357166056">Sem decisão sobre o consentimento</translation>
 <translation id="3145945101586104090">Falha ao descodificar resposta</translation>
@@ -921,7 +924,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3249151924975132674">Empréstimos para estudantes e financiamento do ensino superior</translation>
 <translation id="3249845759089040423">Descontraído</translation>
 <translation id="3250640885957938546">Publicidade e marketing</translation>
-<translation id="3252266817569339921">Francês</translation>
 <translation id="3254301855501243548">18 x 22 pol.</translation>
 <translation id="3256863843508922226">Reforma e pensões</translation>
 <translation id="3259648571731540213"><ph name="CREATE_GOOGLE_CALENDAR_EVENT_FOCUSED_FRIENDLY_MATCH_TEXT" />, prima Tab e, em seguida, Enter para criar rapidamente um novo evento no Calendário Google</translation>
@@ -937,7 +939,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3272091146646336650">Super B</translation>
 <translation id="3281350579597955952">{0,plural, =1{A política do administrador não recomenda abrir este ficheiro em <ph name="DESTINATION_NAME" />}other{A política do administrador não recomenda abrir estes ficheiros em <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="3282085321714087552">A sua entidade, <ph name="ENROLLMENT_DOMAIN" />, enviou algumas informações para os seguintes Websites, como definições ou políticas.</translation>
-<translation id="3282497668470633863">Adicionar nome no cartão</translation>
 <translation id="3286372614333682499">retrato</translation>
 <translation id="3287510313208355388">Transferir quando estiver online</translation>
 <translation id="3288238092761586174"><ph name="URL" /> pode ter de efetuar passos adicionais para validar o seu pagamento</translation>
@@ -950,7 +951,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3304777285002411338">A2x3</translation>
 <translation id="33073482541490531">A palavra-passe que acabou de usar foi encontrada numa violação de dados. O Gestor de Palavras-passe recomenda que altere esta palavra-passe agora.</translation>
 <translation id="3308006649705061278">Unidade organizacional (OU)</translation>
-<translation id="3320021301628644560">Adicionar endereço de faturação</translation>
 <translation id="3324687287337751929">4 x 6 pol.</translation>
 <translation id="3324983252691184275">Carmesim</translation>
 <translation id="3329013043687509092">Saturação</translation>
@@ -1013,7 +1013,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3461824795358126837">Marcador</translation>
 <translation id="3462200631372590220">Ocultar avançadas</translation>
 <translation id="346601286295919445">Química</translation>
-<translation id="3467763166455606212">Nome do titular do cartão obrigatório</translation>
 <translation id="3468054117417088249"><ph name="TAB_SWITCH_SUFFIX" />, atualmente aberto, prima Tab e, em seguida, Enter para mudar para o separador aberto.</translation>
 <translation id="3470563864795286535"><ph name="CLOSE_INCOGNITO_WINDOWS_FOCUSED_FRIENDLY_MATCH_TEXT" />, prima Tab e, em seguida, Enter para fechar todas as janelas de navegação anónima atualmente abertas</translation>
 <translation id="3477679029130949506">Fichas de filmes e horários de salas de cinema</translation>
@@ -1081,6 +1080,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3631244953324577188">Biometria</translation>
 <translation id="3632503704576938756">Partilha de ecrã retomada</translation>
 <translation id="3632892046558972264">Partilha de ecrã em pausa</translation>
+<translation id="3633035844150606508">Guarde a morada na sua Conta Google, <ph name="ACCOUNT" /></translation>
 <translation id="3633738897356909127">Botão Atualizar Chrome; prima Enter para atualizar o Chrome nas Definições do Chrome.</translation>
 <translation id="3634530185120165534">Tabuleiro 5</translation>
 <translation id="3634567936866541746">Acabou de introduzir a sua palavra-passe num site fraudulento. Para proteger as suas contas, o Chrome recomenda verificar as palavras-passe guardadas.</translation>
@@ -1225,7 +1225,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="399952081411886534">Outras funcionalidades que tornam os anúncios mais privados</translation>
 <translation id="4000598935132966791">Saiba mais sobre restrições de sites em navegadores geridos</translation>
 <translation id="4006465311664329701">Métodos de pagamento, ofertas e endereços com o Google Pay</translation>
-<translation id="4009243425692662128">O conteúdo das páginas que imprime é enviado para o Google Cloud ou terceiros para análise. Por exemplo, pode ser analisado quanto a dados confidenciais.</translation>
 <translation id="4010758435855888356">Permitir o acesso ao armazenamento?</translation>
 <translation id="401170183602135785">Envelope C6</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF com {COUNT} página}other{Documento PDF com {COUNT} páginas}}</translation>
@@ -1586,7 +1585,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="484988093836683706">Usar desbloqueio do dispositivo</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4852429274334674023">Sistemas operativos</translation>
-<translation id="485316830061041779">Alemão</translation>
 <translation id="4853901935952445031">Este site não poderá utilizar a U2F API depois de fevereiro de 2022. Se este site for seu, deve alterá-lo para utilizar a Web Authentication API.</translation>
 <translation id="4854362297993841467">Este método de fornecimento não está disponível. Experimente um método diferente.</translation>
 <translation id="4854853140771946034">Crie rapidamente uma nova nota no Google Keep</translation>
@@ -1655,6 +1653,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5018422839182700155">Não é possível abrir esta página</translation>
 <translation id="5018802455907704660">16 x 20 pol.</translation>
 <translation id="5019198164206649151">Armazenamento de segurança em mau estado</translation>
+<translation id="5019293549442035120">Pode usar moradas guardadas entre produtos Google. Esta morada vai ser guardada na sua Conta Google, <ph name="USER_EMAIL" />.</translation>
 <translation id="5020776957610079374">Música do mundo</translation>
 <translation id="5021557570875267742">Acompanhe os preços com o Chrome</translation>
 <translation id="5023310440958281426">Rever as políticas do gestor</translation>
@@ -1792,6 +1791,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5324080437450482387">Escolher informações de contacto</translation>
 <translation id="5329858041417644019">O seu navegador não é gerido</translation>
 <translation id="5332219387342487447">Método de envio</translation>
+<translation id="5332769172018416402">Pedir numa mensagem</translation>
 <translation id="5333022057423422993">O Chrome encontrou a palavra-passe que acabou de utilizar numa violação de dados. Para proteger as suas contas, recomendamos que verifique as suas palavras-passe guardadas.</translation>
 <translation id="5334013548165032829">Registos de sistema detalhados</translation>
 <translation id="5334145288572353250">Pretende guardar o endereço?</translation>
@@ -1825,7 +1825,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5423269318075950257">Monitorize o preço</translation>
 <translation id="5425241977284572032">{NUM_COOKIES,plural, =0{Nenhum site bloqueado}=1{1 site bloqueado}other{# sites bloqueados}}</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> pretende enviar-lhe notificações.</translation>
-<translation id="5428105026674456456">Espanhol</translation>
 <translation id="5430298929874300616">Remover marcador</translation>
 <translation id="5443468954631487277">Ordem inversa, com orientação para cima</translation>
 <translation id="5447765697759493033">Este site não será traduzido.</translation>
@@ -1834,7 +1833,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5457113250005438886">Inválido</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5463625433003343978">A localizar dispositivos…</translation>
-<translation id="5469868506864199649">Italiano</translation>
 <translation id="5470230812924696184">Engenharia civil</translation>
 <translation id="5470861586879999274">&amp;Refazer edição</translation>
 <translation id="5471337644440862957">Filmes de comédia</translation>
@@ -1847,7 +1845,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
     <ph name="LINE_BREAK" />
     Experimente contactar o gestor do sistema.</translation>
 <translation id="549333378215107354">Tamanho 3</translation>
-<translation id="5503356662318814623">Enviar uma mensagem</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Marcadores geridos</translation>
 <translation id="5510481203689988000">Esta definição é controlada nas Definições de cookies.</translation>
@@ -1900,6 +1897,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5606444889871204172"><ph name="BEGIN_BOLD" />Como pode gerir os seus dados:<ph name="END_BOLD" /> o Chrome elimina automaticamente os sites com mais de 4 semanas. Se voltar a visitar um site, este pode reaparecer na lista. Também pode impedir que um site lhe sugira anúncios e desativar os anúncios sugeridos por sites em qualquer altura nas definições do Chrome.</translation>
 <translation id="5610142619324316209">Rever a ligação</translation>
 <translation id="5610807607761827392">Pode gerir cartões e endereços nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
+<translation id="5611398002774823980">Guardar na conta</translation>
 <translation id="561165882404867731">Traduza esta página com o Google Tradutor</translation>
 <translation id="5612720917913232150"><ph name="URL" /> pretende utilizar a localização do seu computador.</translation>
 <translation id="561669346091975195">Programas de TV de ficção científica e fantasia</translation>
@@ -1932,6 +1930,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5695542892312572833">Pretende utilizar o Windows Hello para validar e concluir a sua compra?</translation>
 <translation id="5701381305118179107">Centrar</translation>
 <translation id="570530837424789914">Gerir…</translation>
+<translation id="5706906618852913030">Guardar na conta?</translation>
 <translation id="5707154300732650394">Retomar percurso</translation>
 <translation id="57094364128775171">Sugerir palavra-passe forte…</translation>
 <translation id="571403275720188526">(arm64)</translation>
@@ -1968,6 +1967,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5786044859038896871">Pretende preencher as informações do cartão?</translation>
 <translation id="578633867165174378">O Chrome encontrou a palavra-passe que acabou de utilizar numa violação de dados. Recomendamos que altere agora esta palavra-passe.</translation>
 <translation id="5789643057113097023">.</translation>
+<translation id="5793777472500812427">{COUNT,plural, =0{Nenhuns}=1{dados de início de sessão para 1 conta}other{dados de início de sessão para # contas}}</translation>
 <translation id="580241730938216256">Iniciar atualização</translation>
 <translation id="5803412860119678065">Pretende preencher o seu cartão <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permissões</translation>
@@ -1980,9 +1980,11 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5817918615728894473">Sincronizar</translation>
 <translation id="5824687817967109979">{NUM_CARDS,plural, =1{Será efetuada uma cobrança neste cartão quando pagar, mas o respetivo número verdadeiro não será partilhado com este site. Como medida de segurança adicional, será gerado um CVC temporário.}other{Será efetuada uma cobrança no cartão que selecionar quando pagar, mas o respetivo número verdadeiro não será partilhado com este site. Como medida de segurança adicional, será gerado um CVC temporário.}}</translation>
 <translation id="5826507051599432481">Nome comum (CN)</translation>
+<translation id="5829215001860862731">Guarde na conta</translation>
 <translation id="5830698870816298009">utilização e movimento da câmara</translation>
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5838278095973806738">Não deve introduzir informações confidenciais neste site (por exemplo, palavras-passe ou números de cartões de crédito), porque podem ser roubadas por atacantes.</translation>
+<translation id="5841338463993781099">Guardar na conta?</translation>
 <translation id="5851548754964597211">Lista de separadores</translation>
 <translation id="5852909432155870672">RA4</translation>
 <translation id="5860033963881614850">Desativado</translation>
@@ -2283,7 +2285,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6612010098632894193">Vídeo online</translation>
 <translation id="6615297766614333076">Empilhador 2</translation>
 <translation id="6624427990725312378">Informações de contacto</translation>
-<translation id="6626291197371920147">Adicionar número de cartão válido</translation>
 <translation id="6627727261837091711">Mostre detalhes da personalização de anúncios</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pesquisar</translation>
 <translation id="6630043285902923878">A procurar dispositivos USB…</translation>
@@ -2523,6 +2524,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="7201591969684833065">O administrador pode ver:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, prima Tab e, em seguida, Enter para abrir um novo separador de navegação anónima para navegar em privado</translation>
 <translation id="7203375778433816396">Defina o Chrome como o navegador predefinido do sistema</translation>
+<translation id="7207736436284129083">{COUNT,plural, =0{Nenhuma}=1{1 chave de acesso}other{# chaves de acesso}}</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> não respeita os padrões de segurança.</translation>
 <translation id="7210993021468939304">A atividade do Linux dentro do contentor, podendo instalar e executar apps para Linux no contentor.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre este problema.</translation>
@@ -2767,13 +2769,13 @@ Detalhes adicionais:
 <translation id="7716375162095500223">Ainda não carregado ou ignorado</translation>
 <translation id="7716424297397655342">Não é possível carregar este site a partir da cache</translation>
 <translation id="772128550427553158">O Código de Segurança/CVC está localizado na parte da frente do cartão.</translation>
-<translation id="7723047071702270851">Editar cartão</translation>
 <translation id="7724603315864178912">Cortar</translation>
 <translation id="7734285854693414638">Crie rapidamente um novo formulário no Google Forms</translation>
 <translation id="773466115871691567">Traduza sempre páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7736959720849233795">Copiar endereço do link</translation>
 <translation id="7740996059027112821">Padrão</translation>
 <translation id="77424286611022110">Este site apresenta anúncios intrusivos ou enganadores. <ph name="LEARN_MORE_LINK_TEXT" /></translation>
+<translation id="7744505202669469867">Tabela de moradas guardadas</translation>
 <translation id="774634243536837715">Conteúdo perigoso bloqueado.</translation>
 <translation id="7751971323486164747">Personalize os tipos de letra e os respetivos tamanhos no Chrome</translation>
 <translation id="7752995774971033316">Não gerido</translation>
@@ -3000,7 +3002,6 @@ Detalhes adicionais:
 <translation id="8296205692406981542">Parques e jardins regionais</translation>
 <translation id="8297545700510100061">Os cookies e outros dados de sites são usados para memorizar o seu perfil, por exemplo, para iniciar a sua sessão ou personalizar anúncios. Para gerir cookies de todos os sites, veja <ph name="SETTINGS" />.</translation>
 <translation id="8298115750975731693">A rede Wi-Fi que está a utilizar (<ph name="WIFI_NAME" />) pode exigir que visite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
-<translation id="8299269255470343364">Japonês</translation>
 <translation id="8303854710873047864">Secção "<ph name="SECTION" />" apresentada</translation>
 <translation id="830498451218851433">Dobrar a meio</translation>
 <translation id="8307888238279532626">Apps instaladas e a frequência com que são utilizadas.</translation>
@@ -3015,6 +3016,7 @@ Detalhes adicionais:
 <translation id="8347658365704983341">Ensino à distância</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>
 <translation id="8351131234907093545">Criar nota</translation>
+<translation id="835203957414790336">O conteúdo das páginas que imprime e as informações sobre a impressora são enviadas para o Google Cloud ou terceiros para análise. Por exemplo, pode ser analisado quanto a dados confidenciais.</translation>
 <translation id="8355270400102541638">Contexto local da falha de sistema:</translation>
 <translation id="8363502534493474904">Desativar o modo de avião</translation>
 <translation id="8364627913115013041">Não definida.</translation>
@@ -3121,7 +3123,6 @@ Detalhes adicionais:
 <translation id="865032292777205197">sensores de movimento</translation>
 <translation id="8654126188050905496">55 x 91 mm</translation>
 <translation id="8663226718884576429">Resumo da encomenda, <ph name="TOTAL_LABEL" />, mais detalhes</translation>
-<translation id="8666678546361132282">Inglês</translation>
 <translation id="8671519637524426245">O valor de <ph name="SECURE_DNS_SALT" /> não cumpre os requisitos de tamanho.</translation>
 <translation id="867224526087042813">Assinatura</translation>
 <translation id="8672264262457010862">Empresas e indústrias</translation>
@@ -3186,6 +3187,7 @@ Detalhes adicionais:
 <translation id="8806285662264631610">Produtos para o banho e o corpo</translation>
 <translation id="8807160976559152894">Cortar no fim de cada página</translation>
 <translation id="8809203544698246977">Os tópicos bloqueados aparecem aqui</translation>
+<translation id="8811470563853401328">Guardar morada na conta?</translation>
 <translation id="8813277370772331957">Lembrar-me mais tarde</translation>
 <translation id="8814707942599948500">Envelope C8</translation>
 <translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, prima Tab e, em seguida, Enter para atualizar o Chrome nas Definições do Chrome.</translation>
@@ -3279,6 +3281,7 @@ Detalhes adicionais:
 <translation id="9042617223719777575">Capacidade elevada</translation>
 <translation id="9044359186343685026">Usar Touch ID</translation>
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="9048035366624198823">Estas ações requerem que a política <ph name="POLICY_NAME" /> seja definida como <ph name="POLICY_VALUE" />: <ph name="ACTION_LIST" />.</translation>
 <translation id="9048662076076074925">24 x 36 pol.</translation>
 <translation id="9049981332609050619">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado inválido.</translation>
 <translation id="9050666287014529139">Frase de acesso</translation>
@@ -3358,7 +3361,6 @@ Detalhes adicionais:
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="922152298093051471">Personalizar o Chrome</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">LIMPAR FORMULÁRIO</translation>
 <translation id="936602727769022409">Pode perder o acesso à sua Conta Google. O Chromium recomenda que altere a palavra-passe agora. Ser-lhe-á pedido para iniciar sessão.</translation>
 <translation id="937457230470581909">Jardins zoológicos, aquários e reservas</translation>
 <translation id="937804173274050966"><ph name="BEGIN_BOLD" />Que dados são usados:<ph name="END_BOLD" /> os tópicos de anúncios baseiam-se no seu histórico de navegação recente, uma lista dos sites que visitou através do Chrome neste dispositivo.</translation>

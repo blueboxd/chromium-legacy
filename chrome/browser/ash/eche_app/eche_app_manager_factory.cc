@@ -7,7 +7,11 @@
 #include <string>
 
 #include "ash/constants/ash_features.h"
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
+#include "ash/system/eche/eche_tray.h"
 #include "ash/webui/eche_app_ui/apps_access_manager_impl.h"
+#include "ash/webui/eche_app_ui/apps_launch_info_provider.h"
 #include "ash/webui/eche_app_ui/eche_app_manager.h"
 #include "ash/webui/eche_app_ui/eche_tray_stream_status_observer.h"
 #include "ash/webui/eche_app_ui/eche_uid_provider.h"
@@ -68,6 +72,7 @@ void LaunchWebApp(const std::string& package_name,
                   const absl::optional<int64_t>& user_id,
                   const gfx::Image& icon,
                   const std::u16string& phone_name,
+                  AppsLaunchInfoProvider* apps_launch_info_provider,
                   Profile* profile) {
   EcheAppManagerFactory::GetInstance()->SetLastLaunchedAppInfo(
       LaunchedAppInfo::Builder()
@@ -76,6 +81,7 @@ void LaunchWebApp(const std::string& package_name,
           .SetUserId(user_id)
           .SetIcon(icon)
           .SetPhoneName(phone_name)
+          .SetAppsLaunchInfoProvider(apps_launch_info_provider)
           .Build());
   std::u16string url;
   // Use hash mark(#) to send params to webui so we don't need to reload the
@@ -104,6 +110,8 @@ void LaunchWebApp(const std::string& package_name,
   const auto gurl = GURL(url);
 
   return LaunchBubble(gurl, icon, visible_name, phone_name,
+                      apps_launch_info_provider->GetConnectionStatusForUi(),
+                      apps_launch_info_provider->entry_point(),
                       base::BindOnce(&EnsureStreamClose, profile),
                       base::BindRepeating(&StreamGoBack, profile));
 }
@@ -114,22 +122,26 @@ void RelaunchLast(Profile* profile) {
   EcheAppManagerFactory::LaunchEcheApp(
       profile, absl::nullopt, last_launched_app_info->package_name(),
       last_launched_app_info->visible_name(), last_launched_app_info->user_id(),
-      last_launched_app_info->icon(), last_launched_app_info->phone_name());
+      last_launched_app_info->icon(), last_launched_app_info->phone_name(),
+      last_launched_app_info->apps_launch_info_provider());
 }
 
 }  // namespace
 
 LaunchedAppInfo::~LaunchedAppInfo() = default;
-LaunchedAppInfo::LaunchedAppInfo(const std::string& package_name,
-                                 const std::u16string& visible_name,
-                                 const absl::optional<int64_t>& user_id,
-                                 const gfx::Image& icon,
-                                 const std::u16string& phone_name) {
+LaunchedAppInfo::LaunchedAppInfo(
+    const std::string& package_name,
+    const std::u16string& visible_name,
+    const absl::optional<int64_t>& user_id,
+    const gfx::Image& icon,
+    const std::u16string& phone_name,
+    AppsLaunchInfoProvider* apps_launch_info_provider) {
   package_name_ = package_name;
   visible_name_ = visible_name;
   user_id_ = user_id;
   icon_ = icon;
   phone_name_ = phone_name;
+  apps_launch_info_provider_ = apps_launch_info_provider;
 }
 
 LaunchedAppInfo::Builder::Builder() = default;
@@ -197,9 +209,10 @@ void EcheAppManagerFactory::LaunchEcheApp(
     const std::u16string& visible_name,
     const absl::optional<int64_t>& user_id,
     const gfx::Image& icon,
-    const std::u16string& phone_name) {
+    const std::u16string& phone_name,
+    AppsLaunchInfoProvider* apps_launch_info_provider) {
   LaunchWebApp(package_name, notification_id, visible_name, user_id, icon,
-               phone_name, profile);
+               phone_name, apps_launch_info_provider, profile);
   EcheAppManagerFactory::GetInstance()
       ->CloseConnectionOrLaunchErrorNotifications();
 }
@@ -260,7 +273,7 @@ KeyedService* EcheAppManagerFactory::BuildServiceInstanceFor(
           secure_channel::PresenceMonitorClientImpl::Factory::Create(
               std::move(presence_monitor));
 
-  return new EcheAppManager(
+  auto* eche_app_manager = new EcheAppManager(
       profile->GetPrefs(), GetSystemInfo(profile), phone_hub_manager,
       device_sync_client, multidevice_setup_client, secure_channel_client,
       std::move(presence_monitor_client),
@@ -269,6 +282,17 @@ KeyedService* EcheAppManagerFactory::BuildServiceInstanceFor(
                           weak_ptr_factory_.GetMutableWeakPtr(), profile),
       base::BindRepeating(&EcheAppManagerFactory::CloseNotification,
                           weak_ptr_factory_.GetMutableWeakPtr(), profile));
+
+  EcheTray* eche_tray = Shell::GetPrimaryRootWindowController()
+                            ->GetStatusAreaWidget()
+                            ->eche_tray();
+
+  if (features::IsEcheNetworkConnectionStateEnabled() && eche_tray) {
+    eche_tray->SetEcheConnectionStatusHandler(
+        eche_app_manager->GetEcheConnectionStatusHandler());
+  }
+
+  return eche_app_manager;
 }
 
 std::unique_ptr<SystemInfo> EcheAppManagerFactory::GetSystemInfo(

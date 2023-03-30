@@ -27,7 +27,6 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.app.Activity;
-import android.support.test.InstrumentationRegistry;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +34,7 @@ import android.widget.TextView;
 
 import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.PerformException;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -49,6 +49,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -65,7 +66,6 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccesso
 import org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryButtonGroupView;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ImeAdapter;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
@@ -411,7 +411,7 @@ public class ManualFillingTestHelper {
                                 .withCause(new Throwable("No button at index " + tabIndex))
                                 .build();
                     }
-                    PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                    PostTask.runOrPostTask(TaskTraits.UI_DEFAULT,
                             () -> buttonGroupView.getButtons().get(tabIndex).performClick());
                     return;
                 }
@@ -422,7 +422,7 @@ public class ManualFillingTestHelper {
                             .build();
                 }
                 PostTask.runOrPostTask(
-                        UiThreadTaskTraits.DEFAULT, () -> tabLayout.getTabAt(tabIndex).select());
+                        TaskTraits.UI_DEFAULT, () -> tabLayout.getTabAt(tabIndex).select());
             }
         };
     }
@@ -453,7 +453,7 @@ public class ManualFillingTestHelper {
                     for (int buttonIndex = 0; buttonIndex < buttonGroupView.getButtons().size(); buttonIndex++) {
                         final ChromeImageButton button = buttonGroupView.getButtons().get(buttonIndex);
                         if (descriptionToMatch.equals(button.getContentDescription())) {
-                            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, button::performClick);
+                            PostTask.runOrPostTask(TaskTraits.UI_DEFAULT, button::performClick);
                             return;
                         }
                     }
@@ -465,7 +465,7 @@ public class ManualFillingTestHelper {
                 for (int tabIndex = 0; tabIndex < tabLayout.getTabCount(); tabIndex++) {
                     final TabLayout.Tab tab = tabLayout.getTabAt(tabIndex);
                     if (descriptionToMatch.equals(tab.getContentDescription())) {
-                        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, tab::select);
+                        PostTask.runOrPostTask(TaskTraits.UI_DEFAULT, tab::select);
                         return;
                     }
                 }

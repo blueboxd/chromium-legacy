@@ -12,6 +12,12 @@ namespace ui {
 class ImageModel;
 }  // namespace ui
 
+namespace views {
+class ImageView;
+class Label;
+class ToggleButton;
+}  // namespace views
+
 class Browser;
 class ExtensionsMenuNavigationHandler;
 
@@ -21,8 +27,6 @@ class ExtensionsMenuSitePermissionsPageView : public views::View {
 
   explicit ExtensionsMenuSitePermissionsPageView(
       Browser* browser,
-      std::u16string extension_name,
-      ui::ImageModel extension_icon,
       extensions::ExtensionId extension_id,
       ExtensionsMenuNavigationHandler* navigation_handler);
   ExtensionsMenuSitePermissionsPageView(
@@ -31,10 +35,32 @@ class ExtensionsMenuSitePermissionsPageView : public views::View {
       const ExtensionsMenuSitePermissionsPageView&) = delete;
   ~ExtensionsMenuSitePermissionsPageView() override = default;
 
+  // Updates the page contents with the given parameters.
+  void Update(const std::u16string& extension_name,
+              const ui::ImageModel& extension_icon,
+              bool is_show_requests_toggle_on);
+
+  // Updates `show_requests_toggle_` state to `is_on`.
+  void UpdateShowRequestsToggle(bool is_on);
+
+  // Sets whether the extension pointed by `extension_id_` can request access
+  // the toolbar.
+  void OnShowRequestsTogglePressed();
+
   extensions::ExtensionId extension_id() { return extension_id_; }
 
+  // Accessors used by tests:
+  views::ToggleButton* GetShowRequestsToggleForTesting() {
+    return show_requests_toggle_;
+  }
+
  private:
+  const raw_ptr<Browser> browser_;
   extensions::ExtensionId extension_id_;
+
+  raw_ptr<views::ImageView> extension_icon_;
+  raw_ptr<views::Label> extension_name_;
+  raw_ptr<views::ToggleButton> show_requests_toggle_;
 };
 
 BEGIN_VIEW_BUILDER(/* no export */,

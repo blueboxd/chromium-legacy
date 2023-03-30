@@ -68,7 +68,7 @@ using ConsumeAnimationItemValue = CSSValue* (*)(CSSPropertyID,
                                                 bool use_legacy_parsing);
 using IsPositionKeyword = bool (*)(CSSValueID);
 
-constexpr size_t kMaxNumAnimationLonghands = 10;
+constexpr size_t kMaxNumAnimationLonghands = 12;
 
 void Complete4Sides(CSSValue* side[4]);
 
@@ -142,7 +142,8 @@ CSSPrimitiveValue* ConsumeHue(CSSParserTokenRange&,
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&,
                                const CSSParserContext&,
                                CSSPrimitiveValue::ValueRange);
-CSSNumericLiteralValue* ConsumeResolution(CSSParserTokenRange&);
+CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange&,
+                                     const CSSParserContext&);
 CSSValue* ConsumeRatio(CSSParserTokenRange&, const CSSParserContext&);
 CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeIdentRange(CSSParserTokenRange&,
@@ -327,7 +328,9 @@ CSSValue* ConsumeTimelineRangeName(CSSParserTokenRange&);
 CSSValue* ConsumeTimelineRangeNameAndPercent(CSSParserTokenRange&,
                                              const CSSParserContext&);
 CSSValue* ConsumeAnimationDelay(CSSParserTokenRange&, const CSSParserContext&);
-CSSValue* ConsumeAnimationRange(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* ConsumeAnimationRange(CSSParserTokenRange&,
+                                const CSSParserContext&,
+                                double default_offset_percent);
 
 bool ConsumeAnimationShorthand(
     const StylePropertyShorthand&,

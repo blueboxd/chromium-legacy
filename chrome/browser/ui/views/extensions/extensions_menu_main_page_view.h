@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr_exclusion.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 #include "ui/views/view.h"
 
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -44,14 +45,21 @@ class ExtensionsMenuMainPageView : public views::View {
   void CreateAndInsertMenuItem(
       std::unique_ptr<ExtensionActionViewController> action_controller,
       extensions::ExtensionId extension_id,
-      bool allow_pinning,
+      ExtensionMenuItemView::SitePermissionsButtonState
+          site_permissions_button_state,
       int index);
 
   // Removes the menu item corresponding to `action_id`.
   void RemoveMenuItem(const ToolbarActionsModel::ActionId& action_id);
 
-  // Updates the view based on `web_contents`.
-  void Update(content::WebContents* web_contents);
+  // Returns the menu items.
+  std::vector<ExtensionMenuItemView*> GetMenuItems() const;
+
+  // Updates the page with the given parameters. Does not update the menu items
+  // (menu item updates are handled directly in such view).
+  void Update(std::u16string current_site,
+              bool is_site_settings_toggle_visible,
+              bool is_site_settings_toggle_on);
 
   // Updates the pin button of each menu item.
   void UpdatePinButtons();
@@ -60,14 +68,15 @@ class ExtensionsMenuMainPageView : public views::View {
 
   // Accessors used by tests:
   // Returns the currently-showing menu items.
-  std::vector<ExtensionMenuItemView*> GetMenuItemsForTesting() const;
+  views::ToggleButton* GetSiteSettingsToggleForTesting() {
+    return site_settings_toggle_;
+  }
 
  private:
   content::WebContents* GetActiveWebContents() const;
 
   const raw_ptr<Browser> browser_;
   const raw_ptr<ExtensionsMenuNavigationHandler> navigation_handler_;
-  const raw_ptr<ToolbarActionsModel> toolbar_model_;
 
   // Subheader section.
   raw_ptr<views::Label> subheader_subtitle_;

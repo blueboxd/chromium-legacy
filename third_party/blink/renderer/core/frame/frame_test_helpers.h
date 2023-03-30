@@ -339,8 +339,8 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
       TestWebFrameClient* = nullptr,
       WebViewClient* = nullptr,
       void (*update_settings_func)(WebSettings*) = nullptr,
-      absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode =
-          absl::nullopt);
+      absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+          fenced_frame_mode = absl::nullopt);
 
   // Same as InitializeWithOpener(), but always sets the opener to null.
   WebViewImpl* Initialize(TestWebFrameClient* = nullptr,
@@ -473,7 +473,8 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
   void InitializeWebView(
       WebViewClient*,
       class WebView* opener,
-      absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode);
+      absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+          fenced_frame_mode);
   void CheckFrameIsAssociatedWithWebView(WebFrame* frame);
 
   bool viewport_enabled_ = false;
@@ -544,7 +545,8 @@ class TestWebFrameClient : public WebLocalFrameClient {
       const SessionStorageNamespaceId&,
       bool& consumed_user_gesture,
       const absl::optional<Impression>&,
-      const absl::optional<WebPictureInPictureWindowOptions>&) override;
+      const absl::optional<WebPictureInPictureWindowOptions>&,
+      const WebURL& base_url) override;
 
   int VisuallyNonEmptyLayoutCount() const {
     return visually_non_empty_layout_count_;

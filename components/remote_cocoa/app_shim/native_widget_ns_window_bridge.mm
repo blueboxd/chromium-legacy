@@ -17,6 +17,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/sys_string_conversions.h"
@@ -34,7 +35,6 @@
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
-#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #include "ui/base/cocoa/cursor_utils.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
@@ -47,7 +47,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -312,8 +311,7 @@ NativeWidgetNSWindowBridge::NativeWidgetNSWindowBridge(
     : id_(bridged_native_widget_id),
       host_(host),
       host_helper_(host_helper),
-      text_input_host_(text_input_host),
-      ns_weak_factory_(this) {
+      text_input_host_(text_input_host) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));
 }
@@ -436,6 +434,8 @@ void NativeWidgetNSWindowBridge::InitWindow(
   if (params->is_headless_mode_window)
     headless_mode_window_ = absl::make_optional<HeadlessModeWindow>();
 
+  [window_ setIsHeadless:params->is_headless_mode_window];
+
   // Register for application hide notifications so that visibility can be
   // properly tracked. This is not done in the delegate so that the lifetime is
   // tied to the C++ object, rather than the delegate (which may be reference
@@ -500,34 +500,6 @@ void NativeWidgetNSWindowBridge::SetInitialBounds(
 void NativeWidgetNSWindowBridge::SetBounds(
     const gfx::Rect& new_bounds,
     const gfx::Size& minimum_content_size) {
-  // In headless mode we keep track of the expected window size and report it to
-  // the |host_| when it changes. The platform window is positioned only once
-  // during initialization and may have smaller size than the requested window
-  // size because Cocoa clamps windows size to the available display area which
-  // is undesirable for headless mode.
-  if (headless_mode_window_) {
-    if (new_bounds != headless_mode_window_->bounds) {
-      headless_mode_window_->bounds = new_bounds;
-      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(
-                         [](WeakPtrNSObject* handle) {
-                           if (auto* bridge = ui::WeakPtrNSObjectFactory<
-                                   NativeWidgetNSWindowBridge>::Get(handle)) {
-                             bridge->UpdateWindowGeometry();
-                           }
-                         },
-                         ns_weak_factory_.handle()));
-    }
-
-    if (headless_mode_window_->initial_bounds_set) {
-      return;
-    }
-
-    // Fall through to set platform window size once. This ensures that the
-    // platform window has reasonable size.
-    headless_mode_window_->initial_bounds_set = true;
-  }
-
   // -[NSWindow contentMinSize] is only checked by Cocoa for user-initiated
   // resizes. This is not what toolkit-views expects, so clamp. Note there is
   // no check for maximum size (consistent with aura::Window::SetBounds()).
@@ -707,13 +679,12 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
-              [](WeakPtrNSObject* handle) {
-                if (auto* bridge = ui::WeakPtrNSObjectFactory<
-                        NativeWidgetNSWindowBridge>::Get(handle)) {
-                  bridge->OnWindowKeyStatusChangedTo(/*is_key*/ true);
+              [](const base::WeakPtr<NativeWidgetNSWindowBridge>& bridge) {
+                if (bridge) {
+                  bridge->OnWindowKeyStatusChangedTo(/*is_key=*/true);
                 }
               },
-              ns_weak_factory_.handle()));
+              factory_.GetWeakPtr()));
     }
     return;
   }
@@ -874,21 +845,22 @@ bool NativeWidgetNSWindowBridge::HasCapture() {
 
 void NativeWidgetNSWindowBridge::SetLocalEventMonitorEnabled(bool enabled) {
   if (enabled) {
-    // Create the event montitor if it does not exist yet.
-    if (key_down_event_monitor_)
+    // Create the event monitor if it does not exist yet.
+    if (key_down_event_monitor_) {
       return;
+    }
 
-    // Capture a WeakPtr via NSObject. This allows the block to detect another
-    // event monitor for the same event deleting `this`.
-    WeakPtrNSObject* handle = ns_weak_factory_.handle();
+    base::WeakPtr<NativeWidgetNSWindowBridge> weak_ptr = factory_.GetWeakPtr();
+
     auto block = ^NSEvent*(NSEvent* event) {
-      auto* bridge =
-          ui::WeakPtrNSObjectFactory<NativeWidgetNSWindowBridge>::Get(handle);
-      if (!bridge)
+      if (!weak_ptr) {
         return event;
+      }
+
       std::unique_ptr<ui::Event> ui_event = ui::EventFromNative(event);
       bool event_handled = false;
-      bridge->host_->DispatchMonitorEvent(std::move(ui_event), &event_handled);
+      weak_ptr->host_->DispatchMonitorEvent(std::move(ui_event),
+                                            &event_handled);
       return event_handled ? nil : event;
     };
     key_down_event_monitor_ =
@@ -1007,6 +979,28 @@ void NativeWidgetNSWindowBridge::ImmersiveFullscreenRevealUnlock() {
   if (immersive_mode_controller_) {
     immersive_mode_controller_->RevealUnlock();
   }
+}
+
+bool NativeWidgetNSWindowBridge::ImmersiveFullscreenIsEnabled() {
+  if (!immersive_mode_controller_) {
+    return false;
+  }
+  return immersive_mode_controller_->is_enabled();
+}
+
+bool NativeWidgetNSWindowBridge::ImmersiveFullscreenIsTabbed() {
+  if (!immersive_mode_controller_) {
+    return false;
+  }
+  return immersive_mode_controller_->IsTabbed();
+}
+
+mojom::ToolbarVisibilityStyle
+NativeWidgetNSWindowBridge::ImmersiveFullscreenLastUsedStyle() {
+  if (!immersive_mode_controller_) {
+    return mojom::ToolbarVisibilityStyle::kAlways;
+  }
+  return immersive_mode_controller_->last_used_style();
 }
 
 void NativeWidgetNSWindowBridge::SetCanGoBack(bool can_go_back) {
@@ -1570,8 +1564,7 @@ void NativeWidgetNSWindowBridge::ClearTouchBar() {
 }
 
 void NativeWidgetNSWindowBridge::UpdateTooltip() {
-  NSPoint nspoint =
-      ui::ConvertPointFromScreenToWindow(window_, [NSEvent mouseLocation]);
+  NSPoint nspoint = [window_ convertPointFromScreen:NSEvent.mouseLocation];
   // Note: flip in the view's frame, which matches the window's contentRect.
   gfx::Point point(nspoint.x, NSHeight([bridged_view_ frame]) - nspoint.y);
   [bridged_view_ updateTooltipIfRequiredAt:point];
@@ -1686,27 +1679,6 @@ void NativeWidgetNSWindowBridge::UpdateWindowGeometry() {
   gfx::Rect window_in_screen = gfx::ScreenRectFromNSRect([window_ frame]);
   gfx::Rect content_in_screen = gfx::ScreenRectFromNSRect(
       [window_ contentRectForFrameRect:[window_ frame]]);
-
-  // In headless mode the platform window dimensions are only used to calculate
-  // content rectangle inset. The host is reported the expected window size that
-  // was set in |SetBounds|.
-  if (headless_mode_window_) {
-    gfx::Insets insets;
-    insets.set_left(content_in_screen.x() - window_in_screen.x());
-    insets.set_right(window_in_screen.right() - content_in_screen.right());
-    insets.set_top(content_in_screen.y() - window_in_screen.y());
-    insets.set_bottom(window_in_screen.bottom() - content_in_screen.bottom());
-
-    // Apply platform window content rectangle insets to the headless bounds
-    // to find out headless content rectangle.
-    gfx::Rect headless_content_rect = headless_mode_window_->bounds;
-    headless_content_rect.Inset(insets);
-
-    host_->OnWindowGeometryChanged(headless_mode_window_->bounds,
-                                   headless_content_rect);
-    return;
-  }
-
   bool content_resized = content_dip_size_ != content_in_screen.size();
   content_dip_size_ = content_in_screen.size();
 

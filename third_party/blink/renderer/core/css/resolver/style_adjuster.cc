@@ -855,7 +855,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
       if ((element && element->IsInTopLayer()) ||
           builder.StyleType() == kPseudoIdBackdrop) {
-        builder.SetTopLayer(ETopLayer::kBrowser);
+        builder.SetOverlay(EOverlay::kAuto);
       }
     }
 
@@ -865,7 +865,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // to 'absolute'. Root elements that are in the top layer should just
     // be left alone because the fullscreen.css doesn't apply any style to
     // them.
-    if ((builder.TopLayer() == ETopLayer::kBrowser && !is_document_element) ||
+    if ((builder.Overlay() == EOverlay::kAuto && !is_document_element) ||
         builder.StyleType() == kPseudoIdViewTransition) {
       if (builder.GetPosition() == EPosition::kStatic ||
           builder.GetPosition() == EPosition::kRelative) {
@@ -942,7 +942,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     builder.SetForcesStackingContext(true);
   }
 
-  if (builder.TopLayer() == ETopLayer::kBrowser ||
+  if (builder.Overlay() == EOverlay::kAuto ||
       builder.StyleType() == kPseudoIdViewTransition) {
     builder.SetForcesStackingContext(true);
   }
@@ -1095,22 +1095,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   AdjustAnchorQueryStyles(builder);
 
-  if (!HasFullNGFragmentationSupport()) {
-    // When establishing a block fragmentation context for LayoutNG, we require
-    // that everything fragmentable inside can be laid out by NG natively, since
-    // NG and legacy layout cannot cooperate within the same fragmentation
-    // context. And vice versa (everything inside a legacy fragmentation context
-    // needs to be legacy objects, in order to be fragmentable). Set a flag, so
-    // that we can quickly determine whether we need to check that an element is
-    // compatible with the block fragmentation implementation being used.
-    if (builder.SpecifiesColumns() ||
-        (element && element->GetDocument().Printing())) {
-      builder.SetInsideFragmentationContextWithNondeterministicEngine(true);
-    }
-  }
-
   if (element && element->HasCustomStyleCallbacks()) {
     element->AdjustStyle(base::PassKey<StyleAdjuster>(), builder);
+  }
+
+  if (element && ViewTransitionUtils::IsViewTransitionParticipantFromSupplement(
+                     *element)) {
+    builder.SetElementIsViewTransitionParticipant();
   }
 }
 

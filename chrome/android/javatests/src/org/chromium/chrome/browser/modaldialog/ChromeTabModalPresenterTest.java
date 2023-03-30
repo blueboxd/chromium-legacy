@@ -26,10 +26,10 @@ import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtil
 import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.showDialog;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
-import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.Espresso;
 import androidx.test.filters.SmallTest;
 
@@ -186,6 +186,7 @@ public class ChromeTabModalPresenterTest {
     @SmallTest
     @Feature({"ModalDialog"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "https://crbug.com/1420186")
     public void testSuspend_ToggleOverview() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivity.getActivityTab().addObserver(mTestObserver));

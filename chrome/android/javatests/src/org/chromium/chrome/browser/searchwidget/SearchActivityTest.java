@@ -16,13 +16,13 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.Stage;
 import android.view.KeyEvent;
 import android.view.View;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
+import androidx.test.runner.lifecycle.Stage;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -703,6 +703,7 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // The active color is only apply to the phone.
     @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
     @CommandLineFlags.
     Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
@@ -727,6 +728,7 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // The active color is only apply to the phone.
     @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
     @CommandLineFlags.
     Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",

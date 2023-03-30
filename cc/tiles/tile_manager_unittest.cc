@@ -49,6 +49,7 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -1563,8 +1564,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   ManagedMemoryPolicy policy = host_impl()->ActualManagedMemoryPolicy();
   policy.bytes_limit_when_visible =
-      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(gfx::Size(256, 256),
-                                                       viz::RGBA_8888);
+      viz::SinglePlaneFormat::kRGBA_8888.EstimatedSizeInBytes(
+          gfx::Size(256, 256));
   host_impl()->SetMemoryPolicy(policy);
 
   EXPECT_FALSE(host_impl()->is_likely_to_require_a_draw());
@@ -1573,7 +1574,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   ResourcePool::InUsePoolResource resource =
       host_impl()->resource_pool()->AcquireResource(
-          gfx::Size(256, 256), viz::RGBA_8888, gfx::ColorSpace());
+          gfx::Size(256, 256), viz::SinglePlaneFormat::kRGBA_8888,
+          gfx::ColorSpace());
   resource.set_gpu_backing(std::make_unique<StubGpuBacking>());
 
   host_impl()->tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
@@ -2309,7 +2311,8 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   ResourcePool::InUsePoolResource resource =
       host_impl->resource_pool()->AcquireResource(
-          kTileSize, viz::RGBA_8888, gfx::ColorSpace::CreateSRGB());
+          kTileSize, viz::SinglePlaneFormat::kRGBA_8888,
+          gfx::ColorSpace::CreateSRGB());
 
   resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
   host_impl->resource_pool()->PrepareForExport(resource);
@@ -2374,7 +2377,8 @@ void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   ResourcePool::InUsePoolResource resource =
       host_impl->resource_pool()->AcquireResource(
-          kTileSize, viz::RGBA_8888, gfx::ColorSpace::CreateSRGB());
+          kTileSize, viz::SinglePlaneFormat::kRGBA_8888,
+          gfx::ColorSpace::CreateSRGB());
   host_impl->resource_pool()->OnContentReplaced(resource, kInvalidatedId);
   host_impl->resource_pool()->ReleaseResource(std::move(resource));
 
@@ -3719,7 +3723,7 @@ class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
     PaintImage hdr_image = PaintImageBuilder::WithDefault()
                                .set_id(PaintImage::kInvalidId)
                                .set_is_high_bit_depth(true)
-                               .set_image(SkImage::MakeFromBitmap(bitmap),
+                               .set_image(SkImages::RasterFromBitmap(bitmap),
                                           PaintImage::GetNextContentId())
                                .TakePaintImage();
 
@@ -3787,10 +3791,13 @@ class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
     ASSERT_FALSE(
         host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
 
-    auto expected_format = output_cs.IsHDR() ? viz::RGBA_F16 : viz::RGBA_8888;
+    auto expected_format = output_cs.IsHDR()
+                               ? viz::SinglePlaneFormat::kRGBA_F16
+                               : viz::SinglePlaneFormat::kRGBA_8888;
     auto all_tiles = host_impl()->tile_manager()->AllTilesForTesting();
     for (const auto* tile : all_tiles)
-      EXPECT_EQ(expected_format, tile->draw_info().resource_format());
+      EXPECT_EQ(expected_format,
+                tile->draw_info().resource_shared_image_format());
   }
 };
 

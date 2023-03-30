@@ -38,11 +38,11 @@ import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.widget.TextView;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
@@ -197,7 +197,7 @@ public class StartSurfaceTest {
         onViewWaiting(withId(R.id.search_box_text)).check(matches(isDisplayed()));
         onViewWaiting(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
         onViewWaiting(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
-        onViewWaiting(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.tab_switcher_module_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
 
         StartSurfaceTestUtils.clickMoreTabs(cta);
@@ -240,7 +240,7 @@ public class StartSurfaceTest {
         onViewWaiting(withId(R.id.search_box_text));
         onViewWaiting(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
         onViewWaiting(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
-        onViewWaiting(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.tab_switcher_module_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
 
         // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
@@ -286,7 +286,7 @@ public class StartSurfaceTest {
         onViewWaiting(withId(R.id.search_box_text));
         onViewWaiting(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
         onViewWaiting(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
-        onViewWaiting(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.tab_switcher_module_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
 
         // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
@@ -320,7 +320,7 @@ public class StartSurfaceTest {
         onViewWaiting(withId(R.id.search_box_text));
         onView(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tab_switcher_title)).check(matches(withEffectiveVisibility(GONE)));
-        onView(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_switcher_module_container)).check(matches(isDisplayed()));
         onView(withId(R.id.single_tab_view)).check(matches(isDisplayed()));
         onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
 
@@ -557,7 +557,6 @@ public class StartSurfaceTest {
             assertEquals(0, START_SURFACE_RETURN_TIME_SECONDS.getValue());
         }
 
-        Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertEquals(isSingleTabSwitcher,
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
         StartSurfaceTestUtils.waitForStartSurfaceVisible(mLayoutChangedCallbackHelper,
@@ -737,7 +736,6 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @EnableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
-    @DisabledTest(message = "Flaky, crbug.com/1407193")
     public void testShow_SingleAsHomepage_DoNotResetScrollPositionFromBack() {
         assumeTrue(mImmediateReturn);
 

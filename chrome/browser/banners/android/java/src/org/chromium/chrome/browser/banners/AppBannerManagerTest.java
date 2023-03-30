@@ -28,12 +28,12 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.matcher.RootMatchers;
 import androidx.test.filters.MediumTest;
@@ -59,6 +59,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
@@ -66,6 +67,7 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.PackageManagerWrapper;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -111,7 +113,6 @@ import org.chromium.components.webapps.AppDetailsDelegate;
 import org.chromium.components.webapps.bottomsheet.PwaInstallBottomSheetView;
 import org.chromium.components.webapps.installable.InstallableAmbientBadgeInfoBar;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -121,6 +122,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.test.util.DeviceRestriction;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.ArrayList;
@@ -200,8 +202,8 @@ public class AppBannerManagerTest {
             mAppData = new AppData(url, packageName);
             mAppData.setPackageInfo(NATIVE_APP_TITLE, mTestServer.getURL(NATIVE_ICON_PATH), 4.5f,
                     NATIVE_APP_INSTALL_TEXT, null, mInstallIntent);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                    () -> { mObserver.onAppDetailsRetrieved(mAppData); });
+            PostTask.runOrPostTask(
+                    TaskTraits.UI_DEFAULT, () -> { mObserver.onAppDetailsRetrieved(mAppData); });
         }
 
         @Override
@@ -1142,6 +1144,7 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
+    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO}) // add to home screen not supported.
     @CommandLineFlags.Add({"enable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE + ","
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR,
             "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH + ","
@@ -1181,6 +1184,7 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
+    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO}) // add to home screen not supported.
     @CommandLineFlags.Add({"enable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE + ","
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE,
             "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH + ","

@@ -10,9 +10,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/features.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -73,6 +75,46 @@ void ModelTypeController::InitModelTypeController(
   if (delegate_for_transport_mode) {
     delegate_map_.emplace(SyncMode::kTransportOnly,
                           std::move(delegate_for_transport_mode));
+  } else {
+    // New Sync data types must generally support kTransportOnly mode. Only
+    // legacy types are still allowed to *not* support it for historical reasons
+    // (they will all be either migrated or retired eventually).
+    // There are two general ways to go about this:
+    // * Single storage: The feature is available to all signed-in users (no
+    //   distinction between syncing or non-syncing users), and doesn't support
+    //   signed-out users at all - so only a single storage is required.
+    //   Examples: SEND_TAB_TO_SELF, SHARING_MESSAGE.
+    // * Dual storage: The feature is also available to signed-out users (and
+    //   its behavior may or may not differ for syncing vs signed-in-not-syncing
+    //   users). Two storages are required to distinguish "local data" from
+    //   "account data" and keep them separate. Examples: PASSWORDS, BOOKMARKS.
+
+    // Notes on individual data types:
+    // * NIGORI *does* actually support transport-mode, but avoids a separate
+    //   delegate, see SyncEngineBackend::LoadAndConnectNigoriController().
+    // * BOOKMARKS and READING_LIST: Support is WIP.
+    // * PASSWORDS: Already supported on desktop; mobile is WIP.
+    // * PREFERENCES in all variants: Support is WIP.
+    // * History-related types (HISTORY, HISTORY_DELETE_DIRECTIVES, TYPED_URLS,
+    //   SESSIONS) are okay to *not* support transport mode.
+    // * APPS/APP_SETTINGS: Deprecated and will eventually be removed.
+    // * AUTOFILL/AUTOFILL_PROFILE: Semi-deprecated; will eventually be removed
+    //   or replaced by CONTACT_INFO.
+    // * AUTOFILL_WALLET_DATA: Can be removed from here once the corresponding
+    //   feature flag has been cleaned up (crbug.com/1413724).
+    // All other data types listed here will likely have to be migrated.
+    static constexpr ModelTypeSet kLegacyTypes(
+        BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE, AUTOFILL,
+        AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER,
+        AUTOFILL_WALLET_USAGE, THEMES, TYPED_URLS, EXTENSIONS, SEARCH_ENGINES,
+        SESSIONS, APPS, APP_SETTINGS, EXTENSION_SETTINGS,
+        HISTORY_DELETE_DIRECTIVES, DICTIONARY, PRIORITY_PREFERENCES, PRINTERS,
+        READING_LIST, USER_EVENTS, WIFI_CONFIGURATIONS, WEB_APPS,
+        OS_PREFERENCES, OS_PRIORITY_PREFERENCES, WORKSPACE_DESK, HISTORY,
+        SAVED_TAB_GROUP, POWER_BOOKMARK, NIGORI);
+    CHECK(kLegacyTypes.Has(type()))
+        << ModelTypeToDebugString(type())
+        << " must support running in transport mode!";
   }
 }
 
@@ -122,21 +164,10 @@ std::unique_ptr<DataTypeActivationResponse> ModelTypeController::Connect() {
   return std::move(activation_response_);
 }
 
-void ModelTypeController::Stop(ShutdownReason reason, StopCallback callback) {
+void ModelTypeController::Stop(SyncStopMetadataFate fate,
+                               StopCallback callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(delegate_ || state() == NOT_RUNNING || state() == FAILED);
-
-  // Leave metadata if we do not disable sync completely.
-  SyncStopMetadataFate metadata_fate = KEEP_METADATA;
-  switch (reason) {
-    case ShutdownReason::STOP_SYNC_AND_KEEP_DATA:
-      break;
-    case ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA:
-      metadata_fate = CLEAR_METADATA;
-      break;
-    case ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA:
-      break;
-  }
 
   switch (state()) {
     case NOT_RUNNING:
@@ -146,7 +177,7 @@ void ModelTypeController::Stop(ShutdownReason reason, StopCallback callback) {
       // Clear metadata if needed.
       if (base::FeatureList::IsEnabled(
               kSyncAllowClearingMetadataWhenDataTypeIsStopped) &&
-          metadata_fate == CLEAR_METADATA) {
+          fate == CLEAR_METADATA) {
         ClearMetadataWhileStopped();
       }
       return;
@@ -154,7 +185,7 @@ void ModelTypeController::Stop(ShutdownReason reason, StopCallback callback) {
     case STOPPING:
       DCHECK(!model_stop_callbacks_.empty());
       model_stop_metadata_fate_ =
-          TakeStrictestMetadataFate(model_stop_metadata_fate_, metadata_fate);
+          TakeStrictestMetadataFate(model_stop_metadata_fate_, fate);
       model_stop_callbacks_.push_back(std::move(callback));
       // This just means stopping was requested while starting the data type.
       // Metadata will cleared (if CLEAR_METADATA) in OnSyncStopping.
@@ -166,7 +197,7 @@ void ModelTypeController::Stop(ShutdownReason reason, StopCallback callback) {
       DLOG(WARNING) << "Deferring stop for " << ModelTypeToDebugString(type())
                     << " because it's still starting";
       model_load_callback_.Reset();
-      model_stop_metadata_fate_ = metadata_fate;
+      model_stop_metadata_fate_ = fate;
       model_stop_callbacks_.push_back(std::move(callback));
       // The actual stop will be executed when the starting process is finished.
       state_ = STOPPING;
@@ -177,7 +208,7 @@ void ModelTypeController::Stop(ShutdownReason reason, StopCallback callback) {
       DVLOG(1) << "Stopping sync for " << ModelTypeToDebugString(type());
       model_load_callback_.Reset();
       state_ = NOT_RUNNING;
-      delegate_->OnSyncStopping(metadata_fate);
+      delegate_->OnSyncStopping(fate);
       delegate_ = nullptr;
       std::move(callback).Run();
       break;

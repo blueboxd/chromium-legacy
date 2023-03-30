@@ -121,8 +121,21 @@ const char kHadBiometricsAvailable[] =
     "password_manager.had_biometrics_available";
 #endif
 
-extern const char kPasswordsGroupingInfoRequested[] =
+const char kPasswordsGroupingInfoRequested[] =
     "password_manager.passwords_grouping_info_requested";
+
+#if BUILDFLAG(IS_IOS)
+const char kAccountStorageNoticeShown[] =
+    "password_manager.account_storage_notice_shown";
+
+const char kAccountStorageNewFeatureIconImpressions[] =
+    "password_manager.account_storage_new_feature_icon_impressions";
+#endif  // BUILDFLAG(IS_IOS)
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+const char kPasswordManagerPromoCardsList[] =
+    "password_manager.password_promo_cards_list";
+#endif
 
 }  // namespace prefs
 }  // namespace password_manager

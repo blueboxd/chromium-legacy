@@ -13,9 +13,9 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_base_test.h"
+#include "chrome/browser/ash/login/app_mode/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/login/app_mode/test/test_app_data_load_waiter.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
-#include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
@@ -105,6 +105,7 @@ class KioskEnterpriseTest : public KioskBaseTest {
                                  const std::string& update_url) {
     std::vector<policy::DeviceLocalAccount> accounts;
     accounts.emplace_back(policy::DeviceLocalAccount::TYPE_KIOSK_APP,
+                          policy::DeviceLocalAccount::EphemeralMode::kUnset,
                           account_id, app_id, update_url);
     policy::SetDeviceLocalAccounts(owner_settings_service_.get(), accounts);
     settings_helper_.SetString(kAccountsPrefDeviceLocalAccountAutoLoginId,

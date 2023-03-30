@@ -41,6 +41,9 @@ inline constexpr base::FeatureParam<int> kMinGuResponsesToIgnoreKey{
 // by legacy clients not supporting password notes.
 // This feature is added here instead of the password manager codebase to avoid
 // cycle dependencies.
+// This feature is used in Credential Provider Extension on iOS. Keep the
+// default value in sync with the default value in
+// ios/chrome/credential_provider_extension/ui/feature_flags.mm.
 BASE_DECLARE_FEATURE(kPasswordNotesWithBackup);
 // Decides how long the user does not require reuathentication after
 // successfully authenticated.
@@ -136,16 +139,17 @@ inline constexpr base::FeatureParam<int>
         &kSyncEnableHistoryDataType, "foreign_visit_deletions_per_batch", 100};
 
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataType);
+BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeEarlyReturnNoDatabase);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForCustomPassphraseUsers);
+BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForDasherUsers);
+inline constexpr base::FeatureParam<bool>
+    kSyncEnableContactInfoDataTypeForDasherGoogleUsers{
+        &kSyncEnableContactInfoDataTypeForDasherUsers,
+        "enable_for_google_accounts", false};
 
 // If enabled, issues error and disables bookmarks sync when limit is crossed.
 BASE_DECLARE_FEATURE(kSyncEnforceBookmarksCountLimit);
-
-// Enabled by default, it acts as a kill switch for a newly-introduced logic,
-// which implies that DataTypeManager (and hence individual datatypes) won't be
-// notified about browser shutdown.
-BASE_DECLARE_FEATURE(kSyncDoNotPropagateBrowserShutdownToDataTypes);
 
 // Enables codepath to allow clearing metadata when the data type is stopped.
 BASE_DECLARE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped);
@@ -177,6 +181,17 @@ BASE_DECLARE_FEATURE(kEnablePreferencesAccountStorage);
 // startup. This is a temporary hack; see crbug.com/1425026.
 // TODO(crbug.com/1425071): Remove this.
 BASE_DECLARE_FEATURE(kSyncPollImmediatelyOnEveryStartup);
+
+#if BUILDFLAG(IS_IOS)
+// Feature flag to enable indicating the Account Storage error in the Account
+// Cell when Sync is turned OFF (iOS only).
+BASE_DECLARE_FEATURE(kIndicateAccountStorageErrorInAccountCell);
+#endif  // BUILDFLAG(IS_IOS)
+
+#if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
+// Enables syncing the WEBAUTHN_CREDENTIAL data type.
+BASE_DECLARE_FEATURE(kSyncWebauthnCredentials);
+#endif  // !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
 
 }  // namespace syncer
 

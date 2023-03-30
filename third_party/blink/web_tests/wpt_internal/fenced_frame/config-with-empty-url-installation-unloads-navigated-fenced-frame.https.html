@@ -16,12 +16,11 @@ promise_test(async () => {
   // Create a fenced frame and install a config constructed with an empty url.
   const fenced_frame = document.createElement('fencedframe');
   document.body.append(fenced_frame);
-  assert_equals(fenced_frame.mode, "default");
 
   // Specify the fenced frame's src attribute to an url.
   const url = generateURL('resources/fenced-frame-loaded.html',
                           [fenced_frame_loaded_key]);
-  fenced_frame.src = url;
+  fenced_frame.config = new FencedFrameConfig(url);
 
   // The fenced frame should navigate to the src url.
   const load_expected = "fenced frame loaded";

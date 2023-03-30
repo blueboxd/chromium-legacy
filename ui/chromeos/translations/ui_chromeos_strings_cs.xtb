@@ -97,6 +97,7 @@
 <translation id="1773212559869067373">Ověřovací certifikát byl místně odmítnut</translation>
 <translation id="1775381402323441512">Informace o videu</translation>
 <translation id="180035236176489073">Pro přístup k souborům musíte být online.</translation>
+<translation id="1805030087840125683">{COUNT,plural, =1{Rozšíření s ID}few{Rozšíření s ID}many{Rozšíření s ID}other{Rozšíření s ID}}</translation>
 <translation id="1807938677607439181">Všechny soubory</translation>
 <translation id="1810764548349082891">Náhled není k dispozici</translation>
 <translation id="1812302367230252929">amharština (přepis)</translation>
@@ -130,6 +131,7 @@
 <translation id="2084108471225856927">Nastavení zařízení</translation>
 <translation id="2084809735218147718">Znakování poděkování</translation>
 <translation id="2088690981887365033">Síť VPN</translation>
+<translation id="2111134541987263231">Zapněte možnost <ph name="BEGIN_BOLD" />Povolit v anonymním režimu<ph name="END_BOLD" />.</translation>
 <translation id="2114191879048183086">Položky (<ph name="NUMBER_OF_ITEMS" />) budou smazány bez možnosti obnovy.</translation>
 <translation id="2122305276694332719">Automatické připojování ke skryté síti umožňuje ostatním uživatelům zobrazit vaše zařízení a některá vaše nastavení sítě a nedoporučujeme jej.</translation>
 <translation id="2125607626296734455">khmerština</translation>
@@ -150,6 +152,7 @@
 <translation id="2236732657580416950">Mezipaměť Disku Google byla vymazána.</translation>
 <translation id="2239068707900391003">Člověk s kávou</translation>
 <translation id="2251368349685848079">Obnovit z koše</translation>
+<translation id="2278133026967558505">Přístup k souborům ze všech webů a adres URL</translation>
 <translation id="2282155092769082568">Adresa URL automatické konfigurace:</translation>
 <translation id="2284767815536050991">vyměnitelné úložiště</translation>
 <translation id="2288278176040912387">Gramofon</translation>
@@ -227,6 +230,7 @@
 <translation id="290843123675549676">maráthština</translation>
 <translation id="2923240520113693977">estonština</translation>
 <translation id="2938685643439809023">mongolština</translation>
+<translation id="293972288692056847">{COUNT,plural, =1{Rozšíření nelze najít}few{Rozšíření nelze najít}many{Rozšíření nelze najít}other{Rozšíření nelze najít}}</translation>
 <translation id="2943503720238418293">Použijte kratší název</translation>
 <translation id="2949781154072577687">Formátování disku <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Medúza</translation>
@@ -281,6 +285,7 @@
 <translation id="3356580349448036450">Dokončeno</translation>
 <translation id="3358452157379365236">Kytara</translation>
 <translation id="3368922792935385530">Připojeno</translation>
+<translation id="3372635229069101468">Klikněte na <ph name="BEGIN_BOLD" />Podrobnosti<ph name="END_BOLD" />.</translation>
 <translation id="3382143449143186018">nepálština s klávesnicí InScript</translation>
 <translation id="338691029516748599">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, spravováno administrátorem, připojit</translation>
 <translation id="3408072735282270043">Aktivovat, <ph name="NETWORK_NAME" /></translation>
@@ -365,6 +370,7 @@
 <translation id="4124935795427217608">Jednorožec</translation>
 <translation id="4131235941541910880">Nepotřebné položky přesuňte do koše</translation>
 <translation id="4134804435730168042">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, aktivujte po nastavení zařízení</translation>
+<translation id="41501027364808384">{COUNT,plural, =1{Zapněte v anonymním režimu následující rozšíření:}few{Zapněte v anonymním režimu následující rozšíření:}many{Zapněte v anonymním režimu následující rozšíření:}other{Zapněte v anonymním režimu následující rozšíření:}}</translation>
 <translation id="4153015322587141338">Klikněte pravým tlačítkem na soubor a výběrem možnosti <ph name="PIN_COMMAND" /> umožněte rychlý přístup k souborům na poličce.</translation>
 <translation id="4157569377477607576">Zásady administrátora nedoporučují:</translation>
 <translation id="4159731583141908892">Přesunutá položka: <ph name="FILE_NAME" />.</translation>
@@ -461,8 +467,10 @@
 <translation id="4801956050125744859">Ponechat obojí</translation>
 <translation id="4804827417948292437">Avokádo</translation>
 <translation id="4805966553127040832">Obnovování <ph name="COUNT" /> položek…</translation>
+<translation id="4816695657735045067">{COUNT,plural, =1{K použití anonymního režimu vaše organizace vyžaduje rozšíření}few{K použití anonymního režimu vaše organizace vyžaduje určitá rozšíření}many{K použití anonymního režimu vaše organizace vyžaduje určitá rozšíření}other{K použití anonymního režimu vaše organizace vyžaduje určitá rozšíření}}</translation>
 <translation id="4823651846660089135">Zařízení je pouze pro čtení</translation>
 <translation id="4826849268470072925">tamilština ITRANS</translation>
+<translation id="482932175346970750">Do prohlížeče zadejte adresu <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" />.</translation>
 <translation id="4839847978919684242">Vybrané položky: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
@@ -531,6 +539,7 @@
     <ph name="MARKUP_7" />Sdílejte, vytvářejte a spolupracujte<ph name="MARKUP_8" /> na souborech s ostatními, a to vše na jednom místě.<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">Obnovené soubory z Disku Google</translation>
 <translation id="5278111733643988471">Pokud tuto položku chcete obnovit, přetáhněte ji do nové složky mimo koš. Původní složka „<ph name="PARENT_FOLDER_NAME" />“ pro tuto položku byla smazána.</translation>
+<translation id="5283101102242354279">Zapnutí rozšíření v anonymním režimu:</translation>
 <translation id="5286194356314741248">Skenování</translation>
 <translation id="5288441970121584418">Hamburger</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
@@ -626,6 +635,7 @@
 <translation id="603895874132768835">Tuto síť budete moci používat až poté, co si nastavíte nový PIN</translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="6055907707645252013">Síť: <ph name="NETWORK_TYPE" />, nepřipojeno</translation>
+<translation id="6073060579181816027">Více umístění souborů</translation>
 <translation id="6074825444536523002">Formulář Google</translation>
 <translation id="6079871810119356840">maďarština s klávesnicí Qwerty</translation>
 <translation id="6096979789310008754">Text vyhledávání byl vymazán, zobrazeny jsou všechny soubory a složky.</translation>
@@ -766,6 +776,7 @@
 <translation id="7162080671816799010">Chybí údaj „Shoda alternativních názvů subjektu“ nebo „Shoda přípon domén“ k ověření identity ověřovacího serveru</translation>
 <translation id="7165320105431587207">Konfigurace sítě se nezdařila</translation>
 <translation id="7170041865419449892">Mimo dosah</translation>
+<translation id="7179579940054351344">Přístup k souborům ze všech webů a adres URL kromě <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">Uložit soubor jako</translation>
@@ -775,6 +786,7 @@
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, podrobnosti</translation>
 <translation id="7246947237293279874">Proxy server protokolu FTP</translation>
 <translation id="7248671827512403053">Aplikace</translation>
+<translation id="7252604552361840748">Najděte výše uvedené rozšíření.</translation>
 <translation id="7256405249507348194">Neznámá chyba: <ph name="DESC" /></translation>
 <translation id="7268659760406822741">Dostupné služby</translation>
 <translation id="7292816689782057017">Zásady administrátora omezují ukládání do určitých umístění.</translation>
@@ -788,6 +800,7 @@
 <translation id="7359359531237882347">Kopírování <ph name="NUMBER_OF_ITEMS" /> položek...</translation>
 <translation id="7375951387215729722">Seznam souborů seřazený sestupně podle sloupce <ph name="COLUMN_NAME" />.</translation>
 <translation id="7377161162143020057">Zkopírováni tohoto souboru je blokováno zásadami administrátora</translation>
+<translation id="7392500733467492920">se nepodařilo najít. Kontaktujte svého administrátora.</translation>
 <translation id="7402503521691663770">Zařízení se systémem ChromeOS Flex</translation>
 <translation id="7408870451288633753">čeština</translation>
 <translation id="7417453074306512035">Etiopská klávesnice</translation>
@@ -939,6 +952,7 @@
 <translation id="8492972329130824181">Domácí síť není k dispozici. K připojení musí být zapnutý roaming pro mobilní data.</translation>
 <translation id="8499098729323186194">Rozbalování položek (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="8502913769543567768">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, aktivujte po nastavení zařízení, spravováno administrátorem</translation>
+<translation id="8512483403832814140">Kdykoli</translation>
 <translation id="8521441079177373948">Britská klávesnice</translation>
 <translation id="853494022971700746">francouzština (Francie)</translation>
 <translation id="8540608333167683902">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>

@@ -30,12 +30,14 @@ void FakeInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {}
 
 void FakeInputMethodContext::SetSurroundingText(
     const std::u16string& text,
+    const gfx::Range& text_range,
     const gfx::Range& selection_range) {}
 
 void FakeInputMethodContext::SetContentType(TextInputType type,
                                             TextInputMode mode,
                                             uint32_t flags,
-                                            bool should_do_learning) {}
+                                            bool should_do_learning,
+                                            bool can_compose_inline) {}
 
 void FakeInputMethodContext::SetGrammarFragmentAtCursor(
     const ui::GrammarFragment& fragment) {}

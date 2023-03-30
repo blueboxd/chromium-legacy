@@ -37,17 +37,19 @@ CacheStorageContextImpl::CacheStorageContextImpl(
 CacheStorageContextImpl::~CacheStorageContextImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  cache_manager_->DeleteStorageKeyData(
-      storage_keys_to_purge_on_shutdown_,
-      storage::mojom::CacheStorageOwner::kCacheAPI,
+  if (!origins_to_purge_on_shutdown_.empty()) {
+    cache_manager_->DeleteOriginData(
+        origins_to_purge_on_shutdown_,
+        storage::mojom::CacheStorageOwner::kCacheAPI,
 
-      // Retain a reference to the manager until the deletion is
-      // complete, since it internally uses weak pointers for
-      // the various stages of deletion and nothing else will
-      // keep it alive during shutdown.
-      base::BindOnce([](scoped_refptr<CacheStorageManager> cache_manager,
-                        blink::mojom::QuotaStatusCode) {},
-                     cache_manager_));
+        // Retain a reference to the manager until the deletion is
+        // complete, since it internally uses weak pointers for
+        // the various stages of deletion and nothing else will
+        // keep it alive during shutdown.
+        base::BindOnce([](scoped_refptr<CacheStorageManager> cache_manager,
+                          blink::mojom::QuotaStatusCode) {},
+                       cache_manager_));
+  }
 }
 
 // static
@@ -155,11 +157,9 @@ void CacheStorageContextImpl::ApplyPolicyUpdates(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& update : policy_updates) {
     if (!update->purge_on_shutdown)
-      storage_keys_to_purge_on_shutdown_.erase(
-          blink::StorageKey::CreateFirstParty(update->origin));
+      origins_to_purge_on_shutdown_.erase(update->origin);
     else
-      storage_keys_to_purge_on_shutdown_.insert(
-          blink::StorageKey::CreateFirstParty(std::move(update->origin)));
+      origins_to_purge_on_shutdown_.insert(std::move(update->origin));
   }
 }
 

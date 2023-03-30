@@ -30,6 +30,7 @@ bool PasswordFeatureManagerImpl::IsGenerationEnabled() const {
     case SyncState::kSyncingWithCustomPassphrase:
     case SyncState::kSyncingNormalEncryption:
     case SyncState::kAccountPasswordsActiveNormalEncryption:
+    case SyncState::kAccountPasswordsActiveWithCustomPassphrase:
       return true;
   }
 }
@@ -53,7 +54,6 @@ bool PasswordFeatureManagerImpl::IsBiometricAuthenticationBeforeFillingEnabled()
          pref_service_->GetBoolean(
              password_manager::prefs::kBiometricAuthenticationBeforeFilling);
 #else
-  NOTREACHED();
   return false;
 #endif
 }

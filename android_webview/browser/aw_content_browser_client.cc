@@ -618,7 +618,8 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
       // used to perform real time URL check, which is gated by UKM opted-in.
       // Since AW currently doesn't support UKM, this feature is not enabled.
       /* rt_lookup_service */ nullptr,
-      /* hash_realtime_service */ nullptr));
+      /* hash_realtime_service */ nullptr,
+      /* ping_manager */ nullptr));
 
   if (request.destination == network::mojom::RequestDestination::kDocument) {
     const bool is_load_url =
@@ -1075,7 +1076,8 @@ bool AwContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(
 
 bool AwContentBrowserClient::ShouldPreconnectNavigation(
     content::BrowserContext* browser_context) {
-  return true;
+  // This didn't make a performance improvement in WebView.
+  return false;
 }
 
 void AwContentBrowserClient::OnDisplayInsecureContent(

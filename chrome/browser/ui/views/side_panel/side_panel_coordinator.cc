@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include <memory>
+#include <utility>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -21,8 +22,10 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_combobox_model.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_toolbar_container.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -59,18 +62,9 @@ SidePanelEntry::Id GetDefaultEntry() {
              : SidePanelEntry::Id::kReadingList;
 }
 
-std::unique_ptr<views::ImageButton> CreateControlButton(
-    views::View* host,
-    base::RepeatingClosure pressed_callback,
-    const gfx::VectorIcon& icon,
-    const std::u16string& tooltip_text,
-    ui::ElementIdentifier view_id,
-    int dip_size) {
-  auto button = views::CreateVectorImageButtonWithNativeTheme(pressed_callback,
-                                                              icon, dip_size);
-  button->SetTooltipText(tooltip_text);
+void ConfigureControlButton(views::ImageButton* button) {
   button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
-  views::InstallCircleHighlightPathGenerator(button.get());
+  views::InstallCircleHighlightPathGenerator(button);
 
   int minimum_button_size = ChromeLayoutProvider::Get()->GetDistanceMetric(
       ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_BUTTON_MINIMUM_SIZE);
@@ -84,6 +78,44 @@ std::unique_ptr<views::ImageButton> CreateControlButton(
   button->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification().WithAlignment(views::LayoutAlignment::kEnd));
+}
+
+std::unique_ptr<views::ToggleImageButton> CreatePinToggleButton(
+    base::RepeatingClosure pressed_callback) {
+  auto button =
+      std::make_unique<views::ToggleImageButton>(std::move(pressed_callback));
+  views::ConfigureVectorImageButton(button.get());
+  ConfigureControlButton(button.get());
+  button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_SIDE_PANEL_TOOLBAR_BUTTON_CXMENU_PIN));
+  button->SetToggledTooltipText(
+      l10n_util::GetStringUTF16(IDS_SIDE_PANEL_TOOLBAR_BUTTON_CXMENU_UNPIN));
+
+  int dip_size = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE);
+  views::SetImageFromVectorIconWithColorId(button.get(), views::kPinIcon,
+                                           ui::kColorIcon,
+                                           ui::kColorIconDisabled, dip_size);
+  const ui::ImageModel& normal_image = ui::ImageModel::FromVectorIcon(
+      views::kUnpinIcon, ui::kColorIcon, dip_size);
+  const ui::ImageModel& disabled_image = ui::ImageModel::FromVectorIcon(
+      views::kUnpinIcon, ui::kColorIconDisabled, dip_size);
+  button->SetToggledImageModel(views::Button::STATE_NORMAL, normal_image);
+  button->SetToggledImageModel(views::Button::STATE_DISABLED, disabled_image);
+  return button;
+}
+
+std::unique_ptr<views::ImageButton> CreateControlButton(
+    views::View* host,
+    base::RepeatingClosure pressed_callback,
+    const gfx::VectorIcon& icon,
+    const std::u16string& tooltip_text,
+    ui::ElementIdentifier view_id,
+    int dip_size) {
+  auto button = views::CreateVectorImageButtonWithNativeTheme(pressed_callback,
+                                                              icon, dip_size);
+  button->SetTooltipText(tooltip_text);
+  ConfigureControlButton(button.get());
   button->SetProperty(views::kElementIdentifierKey, view_id);
 
   return button;
@@ -228,8 +260,9 @@ void SidePanelCoordinator::SetSidePanelButtonTooltipText(
   auto* toolbar = browser_view_->toolbar();
   // On Progressive web apps, the toolbar can be null when opening the side
   // panel. This check is added as a added safeguard.
-  if (toolbar && toolbar->side_panel_button())
-    toolbar->side_panel_button()->SetTooltipText(tooltip_text);
+  if (toolbar && toolbar->GetSidePanelButton()) {
+    toolbar->GetSidePanelButton()->SetTooltipText(tooltip_text);
+  }
 }
 
 void SidePanelCoordinator::Close() {
@@ -305,6 +338,16 @@ void SidePanelCoordinator::OpenInNewTab() {
   Close();
 }
 
+void SidePanelCoordinator::UpdatePinState() {
+  PrefService* pref_service = browser_view_->GetProfile()->GetPrefs();
+  if (pref_service) {
+    bool current_state = pref_service->GetBoolean(
+        prefs::kSidePanelCompanionEntryPinnedToToolbar);
+    pref_service->SetBoolean(prefs::kSidePanelCompanionEntryPinnedToToolbar,
+                             !current_state);
+  }
+}
+
 absl::optional<SidePanelEntry::Id> SidePanelCoordinator::GetCurrentEntryId()
     const {
   return current_entry_
@@ -319,15 +362,17 @@ SidePanelEntry::Id SidePanelCoordinator::GetComboboxDisplayedEntryIdForTesting()
 }
 
 SidePanelEntry* SidePanelCoordinator::GetLoadingEntryForTesting() const {
-  SidePanelContentSwappingContainer* content_wrapper =
-      static_cast<SidePanelContentSwappingContainer*>(
-          GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
-  DCHECK(content_wrapper);
-  return content_wrapper->loading_entry();
+  return GetLoadingEntry();
 }
 
-bool SidePanelCoordinator::IsSidePanelShowing() {
+bool SidePanelCoordinator::IsSidePanelShowing() const {
   return GetContentView() != nullptr;
+}
+
+bool SidePanelCoordinator::IsSidePanelEntryShowing(
+    const SidePanelEntry* entry) const {
+  return IsSidePanelShowing() && current_entry_ &&
+         current_entry_.get() == entry;
 }
 
 void SidePanelCoordinator::Show(
@@ -405,6 +450,14 @@ SidePanelEntry* SidePanelCoordinator::GetActiveContextualEntryForKey(
              : nullptr;
 }
 
+SidePanelEntry* SidePanelCoordinator::GetLoadingEntry() const {
+  SidePanelContentSwappingContainer* content_wrapper =
+      static_cast<SidePanelContentSwappingContainer*>(
+          GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
+  DCHECK(content_wrapper);
+  return content_wrapper->loading_entry();
+}
+
 bool SidePanelCoordinator::IsGlobalEntryShowing(
     const SidePanelEntry::Key& entry_key) const {
   if (!GetContentView() || !current_entry_) {
@@ -479,6 +532,11 @@ void SidePanelCoordinator::PopulateSidePanel(
   header_open_in_new_tab_button_->SetVisible(
       current_entry_->SupportsNewTabButton());
   UpdateNewTabButtonState();
+  if (auto* side_panel_container =
+          browser_view_->toolbar()->side_panel_container()) {
+    UpdateHeaderPinButtonState();
+    side_panel_container->UpdateSidePanelContainerButtonsState();
+  }
 }
 
 void SidePanelCoordinator::ClearCachedEntryViews() {
@@ -503,6 +561,13 @@ SidePanelCoordinator::GetLastActiveEntryKey() const {
     return GetActiveContextualRegistry()->active_entry().value()->key();
   }
 
+  return GetLastActiveGlobalEntryKey();
+}
+
+absl::optional<SidePanelEntry::Key>
+SidePanelCoordinator::GetLastActiveGlobalEntryKey() const {
+  // Return the last active global entry. If neither exist, fall back to the
+  // default entry.
   if (global_registry_->active_entry().has_value())
     return global_registry_->active_entry().value()->key();
 
@@ -519,12 +584,9 @@ absl::optional<SidePanelEntry::Key> SidePanelCoordinator::GetSelectedKey()
 
   // If we are waiting on content swapping delays we want to return the id for
   // the entry we are attempting to swap to.
-  const SidePanelContentSwappingContainer* content_wrapper =
-      static_cast<SidePanelContentSwappingContainer*>(
-          GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
-  DCHECK(content_wrapper);
-  if (const auto* entry = content_wrapper->loading_entry())
+  if (const auto* entry = GetLoadingEntry()) {
     return entry->key();
+  }
 
   // If we are not waiting on content swapping we want to return the active
   // selected entry id.
@@ -565,6 +627,14 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
   header_combobox_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   header_combobox_->SetProperty(views::kElementIdentifierKey,
                                 kSidePanelComboboxElementId);
+
+  // TODO(corising): Update icon and tooltip once provided by UX.
+  header_pin_button_ =
+      header->AddChildView(CreatePinToggleButton(base::BindRepeating(
+          &SidePanelCoordinator::UpdatePinState, base::Unretained(this))));
+  header_pin_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  // The icon is later set as visible for side panels that support it.
+  header_pin_button_->SetVisible(false);
 
   header_open_in_new_tab_button_ = header->AddChildView(CreateControlButton(
       header.get(),
@@ -861,4 +931,33 @@ void SidePanelCoordinator::UpdateNewTabButtonState() {
     header_open_in_new_tab_button_->SetEnabled(
         current_entry_->GetOpenInNewTabURL().is_valid());
   }
+}
+
+void SidePanelCoordinator::UpdateHeaderPinButtonState() {
+  if (!GetContentView()) {
+    return;
+  }
+
+  PrefService* pref_service = browser_view_->GetProfile()->GetPrefs();
+  if (pref_service) {
+    bool pinned = pref_service->GetBoolean(
+        prefs::kSidePanelCompanionEntryPinnedToToolbar);
+    header_pin_button_->SetToggled(pinned);
+  }
+  header_pin_button_->SetVisible(current_entry_->key().id() ==
+                                 SidePanelEntry::Id::kSearchCompanion);
+}
+
+void SidePanelCoordinator::UpdateToolbarButtonHighlight(
+    bool side_panel_visible) {
+  auto* side_panel_button = browser_view_->toolbar()->GetSidePanelButton();
+  side_panel_button->SetHighlighted(side_panel_visible);
+  side_panel_button->SetTooltipText(l10n_util::GetStringUTF16(
+      side_panel_visible ? IDS_TOOLTIP_SIDE_PANEL_HIDE
+                         : IDS_TOOLTIP_SIDE_PANEL_SHOW));
+}
+
+void SidePanelCoordinator::OnViewVisibilityChanged(views::View* observed_view,
+                                                   views::View* starting_from) {
+  UpdateToolbarButtonHighlight(observed_view->GetVisible());
 }

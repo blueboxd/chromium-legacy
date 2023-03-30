@@ -806,7 +806,7 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     MemoryUsage memory_required_by_tile_to_be_scheduled;
     if (!tile->raster_task_.get()) {
       memory_required_by_tile_to_be_scheduled = MemoryUsage::FromConfig(
-          tile->desired_texture_size(), DetermineResourceFormat(tile));
+          tile->desired_texture_size(), DetermineFormat(tile));
     }
 
     // This is the memory limit that will be used by this tile. Depending on
@@ -1205,11 +1205,11 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   //
   // TODO(crbug.com/1076568): Once we have access to the display's buffer format
   // via gfx::DisplayColorSpaces, we should also do this for HBD images.
-  auto format = DetermineResourceFormat(tile);
+  auto format = DetermineFormat(tile);
   if (target_color_params.color_space.IsHDR() &&
       GetContentColorUsageForPrioritizedTile(prioritized_tile) ==
           gfx::ContentColorUsage::kHDR) {
-    format = viz::ResourceFormat::RGBA_F16;
+    format = viz::SinglePlaneFormat::kRGBA_F16;
   }
 
   // Get the resource.
@@ -1693,9 +1693,8 @@ void TileManager::NeedsInvalidationForCheckerImagedTiles() {
   client_->RequestImplSideInvalidationForCheckerImagedTiles();
 }
 
-viz::ResourceFormat TileManager::DetermineResourceFormat(
-    const Tile* tile) const {
-  return raster_buffer_provider_->GetResourceFormat();
+viz::SharedImageFormat TileManager::DetermineFormat(const Tile* tile) const {
+  return raster_buffer_provider_->GetFormat();
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
@@ -1816,7 +1815,7 @@ TileManager::ActivationStateAsValue() {
 }
 
 void TileManager::ActivationStateAsValueInto(
-    base::trace_event::TracedValue* state) {
+    base::trace_event::TracedValue* state) const {
   state->SetString("tree_priority",
                    TreePriorityToString(global_state_.tree_priority));
   state->SetInteger("soft_memory_limit",
@@ -1878,6 +1877,12 @@ bool TileManager::ShouldRasterOccludedTiles() const {
           global_state_.memory_limit_policy != ALLOW_ABSOLUTE_MINIMUM);
 }
 
+std::string TileManager::GetHungCommitDebugInfo() const {
+  base::trace_event::TracedValueJSON value;
+  ActivationStateAsValueInto(&value);
+  return value.ToJSON();
+}
+
 TileManager::MemoryUsage::MemoryUsage()
     : memory_bytes_(0), resource_count_(0) {}
 
@@ -1898,12 +1903,11 @@ TileManager::MemoryUsage::MemoryUsage(size_t memory_bytes,
 // static
 TileManager::MemoryUsage TileManager::MemoryUsage::FromConfig(
     const gfx::Size& size,
-    viz::ResourceFormat format) {
-  // We can use UncheckedSizeInBytes here since this is used with a tile
+    viz::SharedImageFormat format) {
+  // We don't need to validate the computed size since this is used with a tile
   // size which is determined by the compositor (it's at most max texture
   // size).
-  return MemoryUsage(
-      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format), 1);
+  return MemoryUsage(format.EstimatedSizeInBytes(size), 1);
 }
 
 // static

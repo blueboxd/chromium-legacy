@@ -503,6 +503,10 @@
     "label": "//chrome/test/chromedriver:chromedriver_server",
     "type": "additional_compile_target",
   },
+  "chromedriver_group": {
+    "label": "//:chromedriver_group",
+    "type": "additional_compile_target",
+  },
   "chromedriver_py_tests": {
     "args": [
       "../../testing/scripts/run_chromedriver_tests.py",
@@ -1983,6 +1987,10 @@
       "--results-directory",
       "${ISOLATED_OUTDIR}",
     ],
+  },
+  "weblayer_browsertests": {
+    "label": "//weblayer/test:weblayer_browsertests",
+    "type": "windowed_test_launcher",
   },
   "webview_cts_tests": {
     "args": [

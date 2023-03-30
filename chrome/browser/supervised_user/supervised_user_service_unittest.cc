@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -171,7 +172,7 @@ TEST_F(SupervisedUserServiceTest, IsURLFilteringEnabled) {
   // Enable filtering flag across platforms.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty);
+      supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 
   EXPECT_TRUE(service->IsURLFilteringEnabled());
 }
@@ -200,9 +201,9 @@ TEST_F(SupervisedUserServiceTestUnsupervised, IsURLFilteringEnabled) {
   // Enable filtering flag across platforms.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty);
+      supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
   EXPECT_TRUE(base::FeatureList::IsEnabled(
-      supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty));
+      supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS));
 
   EXPECT_FALSE(service->IsURLFilteringEnabled());
 }
@@ -243,8 +244,7 @@ class SupervisedUserServiceExtensionTestBase
 
   void SetUp() override {
     ExtensionServiceTestBase::SetUp();
-    ExtensionServiceTestBase::ExtensionServiceInitParams params =
-        CreateDefaultInitParams();
+    ExtensionServiceInitParams params;
     params.profile_is_supervised = is_supervised_;
     InitializeExtensionService(params);
     // Flush the message loop, to ensure that credentials have been loaded in
@@ -312,8 +312,29 @@ class SupervisedUserServiceExtensionTest
       : SupervisedUserServiceExtensionTestBase(true) {}
 };
 
-TEST_F(SupervisedUserServiceExtensionTest, AreExtensionsPermissionsEnabled) {
+TEST_F(SupervisedUserServiceExtensionTest,
+       AreExtensionsPermissionsEnabledWithExtensionsPermissionsFlagDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      supervised_user::kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
   EXPECT_TRUE(profile_->IsChild());
+
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(profile_.get());
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+  EXPECT_TRUE(service->AreExtensionsPermissionsEnabled());
+#else
+  EXPECT_FALSE(service->AreExtensionsPermissionsEnabled());
+#endif
+}
+
+TEST_F(SupervisedUserServiceExtensionTest,
+       AreExtensionsPermissionsEnabledWithExtensionsPermissionsFlagEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      supervised_user::kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+  EXPECT_TRUE(profile_->IsChild());
+
   SupervisedUserService* service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   EXPECT_TRUE(service->AreExtensionsPermissionsEnabled());
@@ -323,10 +344,11 @@ TEST_F(SupervisedUserServiceExtensionTest,
        ExtensionManagementPolicyProviderWithoutSUInitiatedInstalls) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
-  supervised_user_service
-      ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(false);
-  EXPECT_FALSE(supervised_user_service
-                   ->GetSupervisedUserExtensionsMayRequestPermissionsPref());
+  supervised_user_test_util::
+      SetSupervisedUserExtensionsMayRequestPermissionsPref(profile_.get(),
+                                                           false);
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
+      prefs::kSupervisedUserExtensionsMayRequestPermissions));
   EXPECT_TRUE(profile_->IsChild());
 
   // Check that a supervised user can install and uninstall a theme even if
@@ -376,10 +398,11 @@ TEST_F(SupervisedUserServiceExtensionTest,
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   // Enable child users to initiate extension installs by simulating the
   // toggling of "Permissions for sites, apps and extensions" to enabled.
-  supervised_user_service
-      ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(true);
-  EXPECT_TRUE(supervised_user_service
-                  ->GetSupervisedUserExtensionsMayRequestPermissionsPref());
+  supervised_user_test_util::
+      SetSupervisedUserExtensionsMayRequestPermissionsPref(profile_.get(),
+                                                           true);
+  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(
+      prefs::kSupervisedUserExtensionsMayRequestPermissions));
   EXPECT_TRUE(profile_->IsChild());
 
   // The supervised user should be able to load and uninstall the extensions

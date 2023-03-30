@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/identifiability_metrics_test_util.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/https_upgrades_interceptor.h"
+#include "chrome/browser/ssl/https_upgrades_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search/ntp_test_utils.h"
@@ -61,7 +62,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -145,6 +145,19 @@ class ContentScriptApiTest : public ExtensionApiTest {
         https_test_server_->port());
     HttpsUpgradesInterceptor::SetHttpPortForTesting(
         embedded_test_server()->port());
+
+    // Test extensions use these hostnames. Allow them to be loaded over
+    // HTTP so that HTTPS-Upgrades feature doesn't upgrade their URLs.
+    // TODO(crbug.com/1394910): Use https in these tests and remove these
+    // allowlist entries.
+    AllowHttpForHostnamesForTesting(
+        {"a.com", "b.com", "default.test", "bar.com", "path-test.example",
+         "example.com", "chromium.org", "example1.com"},
+        browser()->profile()->GetPrefs());
+  }
+
+  void TearDownOnMainThread() override {
+    ClearHttpAllowlistForHostnamesForTesting(browser()->profile()->GetPrefs());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -994,13 +1007,8 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, CannotScriptTheNewTabPage) {
 
   // The extension should inject on "normal" urls.
 
-  // Test on an HTTP URL. Disable HTTPS upgrades on example1.com for this test
-  // to work.
-  auto* prefs = browser()->profile()->GetPrefs();
-  base::Value::List allowlist;
-  allowlist.Append("example1.com");
-  prefs->SetList(prefs::kHttpAllowlist, std::move(allowlist));
-
+  // Test on an HTTP URL. HTTPS upgrades is disabled on example1.com so it
+  // loads over http instead of https. example2.com loads over https.
   GURL unprotected_url1 = embedded_test_server()->GetURL(
       "example1.com", "/extensions/test_file.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), unprotected_url1));
@@ -1023,14 +1031,14 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptSameSiteCookies) {
   ASSERT_TRUE(extension);
   GURL url = embedded_test_server()->GetURL("a.com", "/extensions/body1.html");
   ResultCatcher catcher;
-  constexpr char kScript[] =
+  static constexpr char kScript[] =
       R"(chrome.tabs.create({url: '%s'}, () => {
            let message = 'success';
            if (chrome.runtime.lastError)
              message = chrome.runtime.lastError.message;
-           domAutomationController.send(message);
+           chrome.test.sendScriptResult(message);
          });)";
-  std::string result = ExecuteScriptInBackgroundPage(
+  base::Value result = ExecuteScriptInBackgroundPage(
       extension->id(), base::StringPrintf(kScript, url.spec().c_str()));
 
   EXPECT_EQ("success", result);
@@ -1044,21 +1052,22 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptFileSameSiteCookies) {
   ASSERT_TRUE(extension);
   GURL url = embedded_test_server()->GetURL("b.com", "/extensions/body1.html");
   ResultCatcher catcher;
-  constexpr char kScript[] =
+  static constexpr char kScript[] =
       R"(chrome.tabs.create({url: '%s'}, (tab) => {
            if (chrome.runtime.lastError) {
-             domAutomationController.send(chrome.runtime.lastError.message);
+             chrome.test.sendScriptResult(chrome.runtime.lastError.message);
              return;
            }
            chrome.tabs.executeScript(tab.id, {file: 'cookies.js'}, () => {
              let message = 'success';
              if (chrome.runtime.lastError)
                message = chrome.runtime.lastError.message;
-             domAutomationController.send(message);
+             chrome.test.sendScriptResult(message);
            });
          });)";
-  std::string result = ExecuteScriptInBackgroundPage(
+  base::Value result = ExecuteScriptInBackgroundPage(
       extension->id(), base::StringPrintf(kScript, url.spec().c_str()));
+  ASSERT_TRUE(result.is_string());
 
   EXPECT_EQ("success", result);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -1071,10 +1080,10 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptCodeSameSiteCookies) {
   ASSERT_TRUE(extension);
   GURL url = embedded_test_server()->GetURL("b.com", "/extensions/body1.html");
   ResultCatcher catcher;
-  constexpr char kScript[] =
+  static constexpr char kScript[] =
       R"(chrome.tabs.create({url: '%s'}, (tab) => {
            if (chrome.runtime.lastError) {
-             domAutomationController.send(chrome.runtime.lastError.message);
+             chrome.test.sendScriptResult(chrome.runtime.lastError.message);
              return;
            }
            fetch(chrome.runtime.getURL('cookies.js')).then((response) => {
@@ -1084,14 +1093,15 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptCodeSameSiteCookies) {
                let message = 'success';
                if (chrome.runtime.lastError)
                  message = chrome.runtime.lastError.message;
-               domAutomationController.send(message);
+               chrome.test.sendScriptResult(message);
              });
            }).catch((e) => {
-             domAutomationController.send(e);
+             chrome.test.sendScriptResult(e);
            });
          });)";
-  std::string result = ExecuteScriptInBackgroundPage(
+  base::Value result = ExecuteScriptInBackgroundPage(
       extension->id(), base::StringPrintf(kScript, url.spec().c_str()));
+  ASSERT_TRUE(result.is_string());
 
   EXPECT_EQ("success", result);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -2235,24 +2245,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceWebBundlesContentScriptApiTest,
 }
 
 class ContentScriptApiPrerenderingTest : public ContentScriptApiTest {
- public:
-  ContentScriptApiPrerenderingTest() {
-    feature_list_.InitWithFeatures(
-        {
-            network::features::kPrerender2ContentSecurityPolicyExtensions,
-            extensions_features::kMinimumMV3CSPWithInlineSpeculationRules,
-        },
-        {});
-  }
-
  private:
   content::test::ScopedPrerenderFeatureList prerender_feature_list_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(crbug.com/1344548): Re-enable this test
-IN_PROC_BROWSER_TEST_F(ContentScriptApiPrerenderingTest,
-                       DISABLED_Prerendering) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiPrerenderingTest, Prerendering) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/prerendering")) << message_;
 }

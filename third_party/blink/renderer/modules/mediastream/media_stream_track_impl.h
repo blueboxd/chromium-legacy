@@ -62,6 +62,12 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   static MediaStreamTrack* Create(ExecutionContext* context,
                                   MediaStreamComponent* component,
                                   base::OnceClosure callback);
+  // Creates a new MediaStreamTrackImpl with a component cloned from an existing
+  // component with an initialized platform track. The cloned component will be
+  // connected to the same platform track as the passed in component.
+  static MediaStreamTrackImpl* CreateCloningComponent(
+      ExecutionContext* execution_context,
+      MediaStreamComponent* component);
 
   MediaStreamTrackImpl(ExecutionContext*, MediaStreamComponent*);
   MediaStreamTrackImpl(ExecutionContext*,
@@ -70,8 +76,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   MediaStreamTrackImpl(ExecutionContext*,
                        MediaStreamComponent*,
                        MediaStreamSource::ReadyState,
-                       base::OnceClosure callback,
-                       bool is_clone = false);
+                       base::OnceClosure callback);
   ~MediaStreamTrackImpl() override;
 
   // MediaStreamTrack
@@ -148,8 +153,6 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   // this class as well as of their own class.
   void CloneInternal(MediaStreamTrackImpl*);
 
-  std::unique_ptr<MediaStreamTrackPlatform> ClonePlatformTrack();
-
  private:
   friend class CanvasCaptureMediaStreamTrack;
   friend class InternalsMediaStream;
@@ -187,13 +190,9 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
       feature_handle_for_scheduler_;
 
   MediaStreamSource::ReadyState ready_state_;
-  // has_clones indicates if clone has been called on this MediaStreamTrack or
-  // if it is cloned from another MediaStreamTrack. If set, it will remain true
-  // even if the other MediaStreamTrack is gargabe-collected.
-  bool has_clones_ = false;
   HeapHashSet<Member<MediaStream>> registered_media_streams_;
   bool is_iterating_registered_media_streams_ = false;
-  Member<MediaStreamComponent> component_;
+  const Member<MediaStreamComponent> component_;
   Member<ImageCapture> image_capture_;
   WeakMember<ExecutionContext> execution_context_;
   HeapHashSet<WeakMember<MediaStreamTrack::Observer>> observers_;

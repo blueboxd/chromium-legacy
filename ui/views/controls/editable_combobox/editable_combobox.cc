@@ -68,19 +68,28 @@ namespace views {
 
 namespace {
 
+int kEditableComboboxButtonSize = 24;
+int kEditableComboboxControlsContainerInsets = 6;
+
 class Arrow : public Button {
  public:
   METADATA_HEADER(Arrow);
 
   explicit Arrow(PressedCallback callback) : Button(std::move(callback)) {
-    SetPreferredSize(gfx::Size(GetComboboxArrowContainerWidthAndMargins(),
-                               ComboboxArrowSize().height()));
-    // Similar to Combobox's TransparentButton.
-    SetFocusBehavior(FocusBehavior::NEVER);
+    if (features::IsChromeRefresh2023()) {
+      SetPreferredSize(
+          gfx::Size(kEditableComboboxButtonSize, kEditableComboboxButtonSize));
+    } else {
+      SetPreferredSize(gfx::Size(GetComboboxArrowContainerWidthAndMargins(),
+                                 ComboboxArrowSize().height()));
+      SetFocusBehavior(FocusBehavior::NEVER);
+    }
+
     button_controller()->set_notify_action(
         ButtonController::NotifyAction::kOnPress);
 
     ConfigureComboboxButtonInkDrop(this);
+    SetAccessibilityProperties(ax::mojom::Role::kButton);
   }
   Arrow(const Arrow&) = delete;
   Arrow& operator=(const Arrow&) = delete;
@@ -105,8 +114,7 @@ class Arrow : public Button {
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kButton;
-    node_data->SetName(GetAccessibleName());
+    Button::GetAccessibleNodeData(node_data);
     node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
     if (GetEnabled()) {
       node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
@@ -370,17 +378,19 @@ EditableCombobox::EditableCombobox(
   AddChildView(textfield_.get());
 
   control_elements_container_ = AddChildView(std::make_unique<BoxLayoutView>());
-  control_elements_container_->SetInsideBorderInsets(
-      gfx::Insets::TLBR(0, 0, 0,
-                        GetComboboxArrowContainerWidthAndMargins() -
-                            GetComboboxArrowContainerWidth()));
-
+  if (features::IsChromeRefresh2023()) {
+    control_elements_container_->SetInsideBorderInsets(
+        gfx::Insets::TLBR(kEditableComboboxControlsContainerInsets, 0,
+                          kEditableComboboxControlsContainerInsets,
+                          kEditableComboboxControlsContainerInsets));
+  }
   if (display_arrow) {
     arrow_ = AddControlElement(std::make_unique<Arrow>(base::BindRepeating(
         &EditableCombobox::ArrowButtonPressed, base::Unretained(this))));
   }
 
   SetLayoutManager(std::make_unique<FillLayout>());
+  SetAccessibilityProperties(ax::mojom::Role::kComboBoxGrouping);
 }
 
 EditableCombobox::~EditableCombobox() {
@@ -428,10 +438,6 @@ void EditableCombobox::OnAccessibleNameChanged(const std::u16string& new_name) {
   }
 }
 
-void EditableCombobox::SetAssociatedLabel(View* labelling_view) {
-  textfield_->SetAssociatedLabel(labelling_view);
-}
-
 void EditableCombobox::SetMenuDecorationStrategy(
     std::unique_ptr<MenuDecorationStrategy> strategy) {
   DCHECK(menu_model_);
@@ -450,9 +456,7 @@ void EditableCombobox::Layout() {
 }
 
 void EditableCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kComboBoxGrouping;
-
-  node_data->SetName(textfield_->GetAccessibleName());
+  View::GetAccessibleNodeData(node_data);
   node_data->SetValue(GetText());
 }
 
@@ -498,7 +502,16 @@ void EditableCombobox::OnLayoutIsAnimatingChanged(
   }
 }
 
+bool EditableCombobox::ShouldApplyInkDropEffects() {
+  return features::IsChromeRefresh2023() && arrow_ && InkDrop::Get(arrow_) &&
+         GetWidget();
+}
+
 void EditableCombobox::CloseMenu() {
+  if (ShouldApplyInkDropEffects()) {
+    InkDrop::Get(arrow_)->AnimateToState(InkDropState::DEACTIVATED, nullptr);
+    InkDrop::Get(arrow_)->GetInkDrop()->SetHovered(arrow_->IsMouseHovered());
+  }
   menu_runner_.reset();
   pre_target_handler_.reset();
 }
@@ -531,6 +544,9 @@ void EditableCombobox::HandleNewContent(const std::u16string& new_content) {
 
 void EditableCombobox::ArrowButtonPressed(const ui::Event& event) {
   textfield_->RequestFocus();
+  if (ShouldApplyInkDropEffects()) {
+    InkDrop::Get(arrow_)->AnimateToState(InkDropState::ACTIVATED, nullptr);
+  }
   if (menu_runner_ && menu_runner_->IsRunning()) {
     CloseMenu();
   } else {

@@ -50,13 +50,13 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.support.test.InstrumentationRegistry;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.ViewAssertion;
@@ -69,7 +69,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -125,7 +124,6 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -188,12 +186,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     private Callback<Bitmap> mBitmapListener =
             (bitmap) -> mAllBitmaps.add(new WeakReference<>(bitmap));
     private TabSwitcher.TabListDelegate mTabListDelegate;
-
-    @BeforeClass
-    public static void beforeClass() {
-        // Only needs to be loaded once and needs to be loaded before HistogramTestRule.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
 
     @Before
     public void setUp() throws ExecutionException {
@@ -369,7 +361,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
             supported_abis_includes = "x86",
             sdk_is_greater_than = O_MR1, sdk_is_less_than = Q)
     public void testTabToGridFromLiveTab() throws InterruptedException {
-        assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertFalse(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(0, mTabListDelegate.getCleanupDelayForTesting());
 
@@ -383,7 +376,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     @DisabledTest(message = "crbug.com/991852 This test is flaky")
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
-        assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertTrue(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
 
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
@@ -397,7 +391,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
             supported_abis_includes = "x86",
             sdk_is_greater_than = O_MR1, sdk_is_less_than = Q)
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
-        assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertFalse(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         assertEquals(2000, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
 
@@ -411,7 +406,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
     @DisabledTest(message = "https://crbug.com/1207875")
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
-        assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertTrue(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }
@@ -421,7 +417,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoft() throws InterruptedException {
-        assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertFalse(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
 
@@ -435,7 +432,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     @DisabledTest(message = "https://crbug.com/1272561")
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
-        assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertTrue(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }
@@ -444,7 +442,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @MediumTest
     @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisabledTest(message = "crbug.com/1130830")
     public void testTabToGridFromNtp() throws InterruptedException {
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(NTP_URL);
@@ -499,7 +496,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
             supported_abis_includes = "x86",
             sdk_is_greater_than = O_MR1, sdk_is_less_than = Q)
     public void testGridToTabToCurrentLive() throws InterruptedException {
-        assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertFalse(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         prepareTabs(1, 0, mUrl);
         testGridToTab(false, false);
     }
@@ -526,7 +524,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         supported_abis_includes = "x86")
     public void testGridToTabToCurrentLiveDetached() throws Exception {
         // clang-format on
-        assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertFalse(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         // This works on emulators but not on real devices. See crbug.com/986047.
         if (!isEmulator()) return;
 
@@ -566,7 +565,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
-        assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertTrue(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         prepareTabs(1, 0, mUrl);
         testGridToTab(false, false);
     }
@@ -576,7 +576,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @DisabledTest(message = "crbug.com/1313972")
     public void testGridToTabToOtherLive() throws InterruptedException {
-        assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertFalse(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         prepareTabs(2, 0, mUrl);
         testGridToTab(true, false);
     }
@@ -586,7 +587,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
-        assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertTrue(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         prepareTabs(2, 0, mUrl);
         testGridToTab(true, false);
     }
@@ -596,7 +598,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @DisabledTest(message = "crbug.com/1237623 test is flaky")
     public void testGridToTabToOtherFrozen() throws InterruptedException {
-        assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertFalse(
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivityTestRule.getActivity()));
         prepareTabs(2, 0, mUrl);
         testGridToTab(true, true);
     }

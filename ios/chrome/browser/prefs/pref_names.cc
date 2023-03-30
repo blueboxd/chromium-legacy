@@ -68,12 +68,6 @@ const char kHttpServerProperties[] = "net.http_server_properties";
 // * Otherwise: Default value driven by Finch config.
 const char kInactiveTabsTimeThreshold[] = "ios.inactive_tabs.time_threshold";
 
-// Integer that specifies whether Incognito mode is:
-// 0 - Enabled. Default behaviour. Default mode is available on demand.
-// 1 - Disabled. User cannot browse pages in Incognito mode.
-// 2 - Forced. All pages/sessions are forced into Incognito.
-const char kIncognitoModeAvailability[] = "incognito.mode_availability";
-
 // Boolean that is true when the Incognito interstitial for third-party intents
 // is enabled.
 const char kIncognitoInterstitialEnabled[] =
@@ -101,6 +95,11 @@ const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
 // in the bookmark view.
 const char kIosBookmarkSigninPromoDisplayedCount[] =
     "ios.bookmark.signin_promo_displayed_count";
+
+// Boolean to represent if the Bring Android Tabs prompt has been displayed for
+// the user.
+const char kIosBringAndroidTabsPromptDisplayed[] =
+    "ios.bring_android_tabs.prompt_displayed";
 
 // Boolean that is true when the CredentialProviderPromoEnabled policy is
 // enabled.
@@ -171,6 +170,16 @@ const char kIosNtpFeedTopPromoAlreadySeen[] =
 // in the ntp feed top section.
 const char kIosNtpFeedTopSigninPromoDisplayedCount[] =
     "ios.ntp_feed_top.signin_promo_displayed_count";
+
+// Preference that hold a boolean indicating if the user has already dismissed
+// the sign-in promo in the reading list.
+const char kIosReadingListPromoAlreadySeen[] =
+    "ios.reading_list.promo_already_seen";
+
+// Integer to represent the number of time the sign-in promo has been displayed
+// in the reading list view.
+const char kIosReadingListSigninPromoDisplayedCount[] =
+    "ios.reading_list.signin_promo_displayed_count";
 
 // Preference that holds a boolean indicating whether the link previews are
 // enabled. Link previews display a live preview of the selected link after a

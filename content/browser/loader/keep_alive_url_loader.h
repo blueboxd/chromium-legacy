@@ -57,7 +57,7 @@ class CONTENT_EXPORT KeepAliveURLLoader
     : public network::mojom::URLLoader,
       public network::mojom::URLLoaderClient {
  public:
-  // Deletes this loader immediately.
+  // A callback type to delete this loader immediately on triggered.
   using OnDeleteCallback = base::OnceCallback<void(void)>;
 
   // Must only be constructed by a `KeepAliveURLLoaderService`.
@@ -80,11 +80,27 @@ class CONTENT_EXPORT KeepAliveURLLoader
   KeepAliveURLLoader& operator=(const KeepAliveURLLoader&) = delete;
 
   // Sets the callback to be invoked on errors which require closing the pipe.
-  // Callback will also immediately delete `this`.
+  // Running `on_delete_callback` will immediately delete `this`.
+  //
   // Not an argument to constructor because the Mojo ReceiverId needs to be
-  // bound to the callback, but can only get that after creating the worklet.
+  // bound to the callback, but can only be obtained after creating `this`.
   // Must be called immediately after creating a KeepAliveLoader.
   void set_on_delete_callback(OnDeleteCallback on_delete_callback);
+
+  // For testing only:
+  // TODO(crbug.com/1427366): Figure out alt to not rely on this in test.
+  class TestObserver : public base::RefCountedThreadSafe<TestObserver> {
+   public:
+    virtual void OnReceiveResponseForwarded(KeepAliveURLLoader* loader) = 0;
+    virtual void OnReceiveResponseProcessed(KeepAliveURLLoader* loader) = 0;
+    virtual void OnCompleteForwarded(KeepAliveURLLoader* loader) = 0;
+    virtual void OnCompleteProcessed(KeepAliveURLLoader* loader) = 0;
+
+   protected:
+    virtual ~TestObserver() = default;
+    friend class base::RefCountedThreadSafe<TestObserver>;
+  };
+  void SetObserverForTesting(scoped_refptr<TestObserver> observer);
 
  private:
   // Receives actions from renderer.
@@ -117,6 +133,7 @@ class CONTENT_EXPORT KeepAliveURLLoader
 
   void OnNetworkConnectionError();
   void OnRendererConnectionError();
+  void DeleteSelf();
 
   // The ID to identify the request being loaded by this loader.
   int32_t request_id_;
@@ -142,6 +159,10 @@ class CONTENT_EXPORT KeepAliveURLLoader
 
   // Whether `OnReceiveResponse()` has been called.
   bool has_received_response_ = false;
+
+  // For testing only:
+  // Not owned.
+  scoped_refptr<TestObserver> observer_for_testing_ = nullptr;
 };
 
 }  // namespace content

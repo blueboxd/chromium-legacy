@@ -273,7 +273,8 @@ void FlossGattManagerClient::AddObserver(FlossGattClientObserver* observer) {
   gatt_client_observers_.AddObserver(observer);
 }
 
-void FlossGattManagerClient::AddObserver(FlossGattServerObserver* observer) {
+void FlossGattManagerClient::AddServerObserver(
+    FlossGattServerObserver* observer) {
   gatt_server_observers_.AddObserver(observer);
 }
 
@@ -281,7 +282,8 @@ void FlossGattManagerClient::RemoveObserver(FlossGattClientObserver* observer) {
   gatt_client_observers_.RemoveObserver(observer);
 }
 
-void FlossGattManagerClient::RemoveObserver(FlossGattServerObserver* observer) {
+void FlossGattManagerClient::RemoveServerObserver(
+    FlossGattServerObserver* observer) {
   gatt_server_observers_.RemoveObserver(observer);
 }
 
@@ -635,6 +637,10 @@ void FlossGattManagerClient::Init(dbus::Bus* bus,
     LOG(ERROR) << "Unable to successfully export FlossGattServerObserver.";
     return;
   }
+
+  property_msft_supported_.Init(this, bus_, service_name_, gatt_adapter_path_,
+                                dbus::ObjectPath(kExportedCallbacksPath),
+                                base::DoNothing());
 
   // Everything is queued for registration so save |on_ready| for later.
   on_ready_ = std::move(on_ready);

@@ -26,6 +26,7 @@
 #include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/proto/synced/upload_tracker.pb.h"
+#include "components/reporting/resources/resource_manager.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
 
@@ -45,7 +46,7 @@ class FileUploadJob {
   // `session_token` and `access_parameters`.
   class Delegate {
    public:
-    virtual ~Delegate() = default;
+    virtual ~Delegate();
 
     // Asynchronously initializes upload.
     // Calls back with `total` and `session_token` are set, or Status in case
@@ -58,12 +59,14 @@ class FileUploadJob {
                                     std::string /*session_token*/>>)> cb) = 0;
 
     // Asynchronously uploads the next chunk.
+    // Uses `scoped_reservation` to manage memory usage by data buffer.
     // Calls back with new `uploaded` and `session_token` (could be the same),
     // or Status in case of an error.
     virtual void DoNextStep(
         int64_t total,
         int64_t uploaded,
         base::StringPiece session_token,
+        ScopedReservation scoped_reservation,
         base::OnceCallback<
             void(StatusOr<std::pair<int64_t /*uploaded*/,
                                     std::string /*session_token*/>>)> cb) = 0;
@@ -75,8 +78,18 @@ class FileUploadJob {
         base::OnceCallback<void(StatusOr<std::string /*access_parameters*/>)>
             cb) = 0;
 
+    // Asynchronously deletes the original file (either upon success, or when
+    // the failure happened when `retry_count` dropped to 0). Doesn't wait for
+    // completion and doesn't report the outcome.
+    virtual void DoDeleteFile(base::StringPiece origin_path) = 0;
+
+    // Returns weak pointer.
+    base::WeakPtr<Delegate> GetWeakPtr();
+
    protected:
-    Delegate() = default;
+    Delegate();
+
+    base::WeakPtrFactory<Delegate> weak_ptr_factory_{this};
   };
 
   // Singleton manager class responsible for keeping track of incoming jobs:
@@ -100,7 +113,7 @@ class FileUploadJob {
     void Register(Priority priority,
                   Record record_copy,
                   ::ash::reporting::LogUploadEvent log_upload_event,
-                  Delegate* delegate,  // not owned, must outlive the Job!
+                  base::WeakPtr<Delegate> delegate,
                   base::OnceCallback<void(StatusOr<FileUploadJob*>)> result_cb);
 
     // Accessor.
@@ -140,9 +153,11 @@ class FileUploadJob {
     ~EventHelper();
 
     // FileUploadJob progresses based on the last recorded state.
-    // Called back once the job is located or created.
+    // Called once the job is located or created.
+    // Uses `scoped_reservation` to manage memory usage by data buffer.
     // `done_cb_` is going to post update as the next tracking event.
-    void Run(base::OnceCallback<void(Status)> done_cb);
+    void Run(const ScopedReservation& scoped_reservation,
+             base::OnceCallback<void(Status)> done_cb);
 
    private:
     // Complete and call `done_cb_` (with OK, if the event is accepted for
@@ -167,7 +182,7 @@ class FileUploadJob {
   // event. When upload is going to be started, `tracker` is empty yet.
   FileUploadJob(const UploadSettings& settings,
                 const UploadTracker& tracker,
-                Delegate* delegate);  // not owned, must outlive the Job!
+                base::WeakPtr<Delegate> delegate);
   FileUploadJob(const FileUploadJob& other) = delete;
   FileUploadJob& operator=(const FileUploadJob& other) = delete;
   ~FileUploadJob();
@@ -177,7 +192,8 @@ class FileUploadJob {
   // including `session_token` that must be set and identifies the external
   // access on the next steps.
   // Then the Job proceeds with one or more calls to `NextStep`: after every
-  // step `tracker_` is updated. Note that `session_token` might change if it
+  // step `tracker_` is updated and `scoped_reservation` is used to manage
+  // memory usage by data buffer. Note that `session_token` might change if it
   // is necessary to track the progress externally.
   // After the Job finished uploading, it calls `Finalize`, setting up
   // `access_parameters` or error status in `tracker_`.
@@ -189,7 +205,8 @@ class FileUploadJob {
   // possible (but not necessary) to provide `done_cb` callback to be called
   // once finished - this option is mostly used for testing.
   void Initiate(base::OnceClosure done_cb = base::DoNothing());
-  void NextStep(base::OnceClosure done_cb = base::DoNothing());
+  void NextStep(const ScopedReservation& scoped_reservation,
+                base::OnceClosure done_cb = base::DoNothing());
   void Finalize(base::OnceClosure done_cb = base::DoNothing());
 
   // Test-only explicit setter of the event helper.
@@ -216,14 +233,19 @@ class FileUploadJob {
   void DoneFinalize(base::ScopedClosureRunner done,
                     StatusOr<std::string /*access_parameters*/> result);
 
+  // Creates scoped closure runner that augments `done_cb` with the ability to
+  // asynchronously delete the original file upon success or the failure that
+  // happened when `retry_count` dropped to 0.
+  base::ScopedClosureRunner CompletionCb(base::OnceClosure done_cb);
+
   // Post event.
   static void AddRecordToStorage(Priority priority,
                                  Record record_copy,
                                  base::OnceCallback<void(Status)> done_cb);
 
-  // Unowned delegate that performs actual actions.
-  // It must outlive the job (the same delegate may be used by multiple jobs).
-  const base::raw_ptr<Delegate> delegate_;
+  // Unowned delegate that performs actual actions (the same delegate is used by
+  // multiple jobs).
+  const base::WeakPtr<Delegate> delegate_;
 
   SEQUENCE_CHECKER(job_sequence_checker_);
 

@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/class_property.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -269,6 +270,11 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
     title_margins_ = title_margins;
   }
 
+  gfx::Insets footnote_margins() const { return footnote_margins_; }
+  void set_footnote_margins(const gfx::Insets& footnote_margins) {
+    footnote_margins_ = footnote_margins;
+  }
+
   // Sets whether or not CreateClientView() returns a Layer backed ClientView.
   // TODO(pbos): Remove all calls to this, then remove `paint_client_to_layer_`.
   // See comment around `paint_client_to_layer_`.
@@ -390,6 +396,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   void SetAnchoredDialogKey();
 
   gfx::Insets title_margins_;
+  gfx::Insets footnote_margins_;
   BubbleBorder::Arrow arrow_ = BubbleBorder::NONE;
   BubbleBorder::Shadow shadow_;
   SkColor color_ = gfx::kPlaceholderColor;
@@ -445,6 +452,9 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   // monitor clicks as well for the desired behavior.
   std::unique_ptr<ui::BubbleCloser> mac_bubble_closer_;
 #endif
+
+  // Used to ensure the button remains anchored while this dialog is open.
+  absl::optional<Button::ScopedAnchorHighlight> button_anchor_higlight_;
 };
 
 // BubbleDialogDelegateView is a BubbleDialogDelegate that is also a View.

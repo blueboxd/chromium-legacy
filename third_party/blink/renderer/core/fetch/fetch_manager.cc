@@ -204,9 +204,10 @@ class FetchManager::Loader final
       if (result == Result::kDone) {
         SubresourceIntegrity::ReportInfo report_info;
         bool check_result = true;
-        if (response_type_ != FetchResponseType::kBasic &&
-            response_type_ != FetchResponseType::kCors &&
-            response_type_ != FetchResponseType::kDefault) {
+        bool body_is_null = !updater_;
+        if (body_is_null || (response_type_ != FetchResponseType::kBasic &&
+                             response_type_ != FetchResponseType::kCors &&
+                             response_type_ != FetchResponseType::kDefault)) {
           report_info.AddConsoleErrorMessage(
               "Subresource Integrity: The resource '" + url_.ElidedString() +
               "' has an integrity attribute, but the response is not "
@@ -232,8 +233,10 @@ class FetchManager::Loader final
       }
       String error_message =
           "Unknown error occurred while trying to verify integrity.";
-      updater_->Update(
-          BytesConsumer::CreateErrored(BytesConsumer::Error(error_message)));
+      if (updater_) {
+        updater_->Update(
+            BytesConsumer::CreateErrored(BytesConsumer::Error(error_message)));
+      }
       loader_->PerformNetworkError(error_message);
     }
 
@@ -415,10 +418,19 @@ void FetchManager::Loader::DidReceiveResponse(
                 execution_context_->GetSecurityOrigin()));
   }
 
-  place_holder_body_ = MakeGarbageCollected<PlaceHolderBytesConsumer>();
+  // Step 21 of https://fetch.spec.whatwg.org/#main-fetch
+  // Set response body to null when method is `HEAD` or `CONNECT`, or status
+  // is a null body status.
+  BodyStreamBuffer* buffer = nullptr;
+  if (!Response::IsNullBodyStatus(response.HttpStatusCode()) &&
+      fetch_request_data_->Method() != http_names::kHEAD &&
+      fetch_request_data_->Method() != http_names::kCONNECT) {
+    place_holder_body_ = MakeGarbageCollected<PlaceHolderBytesConsumer>();
+    buffer = BodyStreamBuffer::Create(script_state, place_holder_body_, signal_,
+                                      cached_metadata_handler_);
+  }
   FetchResponseData* response_data =
-      FetchResponseData::CreateWithBuffer(BodyStreamBuffer::Create(
-          script_state, place_holder_body_, signal_, cached_metadata_handler_));
+      FetchResponseData::CreateWithBuffer(buffer);
   if (!execution_context_ || execution_context_->IsContextDestroyed() ||
       response.GetType() == FetchResponseType::kError) {
     // BodyStreamBuffer::Create() may run scripts and cancel this request.
@@ -496,6 +508,11 @@ void FetchManager::Loader::DidReceiveCachedMetadata(mojo_base::BigBuffer data) {
 }
 
 void FetchManager::Loader::DidStartLoadingResponseBody(BytesConsumer& body) {
+  if (!place_holder_body_) {
+    body.Cancel();
+    return;
+  }
+
   if (fetch_request_data_->Integrity().empty() &&
       !response_has_no_store_header_) {
     // BufferingBytesConsumer reads chunks from |bytes_consumer| as soon as

@@ -3373,6 +3373,40 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignals) {
   EXPECT_EQ(observed_requests += 2, url_loader_factory_.total_requests());
 }
 
+TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsV1) {
+  const GURL kFullSignalsUrl(
+      "https://signals.test/"
+      "?hostname=top.window.test&keys=key1,key2&interestGroupNames=Fred");
+
+  const char kJson[] = R"(
+    {
+      "key1": 1,
+      "key2": [2]
+    }
+  )";
+
+  interest_group_trusted_bidding_signals_url_ = GURL("https://signals.test/");
+  interest_group_trusted_bidding_signals_keys_ =
+      std::vector<std::string>({"key1", "key2"});
+
+  // Request with valid TrustedBiddingSignals URL and non-empty keys. Request
+  // should be made. The request succeeds.
+  AddBidderJsonResponse(&url_loader_factory_, kFullSignalsUrl, kJson,
+                        /*data_version=*/absl::nullopt,
+                        /*format_version_string=*/absl::nullopt);
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: trustedBiddingSignals, bid:1, render:"https://response.test/"})",
+      mojom::BidderWorkletBid::New(
+          R"({"key1":1,"key2":[2]})", 1, /*ad_cost=*/absl::nullopt,
+          blink::AdDescriptor(GURL("https://response.test/")),
+          /*ad_component_descriptors=*/absl::nullopt, base::TimeDelta()),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_errors=*/
+      {"Bidding signals URL https://signals.test/ is using outdated bidding "
+       "signals format. Consumers should be updated to use bidding signals "
+       "format version 2"});
+}
+
 // Test that when no trusted signals are fetched, generating bids is delayed
 // until the OnBiddingSignalsReceivedCallback is invoked.
 TEST_F(BidderWorkletTest, GenerateBidOnBiddingSignalsReceivedNoTrustedSignals) {
@@ -3652,7 +3686,24 @@ TEST_F(BidderWorkletTest, GenerateBidDataVersion) {
           R"("ad")", 7, /*ad_cost=*/absl::nullopt,
           blink::AdDescriptor(GURL("https://response.test/")),
           /*ad_component_descriptors=*/absl::nullopt, base::TimeDelta()),
-      7u);
+      /*expected_data_version=*/7u);
+}
+
+// Even with no trustedBiddingSignalsKeys, the data version should be available.
+TEST_F(BidderWorkletTest, GenerateBidDataVersionNoKeys) {
+  interest_group_trusted_bidding_signals_url_ = GURL("https://signals.test/");
+  AddBidderJsonResponse(
+      &url_loader_factory_,
+      GURL("https://signals.test/"
+           "?hostname=top.window.test&interestGroupNames=Fred"),
+      R"({})", /*data_version=*/7u);
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: "ad", bid:browserSignals.dataVersion, render:"https://response.test/"})",
+      mojom::BidderWorkletBid::New(
+          R"("ad")", 7, /*ad_cost=*/absl::nullopt,
+          blink::AdDescriptor(GURL("https://response.test/")),
+          /*ad_component_descriptors=*/absl::nullopt, base::TimeDelta()),
+      /*expected_data_version=*/7u);
 }
 
 // Even though the script had set an intermediate result with setBid, the
@@ -4902,10 +4953,6 @@ TEST_F(BidderWorkletTest, BasicDevToolsDebug) {
       script_parsed1.value.GetDict().FindStringByDottedPath("params.url");
   ASSERT_TRUE(url1);
   EXPECT_EQ(*url1, kUrl1);
-  absl::optional<int> context_id1 =
-      script_parsed1.value.GetDict().FindIntByDottedPath(
-          "params.executionContextId");
-  ASSERT_TRUE(context_id1.has_value());
 
   // Next there is the breakpoint.
   TestDevToolsAgentClient::Event breakpoint_hit1 =
@@ -4919,20 +4966,26 @@ TEST_F(BidderWorkletTest, BasicDevToolsDebug) {
   ASSERT_TRUE((*hit_breakpoints1)[0].is_string());
   EXPECT_EQ("1:0:0:http://example.com/first.js",
             (*hit_breakpoints1)[0].GetString());
+  std::string* callframe_id1 = breakpoint_hit1.value.GetDict()
+                                   .FindDict("params")
+                                   ->FindList("callFrames")
+                                   ->front()
+                                   .GetDict()
+                                   .FindString("callFrameId");
 
   // Override the bid value.
   const char kCommandTemplate[] = R"({
     "id": 5,
-    "method": "Runtime.evaluate",
+    "method": "Debugger.evaluateOnCallFrame",
     "params": {
-      "expression": "global_bid = 42",
-      "contextId": %d
+      "callFrameId": "%s",
+      "expression": "global_bid = 42"
     }
   })";
 
   debug1.RunCommandAndWaitForResult(
-      TestDevToolsAgentClient::Channel::kIO, 5, "Runtime.evaluate",
-      base::StringPrintf(kCommandTemplate, context_id1.value()));
+      TestDevToolsAgentClient::Channel::kIO, 5, "Debugger.evaluateOnCallFrame",
+      base::StringPrintf(kCommandTemplate, callframe_id1->c_str()));
 
   // Resume, setting up event loop for fixture first.
   load_script_run_loop_ = std::make_unique<base::RunLoop>();
@@ -5168,6 +5221,122 @@ TEST_F(BidderWorkletTest, ExecutionModeGroupByOrigin) {
   load_script_run_loop_->Run();
   ASSERT_TRUE(bid_);
   EXPECT_EQ(2, bid_->bid);
+}
+
+TEST_F(BidderWorkletTest, ExecutionModeFrozenContext) {
+  const char kScript[] = R"(
+    if (!('count' in globalThis))
+      globalThis.count = 1;
+    function generateBid() {
+      ++count;  // This increment is a no-op if the context is frozen.
+      return {
+        ad: ["ad"],
+        bid: count,
+        render:"https://response.test/?" + Object.isFrozen(globalThis)};
+    }
+  )";
+
+  std::string frozen_url = "https://response.test/?true";
+  std::string not_frozen_url = "https://response.test/?false";
+
+  interest_group_ads_.emplace_back(GURL(frozen_url),
+                                   /*metadata=*/absl::nullopt);
+  interest_group_ads_.emplace_back(GURL(not_frozen_url),
+                                   /*metadata=*/absl::nullopt);
+  mojo::Remote<mojom::BidderWorklet> bidder_worklet = CreateWorklet();
+  AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                        kScript);
+
+  // Run 1, frozen.
+  execution_mode_ = blink::mojom::InterestGroup::ExecutionMode::kFrozenContext;
+  join_origin_ = url::Origin::Create(GURL("https://url.test/"));
+  GenerateBid(bidder_worklet.get());
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  EXPECT_THAT(bid_errors_, testing::ElementsAre());
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(1, bid_->bid);
+  EXPECT_EQ(frozen_url, bid_->ad_descriptor.url);
+
+  // Run 2, frozen.
+  GenerateBid(bidder_worklet.get());
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(1, bid_->bid);
+  EXPECT_EQ(frozen_url, bid_->ad_descriptor.url);
+
+  // Run 3, grouped.
+  execution_mode_ =
+      blink::mojom::InterestGroup::ExecutionMode::kGroupedByOriginMode;
+  GenerateBid(bidder_worklet.get());
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(2, bid_->bid);
+  EXPECT_EQ(not_frozen_url, bid_->ad_descriptor.url);
+
+  // Run 4, grouped.
+  GenerateBid(bidder_worklet.get());
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(3, bid_->bid);
+  EXPECT_EQ(not_frozen_url, bid_->ad_descriptor.url);
+
+  // Run 5, frozen.
+  execution_mode_ = blink::mojom::InterestGroup::ExecutionMode::kFrozenContext;
+  GenerateBid(bidder_worklet.get());
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(1, bid_->bid);
+  EXPECT_EQ(frozen_url, bid_->ad_descriptor.url);
+
+  // Run 6, compatibility
+  execution_mode_ =
+      blink::mojom::InterestGroup::ExecutionMode::kCompatibilityMode;
+  GenerateBid(bidder_worklet.get());
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(2, bid_->bid);
+  EXPECT_EQ(not_frozen_url, bid_->ad_descriptor.url);
+
+  // Run 7, frozen
+  execution_mode_ = blink::mojom::InterestGroup::ExecutionMode::kFrozenContext;
+  GenerateBid(bidder_worklet.get());
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(1, bid_->bid);
+  EXPECT_EQ(frozen_url, bid_->ad_descriptor.url);
+}
+
+TEST_F(BidderWorkletTest, ExecutionModeFrozenContextFails) {
+  const char kScript[] = R"(
+    const incrementer = (function() {
+           let a = 1;
+           return function() { a += 1; return a; };
+         })();
+    function generateBid() {
+      return {ad: ["ad"], bid:incrementer(), render:"https://response.test/"};
+    }
+  )";
+
+  mojo::Remote<mojom::BidderWorklet> bidder_worklet = CreateWorklet();
+  AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                        kScript);
+
+  execution_mode_ = blink::mojom::InterestGroup::ExecutionMode::kFrozenContext;
+  join_origin_ = url::Origin::Create(GURL("https://url.test/"));
+  GenerateBid(bidder_worklet.get());
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  EXPECT_THAT(bid_errors_,
+              testing::ElementsAre("undefined:0 Uncaught TypeError: Cannot "
+                                   "DeepFreeze non-const value a."));
+  EXPECT_FALSE(bid_);
 }
 
 // Test that cancelling the worklet before it runs but after the execution was

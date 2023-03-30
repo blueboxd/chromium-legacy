@@ -164,10 +164,8 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   info->location_in_view =
       gfx::PointF(viewPoint.x, viewFrame.size.height - viewPoint.y);
 
-  NSPoint screenPoint =
-      ui::ConvertPointFromWindowToScreen([self window], windowPoint);
-  NSScreen* screen = [[self window] screen];
-  NSRect screenFrame = [screen frame];
+  NSPoint screenPoint = [self.window convertPointToScreen:windowPoint];
+  NSRect screenFrame = self.window.screen.frame;
   info->location_in_screen =
       gfx::PointF(screenPoint.x, screenFrame.size.height - screenPoint.y);
 

@@ -16,6 +16,7 @@
 #include "media/base/video_types.h"
 #include "media/filters/ivf_parser.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/v4l2/test/upstream_pix_fmt.h"
 #include "media/gpu/v4l2/test/v4l2_ioctl_shim.h"
 #include "media/parsers/vp8_parser.h"
 
@@ -189,7 +190,7 @@ struct v4l2_vp8_segment FillV4L2VP8SegmentationHeader(
 // frames
 bool IsBufferSlotInUse(
     const media::Vp8FrameHeader& frame_hdr,
-    const std::array<scoped_refptr<media::v4l2_test::MmapedBuffer>,
+    const std::array<scoped_refptr<media::v4l2_test::MmappedBuffer>,
                      media::kNumVp8ReferenceBuffers>& ref_frames,
     size_t curr_ref_frame_index) {
   for (size_t i = 0; i < media::kNumVp8ReferenceBuffers; i++) {
@@ -230,22 +231,11 @@ bool IsBufferSlotInUse(
 namespace media {
 namespace v4l2_test {
 
-// TODO(b/256252128): Find optimal number of CAPTURE buffers
 constexpr uint32_t kNumberOfBuffersInCaptureQueue = 6;
-constexpr uint32_t kNumberOfBuffersInOutputQueue = 1;
-
-constexpr uint32_t kNumberOfPlanesInOutputQueue = 1;
 
 static_assert(kNumberOfBuffersInCaptureQueue <= 16,
               "Too many CAPTURE buffers are used. The number of CAPTURE "
               "buffers is currently assumed to be no larger than 16.");
-
-static_assert(kNumberOfBuffersInOutputQueue == 1,
-              "Too many buffers in OUTPUT queue. It is currently designed to "
-              "support only 1 request at a time.");
-
-static_assert(kNumberOfPlanesInOutputQueue == 1,
-              "Number of planes is expected to be 1 for OUTPUT queue.");
 
 Vp8Decoder::Vp8Decoder(std::unique_ptr<IvfParser> ivf_parser,
                        std::unique_ptr<V4L2IoctlShim> v4l2_ioctl,
@@ -294,13 +284,11 @@ std::unique_ptr<Vp8Decoder> Vp8Decoder::Create(
 
   auto v4l2_ioctl = std::make_unique<V4L2IoctlShim>(kDriverCodecFourcc);
   uint32_t uncompressed_fourcc = V4L2_PIX_FMT_NV12;
-  int num_planes = 1;
 
   if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
                                       uncompressed_fourcc)) {
     // Fall back to MM21 for MediaTek platforms
-    uncompressed_fourcc = v4l2_fourcc('M', 'M', '2', '1');
-    num_planes = 2;
+    uncompressed_fourcc = V4L2_PIX_FMT_MM21;
 
     if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
                                         uncompressed_fourcc)) {
@@ -319,18 +307,14 @@ std::unique_ptr<Vp8Decoder> Vp8Decoder::Create(
   // https://buganizer.corp.google.com/issues/202214561#comment31
   auto OUTPUT_queue = std::make_unique<V4L2Queue>(
       V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, kDriverCodecFourcc,
-      bitstream_coded_size, /*num_planes=*/1, V4L2_MEMORY_MMAP,
-      /*num_buffers=*/kNumberOfBuffersInOutputQueue);
+      bitstream_coded_size, V4L2_MEMORY_MMAP, kNumberOfBuffersInOutputQueue);
   OUTPUT_queue->set_coded_size(bitstream_coded_size);
 
   // TODO(b/256543928): enable V4L2_MEMORY_DMABUF memory for CAPTURE queue.
-  // |num_planes| represents separate memory buffers, not planes for Y, U, V.
   // https://www.kernel.org/doc/html/v5.10/userspace-api/media/v4l/pixfmt-v4l2-mplane.html#c.V4L.v4l2_plane_pix_format
   auto CAPTURE_queue = std::make_unique<V4L2Queue>(
       V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, uncompressed_fourcc,
-      bitstream_coded_size,
-      /*num_planes=*/num_planes, V4L2_MEMORY_MMAP,
-      /*num_buffers=*/kNumberOfBuffersInCaptureQueue);
+      bitstream_coded_size, V4L2_MEMORY_MMAP, kNumberOfBuffersInCaptureQueue);
 
   return base::WrapUnique(
       new Vp8Decoder(std::move(ivf_parser), std::move(v4l2_ioctl),
@@ -460,7 +444,7 @@ void Vp8Decoder::UpdateReusableReferenceBufferSlots(
 
 std::set<int> Vp8Decoder::RefreshReferenceSlots(
     const Vp8FrameHeader& frame_hdr,
-    MmapedBuffer* buffer,
+    MmappedBuffer* buffer,
     std::set<uint32_t> queued_buffer_ids) {
   std::set<int> reusable_buffer_slots = {};
 
@@ -557,9 +541,9 @@ Vp8Decoder::ParseResult Vp8Decoder::ReadNextFrame(
   return result ? Vp8Decoder::kOk : Vp8Decoder::kError;
 }
 
-VideoDecoder::Result Vp8Decoder::DecodeNextFrame(std::vector<char>& y_plane,
-                                                 std::vector<char>& u_plane,
-                                                 std::vector<char>& v_plane,
+VideoDecoder::Result Vp8Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
+                                                 std::vector<uint8_t>& u_plane,
+                                                 std::vector<uint8_t>& v_plane,
                                                  gfx::Size& size,
                                                  const int frame_number) {
   Vp8FrameHeader frame_hdr{};
@@ -596,10 +580,10 @@ VideoDecoder::Result Vp8Decoder::DecodeNextFrame(std::vector<char>& y_plane,
 
   uint32_t buffer_id = 0;
   // Copies the frame data into the V4L2 buffer of OUTPUT |queue|.
-  scoped_refptr<MmapedBuffer> OUTPUT_queue_buffer =
+  scoped_refptr<MmappedBuffer> OUTPUT_queue_buffer =
       OUTPUT_queue_->GetBuffer(buffer_id);
-  OUTPUT_queue_buffer->mmaped_planes()[0].CopyIn(frame_hdr.data,
-                                                 frame_hdr.frame_size);
+  OUTPUT_queue_buffer->mmapped_planes()[0].CopyIn(frame_hdr.data,
+                                                  frame_hdr.frame_size);
   OUTPUT_queue_buffer->set_frame_number(frame_number);
 
   if (!v4l2_ioctl_->QBuf(OUTPUT_queue_, buffer_id)) {
@@ -627,26 +611,10 @@ VideoDecoder::Result Vp8Decoder::DecodeNextFrame(std::vector<char>& y_plane,
     LOG(FATAL) << "VIDIOC_DQBUF failed for CAPTURE queue.";
   }
 
-  scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
+  scoped_refptr<MmappedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
   size = CAPTURE_queue_->display_size();
-  if (CAPTURE_queue_->fourcc() == V4L2_PIX_FMT_NV12) {
-    CHECK_EQ(buffer->mmaped_planes().size(), 1u)
-        << "NV12 should have exactly 1 plane but CAPTURE queue does not.";
-
-    ConvertNV12ToYUV(y_plane, u_plane, v_plane, size,
-                     static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
-                     CAPTURE_queue_->coded_size());
-  } else if (CAPTURE_queue_->fourcc() == v4l2_fourcc('M', 'M', '2', '1')) {
-    CHECK_EQ(buffer->mmaped_planes().size(), 2u)
-        << "MM21 should have exactly 2 planes but CAPTURE queue does not.";
-
-    ConvertMM21ToYUV(y_plane, u_plane, v_plane, size,
-                     static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
-                     static_cast<char*>(buffer->mmaped_planes()[1].start_addr),
-                     CAPTURE_queue_->coded_size());
-  } else {
-    LOG(FATAL) << "Unsupported CAPTURE queue format";
-  }
+  ConvertToYUV(y_plane, u_plane, v_plane, size, buffer->mmapped_planes(),
+               CAPTURE_queue_->coded_size(), CAPTURE_queue_->fourcc());
 
   const std::set<int> reusable_buffer_slots = RefreshReferenceSlots(
       frame_hdr, CAPTURE_queue_->GetBuffer(buffer_id).get(),

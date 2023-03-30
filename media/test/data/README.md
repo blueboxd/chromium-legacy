@@ -64,6 +64,7 @@ duration:
 ```
 ffmpeg -fflags nofillin -i noise_2ch_48khz_aot42_19_lufs_mp4.m4a -acodec copy -t 1 -movflags frag_keyframe+empty_moov+default_base_moof noise-xhe-aac.mp4
 ffmpeg -fflags nofillin -i noise_1ch_29_4khz_aot42_19_lufs_drc_config_change_mp4.m4a -acodec copy -t 1 -movflags frag_keyframe+empty_moov+default_base_moof noise-xhe-aac-mono.mp4
+ffmpeg -fflags nofillin -i noise_2ch_44_1khz_aot42_19_lufs_config_change_mp4.m4a -acodec copy -t 1 -movflags frag_keyframe+empty_moov+default_base_moof noise-xhe-aac-44kHz.mp4
 ```
 
 ### FLAC
@@ -1118,15 +1119,17 @@ present.
 ### MP4 files with AC3 and EAC3 audio
 
 #### bear-ac3-only-frag.mp4
-AC3 audio in framented MP4, generated with
+AC3 audio in framented MP4, generated with bento4 by the following command:
 ```
-ffmpeg -i bear.ac3 -acodec copy -movflags frag_keyframe bear-ac3-only-frag.mp4
+mp4mux --track bear.ac3 bear-ac3-only.mp4
+mp4fragment bear-ac3-only.mp4 bear-ac3-only-frag.mp4
 ```
 
 #### bear-eac3-only-frag.mp4
-EAC3 audio in framented MP4, generated with
+EAC3 audio in framented MP4, generated with bento4 by the following command:
 ```
-ffmpeg -i bear.eac3 -acodec copy -movflags frag_keyframe bear-eac3-only-frag.mp4
+mp4mux --track bear.eac3 bear-eac3-only.mp4
+mp4fragment bear-eac3-only.mp4 bear-eac3-only-frag.mp4
 ```
 
 ### Mpeg2ts stream with AAC HE audio that uses SBR

@@ -65,7 +65,7 @@ export function isMyFilesEntry(entry: Entry|FilesAppEntry|
     return true;
   }
   if (isVolumeEntry(entry) &&
-      entry.rootType === VolumeManagerCommon.RootType.DOWNLOADS) {
+      entry.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS) {
     return true;
   }
 
@@ -111,6 +111,40 @@ export function isFakeEntryInDrives(entry: Entry|
 
   return rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
       rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE;
+}
+
+/**
+ * Returns true if fileData's entry is inside any part of Drive 'My Drive'.
+ */
+export function isEntryInsideMyDrive(fileData: FileData): boolean {
+  const {rootType} = fileData;
+  return !!rootType && rootType === VolumeManagerCommon.RootType.DRIVE;
+}
+
+/**
+ * Returns true if fileData's entry is inside any part of Drive 'Computers'.
+ */
+export function isEntryInsideComputers(fileData: FileData): boolean {
+  const {rootType} = fileData;
+  return !!rootType &&
+      (rootType === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+       rootType === VolumeManagerCommon.RootType.COMPUTER);
+}
+
+/**
+ * Returns true if fileData's entry is inside any part of Drive.
+ */
+export function isEntryInsideDrive(fileData: FileData): boolean {
+  const {rootType} = fileData;
+  return !!rootType &&
+      (rootType === VolumeManagerCommon.RootType.DRIVE ||
+       rootType === VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT ||
+       rootType === VolumeManagerCommon.RootType.SHARED_DRIVE ||
+       rootType === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+       rootType === VolumeManagerCommon.RootType.COMPUTER ||
+       rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
+       rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
+       rootType === VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
 }
 
 /** Sort the entries based on the filter and the names. */

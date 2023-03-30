@@ -655,7 +655,8 @@ chrome.fileManagerPrivate.GetVolumeRootOptions;
  *   folderShortcuts: !Array<string>,
  *   trashEnabled: boolean,
  *   officeFileMovedOneDrive: number,
- *   officeFileMovedGoogleDrive: number
+ *   officeFileMovedGoogleDrive: number,
+ *   driveFsBulkPinningEnabled: boolean
  * }}
  */
 chrome.fileManagerPrivate.Preferences;
@@ -665,7 +666,8 @@ chrome.fileManagerPrivate.Preferences;
  *   cellularDisabled: (boolean|undefined),
  *   arcEnabled: (boolean|undefined),
  *   arcRemovableMediaAccessEnabled: (boolean|undefined),
- *   folderShortcuts: (!Array<string>|undefined)
+ *   folderShortcuts: (!Array<string>|undefined),
+ *   driveFsBulkPinningEnabled: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.PreferencesChange;
@@ -866,7 +868,8 @@ chrome.fileManagerPrivate.ResumeParams;
  *   showNotification: boolean,
  *   errorName: string,
  *   pauseParams: (!chrome.fileManagerPrivate.PauseParams|undefined),
- *   outputs: (!Array<Entry>|undefined)
+ *   outputs: (!Array<Entry>|undefined),
+ *   destinationVolumeId: string
  * }}
  */
 chrome.fileManagerPrivate.ProgressStatus;
@@ -1696,12 +1699,6 @@ chrome.fileManagerPrivate.openManageSyncSettings = function() {};
  *     callback
  */
 chrome.fileManagerPrivate.parseTrashInfoFiles = function(entries, callback) {};
-
-/**
- * Sets the bulk pinning feature as enabled (true) or disabled (false).
- * @param {boolean} shouldEnable
- */
-chrome.fileManagerPrivate.toggleBulkPinning = function(shouldEnable) {};
 
 /**
  * @type {!ChromeEvent}

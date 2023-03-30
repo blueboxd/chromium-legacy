@@ -97,12 +97,12 @@ class SortComparator {
 // Delegate that does nothing.
 class EmptyUndoDelegate : public BookmarkUndoDelegate {
  public:
-  EmptyUndoDelegate() {}
+  EmptyUndoDelegate() = default;
 
   EmptyUndoDelegate(const EmptyUndoDelegate&) = delete;
   EmptyUndoDelegate& operator=(const EmptyUndoDelegate&) = delete;
 
-  ~EmptyUndoDelegate() override {}
+  ~EmptyUndoDelegate() override = default;
 
  private:
   // BookmarkUndoDelegate:
@@ -120,8 +120,6 @@ base::FilePath GetStorageFilePath(const base::FilePath& profile_path,
     case StorageType::kLocalOrSyncable:
       return profile_path.Append(kLocalOrSyncableBookmarksFileName);
     case StorageType::kAccount:
-      // TODO(1404250): Remove NOTREACHED when account bookmarks are supported.
-      NOTREACHED();
       return profile_path.Append(kAccountBookmarksFileName);
   }
 }

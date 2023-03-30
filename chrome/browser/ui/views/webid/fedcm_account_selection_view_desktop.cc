@@ -130,7 +130,8 @@ void FedCmAccountSelectionView::Show(
 
 void FedCmAccountSelectionView::ShowFailureDialog(
     const std::string& top_frame_etld_plus_one,
-    const std::string& idp_etld_plus_one) {
+    const std::string& idp_etld_plus_one,
+    const content::IdentityProviderMetadata& idp_metadata) {
   state_ = State::IDP_SIGNIN_STATUS_MISMATCH;
 
   bool create_bubble = !bubble_widget_;
@@ -153,7 +154,8 @@ void FedCmAccountSelectionView::ShowFailureDialog(
   }
 
   GetBubbleView()->ShowFailureDialog(base::UTF8ToUTF16(top_frame_etld_plus_one),
-                                     base::UTF8ToUTF16(idp_etld_plus_one));
+                                     base::UTF8ToUTF16(idp_etld_plus_one),
+                                     idp_metadata);
 
   if (create_bubble) {
     bubble_widget_->Show();
@@ -162,6 +164,14 @@ void FedCmAccountSelectionView::ShowFailureDialog(
   // Else:
   // The bubble is not guaranteed to be shown. The bubble will be hidden if the
   // associated web contents are hidden.
+}
+
+std::string FedCmAccountSelectionView::GetTitle() const {
+  return GetBubbleView()->GetDialogTitle();
+}
+
+absl::optional<std::string> FedCmAccountSelectionView::GetSubtitle() const {
+  return GetBubbleView()->GetDialogSubtitle();
 }
 
 void FedCmAccountSelectionView::OnVisibilityChanged(
@@ -243,6 +253,11 @@ FedCmAccountSelectionView::GetBubbleView() {
       bubble_widget_->widget_delegate());
 }
 
+const AccountSelectionBubbleViewInterface*
+FedCmAccountSelectionView::GetBubbleView() const {
+  return static_cast<const AccountSelectionBubbleView*>(
+      bubble_widget_->widget_delegate());
+}
 void FedCmAccountSelectionView::OnWidgetDestroying(views::Widget* widget) {
   DismissReason dismiss_reason =
       (bubble_widget_->closed_reason() ==

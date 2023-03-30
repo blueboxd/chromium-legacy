@@ -14,6 +14,7 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/common/form_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -22,7 +23,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
-class NavigationHandle;
 class RenderFrameHost;
 }  // namespace content
 
@@ -192,9 +192,8 @@ class ContentAutofillDriver : public AutofillDriver,
   // enabled.
   void ProbablyFormSubmitted(base::PassKey<ContentAutofillDriverFactory>);
 
-  // DidNavigateFrame() is called on the frame's driver, respectively, when a
-  // navigation occurs in that specific frame.
-  void DidNavigateFrame(content::NavigationHandle* navigation_handle);
+  // Called on certain types of navigations by ContentAutofillDriverFactory.
+  void Reset();
 
   // Key-press handlers capture the user input into fields from the renderer.
   // The AutofillPopupControllerImpl listens for input while showing a popup.
@@ -329,7 +328,7 @@ class ContentAutofillDriver : public AutofillDriver,
 
   // Weak ref to the AutofillRouter associated with the WebContents.
   // Do not access directly, use autofill_router() instead.
-  raw_ptr<ContentAutofillRouter> autofill_router_ = nullptr;
+  const raw_ptr<ContentAutofillRouter> autofill_router_ = nullptr;
 
   // The form pushed from the AutofillAgent to the AutofillDriver. When the
   // ProbablyFormSubmitted() event is fired, this form is considered the

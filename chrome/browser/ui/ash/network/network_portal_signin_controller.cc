@@ -24,6 +24,7 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_service_impl.h"
 #include "components/captive_portal/core/captive_portal_detector.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "components/user_manager/user_manager.h"
@@ -143,18 +144,19 @@ NetworkPortalSigninController::GetSigninMode() const {
     return SigninMode::kNormalTab;
   }
 
-  IncognitoModePrefs::Availability availability;
+  policy::IncognitoModeAvailability availability;
   IncognitoModePrefs::IntToAvailability(
-      profile->GetPrefs()->GetInteger(prefs::kIncognitoModeAvailability),
+      profile->GetPrefs()->GetInteger(
+          policy::policy_prefs::kIncognitoModeAvailability),
       &availability);
-  if (availability == IncognitoModePrefs::Availability::kDisabled) {
+  if (availability == policy::IncognitoModeAvailability::kDisabled) {
     // Use a dialog to prevent navigation and use an OTR profile due to
     // Incognito browsing disabled by policy preference.
     return SigninMode::kIncognitoDialogDisabled;
   }
 
   if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
-      IncognitoModePrefs::Availability::kDisabled) {
+      policy::IncognitoModeAvailability::kDisabled) {
     // Use a dialog to prevent navigation and use an OTR profile due to
     // Incognito browsing disabled by parental controls.
     return SigninMode::kIncognitoDialogParental;

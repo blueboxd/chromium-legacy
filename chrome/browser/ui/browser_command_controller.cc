@@ -58,6 +58,7 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/lens/buildflags.h"
 #include "components/lens/lens_features.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -200,7 +201,7 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
           &BrowserCommandController::UpdateCommandsForBookmarkBar,
           base::Unretained(this)));
   profile_pref_registrar_.Add(
-      prefs::kIncognitoModeAvailability,
+      policy::policy_prefs::kIncognitoModeAvailability,
       base::BindRepeating(
           &BrowserCommandController::UpdateCommandsForIncognitoAvailability,
           base::Unretained(this)));
@@ -1271,18 +1272,18 @@ void BrowserCommandController::InitCommandState() {
 void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
     CommandUpdater* command_updater,
     Profile* profile) {
-  IncognitoModePrefs::Availability incognito_availability =
+  policy::IncognitoModeAvailability incognito_availability =
       IncognitoModePrefs::GetAvailability(profile->GetPrefs());
   command_updater->UpdateCommandEnabled(
       IDC_NEW_WINDOW,
-      incognito_availability != IncognitoModePrefs::Availability::kForced);
+      incognito_availability != policy::IncognitoModeAvailability::kForced);
   command_updater->UpdateCommandEnabled(
       IDC_NEW_INCOGNITO_WINDOW,
-      incognito_availability != IncognitoModePrefs::Availability::kDisabled &&
+      incognito_availability != policy::IncognitoModeAvailability::kDisabled &&
           !profile->IsGuestSession());
 
   const bool forced_incognito =
-      incognito_availability == IncognitoModePrefs::Availability::kForced;
+      incognito_availability == policy::IncognitoModeAvailability::kForced;
   const bool is_guest = profile->IsGuestSession();
 
   command_updater->UpdateCommandEnabled(

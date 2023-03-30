@@ -8,6 +8,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
@@ -54,6 +55,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeUpdateEmailOld,
   ItemTypeUpdatePhoneOld,
   ItemTypeAddressProfileSaveUpdateButton,
+  ItemTypeFooter
 };
 
 const CGFloat kSymbolSize = 16;
@@ -82,6 +84,13 @@ const CGFloat kSymbolSize = 16;
 @property(nonatomic, copy) NSDictionary* profileDataDiff;
 // Description of the update modal.
 @property(nonatomic, copy) NSString* updateModalDescription;
+// Stores the user email for the currently syncing account.
+@property(nonatomic, copy) NSString* syncingUserEmail;
+// If YES, denotes that the profile will be added to the Google Account.
+@property(nonatomic, assign) BOOL isMigrationToAccount;
+// IF YES, for update prompt, the profile belongs to the Google Account.
+// For save prompt, denotes that the profile will be saved to Google Account.
+@property(nonatomic, assign) BOOL profileAnAccountProfile;
 
 @end
 
@@ -130,11 +139,13 @@ const CGFloat kSymbolSize = 16;
   self.navigationController.navigationBar.prefersLargeTitles = NO;
 
   if (self.isUpdateModal) {
-    self.navigationItem.title =
+    self.title =
         l10n_util::GetNSString(IDS_IOS_AUTOFILL_UPDATE_ADDRESS_PROMPT_TITLE);
   } else {
-    self.navigationItem.title =
-        l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_ADDRESS_PROMPT_TITLE);
+    self.title = l10n_util::GetNSString(
+        self.isMigrationToAccount
+            ? IDS_IOS_AUTOFILL_SAVE_ADDRESS_IN_ACCOUNT_PROMPT_TITLE
+            : IDS_IOS_AUTOFILL_SAVE_ADDRESS_PROMPT_TITLE);
   }
 
   [self loadModel];
@@ -248,6 +259,10 @@ const CGFloat kSymbolSize = 16;
   self.isUpdateModal = [prefs[kIsUpdateModalPrefKey] boolValue];
   self.profileDataDiff = prefs[kProfileDataDiffKey];
   self.updateModalDescription = prefs[kUpdateModalDescriptionKey];
+  self.isMigrationToAccount = [prefs[kIsMigrationToAccountKey] boolValue];
+  self.syncingUserEmail = prefs[kSyncingUserEmailKey];
+  self.profileAnAccountProfile =
+      [prefs[kIsProfileAnAccountProfileKey] boolValue];
   [self.tableView reloadData];
 }
 
@@ -304,26 +319,14 @@ const CGFloat kSymbolSize = 16;
 
   for (NSNumber* type in self.profileDataDiff) {
     if ([self.profileDataDiff[type][0] length] > 0) {
-      SettingsImageDetailTextItem* newItem;
-      if (UseSymbols()) {
-        newItem = [self
-              detailItemWithType:[self modalItemTypeForAutofillUIType:
-                                           (AutofillUIType)[type intValue]
-                                                               update:YES
-                                                                  old:NO]
-                            text:self.profileDataDiff[type][0]
-                          symbol:[self symbolForAutofillInputTypeNumber:type]
-            imageTintColorIsGrey:NO];
-      } else {
-        newItem =
-            [self detailItemWithType:[self modalItemTypeForAutofillUIType:
-                                               (AutofillUIType)[type intValue]
-                                                                   update:YES
-                                                                      old:NO]
-                                text:self.profileDataDiff[type][0]
-                       iconImageName:[self iconForAutofillInputTypeNumber:type]
-                imageTintColorIsGrey:NO];
-      }
+      SettingsImageDetailTextItem* newItem =
+          [self detailItemWithType:[self modalItemTypeForAutofillUIType:
+                                             (AutofillUIType)[type intValue]
+                                                                 update:YES
+                                                                    old:NO]
+                              text:self.profileDataDiff[type][0]
+                            symbol:[self symbolForAutofillInputTypeNumber:type]
+              imageTintColorIsGrey:NO];
       lastAddedItem = newItem;
       [model addItem:newItem
           toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
@@ -339,26 +342,14 @@ const CGFloat kSymbolSize = 16;
         toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
     for (NSNumber* type in self.profileDataDiff) {
       if ([self.profileDataDiff[type][1] length] > 0) {
-        SettingsImageDetailTextItem* oldItem;
-        if (UseSymbols()) {
-          oldItem = [self
-                detailItemWithType:[self modalItemTypeForAutofillUIType:
-                                             (AutofillUIType)[type intValue]
-                                                                 update:YES
-                                                                    old:YES]
-                              text:self.profileDataDiff[type][1]
-                            symbol:[self symbolForAutofillInputTypeNumber:type]
-              imageTintColorIsGrey:YES];
-        } else {
-          oldItem = [self
-                detailItemWithType:[self modalItemTypeForAutofillUIType:
-                                             (AutofillUIType)[type intValue]
-                                                                 update:YES
-                                                                    old:YES]
-                              text:self.profileDataDiff[type][1]
-                     iconImageName:[self iconForAutofillInputTypeNumber:type]
-              imageTintColorIsGrey:YES];
-        }
+        SettingsImageDetailTextItem* oldItem = [self
+              detailItemWithType:[self modalItemTypeForAutofillUIType:
+                                           (AutofillUIType)[type intValue]
+                                                               update:YES
+                                                                  old:YES]
+                            text:self.profileDataDiff[type][1]
+                          symbol:[self symbolForAutofillInputTypeNumber:type]
+            imageTintColorIsGrey:YES];
         lastAddedItem = oldItem;
         [model addItem:oldItem
             toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
@@ -366,8 +357,14 @@ const CGFloat kSymbolSize = 16;
     }
   }
 
+  if (self.profileAnAccountProfile) {
+    DCHECK([self.syncingUserEmail length] > 0);
+    [model addItem:[self updateFooterItem]
+        toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
+  }
+
   // Remove the separator after the last field.
-  lastAddedItem.useCustomSeparator = NO;
+  lastAddedItem.useCustomSeparator = self.profileAnAccountProfile;
 
   [model addItem:[self saveUpdateButton]
       toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
@@ -405,8 +402,15 @@ const CGFloat kSymbolSize = 16;
     lastAddedItem = phoneItem;
   }
 
+  if (self.isMigrationToAccount || self.profileAnAccountProfile) {
+    DCHECK([self.syncingUserEmail length] > 0);
+    [model addItem:[self saveFooterItem]
+        toSectionWithIdentifier:SectionIdentifierSaveModalFields];
+  }
+
   // Remove the separator after the last field.
-  lastAddedItem.useCustomSeparator = NO;
+  lastAddedItem.useCustomSeparator =
+      (self.isMigrationToAccount || self.profileAnAccountProfile);
 
   [model addItem:[self saveUpdateButton]
       toSectionWithIdentifier:SectionIdentifierSaveModalFields];
@@ -450,7 +454,6 @@ const CGFloat kSymbolSize = 16;
 }
 
 - (UIImage*)symbolForAutofillUIType:(AutofillUIType)type {
-  DCHECK(UseSymbols());
   switch (type) {
     case AutofillUITypeNameFullWithHonorificPrefix:
       return DefaultSymbolTemplateWithPointSize(kPersonFillSymbol, kSymbolSize);
@@ -470,29 +473,6 @@ const CGFloat kSymbolSize = 16;
 
 - (UIImage*)symbolForAutofillInputTypeNumber:(NSNumber*)val {
   return [self symbolForAutofillUIType:(AutofillUIType)[val intValue]];
-}
-
-- (NSString*)iconForAutofillUIType:(AutofillUIType)type {
-  DCHECK(!UseSymbols());
-  switch (type) {
-    case AutofillUITypeNameFullWithHonorificPrefix:
-      return @"infobar_profile_icon";
-    case AutofillUITypeAddressHomeAddress:
-    case AutofillUITypeProfileHomeAddressStreet:
-      return @"infobar_autofill_address_icon";
-    case AutofillUITypeProfileEmailAddress:
-      return @"infobar_email_icon";
-    case AutofillUITypeProfileHomePhoneWholeNumber:
-      return @"infobar_phone_icon";
-    default:
-      NOTREACHED();
-      return @"";
-  }
-}
-
-- (NSString*)iconForAutofillInputTypeNumber:(NSNumber*)val {
-  DCHECK(!UseSymbols());
-  return [self iconForAutofillUIType:(AutofillUIType)[val intValue]];
 }
 
 // Determines the itemType for the row based on `autofillUIType`, whether the
@@ -551,21 +531,12 @@ const CGFloat kSymbolSize = 16;
 - (SettingsImageDetailTextItem*)
     detailItemForSaveModalWithText:(NSString*)text
                     autofillUIType:(AutofillUIType)autofillUIType {
-  if (UseSymbols()) {
-    return [self
-          detailItemWithType:[self modalItemTypeForAutofillUIType:autofillUIType
-                                                           update:NO
-                                                              old:NO]
-                        text:text
-                      symbol:[self symbolForAutofillUIType:autofillUIType]
-        imageTintColorIsGrey:YES];
-  }
   return [self
         detailItemWithType:[self modalItemTypeForAutofillUIType:autofillUIType
                                                          update:NO
                                                             old:NO]
                       text:text
-             iconImageName:[self iconForAutofillUIType:autofillUIType]
+                    symbol:[self symbolForAutofillUIType:autofillUIType]
       imageTintColorIsGrey:YES];
 }
 
@@ -573,7 +544,6 @@ const CGFloat kSymbolSize = 16;
                                               text:(NSString*)text
                                             symbol:(UIImage*)symbol
                               imageTintColorIsGrey:(BOOL)imageTintColorIsGrey {
-  DCHECK(UseSymbols());
   SettingsImageDetailTextItem* detailItem =
       [[SettingsImageDetailTextItem alloc] initWithType:type];
 
@@ -592,28 +562,28 @@ const CGFloat kSymbolSize = 16;
   return detailItem;
 }
 
-- (SettingsImageDetailTextItem*)detailItemWithType:(NSInteger)type
-                                              text:(NSString*)text
-                                     iconImageName:(NSString*)iconImageName
-                              imageTintColorIsGrey:(BOOL)imageTintColorIsGrey {
-  DCHECK(!UseSymbols());
-  SettingsImageDetailTextItem* detailItem =
-      [[SettingsImageDetailTextItem alloc] initWithType:type];
+- (TableViewTextItem*)saveFooterItem {
+  // TODO(crbug.com/1407666): Align the text with the icon of the other fields.
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
+  item.text =
+      l10n_util::GetNSStringF(IDS_IOS_AUTOFILL_SAVE_ADDRESS_IN_ACCOUNT_FOOTER,
+                              base::SysNSStringToUTF16(self.syncingUserEmail));
+  item.textFont = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  item.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  return item;
+}
 
-  detailItem.text = text;
-  detailItem.alignImageWithFirstLineOfText = YES;
-  if ([iconImageName length]) {
-    detailItem.image = [[UIImage imageNamed:iconImageName]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    detailItem.useCustomSeparator = YES;
-    if (imageTintColorIsGrey) {
-      detailItem.imageViewTintColor = [UIColor colorNamed:kGrey400Color];
-    } else {
-      detailItem.imageViewTintColor = [UIColor colorNamed:kBlueColor];
-    }
-  }
-
-  return detailItem;
+- (TableViewTextItem*)updateFooterItem {
+  // TODO(crbug.com/1407666): Align the text with the icon of the other fields.
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
+  item.text = l10n_util::GetNSStringF(
+      IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT,
+      base::SysNSStringToUTF16(self.syncingUserEmail));
+  item.textFont = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  item.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  return item;
 }
 
 @end

@@ -179,7 +179,6 @@ public class InstantStartTabSwitcherTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Assert.assertFalse(cta.isTablet());
         Assert.assertTrue(ChromeFeatureList.sInstantStart.isEnabled());
-        Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
         Assert.assertTrue(StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
 
@@ -344,7 +343,7 @@ public class InstantStartTabSwitcherTest {
         StartSurfaceTestUtils.waitForTabModel(cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         onView(allOf(withParent(
-                             withId(org.chromium.chrome.test.R.id.carousel_tab_switcher_container)),
+                             withId(org.chromium.chrome.test.R.id.tab_switcher_module_container)),
                        withId(org.chromium.chrome.test.R.id.tab_list_view)))
                 .check(matches(isDisplayed()));
         RecyclerView tabListView =

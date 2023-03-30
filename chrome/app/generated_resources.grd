@@ -619,6 +619,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP_SAMEAPP" desc="The name of the command to open a link in a newly created window of the same app the user is currently in">
             Open link in new <ph name="APP">$1<ex>Gmail App</ex> window</ph>
           </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKWEBAPP_NEWTAB" desc="The name of the command to open a link in a new tab of the same app the user is currently in">
+            Open link in new <ph name="APP">$1<ex>Gmail App</ex></ph> tab
+          </message>
 
           <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="The name of the Save Link As command in the content area context menu">
             Save lin&amp;k as...
@@ -884,6 +887,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP_SAMEAPP" desc="In Title Case: The name of the command to open a link in a newly created window of the same app the user is currently in">
             Open Link in new <ph name="APP">$1<ex>Gmail App</ex></ph> Window
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKWEBAPP_NEWTAB" desc="In Title Case: The name of the command to open a link in a new tab of the same app the user is currently in">
+            Open Link in new <ph name="APP">$1<ex>Gmail App</ex></ph> Tab
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="In Title Case: The name of the Save Link As command in the content area context menu">
@@ -1481,6 +1487,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_SHOW_DOWNLOADS" desc="The show downloads menu in the app menu">
           &amp;Downloads
         </message>
+        <message name="IDS_VIEW_PASSWORDS" desc="The show Password Manager menu in the app menu">
+          Password Manager
+        </message>
         <message name="IDS_SHOW_EXTENSIONS" desc="The show extensions menu in the app menu">
           &amp;Extensions
         </message>
@@ -1530,6 +1539,9 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_SHOW_DOWNLOADS" desc="In Title Case: The show downloads menu in the app menu">
           &amp;Downloads
+        </message>
+        <message name="IDS_VIEW_PASSWORDS" desc="In Title Case: The show Password Manager menu in the app menu">
+          Password Manager
         </message>
         <message name="IDS_SHOW_EXTENSIONS" desc="In Title Case: The show extensions menu in the app menu">
           &amp;Extensions
@@ -2593,6 +2605,14 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_BUBBLE_FOOTER_TOOLTIP"
                desc="Tooltip label for the button to open all downloads">
         Show all downloads in a new tab
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_PROMO"
+               desc="Text for the in-product-help bubble shown for the download bubble.">
+        Manage files as they download, and open them when they’re done
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_PROMO_TITLE"
+               desc="Title for the in-product-help bubble shown for the download bubble.">
+        Find your downloads here
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_DOWNLOAD_STATUS_MESSAGE_WITH_SEPARATOR"
                desc="The download status and message are separated by a symbol, in this case bullet •, with a white space before it and a white space after it. If the bullet • resembles another symbol in the language, please translate the bullet • as a symbol (A) that is not easily mistaken for a number or letter in the language and (B) that is typically used to separate elements.">
@@ -4975,6 +4995,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_DIAGNOSTICS" desc="Permission string for chrome.os.diagnostcs API.">
             Run ChromeOS Flex diagnostic tests
           </message>
+          <message name="IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_EVENTS" desc="Permission string for chrome.os.events API.">
+            Subscribe to ChromeOS Flex system events
+          </message>
           <message name="IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_TELEMETRY" desc="Permission string for chrome.os.telemetry API.">
             Read ChromeOS Flex device information and device data
           </message>
@@ -4988,6 +5011,9 @@ are declared in tools/grit/grit_rule.gni.
         <if expr="not reven">
           <message name="IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_DIAGNOSTICS" desc="Permission string for chrome.os.diagnostcs API.">
             Run ChromeOS diagnostic tests
+          </message>
+          <message name="IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_EVENTS" desc="Permission string for chrome.os.events API.">
+            Subscribe to ChromeOS system events
           </message>
           <message name="IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_TELEMETRY" desc="Permission string for chrome.os.telemetry API.">
             Read ChromeOS device information and device data
@@ -5810,6 +5836,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
        <message name="IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SETTINGS_BUTTON" desc="Text of the extension settings button in the site permissions page">
         Manage this extension
       </message>
+      <message name="IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SHOW_REQUESTS_LABEL" desc="Text of the label next to the show requests toggle button in the site permissions page that controls whether the extension can show site access requests in the toolbar.">
+        Allowed to show requests in the toolbar
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SHOW_REQUESTS_TOGGLE_ON" desc="Accessible text for the the show requests toggle button in the site permissions page that controls when the extension can show site access requests in the toolbar.">
+        Allowed to show requests
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SHOW_REQUESTS_TOGGLE_OFF" desc="Accessible text for the the show requests toggle button in the site permissions page that controls when the extension cannot show site access requests in the toolbar.">
+        Not allowed to show requests
+      </message>
 
       <!-- Settings API bubble -->
       <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their home page setting">
@@ -6197,8 +6232,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         In Google Password Manager for <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
       </message>
       <if expr="is_android">
-        <message name="IDS_PASSWORD_MANAGER_SAVE_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V1" desc="The description of the Google Password Manager's save/update password prompt when the user is signed in.">
-          Google Password Manager <ph name="SEPARATOR">•</ph> <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
+        <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V3" desc="The description of the Google Password Manager's save password prompt when the user is signed in and syncing passwords.">
+          To Google Password Manager <ph name="SEPARATOR">•</ph> <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V3" desc="The description of the Google Password Manager's update password prompt when the user is signed in and syncing passwords.">
+          In Google Password Manager <ph name="SEPARATOR">•</ph> <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
         </message>
         <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2" desc="The description of the Google Password Manager's save password prompt when the user is signed in.">
           To your Google Account, <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
@@ -7297,6 +7335,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_MODULES_SHOW_ALL" desc="A label for the show all button in NTP Quests Module.">
         Show all
       </message>
+      <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_BOOKMARKED" desc="A label for the bookmarked annotation in NTP Quests Module.">
+        Bookmarked
+      </message>
       <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_INFO" desc="Text shown in the body of the info dialog of the history clusters module.">
         You’re seeing pages you've visited and suggested searches to help you easily get back to your most recent activity in Chrome Journeys.
         <ph name="BREAK">&lt;br&gt;</ph>
@@ -7432,6 +7473,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE" desc="The name of the Customize Chrome feature in the side panel combo box.">
         Customize Chrome
+      </message>
+      <message name="IDS_SIDE_PANEL_TOOLBAR_BUTTON_CXMENU_UNPIN" desc="The label of the context menu item for unpinning a side panel toolbar button.">
+        Unpin
+      </message>
+      <message name="IDS_SIDE_PANEL_TOOLBAR_BUTTON_CXMENU_PIN" desc="The label of the context menu item for pinning a side panel toolbar button.">
+        Pin
       </message>
 
       <!-- Bookmarks strings -->
@@ -8465,6 +8512,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_PASSWORD_MANAGER_UNSYNCED_CREDENTIALS_BUBBLE_DESCRIPTION_GPM" desc="The description text of the 'save unsynced credentials' bubble.">
           Google Password Manager couldn't save these passwords in your Google Account. You can save them to this device.
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_IPH_BODY_WEB_APP_PROFILE_SWITCH" desc="Body of the in Product Help for profile switching shown in the password manager web app.">
+          You can choose the profile that you want to see the passwords from
         </message>
 
         <if expr="not use_titlecase">
@@ -12095,8 +12145,20 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MANAGE_PASSWORDS_EDIT_NOTE_TOOLTIP" desc="The tooltip of a button that is used in the credential details view of the password management bubble for editing the note attached to the password.">
         Edit note
       </message>
+      <message name="IDS_MANAGE_PASSWORDS_NOTE_ACCESSIBLE_NAME" desc="Name used by screen readers for the password note label in the credential details view of the password management bubble.">
+        Note: <ph name="NOTE">$1<ex>note</ex></ph>
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS_NOTE_TEXTFIELD" is_accessibility_with_no_ui="true" desc="Name used by screen readers for the note text field in the credential details view of the password management bubble.">
+        Note
+      </message>
       <message name="IDS_MANAGE_PASSWORDS_UPDATE" desc="The text of the button to update the credential details in the password management bubble.">
         Update
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS_USERNAME_ACCESSIBLE_NAME" desc="Name used by screen readers for the username label in the credential details view of the password management bubble.">
+        Username: <ph name="USERNAME">$1<ex>user@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS_USERNAME_TEXTFIELD" is_accessibility_with_no_ui="true" desc="Name used by screen readers for the username text field in the credential details view of the password management bubble.">
+        Username
       </message>
 
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD" desc="The title of the auto-signin toast in Material Design mode.">
@@ -12881,9 +12943,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <if expr="not is_android">
       <!-- Device Chooser Prompt -->
-      <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME" desc="The label that is used to introduce Bluetooth chooser details to the user in a popup when it is from a Chrome extension.">
-        "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome Extension Name</ex></ph>" wants to pair
-      </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF" desc="Text of a link the user can click to get help information when Bluetooth adapter is turned off.">
         <ph name="TURN_ON_BLUETOOTH_LINK">$1<ex>Turn on Bluetooth</ex></ph> to allow pairing
       </message>
@@ -12912,9 +12971,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <ph name="DEVICE_NAME">$1<ex>device name</ex></ph> - Paired
       </message>
     </if>
-    <message name="IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME" desc="The label that is used to introduce USB chooser details to the user in a popup when it is from a Chrome extension.">
-      "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome Extension Name</ex></ph>" wants to connect
-    </message>
     <message name="IDS_DEVICE_CHOOSER_ACCNAME_COMPATIBLE_DEVICES_LIST" desc="The accessible name for the list of compatible devices, read to screen reader users when navigating to the container.">
       Compatible devices
     </message>
@@ -12946,11 +13002,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Serial port chooser -->
     <if expr="not is_android">
-      <message name="IDS_SERIAL_PORT_CHOOSER_PROMPT_ORIGIN" desc="The label that is used to introduce serial port chooser details to the user in a popup when it is from a website.">
+      <message name="IDS_SERIAL_PORT_CHOOSER_PROMPT" desc="The label that is used to introduce serial port chooser details to the user in a popup.">
         <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to connect to a serial port
-      </message>
-      <message name="IDS_SERIAL_PORT_CHOOSER_PROMPT_EXTENSION_NAME" desc="The label that is used to introduce serial port chooser details to the user in a popup when it is from a Chrome extension.">
-        "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome Extension Name</ex></ph>" wants to connect to a serial port
       </message>
       <message name="IDS_SERIAL_PORT_CHOOSER_NAME_WITH_PATH" desc="User option displaying a human-readable name for a serial port with the device path in parenthesis">
         <ph name="FRIENDLY_NAME">$1<ex>Virtual COM Port</ex></ph> (<ph name="DEVICE_PATH">$2<ex>COM1</ex></ph>)
@@ -12986,11 +13039,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- HID (Human Interface Device) chooser -->
     <if expr="not is_android">
-      <message name="IDS_HID_CHOOSER_PROMPT_ORIGIN" desc="The label that is used to introduce the Human Interface Device (HID) chooser details to the user in a popup when it is from a website.">
+      <message name="IDS_HID_CHOOSER_PROMPT" desc="The label that is used to introduce the Human Interface Device (HID) chooser details to the user in a popup.">
         <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to connect to a HID device
-      </message>
-      <message name="IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME" desc="The label that is used to introduce Human Interface Device (HID) chooser details to the user in a popup when it is from a Chrome extension.">
-        "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome Extension Name</ex></ph>" wants to connect to a HID device
       </message>
       <message name="IDS_HID_CHOOSER_ITEM_WITHOUT_NAME" desc="User option displaying the device IDs for a Human Interface Device (HID) without a device name.">
         Unknown Device (<ph name="DEVICE_ID">$1<ex>1234:abcd</ex></ph>)
@@ -13452,8 +13502,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_TRANSPORT_AOA" desc="Menu item text. The user selects this to use their phone, once physically connected with a USB cable, to sign in to a web site on their computer. This appears next to the similar string 'Your phone' with TC ID 4865460888230929643.">
         Your phone with a USB cable
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN" desc="Menu item text. The user selects this to use a security key (an external physical device for user authentication) connected to the computer, or a hardware-based authentication mechanism that is built in to the computer, such as a fingerprint reader.">
-        External security key or built-in sensor
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN" desc="Menu item text. The user selects this to use Windows Hello or a security key (an external physical device for user authentication). Windows Hello is a Microsoft brand and should be translated the same as it is in Windows. If you edit the language code in https://support.microsoft.com/en-us/windows/learn-about-windows-hello-and-set-it-up-dae28983-8242-bb2a-d3d1-87c9d265a5f0 you can see how Microsoft translates it in several languages. (It is often left untranslated.)">
+        Windows Hello or external security key
       </message>
       <message name="IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION" desc="Description in the dialog instructing the user to plug in and activate (e.g. press a button on) their USB security key (an external physical device for user authentication).">
         Insert your security key and touch it
@@ -13746,10 +13796,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Which passkey do you want to use for <ph name="APP_NAME">$1<ex>example.com</ex></ph>?
       </message>
       <message name="IDS_WEBAUTHN_CREATE_PASSKEY_QR_TITLE" desc="The title of a dialog prompting the user to create a passkey to sign into a website. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
-         Create a passkey on another device
+         Create a passkey on a phone or tablet
       </message>
       <message name="IDS_WEBAUTHN_CREATE_PASSKEY_QR_BODY" desc="The body of a dialog prompting the user to create a passkey to sign into a website. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
-         Scan this QR code with the device where you want to create a passkey for <ph name="APP_NAME">$1<ex>example.com</ex></ph>
+        Scan this QR code with a camera on the device where you want to create a passkey for <ph name="APP_NAME">$1<ex>example.com</ex></ph>
       </message>
       <message name="IDS_WEBAUTHN_USE_PASSKEY_QR_TITLE" desc="The title of a dialog prompting the user to use a passkey to sign into a website. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
          Use a passkey from another device?
@@ -13757,11 +13807,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_USE_PASSKEY_QR_BODY" desc="The body of a dialog prompting the user to use a passkey to sign into a website. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
          Scan this QR code with the device that has the passkey you want to use for <ph name="APP_NAME">$1<ex>example.com</ex></ph>
       </message>
-      <message name="IDS_WEBAUTHN_TRY_ANOTHER_WAY" desc="Label on a secondary button on a dialog for creating or using a passkey to sign into a website. Clicking this button will show a menu that lets the user pick a different device (such as a phone or hardware security key) to sign in.">
-         Try another way
-      </message>
-      <message name="IDS_WEBAUTHN_USE_ANOTHER_DEVICE" desc="Label on a secondary button on a dialog for creating or using a passkey to sign into a website. Clicking this button will show a menu that lets the user pick a different device (such as a phone or hardware security key) to sign in.">
-         Use another device
+      <message name="IDS_WEBAUTHN_USE_A_DIFFERENT_DEVICE" desc="Label on a secondary button on a dialog for creating or using a passkey to sign into a website. Clicking this button will show a menu that lets the user pick a different device (such as a phone or hardware security key) to sign in.">
+         Use a different device
       </message>
 
       <!-- Side Search -->
@@ -14028,6 +14075,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <!-- In product help bubble dialog for users referred from ESB promotions -->
     <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_IPH_BUBBLE_TEXT" desc="The text on an In-Product-Help bubble that is shown when a user navigates to the security settings page from an ESB promotion">
       Get more protection against dangerous websites and downloads
+    </message>
+    <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_IPH_BUBBLE_CLOSE_BUTTON_ARIA_LABEL_TEXT" desc="The accessibility label associated with the In-Product-Help bubble's close button">
+      Close tip
     </message>
 
     <!-- Tailored security dialog for consented primary accounts -->

@@ -114,7 +114,6 @@ ConfigBase::ConfigBase() noexcept
       delayed_mitigations_(0),
       add_restricting_random_sid_(false),
       lockdown_default_dacl_(false),
-      allow_no_sandbox_job_(false),
       is_csrss_connected_(true),
       memory_limit_(0),
       ui_exceptions_(0),
@@ -382,9 +381,6 @@ TokenLevel ConfigBase::GetLockdownTokenLevel() const {
 }
 
 ResultCode ConfigBase::SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) {
-  if (memory_limit_ && job_level == JobLevel::kNone) {
-    return SBOX_ERROR_BAD_PARAMS;
-  }
   job_level_ = job_level;
   ui_exceptions_ = ui_exceptions;
   return SBOX_ALL_OK;
@@ -396,14 +392,6 @@ JobLevel ConfigBase::GetJobLevel() const {
 
 void ConfigBase::SetJobMemoryLimit(size_t memory_limit) {
   memory_limit_ = memory_limit;
-}
-
-void ConfigBase::SetAllowNoSandboxJob() {
-  allow_no_sandbox_job_ = true;
-}
-
-bool ConfigBase::GetAllowNoSandboxJob() {
-  return allow_no_sandbox_job_;
 }
 
 ResultCode ConfigBase::AddKernelObjectToClose(const wchar_t* handle_type,
@@ -448,7 +436,11 @@ PolicyBase::PolicyBase(base::StringPiece tag)
   dispatcher_ = std::make_unique<TopLevelDispatcher>(this);
 }
 
-PolicyBase::~PolicyBase() {}
+PolicyBase::~PolicyBase() {
+  // Ensure this is cleared before other members - this terminates the process
+  // if it hasn't already finished.
+  target_.reset();
+}
 
 TargetConfig* PolicyBase::GetConfig() {
   return config();
@@ -514,9 +506,6 @@ const base::HandlesToInheritVector& PolicyBase::GetHandlesBeingShared() {
 ResultCode PolicyBase::InitJob() {
   if (job_.IsValid())
     return SBOX_ERROR_BAD_PARAMS;
-
-  if (config()->GetJobLevel() == JobLevel::kNone)
-    return SBOX_ALL_OK;
 
   // Create the Windows job object.
   DWORD result = job_.Init(config()->GetJobLevel(), config()->ui_exceptions(),
@@ -666,18 +655,6 @@ ResultCode PolicyBase::ApplyToTarget(std::unique_ptr<TargetProcess> target) {
 
   target_ = std::move(target);
   return SBOX_ALL_OK;
-}
-
-// Can only be called if a job was associated with this policy.
-bool PolicyBase::OnJobEmpty() {
-  target_.reset();
-  return true;
-}
-
-bool PolicyBase::OnProcessFinished(DWORD process_id) {
-  if (target_->ProcessId() == process_id)
-    target_.reset();
-  return true;
 }
 
 EvalResult PolicyBase::EvalPolicy(IpcTag service,

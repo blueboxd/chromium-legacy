@@ -108,7 +108,10 @@ class WebViewAutofillClientIOS : public AutofillClient {
       const FormFieldData& field,
       base::WeakPtr<AutofillManager> autofill_manager) override;
   void HideFastCheckout(bool allow_further_runs) override;
-  bool IsFastCheckoutSupported() override;
+  bool IsFastCheckoutSupported(
+      const FormData& form,
+      const FormFieldData& field,
+      const AutofillManager& autofill_manager) override;
   bool IsShowingFastCheckoutUI() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
@@ -132,6 +135,9 @@ class WebViewAutofillClientIOS : public AutofillClient {
   void PropagateAutofillPredictions(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) override;
+  void DidFillOrPreviewForm(mojom::RendererFormDataAction action,
+                            AutofillTriggerSource trigger_source,
+                            bool is_refill) override;
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;

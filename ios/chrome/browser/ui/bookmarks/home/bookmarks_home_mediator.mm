@@ -72,6 +72,8 @@ const int kMaxBookmarksSearchResults = 50;
   base::WeakPtr<Browser> _browser;
   // The sync setup service for this mediator.
   SyncSetupService* _syncSetupService;
+  // Base view controller to present sign-in UI.
+  UIViewController* _baseViewController;
 }
 
 // Shared state between Bookmark home classes.
@@ -89,11 +91,13 @@ const int kMaxBookmarksSearchResults = 50;
 @implementation BookmarksHomeMediator
 
 - (instancetype)initWithSharedState:(BookmarksHomeSharedState*)sharedState
-                            browser:(Browser*)browser {
+                            browser:(Browser*)browser
+                 baseViewController:(UIViewController*)baseViewController {
   if ((self = [super init])) {
     DCHECK(browser);
     _sharedState = sharedState;
     _browser = browser->AsWeakPtr();
+    _baseViewController = baseViewController;
   }
   return self;
 }
@@ -103,7 +107,7 @@ const int kMaxBookmarksSearchResults = 50;
   DCHECK(self.sharedState);
 
   // Set up observers.
-  ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState = [self originalBrowserState];
   _modelBridge = std::make_unique<BookmarkModelBridge>(
       self, self.sharedState.profileBookmarkModel);
   _syncedBookmarksObserver =
@@ -112,7 +116,8 @@ const int kMaxBookmarksSearchResults = 50;
   _bookmarkPromoController =
       [[BookmarkPromoController alloc] initWithBrowser:_browser.get()
                                               delegate:self
-                                             presenter:self];
+                                             presenter:self
+                                    baseViewController:_baseViewController];
 
   _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
   _prefChangeRegistrar->Init(browserState->GetPrefs());
@@ -133,8 +138,8 @@ const int kMaxBookmarksSearchResults = 50;
 
 - (void)disconnect {
   [_bookmarkPromoController shutdown];
+  _bookmarkPromoController.delegate = nil;
   _bookmarkPromoController = nil;
-
   _modelBridge = nullptr;
   _syncSetupService = nullptr;
   _syncedBookmarksObserver = nullptr;
@@ -239,7 +244,7 @@ const int kMaxBookmarksSearchResults = 50;
   }
 
   // Add "Managed Bookmarks" to the table if it exists.
-  ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState = [self originalBrowserState];
   bookmarks::ManagedBookmarkService* managedBookmarkService =
       ManagedBookmarkServiceFactory::GetForBrowserState(browserState);
   const BookmarkNode* managedNode = managedBookmarkService->managed_node();
@@ -501,8 +506,7 @@ const int kMaxBookmarksSearchResults = 50;
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged {
   if (![self.sharedState.tableViewModel
-          hasSectionForSectionIdentifier:BookmarksHomeSectionIdentifierPromo] ||
-      !identityChanged) {
+          hasSectionForSectionIdentifier:BookmarksHomeSectionIdentifierPromo]) {
     return;
   }
 
@@ -511,6 +515,10 @@ const int kMaxBookmarksSearchResults = 50;
          sectionIdentifier:BookmarksHomeSectionIdentifierPromo];
   [self.consumer configureSigninPromoWithConfigurator:configurator
                                           atIndexPath:indexPath];
+}
+
+- (BOOL)isPerformingInitialSync {
+  return _syncedBookmarksObserver->IsPerformingInitialSync();
 }
 
 #pragma mark - SigninPresenter
@@ -548,6 +556,13 @@ const int kMaxBookmarksSearchResults = 50;
 
 #pragma mark - Private Helpers
 
+// The original chrome browser state used for services that don't exist in
+// incognito mode. E.g., `_syncSetupService`, `_syncService` and
+// `ManagedBookmarkService`.
+- (ChromeBrowserState*)originalBrowserState {
+  return _browser->GetBrowserState()->GetOriginalChromeBrowserState();
+}
+
 - (BOOL)hasBookmarksOrFolders {
   if (self.sharedState.tableViewDisplayedRootNode ==
       self.sharedState.profileBookmarkModel->root_node()) {
@@ -582,7 +597,7 @@ const int kMaxBookmarksSearchResults = 50;
 // Returns YES if the user cannot turn on sync for enterprise policy reasons.
 - (BOOL)isSyncDisabledByAdministrator {
   DCHECK(self.syncService);
-  ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState = [self originalBrowserState];
   bool syncDisabledPolicy = self.syncService->GetDisableReasons().Has(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
   PrefService* prefService = browserState->GetPrefs();

@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/extension_control_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/password_manager/sync_handler.h"
@@ -44,6 +45,8 @@
 #endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/ui/webui/password_manager/promo_card.h"
+#include "chrome/browser/ui/webui/password_manager/promo_cards_handler.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #endif
 
@@ -61,14 +64,23 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       IDR_PASSWORD_MANAGER_PASSWORD_MANAGER_HTML);
 
   static constexpr webui::LocalizedString kStrings[] = {
+    {"accountStorageToggleLabel",
+     IDS_PASSWORD_MANAGER_UI_ACCOUNT_STORAGE_TOGGLE_LABEL},
     {"addPassword", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD_BUTTON},
     {"addPasswordFooter", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD_FOOTNOTE},
+    {"addPasswordStoreOptionAccount",
+     IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_ACCOUNT},
+    {"addPasswordStoreOptionDevice",
+     IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_DEVICE},
+    {"addPasswordStorePickerA11yDescription",
+     IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_ACCESSIBLE_NAME},
     {"addPasswordTitle", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD},
     {"addShortcut", IDS_PASSWORD_MANAGER_UI_ADD_SHORTCUT_TITLE},
     {"addShortcutDescription",
      IDS_PASSWORD_MANAGER_UI_ADD_SHORTCUT_DESCRIPTION},
     {"alreadyChangedPasswordLink",
      IDS_PASSWORD_MANAGER_UI_ALREADY_CHANGED_PASSWORD},
+    {"appsLabel", IDS_PASSWORD_MANAGER_UI_APPS_LABEL},
     {"authTimedOut", IDS_PASSWORD_MANAGER_UI_AUTH_TIMED_OUT},
     {"autosigninDescription", IDS_PASSWORD_MANAGER_UI_AUTOSIGNIN_TOGGLE_DESC},
     {"autosigninLabel", IDS_PASSWORD_MANAGER_UI_AUTOSIGNIN_TOGGLE_LABEL},
@@ -87,6 +99,9 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"checkupErrorOffline", IDS_PASSWORD_MANAGER_UI_CHECKUP_OFFLINE},
     {"checkupErrorQuota", IDS_PASSWORD_MANAGER_UI_CHECKUP_QUOTA_LIMIT},
     {"checkupErrorSignedOut", IDS_PASSWORD_MANAGER_UI_CHECKUP_SIGNED_OUT},
+    {"checkupResultGreen", IDS_PASSWORD_MANAGER_UI_CHECKUP_GREEN_STATE_A11Y},
+    {"checkupResultRed", IDS_PASSWORD_MANAGER_UI_CHECKUP_RED_STATE_A11Y},
+    {"checkupResultYellow", IDS_PASSWORD_MANAGER_UI_CHECKUP_YELLOW_STATE_A11Y},
     {"compromisedRowWithError",
      IDS_PASSWORD_MANAGER_UI_CHECKUP_COMPROMISED_SECTION},
     {"checkupProgress", IDS_PASSWORD_MANAGER_UI_CHECKUP_PROGRESS},
@@ -99,6 +114,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_NO_COMPROMISED_PASSWORDS},
     {"compromisedPasswordsTitle",
      IDS_PASSWORD_MANAGER_UI_HAS_COMPROMISED_PASSWORDS},
+    {"controlledByExtension", IDS_SETTINGS_CONTROLLED_BY_EXTENSION},
     {"copyPassword", IDS_PASSWORD_MANAGER_UI_COPY_PASSWORD},
     {"copyUsername", IDS_PASSWORD_MANAGER_UI_COPY_USERNAME},
     {"deletePassword", IDS_DELETE},
@@ -106,6 +122,13 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_DELETE_PASSWORD_CONFIRMATION_DESCRIPTION},
     {"deletePasswordConfirmationTitle",
      IDS_PASSWORD_MANAGER_UI_DELETE_PASSWORD_CONFIRMATION_TITLE},
+    {"deletePasswordDialogDevice",
+     IDS_PASSWORD_MANAGER_UI_DELETE_DIALOG_FROM_DEVICE_CHECKBOX_LABEL},
+    {"deletePasswordDialogBody", IDS_PASSWORD_MANAGER_UI_DELETE_DIALOG_BODY},
+    {"deletePasswordDialogAccount",
+     IDS_PASSWORD_MANAGER_UI_DELETE_DIALOG_FROM_ACCOUNT_CHECKBOX_LABEL},
+    {"deletePasswordDialogTitle", IDS_PASSWORD_MANAGER_UI_DELETE_DIALOG_TITLE},
+    {"disable", IDS_DISABLE},
     {"downloadFile", IDS_PASSWORD_MANAGER_UI_DOWNLOAD_FILE},
     {"downloadLinkShow", IDS_DOWNLOAD_LINK_SHOW},
     {"editDisclaimerDescription",
@@ -139,6 +162,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"leakedPassword", IDS_PASSWORD_MANAGER_UI_PASSWORD_LEAKED},
     {"localPasswordManager",
      IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE},
+    {"manage", IDS_SETTINGS_MANAGE},
     {"menu", IDS_MENU},
     {"missingTLD", IDS_PASSWORD_MANAGER_UI_MISSING_TLD},
     {"moreActions", IDS_PASSWORD_MANAGER_UI_MORE_ACTIONS},
@@ -176,6 +200,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"settings", IDS_PASSWORD_MANAGER_UI_SETTINGS},
     {"showMore", IDS_PASSWORD_MANAGER_UI_SHOW_MORE},
     {"showPassword", IDS_PASSWORD_MANAGER_UI_SHOW_PASSWORD},
+    {"sitesAndAppsLabel", IDS_PASSWORD_MANAGER_UI_SITES_AND_APPS_LABEL},
     {"sitesLabel", IDS_PASSWORD_MANAGER_UI_SITES_LABEL},
     {"title", IDS_PASSWORD_MANAGER_UI_TITLE},
     {"trustedVaultBannerLabelOfferOptIn",
@@ -321,6 +346,14 @@ PasswordManagerUI::PasswordManagerUI(content::WebUI* web_ui)
                                                                         true);
   web_ui->AddMessageHandler(
       std::make_unique<password_manager::SyncHandler>(profile));
+  web_ui->AddMessageHandler(std::make_unique<ExtensionControlHandler>());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  web_ui->AddMessageHandler(
+      std::make_unique<password_manager::PromoCardsHandler>(
+          profile,
+          password_manager::PromoCardInterface::GetAllPromoCardsForProfile(
+              profile)));
+#endif
   auto* source = CreateAndAddPasswordsUIHTMLSource(profile, web_ui);
   AddPluralStrings(web_ui);
   ManagedUIHandler::Initialize(web_ui, source);

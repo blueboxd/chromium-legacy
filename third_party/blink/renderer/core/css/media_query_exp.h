@@ -31,6 +31,7 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/media_feature_names.h"
@@ -43,6 +44,7 @@ namespace blink {
 
 class CSSParserContext;
 class CSSParserTokenRange;
+class CSSParserTokenOffsets;
 
 class CORE_EXPORT MediaQueryExpValue {
   DISALLOW_NEW();
@@ -65,6 +67,20 @@ class CORE_EXPORT MediaQueryExpValue {
   bool IsNumeric() const { return type_ == Type::kNumeric; }
   bool IsRatio() const { return type_ == Type::kRatio; }
   bool IsCSSValue() const { return type_ == Type::kCSSValue; }
+  bool IsResolution() const {
+    switch (type_) {
+      case Type::kNumeric:
+        return CSSPrimitiveValue::IsResolution(Unit());
+      case Type::kCSSValue:
+        if (const auto* math_function =
+                DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
+          return math_function->IsResolution();
+        }
+        return false;
+      default:
+        return false;
+    }
+  }
 
   CSSValueID Id() const {
     DCHECK(IsId());
@@ -72,11 +88,25 @@ class CORE_EXPORT MediaQueryExpValue {
   }
 
   double Value() const {
+    if (const auto* math_function =
+            DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
+      if (math_function->IsResolution()) {
+        return math_function->ComputeDotsPerPixel();
+      }
+    }
+
     DCHECK(IsNumeric());
     return numeric_.value;
   }
 
   CSSPrimitiveValue::UnitType Unit() const {
+    if (const auto* math_function =
+            DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
+      if (math_function->IsResolution()) {
+        return CSSPrimitiveValue::UnitType::kDotsPerPixel;
+      }
+    }
+
     DCHECK(IsNumeric());
     return numeric_.unit;
   }
@@ -141,6 +171,7 @@ class CORE_EXPORT MediaQueryExpValue {
   static absl::optional<MediaQueryExpValue> Consume(
       const String& lower_media_feature,
       CSSParserTokenRange&,
+      const CSSParserTokenOffsets&,
       const CSSParserContext&);
 
  private:
@@ -257,6 +288,7 @@ class CORE_EXPORT MediaQueryExp {
   // Returns an invalid MediaQueryExp if the arguments are invalid.
   static MediaQueryExp Create(const String& media_feature,
                               CSSParserTokenRange&,
+                              const CSSParserTokenOffsets&,
                               const CSSParserContext&);
   static MediaQueryExp Create(const String& media_feature,
                               const MediaQueryExpBounds&);

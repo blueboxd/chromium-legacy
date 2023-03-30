@@ -12,14 +12,23 @@
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/input_device_settings/input_device_settings_defaults.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/pref_handlers/keyboard_pref_handler.h"
+#include "ash/system/input_device_settings/pref_handlers/mouse_pref_handler_impl.h"
+#include "ash/system/input_device_settings/pref_handlers/pointing_stick_pref_handler_impl.h"
+#include "ash/system/input_device_settings/pref_handlers/touchpad_pref_handler_impl.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/ranges/functional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_simple_task_runner.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 
 namespace ash {
@@ -36,17 +45,22 @@ const ui::InputDevice kSampleKeyboardUsb = {15, ui::INPUT_DEVICE_USB,
 const ui::InputDevice kSampleKeyboardUsb2 = {20, ui::INPUT_DEVICE_USB,
                                              "kSampleKeyboardUsb2"};
 
-constexpr char kUserEmail[] = "example1@abc.com";
+constexpr char kInitialUserEmail[] = "example2@abc.com";
+constexpr char kUserEmail1[] = "example1@abc.com";
 constexpr char kUserEmail2[] = "joy@abc.com";
 }  // namespace
 
 class FakeKeyboardPrefHandler : public KeyboardPrefHandler {
  public:
-  void InitializeKeyboardSettings(PrefService* pref_service,
-                                  mojom::Keyboard* keyboard) override {
+  void InitializeKeyboardSettings(
+      PrefService* pref_service,
+      const mojom::KeyboardPolicies& keyboard_policies,
+      mojom::Keyboard* keyboard) override {
+    keyboard->settings = mojom::KeyboardSettings::New();
     num_keyboard_settings_initialized_++;
   }
   void UpdateKeyboardSettings(PrefService* pref_service,
+                              const mojom::KeyboardPolicies& keyboard_policies,
                               const mojom::Keyboard& keyboard) override {
     num_keyboard_settings_updated_++;
   }
@@ -89,7 +103,7 @@ class FakeInputDeviceSettingsControllerObserver
   uint32_t num_keyboards_settings_updated_;
 };
 
-class InputDeviceSettingsControllerTest : public AshTestBase {
+class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
  public:
   InputDeviceSettingsControllerTest() = default;
   InputDeviceSettingsControllerTest(const InputDeviceSettingsControllerTest&) =
@@ -100,92 +114,96 @@ class InputDeviceSettingsControllerTest : public AshTestBase {
 
   // testing::Test:
   void SetUp() override {
+    task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+
     scoped_feature_list_.InitAndEnableFeature(
         features::kInputDeviceSettingsSplit);
-    AshTestBase::SetUp();
+    NoSessionAshTestBase::SetUp();
+
+    // Resetter must be created before the controller is initialized.
+    scoped_resetter_ = std::make_unique<
+        InputDeviceSettingsController::ScopedResetterForTest>();
+
     observer_ = std::make_unique<FakeInputDeviceSettingsControllerObserver>();
     std::unique_ptr<FakeKeyboardPrefHandler> keyboard_pref_handler =
         std::make_unique<FakeKeyboardPrefHandler>();
     keyboard_pref_handler_ = keyboard_pref_handler.get();
-    controller()->AddObserver(observer_.get());
-    controller()->SetPrefHandlersForTesting(std::move(keyboard_pref_handler));
+    controller_ = std::make_unique<InputDeviceSettingsControllerImpl>(
+        std::move(keyboard_pref_handler),
+        std::make_unique<TouchpadPrefHandlerImpl>(),
+        std::make_unique<MousePrefHandlerImpl>(),
+        std::make_unique<PointingStickPrefHandlerImpl>(), task_runner_);
+    controller_->AddObserver(observer_.get());
     sample_keyboards_ = {kSampleKeyboardUsb, kSampleKeyboardInternal,
                          kSampleKeyboardBluetooth};
-  }
 
-  InputDeviceSettingsControllerImpl* controller() {
-    return Shell::Get()->input_device_settings_controller();
+    SimulateUserLogin(kInitialUserEmail);
   }
 
   void TearDown() override {
-    controller()->RemoveObserver(observer_.get());
     observer_.reset();
-
+    controller_.reset();
     keyboard_pref_handler_ = nullptr;
-    AshTestBase::TearDown();
+
+    // Scoped Resetter must be deleted before the test base is teared down.
+    scoped_resetter_.reset();
+    NoSessionAshTestBase::TearDown();
+
+    task_runner_.reset();
   }
 
  protected:
+  std::unique_ptr<InputDeviceSettingsControllerImpl> controller_;
+
   std::vector<ui::InputDevice> sample_keyboards_;
   std::unique_ptr<FakeInputDeviceSettingsControllerObserver> observer_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  std::unique_ptr<InputDeviceSettingsController::ScopedResetterForTest>
+      scoped_resetter_;
   FakeKeyboardPrefHandler* keyboard_pref_handler_ = nullptr;
 };
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingOne) {
-  controller()->OnKeyboardListUpdated({kSampleKeyboardUsb}, {});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardUsb});
   EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingMultiple) {
-  controller()->OnKeyboardListUpdated(
-      {kSampleKeyboardUsb, kSampleKeyboardInternal, kSampleKeyboardBluetooth},
-      {});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices(
+      {kSampleKeyboardUsb, kSampleKeyboardInternal, kSampleKeyboardBluetooth});
   EXPECT_EQ(observer_->num_keyboards_connected(), 3u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 3u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingThenRemovingOne) {
-  controller()->OnKeyboardListUpdated({kSampleKeyboardUsb}, {});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardUsb});
   EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
 
-  controller()->OnKeyboardListUpdated({}, {(DeviceId)kSampleKeyboardUsb.id});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({});
   EXPECT_EQ(observer_->num_keyboards_connected(), 0u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingThenRemovingMultiple) {
-  controller()->OnKeyboardListUpdated(
-      {kSampleKeyboardUsb, kSampleKeyboardInternal, kSampleKeyboardBluetooth},
-      {});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices(
+      {kSampleKeyboardUsb, kSampleKeyboardInternal, kSampleKeyboardBluetooth});
   EXPECT_EQ(observer_->num_keyboards_connected(), 3u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 3u);
 
-  controller()->OnKeyboardListUpdated(
-      {},
-      {(DeviceId)kSampleKeyboardUsb.id, (DeviceId)kSampleKeyboardInternal.id,
-       (DeviceId)kSampleKeyboardBluetooth.id});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({});
   EXPECT_EQ(observer_->num_keyboards_connected(), 0u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 3u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingAndRemoving) {
-  controller()->OnKeyboardListUpdated({kSampleKeyboardUsb}, {});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardUsb});
   EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
 
-  controller()->OnKeyboardListUpdated({kSampleKeyboardInternal},
-                                      {(DeviceId)kSampleKeyboardUsb.id});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardInternal});
   EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 2u);
 }
@@ -194,8 +212,7 @@ TEST_F(InputDeviceSettingsControllerTest, DeletesPrefsWhenFlagDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kInputDeviceSettingsSplit);
 
-  const AccountId account_id = AccountId::FromUserEmail(kUserEmail);
-
+  const AccountId account_id = AccountId::FromUserEmail(kUserEmail1);
   std::unique_ptr<TestingPrefServiceSimple> pref_service =
       std::make_unique<TestingPrefServiceSimple>();
   ash::RegisterUserProfilePrefs(pref_service->registry(), /*for_test=*/true);
@@ -230,51 +247,65 @@ TEST_F(InputDeviceSettingsControllerTest, DeletesPrefsWhenFlagDisabled) {
 
 TEST_F(InputDeviceSettingsControllerTest,
        InitializeSettingsWhenUserSessionChanges) {
-  controller()->OnKeyboardListUpdated({kSampleKeyboardUsb}, {});
-
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardUsb});
   EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
-  const AccountId account_id = AccountId::FromUserEmail(kUserEmail);
+
+  const AccountId account_id = AccountId::FromUserEmail(kUserEmail1);
   const AccountId account_id_2 = AccountId::FromUserEmail(kUserEmail2);
 
-  std::unique_ptr<TestingPrefServiceSimple> pref_service =
-      std::make_unique<TestingPrefServiceSimple>();
-  ash::RegisterUserProfilePrefs(pref_service->registry(), /*for_test=*/true);
-  std::unique_ptr<TestingPrefServiceSimple> pref_service_2 =
-      std::make_unique<TestingPrefServiceSimple>();
-  ash::RegisterUserProfilePrefs(pref_service_2->registry(), /*for_test=*/true);
-
-  GetSessionControllerClient()->SetUserPrefService(account_id,
-                                                   std::move(pref_service));
   SimulateUserLogin(account_id);
+  task_runner_->RunUntilIdle();
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 2u);
-  GetSessionControllerClient()->SetUserPrefService(account_id_2,
-                                                   std::move(pref_service_2));
   SimulateUserLogin(account_id_2);
+  task_runner_->RunUntilIdle();
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 3u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsUpdated) {
-  controller()->OnKeyboardListUpdated({kSampleKeyboardUsb}, {});
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardUsb});
 
   EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
-  controller()->SetKeyboardSettings((DeviceId)kSampleKeyboardUsb.id,
-                                    mojom::KeyboardSettings::New());
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardUsb.id,
+                                   mojom::KeyboardSettings::New());
 
   EXPECT_EQ(observer_->num_keyboards_settings_updated(), 1u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 1u);
 }
 
-// Tests that given an invalid id, keyboard settings are not updated and
-// observers are not notified.
-TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsUpdatedInvalidId) {
-  controller()->OnKeyboardListUpdated({kSampleKeyboardUsb}, {});
+TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsAreValid) {
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardInternal});
 
   EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
-  controller()->SetKeyboardSettings((DeviceId)kSampleKeyboardUsb.id + 1,
-                                    mojom::KeyboardSettings::New());
+  const mojom::KeyboardSettingsPtr settings = mojom::KeyboardSettings::New();
+  settings->suppress_meta_fkey_rewrites = !kDefaultSuppressMetaFKeyRewrites;
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardInternal.id,
+                                   settings.Clone());
+
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 0u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
+
+  // The keyboard is internal and it doesn't have capslock remapping.
+  settings->suppress_meta_fkey_rewrites = kDefaultSuppressMetaFKeyRewrites;
+  settings->modifier_remappings[ui::mojom::ModifierKey::kCapsLock] =
+      ui::mojom::ModifierKey::kAlt;
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardInternal.id,
+                                   settings.Clone());
+
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 0u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
+}
+
+// Tests that given an invalid id, keyboard settings are not updated and
+// observers are not notified.
+TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsUpdatedInvalidId) {
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardUsb});
+  EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardUsb.id + 1,
+                                   mojom::KeyboardSettings::New());
 
   EXPECT_EQ(observer_->num_keyboards_settings_updated(), 0u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
@@ -283,15 +314,36 @@ TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsUpdatedInvalidId) {
 TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsUpdateMultiple) {
   // The SetKeyboardSettings call should update both keyboards since they have
   // the same |device_key|.
-  controller()->OnKeyboardListUpdated({kSampleKeyboardUsb, kSampleKeyboardUsb2},
-                                      {});
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices(
+      {kSampleKeyboardUsb, kSampleKeyboardUsb2});
 
   EXPECT_EQ(observer_->num_keyboards_connected(), 2u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 2u);
-  controller()->SetKeyboardSettings((DeviceId)kSampleKeyboardUsb.id,
-                                    mojom::KeyboardSettings::New());
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardUsb.id,
+                                   mojom::KeyboardSettings::New());
   EXPECT_EQ(observer_->num_keyboards_settings_updated(), 2u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 1u);
+}
+
+TEST_F(InputDeviceSettingsControllerTest, RecordsMetricsInitialSettings) {
+  // Initially expect no user preferences recorded.
+  base::HistogramTester histogram_tester;
+
+  controller_->OnKeyboardListUpdated(
+      {kSampleKeyboardUsb, kSampleKeyboardBluetooth}, {});
+
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.Keyboard.ExternalChromeOS.TopRowAreFKeys."
+      "Initial",
+      /*expected_count=*/2u);
+  const AccountId account_id = AccountId::FromUserEmail(kUserEmail1);
+  SimulateUserLogin(account_id);
+  task_runner_->RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.Keyboard.ExternalChromeOS.TopRowAreFKeys."
+      "Initial",
+      /*expected_count=*/4u);
 }
 
 }  // namespace ash

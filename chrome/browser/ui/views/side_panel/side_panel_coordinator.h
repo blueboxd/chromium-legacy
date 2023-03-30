@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_view_state_observer.h"
 #include "extensions/common/extension_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/views/view_observer.h"
 
 class Browser;
 class BrowserView;
@@ -25,6 +26,7 @@ class SidePanelComboboxModel;
 namespace views {
 class ImageButton;
 class Combobox;
+class ToggleImageButton;
 class View;
 }  // namespace views
 
@@ -40,7 +42,8 @@ class View;
 // the side panel is closed and |last_active_global_entry_id_| is used to
 // determine what entry is seen when the panel is reopened.
 class SidePanelCoordinator final : public SidePanelRegistryObserver,
-                                   public TabStripModelObserver {
+                                   public TabStripModelObserver,
+                                   public views::ViewObserver {
  public:
   explicit SidePanelCoordinator(BrowserView* browser_view);
   SidePanelCoordinator(const SidePanelCoordinator&) = delete;
@@ -62,6 +65,10 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   // header button, when it's visible.
   void OpenInNewTab();
 
+  // Toggle the pin state. This is called by the header button, when it's
+  // visible.
+  void UpdatePinState();
+
   // Prevent content swapping delays from happening for testing.
   // This should be called before the side panel is first shown.
   void SetNoDelaysForTesting(bool no_delays_for_testing) {
@@ -78,17 +85,27 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
     return combobox_model_.get();
   }
 
+  views::ToggleImageButton* GetHeaderPinButtonForTesting() {
+    return header_pin_button_;
+  }
+
   absl::optional<SidePanelEntry::Id> GetCurrentEntryId() const;
 
   SidePanelEntry::Id GetComboboxDisplayedEntryIdForTesting() const;
 
   SidePanelEntry* GetLoadingEntryForTesting() const;
 
-  bool IsSidePanelShowing();
+  bool IsSidePanelShowing() const;
+
+  // Returns whether `entry` is currently being shown in the side panel. Note:
+  // this returns false if `entry` is current loading but not actually shown.
+  bool IsSidePanelEntryShowing(const SidePanelEntry* entry) const;
 
   // Re-runs open new tab URL check and sets button state to enabled/disabled
   // accordingly.
   void UpdateNewTabButtonState();
+
+  void UpdateHeaderPinButtonState();
 
   void AddSidePanelViewStateObserver(SidePanelViewStateObserver* observer);
 
@@ -118,6 +135,9 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   SidePanelEntry* GetActiveContextualEntryForKey(
       const SidePanelEntry::Key& entry_key);
 
+  // Returns the current loading entry or nullptr if none exists.
+  SidePanelEntry* GetLoadingEntry() const;
+
   // Returns whether the global entry with the same key as `entry_key` is
   // showing.
   bool IsGlobalEntryShowing(const SidePanelEntry::Key& entry_key) const;
@@ -139,9 +159,19 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   // registries.
   void ClearCachedEntryViews();
 
-  // Returns the last active entry or the reading list entry if no last active
+  void UpdateToolbarButtonHighlight(bool side_panel_visible);
+
+  // views::ViewObserver:
+  void OnViewVisibilityChanged(views::View* observed_view,
+                               views::View* starting_from) override;
+
+  // Returns the last active entry or the default entry if no last active
   // entry exists.
   absl::optional<SidePanelEntry::Key> GetLastActiveEntryKey() const;
+
+  // Returns the last active global entry or the default entry if no last active
+  // global entry exists.
+  absl::optional<SidePanelEntry::Key> GetLastActiveGlobalEntryKey() const;
 
   // Returns the currently selected id in the combobox, if one is shown.
   absl::optional<SidePanelEntry::Key> GetSelectedKey() const;
@@ -225,6 +255,10 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   // Used to update the visibility of the 'Open in New Tab' header button.
   raw_ptr<views::ImageButton, DanglingUntriaged>
       header_open_in_new_tab_button_ = nullptr;
+
+  // Used to update the visibility of the pin header button.
+  raw_ptr<views::ToggleImageButton, DanglingUntriaged> header_pin_button_ =
+      nullptr;
 
   base::ObserverList<SidePanelViewStateObserver> view_state_observers_;
 

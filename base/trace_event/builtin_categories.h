@@ -93,6 +93,7 @@
   X("GAMEPAD")                                                           \
   X("gpu")                                                               \
   X("gpu.angle")                                                         \
+  X("gpu.angle.texture_metrics")                                         \
   X("gpu.capture")                                                       \
   X("headless")                                                          \
   /* Traces for //components/history. */                                 \
@@ -353,6 +354,7 @@
   X("renderer,webkit")                                                        \
   X("renderer_host,navigation")                                               \
   X("renderer_host," TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"))        \
+  X("scheduler,devtools.timeline,loading")                                    \
   X("shutdown,viz")                                                           \
   X("startup,benchmark,rail")                                                 \
   X("startup,rail")                                                           \

@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/table_constants.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_table_cell_paint_invalidator.h"
 
 namespace blink {
@@ -21,6 +22,17 @@ namespace blink {
 LayoutNGTableCell::LayoutNGTableCell(Element* element)
     : LayoutNGBlockFlowMixin<LayoutBlockFlow>(element) {
   UpdateColAndRowSpanFlags();
+}
+
+LayoutNGTableCell* LayoutNGTableCell::CreateAnonymousWithParent(
+    const LayoutObject& parent) {
+  scoped_refptr<const ComputedStyle> new_style =
+      parent.GetDocument().GetStyleResolver().CreateAnonymousStyleWithDisplay(
+          parent.StyleRef(), EDisplay::kTableCell);
+  auto* new_cell = MakeGarbageCollected<LayoutNGTableCell>(nullptr);
+  new_cell->SetDocumentForAnonymous(&parent.GetDocument());
+  new_cell->SetStyle(std::move(new_style));
+  return new_cell;
 }
 
 void LayoutNGTableCell::InvalidateLayoutResultCacheAfterMeasure() const {
@@ -86,6 +98,26 @@ LayoutUnit LayoutNGTableCell::BorderRight() const {
   return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderRight();
 }
 
+LayoutNGTableCell* LayoutNGTableCell::NextCell() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableCell>(NextSibling());
+}
+
+LayoutNGTableCell* LayoutNGTableCell::PreviousCell() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableCell>(PreviousSibling());
+}
+
+LayoutNGTableRow* LayoutNGTableCell::Row() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableRow>(Parent());
+}
+
+LayoutNGTableSection* LayoutNGTableCell::Section() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableSection>(Parent()->Parent());
+}
+
 LayoutNGTable* LayoutNGTableCell::Table() const {
   NOT_DESTROYED();
   if (LayoutObject* parent = Parent()) {
@@ -139,7 +171,7 @@ void LayoutNGTableCell::ColSpanOrRowSpanChanged() {
 LayoutBox* LayoutNGTableCell::CreateAnonymousBoxWithSameTypeAs(
     const LayoutObject* parent) const {
   NOT_DESTROYED();
-  return LayoutObjectFactory::CreateAnonymousTableCellWithParent(*parent);
+  return CreateAnonymousWithParent(*parent);
 }
 
 LayoutBlock* LayoutNGTableCell::StickyContainer() const {
@@ -226,28 +258,27 @@ void LayoutNGTableCell::UpdateColAndRowSpanFlags() {
 
 LayoutNGTableInterface* LayoutNGTableCell::TableInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableInterface>(Parent()->Parent()->Parent());
+  return ToInterface<LayoutNGTableInterface>(Table());
 }
 
 LayoutNGTableCellInterface* LayoutNGTableCell::NextCellInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableCellInterface>(LayoutObject::NextSibling());
+  return ToInterface<LayoutNGTableCellInterface>(NextCell());
 }
 
 LayoutNGTableCellInterface* LayoutNGTableCell::PreviousCellInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableCellInterface>(
-      LayoutObject::PreviousSibling());
+  return ToInterface<LayoutNGTableCellInterface>(PreviousCell());
 }
 
 LayoutNGTableRowInterface* LayoutNGTableCell::RowInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableRowInterface>(Parent());
+  return ToInterface<LayoutNGTableRowInterface>(Row());
 }
 
 LayoutNGTableSectionInterface* LayoutNGTableCell::SectionInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableSectionInterface>(Parent()->Parent());
+  return ToInterface<LayoutNGTableSectionInterface>(Section());
 }
 
 }  // namespace blink

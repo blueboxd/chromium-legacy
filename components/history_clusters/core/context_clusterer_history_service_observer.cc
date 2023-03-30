@@ -144,17 +144,19 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
   // Update the normalized URL if it's a search URL.
   std::string normalized_url = url_row.url().possibly_invalid_spec();
   std::u16string search_terms;
+  bool is_search_normalized_url = false;
   if (template_url_service_) {
     absl::optional<TemplateURLService::SearchMetadata> search_metadata =
         template_url_service_->ExtractSearchMetadata(url_row.url());
     if (search_metadata) {
       normalized_url = search_metadata->normalized_url.possibly_invalid_spec();
       search_terms = search_metadata->search_terms;
+      is_search_normalized_url = true;
     }
   }
 
   history::ClusterVisit cluster_visit =
-      CreateClusterVisit(normalized_url, new_visit);
+      CreateClusterVisit(normalized_url, is_search_normalized_url, new_visit);
 
   if (!new_visit.originator_cache_guid.empty()) {
     // Skip determining the exact cluster id for remote synced visits.
@@ -239,7 +241,12 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
   in_progress_cluster.last_visit_time = new_visit.visit_time;
   in_progress_cluster.visit_urls.insert(normalized_url);
   in_progress_cluster.visit_ids.emplace_back(new_visit.visit_id);
-  in_progress_cluster.search_terms = search_terms;
+  if (!search_terms.empty()) {
+    // Only update the cluster search terms if it's non-empty. It should only be
+    // set as non-empty for at most one unique term as enforced by
+    // `ShouldAddVisitToCluster()`.
+    in_progress_cluster.search_terms = search_terms;
+  }
   visit_id_to_cluster_map_[new_visit.visit_id] = *cluster_id;
   visit_url_to_cluster_map_[normalized_url] = *cluster_id;
 
@@ -406,12 +413,15 @@ void ContextClustererHistoryServiceObserver::OnPersistedClusterIdReceived(
 history::ClusterVisit
 ContextClustererHistoryServiceObserver::CreateClusterVisit(
     const std::string& normalized_url,
+    bool is_search_normalized_url,
     const history::VisitRow& visit_row) {
   history::ClusterVisit cluster_visit;
   cluster_visit.annotated_visit.visit_row.visit_id = visit_row.visit_id;
   cluster_visit.normalized_url = GURL(normalized_url);
   cluster_visit.url_for_deduping =
-      ComputeURLForDeduping(cluster_visit.normalized_url);
+      is_search_normalized_url
+          ? cluster_visit.normalized_url
+          : ComputeURLForDeduping(cluster_visit.normalized_url);
   cluster_visit.url_for_display =
       ComputeURLForDisplay(cluster_visit.normalized_url);
   if (engagement_score_provider_) {

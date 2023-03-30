@@ -5,14 +5,14 @@
 #ifndef BASE_STRINGS_STRING_PIECE_RUST_H_
 #define BASE_STRINGS_STRING_PIECE_RUST_H_
 
-#include "build/rust/rust_buildflags.h"
+#include "base/rust_buildflags.h"
 
-#if BUILDFLAG(TOOLCHAIN_HAS_RUST)
+#if BUILDFLAG(BUILD_RUST_BASE_CONVERSIONS)
 
 #include <stdint.h>
 
 #include "base/strings/string_piece.h"
-#include "third_party/rust/cxx/v1/crate/include/cxx.h"
+#include "third_party/rust/cxx/v1/crate/include/cxx.h"  // nogncheck
 
 namespace base {
 
@@ -39,6 +39,6 @@ inline StringPiece RustStrToStringPiece(rust::Str str) {
 
 }  // namespace base
 
-#endif  // BUILDFLAG(TOOLCHAIN_HAS_RUST)
+#endif  // BUILDFLAG(BUILD_RUST_BASE_CONVERSIONS)
 
 #endif  // BASE_STRINGS_STRING_PIECE_RUST_H_

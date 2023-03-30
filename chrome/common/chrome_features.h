@@ -836,9 +836,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kVrBrowsingExperimentalRendering);
 #endif  // ENABLE_VR
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kWebAppFrameToolbarInBrowserView);
-
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kWebAppManifestIconUpdating);
@@ -896,6 +893,11 @@ bool IsParentAccessCodeForOnlineLoginEnabled();
 // details of Omnibox triggered prerendering.
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kOmniboxTriggerForPrerender2);
+
+// This flag is used for enabling Bookmark triggered prerendering. See
+// crbug.com/1422819 for more details of Bookmark triggered prerendering.
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kBookmarkTriggerForPrerender2);
 
 // This flag controls whether to trigger prerendering when the default search
 // engine suggests to prerender a search result. It also enables

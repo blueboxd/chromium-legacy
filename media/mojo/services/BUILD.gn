@@ -118,7 +118,11 @@ component("services") {
   } else if (is_win) {
     sources += [ "gpu_mojo_media_client_win.cc" ]
   } else if (use_vaapi || use_v4l2_codec) {
-    sources += [ "gpu_mojo_media_client_cros.cc" ]
+    if (is_linux) {
+      sources += [ "gpu_mojo_media_client_linux.cc" ]
+    } else {
+      sources += [ "gpu_mojo_media_client_cros.cc" ]
+    }
   } else {
     sources += [ "gpu_mojo_media_client_stubs.cc" ]
   }
@@ -191,10 +195,7 @@ component("services") {
       "media_foundation_service_broker.cc",
       "media_foundation_service_broker.h",
     ]
-    deps += [
-      "//media/base/win:media_foundation_util",
-      "//ui/gfx/mojom:dxgi_info",
-    ]
+    deps += [ "//ui/gfx/mojom:dxgi_info" ]
   }
 
   if ((is_chromeos_ash || is_linux) && (use_vaapi || use_v4l2_codec)) {

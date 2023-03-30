@@ -283,6 +283,7 @@ Traustslyklar bæta persónuvernd á netinu og ekki er hægt að nota þá til a
 <translation id="2581165646603367611">Þetta mun eyða fótsporum, skyndiminni og öðrum gögnum frá vefsvæðum sem Chrome telur ekki mikilvæg.</translation>
 <translation id="2587052924345400782">Nýrri útgáfa er í boði</translation>
 <translation id="2593272815202181319">Jafnbreitt</translation>
+<translation id="2603212228005142861">Skráðu þig inn til að stjórna kjörstillingum</translation>
 <translation id="2604446170045642109">Þú getur slökkt á dökku þema fyrir vefsvæði í stillingunum.</translation>
 <translation id="2612676031748830579">Kortanúmer</translation>
 <translation id="2625189173221582860">Aðgangsorð afritað</translation>
@@ -476,6 +477,7 @@ Traustslyklar bæta persónuvernd á netinu og ekki er hægt að nota þá til a
 <translation id="3587596251841506391">Hjálpaðu við að bæta netöryggi</translation>
 <translation id="3597179440835065298">Fáðu betri tillögur</translation>
 <translation id="3602290021589620013">Forskoða</translation>
+<translation id="360901359071773787">Eyða síðustu 15 mínútum?</translation>
 <translation id="3616113530831147358">Hljóð</translation>
 <translation id="3622349720008044802">Stjórna gluggum</translation>
 <translation id="3631987586758005671">Deilir í <ph name="DEVICE_NAME" /></translation>
@@ -821,6 +823,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5517095782334947753">Þú ert með bókamerki, feril, aðgangsorð og aðrar stillingar frá <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Þegar kveikt er á prufuútgáfum og Chrome hefur skráð þig af handahófi í virka prufuútgáfu hefur vafraferillinn þinn áhrif á auglýsingarnar sem þú sérð og áhugasviðin sem eru áætluð hér fyrir neðan. Til að gæta persónuverndar þinnar eyðir Chrome áhugamálunum þínum sjálfkrafa mánaðarlega.</translation>
 <translation id="5524843473235508879">Lokað á framsendingu.</translation>
+<translation id="554297709083131118">Eftirfarandi gögnum frá síðustu 15 mínútum verður eytt</translation>
 <translation id="5548606607480005320">Öryggisathugun</translation>
 <translation id="5555525474779371165">Veldu vernd öruggrar vefskoðunar</translation>
 <translation id="5556459405103347317">Endurhlaða</translation>
@@ -1075,6 +1078,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, flipi, valinn</translation>
 <translation id="6828070228333235514">Hætta að vakta verð</translation>
 <translation id="6830728435402077660">Ekki öruggt</translation>
+<translation id="6831043979455480757">Þýða</translation>
 <translation id="6833996806551876956">Prufuútgáfa persónuverndarafmörkunar</translation>
 <translation id="6836206421467243968">Endurheimta flipahópinn <ph name="TITLE_OF_GROUP" /> sem nýjan flipahóp í bakgrunni.</translation>
 <translation id="6846298663435243399">Hleður…</translation>
@@ -1261,6 +1265,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="78270725016672455">Tölvan biður um að skrá þetta tæki við skráningu inn á vefsvæði</translation>
 <translation id="7844171778363018843">Engin gögn valin fyrir samstillingu</translation>
 <translation id="7846296061357476882">Google þjónusta</translation>
+<translation id="7847228556075070294">Ferli, fótsporum og öðrum gögnum eytt</translation>
 <translation id="784934925303690534">Tímabil</translation>
 <translation id="7851858861565204677">Önnur tæki</translation>
 <translation id="7853202427316060426">Virkni</translation>
@@ -1440,6 +1445,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="869891660844655955">Lokadagsetning</translation>
 <translation id="8699120352855309748">Ekki bjóða upp á að þýða þessi tungumál</translation>
 <translation id="8712637175834984815">Ég skil</translation>
+<translation id="8723453889042591629">Þýða þessa síðu í hvelli. Haltu flýtileiðinni inni til að breyta henni.</translation>
 <translation id="8725066075913043281">Reyna aftur</translation>
 <translation id="8746155870861185046">Deila áherslumerkingu</translation>
 <translation id="874726034427945498">Samstilltu flipa og feril til að fá betri tillögur í veffangastikunni</translation>
@@ -1492,6 +1498,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8989968390305463310">Vafraferillinn þinn hefur áhrif á auglýsingarnar sem þú sérð og áhugasviðin sem eru áætluð hér fyrir neðan. Til að gæta persónuverndar þinnar eyðir Chrome áhugamálunum þínum sjálfkrafa mánaðarlega. Áhugasvið verða hugsanlega endurnýjuð nema þú fjarlægir þau.</translation>
 <translation id="8993760627012879038">Opna nýjan flipa í huliðsstillingu</translation>
 <translation id="8996847606757455498">Velja aðra veitu</translation>
+<translation id="8998289560386111590">Ekki í boði í tækinu þínu</translation>
 <translation id="8998729206196772491">Þú ert að skrá þig út af reikningi sem <ph name="MANAGED_DOMAIN" /> stýrir og veitir í leiðinni stjórnanda lénsins umsjón með Chrome gögnunum þínum. Gögnin þín verða tengd við þennan reikning til frambúðar. Ef þú skráir þig út af Chrome verður gögnunum þínum á þessu tæki eytt, en þau verða áfram geymd á Google reikningnum þínum.</translation>
 <translation id="9022774213089566801">Oft skoðað</translation>
 <translation id="9022871169049522985">Vefsvæði og auglýsendur geta mælt árangur auglýsinga sinna</translation>

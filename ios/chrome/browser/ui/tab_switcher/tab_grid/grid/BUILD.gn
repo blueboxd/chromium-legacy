@@ -38,9 +38,7 @@ source_set("grid_ui") {
 
   deps = [
     ":grid_ui_constants",
-    "resources:grid_cell_close_button",
     "resources:grid_cell_plus_sign",
-    "resources:grid_theme_selection_tint_color",
     "resources:plus_sign_grid_cell_background_color",
     "//base",
     "//components/bookmarks/common",
@@ -52,11 +50,11 @@ source_set("grid_ui") {
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/ui/elements",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/tabs:features",
     "//ios/chrome/browser/tabs/inactive_tabs:features",
     "//ios/chrome/browser/ui/commerce:price_card",
-    "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/gestures",
     "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/incognito_reauth:incognito_reauth_commands",

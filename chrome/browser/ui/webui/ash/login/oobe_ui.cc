@@ -27,6 +27,8 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
+#include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
+#include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
@@ -128,6 +130,7 @@
 #include "chrome/grit/oobe_conditional_resources.h"
 #include "chrome/grit/oobe_unconditional_resources.h"
 #include "chrome/grit/oobe_unconditional_resources_map.h"
+#include "chromeos/ash/services/auth_factor_config/in_process_instances.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -178,6 +181,9 @@ constexpr char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
 constexpr char kLogo24PX2XSvgPath[] = "logo_24px-2x.svg";
 constexpr char kSyncConsentIcons[] = "sync-consent-icons.html";
 constexpr char kSyncConsentIconsJs[] = "sync-consent-icons.m.js";
+// Project Simon TODO(b/269117729) - Rename with final names.
+constexpr char kFirstAnimation[] = "internal_assets/first_animation.json";
+constexpr char kWelcomeBackdrop[] = "internal_assets/welcome_backdrop.svg";
 #endif
 
 // Adds various product logo resources.
@@ -189,6 +195,17 @@ void AddProductLogoResources(content::WebUIDataSource* source) {
 
   // Required in encryption migration screen.
   source->AddResourcePath(kProductLogoPath, IDR_PRODUCT_LOGO_64);
+}
+
+void AddProjectSimonResources(content::WebUIDataSource* source) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  source->AddResourcePath(kFirstAnimation, IDR_CROS_OOBE_FIRST_ANIMATION);
+  source->AddResourcePath(kWelcomeBackdrop, IDR_CROS_OOBE_WELCOME_BACKDROP);
+  auto product_name =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_CROS_OOBE_PRODUCT_NAME);
+  source->AddString("kProjectSimonProductName", std::string{product_name});
+#endif
 }
 
 void AddSyncConsentResources(content::WebUIDataSource* source) {
@@ -280,9 +297,14 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
   source->AddBoolean("isTouchpadScrollEnabled",
                      (features::IsOobeChoobeEnabled() &&
                       features::IsOobeTouchpadScrollEnabled()));
+  // Whether the timings in oobe_trace.js will be output to the console.
+  source->AddBoolean(
+      "printFrontendTimings",
+      command_line->HasSwitch(switches::kOobePrintFrontendLoadTimings));
 
   // Configure shared resources
   AddProductLogoResources(source);
+  AddProjectSimonResources(source);
 
   quick_unlock::AddFingerprintResources(source);
   AddSyncConsentResources(source);
@@ -564,6 +586,21 @@ void OobeUI::BindInterface(
   }
   color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
       web_ui()->GetWebContents(), std::move(receiver));
+}
+
+void OobeUI::BindInterface(
+    mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
+  auth::BindToAuthFactorConfig(std::move(receiver),
+                               quick_unlock::QuickUnlockFactory::GetDelegate());
+}
+
+void OobeUI::BindInterface(
+    mojo::PendingReceiver<auth::mojom::PinFactorEditor> receiver) {
+  auto* pin_backend = quick_unlock::PinBackend::GetInstance();
+  CHECK(pin_backend);
+  auth::BindToPinFactorEditor(std::move(receiver),
+                              quick_unlock::QuickUnlockFactory::GetDelegate(),
+                              *pin_backend);
 }
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)

@@ -1861,6 +1861,16 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     RenderFrameHostManagerTest,
     DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted1) {
+  if (ShouldCreateNewHostForAllFrames()) {
+    // This test involves starting a navigation while another navigation is
+    // committing, which might lead to deletion of a pending commit RFH, which
+    // will crash when RenderDocument is enabled. Skip the test if so.
+    // TODO(https://crbug.com/1220337): Update this test to work under
+    // navigation queueing, which will prevent the deletion of the pending
+    // commit RFH but still fails because this test actually expects the pending
+    // commit RFH to get deleted.
+    return;
+  }
   const std::string kOriginalPath = "/original.html";
   const std::string kFirstRedirectPath = "/redirect1.html";
   const std::string kSecondRedirectPath = "/reidrect2.html";
@@ -3885,9 +3895,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
   GURL url_b_with_frame(embedded_test_server()->GetURL(
       "b.com", "/navigation_controller/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_b_with_frame));
-  if (IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled()) {
-    // If same-site ProactivelySwapBrowsingInstance or main-frame RenderDocument
-    // is enabled, the navigation will result in a new RFH.
+  if (ShouldCreateNewHostForAllFrames()) {
+    // If main-frame RenderDocument is enabled, the navigation will result in a
+    // new RFH.
     EXPECT_NE(rfh_b, web_contents->GetPrimaryMainFrame());
     rfh_b = web_contents->GetPrimaryMainFrame();
   } else {
@@ -6401,34 +6411,6 @@ class RenderFrameHostManagerDefaultProcessTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-namespace {
-
-// ContentBrowserClient that skips assigning a site URL for all URLs that match
-// a given URL's scheme and host.
-class DontAssignSiteContentBrowserClient
-    : public ContentBrowserTestContentBrowserClient {
- public:
-  // Any visit to |url_to_skip| will not cause the site to be assigned to the
-  // SiteInstance.
-  explicit DontAssignSiteContentBrowserClient(const GURL& url_to_skip)
-      : url_to_skip_(url_to_skip) {}
-
-  DontAssignSiteContentBrowserClient(
-      const DontAssignSiteContentBrowserClient&) = delete;
-  DontAssignSiteContentBrowserClient& operator=(
-      const DontAssignSiteContentBrowserClient&) = delete;
-
-  bool ShouldAssignSiteForURL(const GURL& url) override {
-    return url.host() != url_to_skip_.host() ||
-           url.scheme() != url_to_skip_.scheme();
-  }
-
- private:
-  GURL url_to_skip_;
-};
-
-}  // namespace
-
 // Ensure that the default process can be used for URLs that don't assign a site
 // to the SiteInstance, when Site Isolation is not enabled.
 // 1. Visit foo.com.
@@ -6467,10 +6449,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerDefaultProcessTest,
 
   // Set up a URL for which ShouldAssignSiteForURL will return false.  The
   // corresponding SiteInstance's site will be left unassigned, and its process
-  // won't be locked.
-  GURL siteless_url(
-      embedded_test_server()->GetURL("siteless.com", "/title1.html"));
-  DontAssignSiteContentBrowserClient content_browser_client(siteless_url);
+  // won't be locked.  This requires adding the URL's scheme as an empty
+  // document scheme.
+  url::ScopedSchemeRegistryForTests scheme_registry;
+  url::AddEmptyDocumentScheme("siteless");
+  GURL siteless_url("siteless://test");
+  EXPECT_FALSE(SiteInstanceImpl::ShouldAssignSiteForURL(siteless_url));
 
   // Set up the work to be done after the renderer is asked to commit
   // |siteless_url|, but before the corresponding DidCommitProvisionalLoad IPC

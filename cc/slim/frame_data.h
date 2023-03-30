@@ -8,10 +8,13 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "cc/base/simple_enclosed_region.h"
+#include "cc/slim/damage_data.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
+class CompositorFrame;
 struct HitTestRegion;
 }  // namespace viz
 
@@ -19,13 +22,24 @@ namespace cc::slim {
 
 // Modifiable data passed to AppendQuads during tree walk.
 struct FrameData {
-  explicit FrameData(std::vector<viz::HitTestRegion>& regions);
+  FrameData(viz::CompositorFrame& frame,
+            std::vector<viz::HitTestRegion>& regions);
   ~FrameData();
 
+  viz::CompositorFrame& frame;
   std::vector<viz::HitTestRegion>& hit_test_regions;
   base::flat_set<viz::SurfaceId> activation_dependencies;
   absl::optional<uint32_t> deadline_in_frames;
   bool use_default_lower_bound_deadline = false;
+
+  // These fields are for a particular render pass (ie target) and the
+  // recursive tree walk will update and clear these fields for new
+  // render passes as needed
+  SimpleEnclosedRegion occlusion_in_target;
+  RenderPassDamageData render_pass_damage;
+
+  FrameDamageData current_frame_damage;
+  bool subtree_property_changed_from_parent = false;
 };
 
 }  // namespace cc::slim

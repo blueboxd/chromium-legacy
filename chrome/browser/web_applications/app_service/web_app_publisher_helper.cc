@@ -772,16 +772,17 @@ void WebAppPublisherHelper::UninstallWebApp(
   constexpr bool kClearCache = true;
   constexpr bool kAvoidClosingConnections = false;
 
-  content::ClearSiteData(base::BindRepeating(
-                             [](content::BrowserContext* browser_context) {
-                               return browser_context;
-                             },
-                             base::Unretained(profile())),
-                         origin, kClearCookies, kClearStorage, kClearCache,
-                         /*storage_buckets_to_remove=*/{},
-                         kAvoidClosingConnections,
-                         /*cookie_partition_key=*/absl::nullopt,
-                         /*storage_key=*/absl::nullopt, base::DoNothing());
+  content::ClearSiteData(
+      base::BindRepeating(
+          [](content::BrowserContext* browser_context) {
+            return browser_context;
+          },
+          base::Unretained(profile())),
+      origin, kClearCookies, kClearStorage, kClearCache,
+      /*storage_buckets_to_remove=*/{}, kAvoidClosingConnections,
+      /*cookie_partition_key=*/absl::nullopt,
+      /*storage_key=*/absl::nullopt,
+      /*partitioned_state_allowed_only=*/false, base::DoNothing());
 }
 
 void WebAppPublisherHelper::SetIconEffect(const std::string& app_id) {
@@ -972,6 +973,14 @@ void WebAppPublisherHelper::LaunchAppWithParams(
     return;
   }
 
+  apps::AppLaunchParams params_for_restore(
+      params.app_id, params.container, params.disposition, params.override_url,
+      params.launch_source, params.display_id, params.launch_files,
+      params.intent);
+
+  bool is_system_web_app = false;
+  absl::optional<GURL> override_url = absl::nullopt;
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Terminal SWA has custom launch code and manages its own restore data.
   if (params.app_id == guest_os::kTerminalSystemAppId) {
@@ -980,54 +989,35 @@ void WebAppPublisherHelper::LaunchAppWithParams(
     return;
   }
 
-  apps::AppLaunchParams params_for_restore(
-      params.app_id, params.container, params.disposition, params.override_url,
-      params.launch_source, params.display_id, params.launch_files,
-      params.intent);
+  auto* swa_manager = ash::SystemWebAppManager::Get(profile());
+  if (swa_manager) {
+    const WebApp* web_app = GetWebApp(params_for_restore.app_id);
+    is_system_web_app = web_app && web_app->IsSystemApp();
+
+    // TODO(crbug.com/1368285): Determine whether override URL can
+    // be restored for all SWAs.
+    auto system_app_type =
+        swa_manager->GetSystemAppTypeForAppId(params_for_restore.app_id);
+    if (system_app_type.has_value()) {
+      auto* system_app = swa_manager->GetSystemApp(*system_app_type);
+      CHECK(system_app);
+      if (system_app->ShouldRestoreOverrideUrl()) {
+        override_url = params.override_url;
+      }
+    }
+  }
 
   // Create the FullRestoreSaveHandler instance before launching the app to
   // observe the browser window.
   full_restore::FullRestoreSaveHandler::GetInstance();
 #endif
 
-  content::WebContents* const web_contents =
-      web_app_launch_manager_->OpenApplication(std::move(params));
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Save all launch information for system web apps, because the browser
-  // session restore can't restore system web apps.
-  int session_id = apps::GetSessionIdForRestoreFromWebContents(web_contents);
-  auto* swa_manager = ash::SystemWebAppManager::Get(profile());
-  if (swa_manager && SessionID::IsValidValue(session_id)) {
-    const WebApp* web_app = GetWebApp(params_for_restore.app_id);
-    const bool is_system_web_app = web_app && web_app->IsSystemApp();
-    if (is_system_web_app) {
-      std::unique_ptr<app_restore::AppLaunchInfo> launch_info =
-          std::make_unique<app_restore::AppLaunchInfo>(
-              params_for_restore.app_id, session_id,
-              params_for_restore.container, params_for_restore.disposition,
-              params_for_restore.display_id,
-              std::move(params_for_restore.launch_files),
-              std::move(params_for_restore.intent));
-
-      // TODO(crbug.com/1368285): Determine whether override URL can be restored
-      // for all SWAs.
-      auto system_app_type =
-          swa_manager->GetSystemAppTypeForAppId(params_for_restore.app_id);
-      if (system_app_type.has_value()) {
-        auto* system_app = swa_manager->GetSystemApp(*system_app_type);
-        DCHECK(system_app);
-        if (system_app->ShouldRestoreOverrideUrl())
-          launch_info->override_url = params_for_restore.override_url;
-      }
-
-      full_restore::SaveAppLaunchInfo(profile()->GetPath(),
-                                      std::move(launch_info));
-    }
-  }
-#endif
-
-  std::move(on_complete).Run(web_contents);
+  provider_->scheduler().LaunchAppWithCustomParams(
+      std::move(params),
+      base::BindOnce(&WebAppPublisherHelper::OnLaunchCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(params_for_restore), is_system_web_app,
+                     override_url, std::move(on_complete)));
 }
 
 void WebAppPublisherHelper::SetPermission(const std::string& app_id,
@@ -1537,8 +1527,6 @@ void WebAppPublisherHelper::Init(bool observe_media_requests) {
   }
 #endif
 
-  web_app_launch_manager_ = std::make_unique<WebAppLaunchManager>(profile_);
-
 #if BUILDFLAG(IS_CHROMEOS)
   if (observe_media_requests) {
     media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
@@ -1640,6 +1628,14 @@ std::vector<std::string> WebAppPublisherHelper::GetPolicyIds(
     }
   }
 #endif  // BUIDLFLAG(IS_CHROMEOS_ASH)
+
+  for (const auto& [source, external_config] :
+       web_app.management_to_external_config_map()) {
+    if (!external_config.additional_policy_ids.empty()) {
+      base::ranges::copy(external_config.additional_policy_ids,
+                         std::back_inserter(policy_ids));
+    }
+  }
 
   if (!registrar().HasExternalAppWithInstallSource(
           app_id, ExternalInstallSource::kExternalPolicy)) {
@@ -1845,6 +1841,41 @@ void WebAppPublisherHelper::OnFileHandlerDialogCompleted(
     LaunchAppWithParams(std::move(params_for_file_launch),
                         launch_complete_barrier);
   }
+}
+
+void WebAppPublisherHelper::OnLaunchCompleted(
+    apps::AppLaunchParams params_for_restore,
+    bool is_system_web_app,
+    absl::optional<GURL> override_url,
+    base::OnceCallback<void(content::WebContents*)> on_complete,
+    Browser* browser,
+    content::WebContents* web_contents,
+    apps::LaunchContainer container) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Save all launch information for system web apps, because the
+  // browser session restore can't restore system web apps.
+  int session_id = apps::GetSessionIdForRestoreFromWebContents(web_contents);
+  if (SessionID::IsValidValue(session_id)) {
+    if (is_system_web_app) {
+      std::unique_ptr<app_restore::AppLaunchInfo> launch_info =
+          std::make_unique<app_restore::AppLaunchInfo>(
+              params_for_restore.app_id, session_id,
+              params_for_restore.container, params_for_restore.disposition,
+              params_for_restore.display_id,
+              std::move(params_for_restore.launch_files),
+              std::move(params_for_restore.intent));
+
+      if (override_url) {
+        launch_info->override_url = override_url.value();
+      }
+
+      full_restore::SaveAppLaunchInfo(profile()->GetPath(),
+                                      std::move(launch_info));
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  std::move(on_complete).Run(web_contents);
 }
 
 }  // namespace web_app

@@ -13,8 +13,8 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_trigger_source.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
-#include "components/autofill/core/browser/test_autofill_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -22,20 +22,18 @@ namespace autofill {
 
 class AutofillDriver;
 class FormStructure;
+class TestAutofillClient;
 class TestPersonalDataManager;
 
 class TestBrowserAutofillManager : public BrowserAutofillManager {
  public:
-  TestBrowserAutofillManager(AutofillDriver* driver,
-                             TestAutofillClient* client);
+  TestBrowserAutofillManager(AutofillDriver* driver, AutofillClient* client);
 
   TestBrowserAutofillManager(const TestBrowserAutofillManager&) = delete;
   TestBrowserAutofillManager& operator=(const TestBrowserAutofillManager&) =
       delete;
 
   ~TestBrowserAutofillManager() override;
-
-  TestAutofillClient* client() { return client_; }
 
   // AutofillManager overrides.
   // The overrides ensure that the thread is blocked until the form has been
@@ -74,12 +72,13 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
                                 base::TimeTicks interaction_time,
                                 base::TimeTicks submission_time,
                                 bool observed_submission) override;
-  const gfx::Image& GetCardImage(const CreditCard& credit_card) const override;
+  const gfx::Image& GetCardImage(const CreditCard& credit_card) override;
   bool MaybeStartVoteUploadProcess(
       std::unique_ptr<FormStructure> form_structure,
       bool observed_submission) override;
   // Immediately triggers the refill.
-  void ScheduleRefill(const FormData& form) override;
+  void ScheduleRefill(const FormData& form,
+                      const AutofillTriggerSource trigger_source) override;
 
   // Unique to TestBrowserAutofillManager:
 
@@ -121,9 +120,12 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
       FormElementWasClicked form_element_was_clicked =
           FormElementWasClicked(false));
 
-  void SetAutofillProfileEnabled(bool profile_enabled);
-
-  void SetAutofillCreditCardEnabled(bool credit_card_enabled);
+  // Require a TestAutofillClient because `this` does not know whether its
+  // `client()` is a *Test*AutofillClient.
+  void SetAutofillProfileEnabled(TestAutofillClient& client,
+                                 bool profile_enabled);
+  void SetAutofillCreditCardEnabled(TestAutofillClient& client,
+                                    bool credit_card_enabled);
 
   void SetExpectedSubmittedFieldTypes(
       const std::vector<ServerFieldTypeSet>& expected_types);
@@ -138,8 +140,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
   int MakeFrontendId(const MakeFrontendIdParams& params);
 
  private:
-  raw_ptr<TestAutofillClient> client_;
-
   bool autofill_profile_enabled_ = true;
   bool autofill_credit_card_enabled_ = true;
   absl::optional<bool> expected_observed_submission_;

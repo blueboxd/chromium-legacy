@@ -7,8 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "ash/components/arc/enterprise/snapshot_hours_policy_service.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/memory/singleton.h"
@@ -189,19 +187,9 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
     ash::SystemProxyManager::Get()->StartObservingPrimaryProfilePrefs(
         primary_profile);
   }
-
-  auto* manager = arc::data_snapshotd::ArcDataSnapshotdManager::Get();
-  if (manager) {
-    manager->policy_service()->StartObservingPrimaryProfilePrefs(
-        primary_profile->GetPrefs());
-  }
 }
 
 void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
-  auto* manager = arc::data_snapshotd::ArcDataSnapshotdManager::Get();
-  if (manager)
-    manager->policy_service()->StopObservingPrimaryProfilePrefs();
-
   if (ash::SystemProxyManager::Get())
     ash::SystemProxyManager::Get()->StopObservingPrimaryProfilePrefs();
   in_session_password_change_manager_.reset();
@@ -247,9 +235,7 @@ ash::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
         g_browser_process->shared_url_loader_factory(),
         ash::SimpleGeolocationProvider::DefaultGeolocationProviderURL(),
         base::BindRepeating(&ash::system::ApplyTimeZone),
-        base::BindRepeating(
-            &ash::DelayNetworkCall,
-            base::Milliseconds(ash::kDefaultNetworkRetryDelayMS)),
+        base::BindRepeating(&ash::DelayNetworkCall),
         g_browser_process->local_state());
   }
   return timezone_resolver_.get();

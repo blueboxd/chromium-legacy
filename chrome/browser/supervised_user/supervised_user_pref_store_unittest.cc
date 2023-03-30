@@ -11,8 +11,9 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
-#include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/history/core/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/testing_pref_store.h"
 #include "components/safe_search_api/safe_search_util.h"
 #include "components/supervised_user/core/browser/supervised_user_settings_service.h"
@@ -145,8 +146,8 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   // kIncognitoModeAvailability must be disabled for all supervised users.
   EXPECT_THAT(
       fixture.changed_prefs()->FindIntByDottedPath(
-          prefs::kIncognitoModeAvailability),
-      Optional(static_cast<int>(IncognitoModePrefs::Availability::kDisabled)));
+          policy::policy_prefs::kIncognitoModeAvailability),
+      Optional(static_cast<int>(policy::IncognitoModeAvailability::kDisabled)));
 
   // kSupervisedModeManualHosts does not have a hardcoded value.
   EXPECT_FALSE(fixture.changed_prefs()->FindDictByDottedPath(
@@ -155,11 +156,11 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   // kForceGoogleSafeSearch defaults to true and kForceYouTubeRestrict defaults
   // to Moderate for supervised users.
   EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(
-                  prefs::kForceGoogleSafeSearch),
+                  policy::policy_prefs::kForceGoogleSafeSearch),
               Optional(true));
   int force_youtube_restrict =
       fixture.changed_prefs()
-          ->FindIntByDottedPath(prefs::kForceYouTubeRestrict)
+          ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
           .value_or(safe_search_api::YOUTUBE_RESTRICT_OFF);
   EXPECT_EQ(force_youtube_restrict, safe_search_api::YOUTUBE_RESTRICT_MODERATE);
 
@@ -202,12 +203,12 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
                            base::Value(false));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
   EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(
-                  prefs::kForceGoogleSafeSearch),
+                  policy::policy_prefs::kForceGoogleSafeSearch),
               Optional(false));
 
   force_youtube_restrict =
       fixture.changed_prefs()
-          ->FindIntByDottedPath(prefs::kForceYouTubeRestrict)
+          ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
           .value_or(safe_search_api::YOUTUBE_RESTRICT_MODERATE);
   EXPECT_EQ(force_youtube_restrict, safe_search_api::YOUTUBE_RESTRICT_OFF);
 

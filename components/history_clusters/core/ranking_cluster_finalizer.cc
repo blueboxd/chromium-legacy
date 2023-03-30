@@ -29,11 +29,6 @@ float Smoothstep(float low, float high, float value) {
   return x * x * (3 - 2 * x);
 }
 
-// Returns whether |visit| should be shown in the UI.
-bool IsShownVisitCandidate(const history::ClusterVisit& visit) {
-  return visit.score > 0.0f && !visit.annotated_visit.url_row.title().empty();
-}
-
 }  // namespace
 
 RankingClusterFinalizer::RankingClusterFinalizer() = default;
@@ -68,6 +63,13 @@ void RankingClusterFinalizer::CalculateVisitAttributeScoring(
     // Check if the visit contained a search query.
     if (!visit.annotated_visit.content_annotations.search_terms.empty()) {
       it->second.set_is_srp();
+    }
+
+    // Check if the visit had a URL keyed image and it can be fetched when shown
+    // in the UI.
+    if (visit.annotated_visit.content_annotations.has_url_keyed_image &&
+        visit.annotated_visit.visit_row.is_known_to_sync) {
+      it->second.set_has_url_keyed_image();
     }
 
     // Additional/future attribute checks go here.

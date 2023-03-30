@@ -9,6 +9,7 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -81,6 +82,13 @@ void TestAppListClient::GetContextMenuModel(
 
 AppListNotifier* TestAppListClient::GetNotifier() {
   return nullptr;
+}
+
+void TestAppListClient::QueryWouldTriggerLauncherSearchIph() {}
+
+std::unique_ptr<ScopedIphSession>
+TestAppListClient::CreateLauncherSearchIphSession() {
+  return std::make_unique<ScopedIphSession>();
 }
 
 std::vector<TestAppListClient::SearchResultActionId>

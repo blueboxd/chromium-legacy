@@ -19,6 +19,7 @@
 namespace reading_list {
 namespace {
 
+using testing::_;
 using testing::IsNull;
 using testing::NotNull;
 using StorageStateForTesting = DualReadingListModel::StorageStateForTesting;
@@ -38,6 +39,11 @@ MATCHER_P(HasUrl, expected_url, "") {
   return arg.URL() == expected_url;
 }
 
+MATCHER_P3(HasCountersEqual, size, unseen_size, unread_size, "") {
+  return arg->size() == size && arg->unseen_size() == unseen_size &&
+         arg->unread_size() == unread_size;
+}
+
 class TestEntryBuilder {
  public:
   TestEntryBuilder(GURL url, base::Time now) : url_(url), creation_time_(now) {}
@@ -54,12 +60,14 @@ class TestEntryBuilder {
     return *this;
   }
 
-  TestEntryBuilder& SetRead() {
+  TestEntryBuilder& SetRead(bool read = true) {
+    read_ = read;
     update_read_time_ = creation_time_;
     return *this;
   }
 
-  TestEntryBuilder& SetRead(base::Time now) {
+  TestEntryBuilder& SetRead(base::Time now, bool read = true) {
+    read_ = read;
     update_read_time_ = now;
     return *this;
   }
@@ -89,7 +97,7 @@ class TestEntryBuilder {
     }
 
     if (update_read_time_.has_value()) {
-      entry->SetRead(true, update_read_time_.value());
+      entry->SetRead(read_, update_read_time_.value());
     }
 
     if (estimated_read_time_.has_value()) {
@@ -115,6 +123,7 @@ class TestEntryBuilder {
 
   absl::optional<std::pair<std::string, base::Time>> title_and_update_time_;
   absl::optional<base::Time> update_read_time_;
+  bool read_;
   absl::optional<base::TimeDelta> estimated_read_time_;
   absl::optional<ReadingListEntry::DistillationState> distilation_state_;
   absl::optional<base::FilePath> distilation_path_;
@@ -296,6 +305,74 @@ TEST_F(DualReadingListModelTest, ReturnKeysSize) {
   ASSERT_EQ(1ul, local_or_syncable_model_ptr_->size());
   ASSERT_EQ(1ul, account_model_ptr_->size());
   EXPECT_EQ(2ul, dual_model_->size());
+}
+
+TEST_F(DualReadingListModelTest, MarkAllSeen) {
+  const GURL kLocalUrl("http://local_url.com/");
+  const GURL kAccountUrl("http://account_url.com/");
+  const GURL kCommonUrl("http://common_url.com/");
+
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/
+      {TestEntryBuilder(kLocalUrl, clock_.Now()),
+       TestEntryBuilder(kCommonUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kAccountUrl, clock_.Now()),
+          TestEntryBuilder(kCommonUrl, clock_.Now())}));
+  ASSERT_TRUE(dual_model_->loaded());
+
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kLocalUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kAccountUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kCommonUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_FALSE(dual_model_->GetEntryByURL(kLocalUrl)->HasBeenSeen());
+  ASSERT_FALSE(dual_model_->GetEntryByURL(kAccountUrl)->HasBeenSeen());
+  ASSERT_FALSE(dual_model_->GetEntryByURL(kCommonUrl)->HasBeenSeen());
+  ASSERT_FALSE(dual_model_->GetEntryByURL(kLocalUrl)->IsRead());
+  ASSERT_FALSE(dual_model_->GetEntryByURL(kAccountUrl)->IsRead());
+  ASSERT_FALSE(dual_model_->GetEntryByURL(kCommonUrl)->IsRead());
+
+  {
+    testing::InSequence seq1;
+    EXPECT_CALL(observer_,
+                ReadingListWillUpdateEntry(dual_model_.get(), kLocalUrl));
+    EXPECT_CALL(observer_,
+                ReadingListDidUpdateEntry(dual_model_.get(), kLocalUrl));
+    EXPECT_CALL(observer_, ReadingListDidApplyChanges(dual_model_.get()))
+        .RetiresOnSaturation();
+  }
+
+  {
+    testing::InSequence seq2;
+    EXPECT_CALL(observer_,
+                ReadingListWillUpdateEntry(dual_model_.get(), kAccountUrl));
+    EXPECT_CALL(observer_,
+                ReadingListDidUpdateEntry(dual_model_.get(), kAccountUrl));
+    EXPECT_CALL(observer_, ReadingListDidApplyChanges(dual_model_.get()))
+        .RetiresOnSaturation();
+  }
+
+  {
+    testing::InSequence seq3;
+    EXPECT_CALL(observer_,
+                ReadingListWillUpdateEntry(dual_model_.get(), kCommonUrl));
+    EXPECT_CALL(observer_,
+                ReadingListDidUpdateEntry(dual_model_.get(), kCommonUrl));
+    EXPECT_CALL(observer_, ReadingListDidApplyChanges(dual_model_.get()))
+        .RetiresOnSaturation();
+  }
+
+  dual_model_->MarkAllSeen();
+
+  EXPECT_TRUE(dual_model_->GetEntryByURL(kLocalUrl)->HasBeenSeen());
+  EXPECT_TRUE(dual_model_->GetEntryByURL(kAccountUrl)->HasBeenSeen());
+  EXPECT_TRUE(dual_model_->GetEntryByURL(kCommonUrl)->HasBeenSeen());
+  EXPECT_FALSE(dual_model_->GetEntryByURL(kLocalUrl)->IsRead());
+  EXPECT_FALSE(dual_model_->GetEntryByURL(kAccountUrl)->IsRead());
+  EXPECT_FALSE(dual_model_->GetEntryByURL(kCommonUrl)->IsRead());
 }
 
 TEST_F(DualReadingListModelTest, BatchUpdates) {
@@ -804,6 +881,35 @@ TEST_F(DualReadingListModelTest, AddEntryWhenSyncEnabled) {
             StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
 }
 
+TEST_F(DualReadingListModelTest, AddExistingEntryWhenSignedOut) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedOut(/*initial_local_entries_builders=*/{
+      TestEntryBuilder(kUrl, clock_.Now())}));
+
+  EXPECT_CALL(observer_, ReadingListWillUpdateEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidUpdateEntry).Times(0);
+
+  testing::InSequence seq;
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(dual_model_.get(), kUrl));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(dual_model_.get(), kUrl));
+  EXPECT_CALL(observer_, ReadingListDidApplyChanges(dual_model_.get()));
+  EXPECT_CALL(observer_,
+              ReadingListWillAddEntry(dual_model_.get(), HasUrl(kUrl)));
+  EXPECT_CALL(observer_,
+              ReadingListDidAddEntry(dual_model_.get(), kUrl,
+                                     reading_list::ADDED_VIA_CURRENT_APP));
+  EXPECT_CALL(observer_, ReadingListDidApplyChanges(dual_model_.get()));
+
+  scoped_refptr<const ReadingListEntry> entry = &dual_model_->AddOrReplaceEntry(
+      kUrl, "entry_title", reading_list::ADDED_VIA_CURRENT_APP,
+      /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(entry, MatchesEntry(kUrl, "entry_title"));
+  EXPECT_THAT(dual_model_->GetEntryByURL(kUrl),
+              MatchesEntry(kUrl, "entry_title"));
+  EXPECT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+}
+
 TEST_F(DualReadingListModelTest,
        AddLocalExistingEntryWhenSignedInSyncDisabled) {
   ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
@@ -905,6 +1011,36 @@ TEST_F(DualReadingListModelTest,
               MatchesEntry(kUrl, "entry_title"));
   EXPECT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
             StorageStateForTesting::kExistsInAccountModelOnly);
+}
+
+TEST_F(DualReadingListModelTest, AddExistingEntryWhenSyncEnabled) {
+  ASSERT_TRUE(
+      ResetStorageAndMimicSyncEnabled(/*initial_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+
+  EXPECT_CALL(observer_, ReadingListWillUpdateEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidUpdateEntry).Times(0);
+
+  testing::InSequence seq;
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(dual_model_.get(), kUrl));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(dual_model_.get(), kUrl));
+  EXPECT_CALL(observer_, ReadingListDidApplyChanges(dual_model_.get()));
+  EXPECT_CALL(observer_,
+              ReadingListWillAddEntry(dual_model_.get(), HasUrl(kUrl)));
+  EXPECT_CALL(observer_,
+              ReadingListDidAddEntry(dual_model_.get(), kUrl,
+                                     reading_list::ADDED_VIA_CURRENT_APP));
+  EXPECT_CALL(observer_, ReadingListDidApplyChanges(dual_model_.get()));
+
+  scoped_refptr<const ReadingListEntry> entry = &dual_model_->AddOrReplaceEntry(
+      kUrl, "entry_title", reading_list::ADDED_VIA_CURRENT_APP,
+      /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(entry, MatchesEntry(kUrl, "entry_title"));
+  EXPECT_THAT(dual_model_->GetEntryByURL(kUrl),
+              MatchesEntry(kUrl, "entry_title"));
+  EXPECT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
 }
 
 TEST_F(DualReadingListModelTest, AddLocalEntryFromSync) {
@@ -1766,6 +1902,1399 @@ TEST_F(DualReadingListModelTest, TestTrimmingTitle) {
 
   dual_model_->SetEntryTitleIfExists(kUrl, title);
   EXPECT_EQ(entry->Title(), "This title contains new line characters");
+}
+
+TEST_F(DualReadingListModelTest, ShouldMaintainCountsWhenModelLoaded) {
+  const GURL kUnseenLocalUrl("http://unseen_local_url.com/");
+  const GURL kUnreadLocalUrl("http://unread_local_url.com/");
+  const GURL kReadLocalUrl("http://read_local_url.com/");
+  const GURL kUnseenAccountUrl("http://unseen_account_url.com/");
+  const GURL kUnreadAccountUrl("http://unread_account_url.com/");
+  const GURL kReadAccountUrl("http://read_account_url.com/");
+  const GURL kUnreadCommonUrl("http://unread_common_url.com/");
+  const GURL kReadCommonUrl("http://read_common_url.com/");
+
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/
+      {TestEntryBuilder(kUnseenLocalUrl, clock_.Now()),
+       TestEntryBuilder(kUnreadLocalUrl, clock_.Now()).SetRead(false),
+       TestEntryBuilder(kReadLocalUrl, clock_.Now()).SetRead(),
+       TestEntryBuilder(kUnreadCommonUrl, clock_.Now()).SetRead(false),
+       TestEntryBuilder(kReadCommonUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUnseenAccountUrl, clock_.Now()),
+          TestEntryBuilder(kUnreadAccountUrl, clock_.Now()).SetRead(false),
+          TestEntryBuilder(kReadAccountUrl, clock_.Now()).SetRead(),
+          TestEntryBuilder(kUnreadCommonUrl, clock_.Now()).SetRead(false),
+          TestEntryBuilder(kReadCommonUrl, clock_.Now())
+              .SetRead(clock_.Now() + base::Seconds(1))}));
+  ASSERT_TRUE(dual_model_->loaded());
+
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnseenLocalUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnreadLocalUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kReadLocalUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnseenAccountUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnreadAccountUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kReadAccountUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnreadCommonUrl),
+            StorageStateForTesting::kExistsInBothModels);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kReadCommonUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  EXPECT_EQ(8ul, dual_model_->size());
+  EXPECT_EQ(2ul, dual_model_->unseen_size());
+  EXPECT_EQ(5ul, dual_model_->unread_size());
+}
+
+TEST_F(DualReadingListModelTest, ShouldMaintainCountsWhenMarkAllSeen) {
+  const GURL kUnseenLocalUrl("http://unseen_local_url.com/");
+  const GURL kUnreadLocalUrl("http://unread_local_url.com/");
+  const GURL kReadLocalUrl("http://read_local_url.com/");
+  const GURL kUnseenAccountUrl("http://unseen_account_url.com/");
+  const GURL kUnreadAccountUrl("http://unread_account_url.com/");
+  const GURL kReadAccountUrl("http://read_account_url.com/");
+  const GURL kUnseenCommonUrl("http://unseen_common_url.com/");
+  const GURL kUnreadCommonUrl("http://unread_common_url.com/");
+  const GURL kReadCommonUrl("http://read_common_url.com/");
+
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/
+      {TestEntryBuilder(kUnseenLocalUrl, clock_.Now()),
+       TestEntryBuilder(kUnreadLocalUrl, clock_.Now()).SetRead(false),
+       TestEntryBuilder(kReadLocalUrl, clock_.Now()).SetRead(),
+       TestEntryBuilder(kUnseenCommonUrl, clock_.Now()),
+       TestEntryBuilder(kUnreadCommonUrl, clock_.Now()).SetRead(false),
+       TestEntryBuilder(kReadCommonUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUnseenAccountUrl, clock_.Now()),
+          TestEntryBuilder(kUnreadAccountUrl, clock_.Now()).SetRead(false),
+          TestEntryBuilder(kReadAccountUrl, clock_.Now()).SetRead(),
+          TestEntryBuilder(kUnseenCommonUrl, clock_.Now()),
+          TestEntryBuilder(kUnreadCommonUrl, clock_.Now()).SetRead(false),
+          TestEntryBuilder(kReadCommonUrl, clock_.Now())
+              .SetRead(clock_.Now() + base::Seconds(1))}));
+  ASSERT_TRUE(dual_model_->loaded());
+
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnseenLocalUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnreadLocalUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kReadLocalUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnseenAccountUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnreadAccountUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kReadAccountUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUnreadCommonUrl),
+            StorageStateForTesting::kExistsInBothModels);
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kReadCommonUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_EQ(9ul, dual_model_->size());
+  ASSERT_EQ(3ul, dual_model_->unseen_size());
+  ASSERT_EQ(6ul, dual_model_->unread_size());
+
+  dual_model_->MarkAllSeen();
+
+  EXPECT_EQ(9ul, dual_model_->size());
+  EXPECT_EQ(0ul, dual_model_->unseen_size());
+  EXPECT_EQ(6ul, dual_model_->unread_size());
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveLocalUnreadEntry) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->RemoveEntryByURL(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest, ShouldMaintainCountsWhenRemoveLocalReadEntry) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->RemoveEntryByURL(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveAccountUnreadEntry) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->RemoveEntryByURL(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveAccountReadEntry) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->RemoveEntryByURL(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveCommonUnreadEntry) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{TestEntryBuilder(
+          kUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->RemoveEntryByURL(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveCommonReadEntry) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{TestEntryBuilder(
+          kUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())
+              .SetRead(clock_.Now() + base::Seconds(1))}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->RemoveEntryByURL(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveLocalUnreadEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSyncEnabled(
+      /*initial_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = local_or_syncable_model_ptr_->BeginBatchUpdates();
+  local_or_syncable_model_ptr_->SyncRemoveEntry(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveLocalReadEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSyncEnabled(
+      /*initial_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = local_or_syncable_model_ptr_->BeginBatchUpdates();
+  local_or_syncable_model_ptr_->SyncRemoveEntry(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveAccountUnreadEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  account_model_ptr_->SyncRemoveEntry(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveAccountReadEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  account_model_ptr_->SyncRemoveEntry(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveCommonUnreadEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{TestEntryBuilder(kUrl, clock_.Now())
+                                              .SetRead()},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now() + base::Seconds(1))}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillUpdateEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidUpdateEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  account_model_ptr_->SyncRemoveEntry(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+  EXPECT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenRemoveCommonReadEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{TestEntryBuilder(kUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())
+              .SetRead(clock_.Now() + base::Seconds(1))}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillUpdateEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidUpdateEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  account_model_ptr_->SyncRemoveEntry(kUrl);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+  EXPECT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddEntryWhenSignedOut) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedOut());
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kNotFound);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled());
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kNotFound);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddEntryWhenSyncEnabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSyncEnabled());
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kNotFound);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddExistingUnreadEntryWhenSignedOut) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedOut(/*initial_local_entries_builders=*/{
+      TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddExistingReadEntryWhenSignedOut) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedOut(/*initial_local_entries_builders=*/{
+      TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenAddLocalExistingUnreadEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenAddLocalExistingReadEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenAddAccountExistingUnreadEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenAddAccountExistingReadEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenAddCommonExistingUnreadEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/
+      {TestEntryBuilder(kUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenAddCommonExistingReadEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/
+      {TestEntryBuilder(kUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())
+              .SetRead(clock_.Now() + base::Seconds(1))}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddExistingUnreadEntryWhenSyncEnabled) {
+  ASSERT_TRUE(
+      ResetStorageAndMimicSyncEnabled(/*initial_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddExistingReadEntryWhenSyncEnabled) {
+  ASSERT_TRUE(
+      ResetStorageAndMimicSyncEnabled(/*initial_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  dual_model_->AddOrReplaceEntry(kUrl, "entry_title",
+                                 reading_list::ADDED_VIA_CURRENT_APP,
+                                 /*estimated_read_time=*/base::TimeDelta());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddLocalEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSyncEnabled());
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kNotFound);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = local_or_syncable_model_ptr_->BeginBatchUpdates();
+  local_or_syncable_model_ptr_->SyncAddEntry(
+      TestEntryBuilder(kUrl, clock_.Now()).Build());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+  EXPECT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddAccountEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled());
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kNotFound);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillAddEntry(
+                             HasCountersEqual(/*size=*/0ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidAddEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _, _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  account_model_ptr_->SyncAddEntry(
+      TestEntryBuilder(kUrl, clock_.Now()).Build());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+  EXPECT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenAddLocalExistingEntryFromSync) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillUpdateEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidUpdateEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  account_model_ptr_->SyncAddEntry(
+      TestEntryBuilder(kUrl, clock_.Now() + base::Seconds(1)).Build());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+  EXPECT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetLocalUnreadEntryUnread) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  dual_model_->SetReadStatusIfExists(kUrl, false);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetLocalUnreadEntryRead) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->SetReadStatusIfExists(kUrl, true);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetLocalReadEntryUnread) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/1ul),
+                             _));
+
+  dual_model_->SetReadStatusIfExists(kUrl, false);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetLocalReadEntryRead) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  dual_model_->SetReadStatusIfExists(kUrl, true);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetAccountUnreadEntryUnread) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  dual_model_->SetReadStatusIfExists(kUrl, false);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetAccountUnreadEntryRead) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->SetReadStatusIfExists(kUrl, true);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetAccountReadEntryUnread) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/1ul),
+                             _));
+
+  dual_model_->SetReadStatusIfExists(kUrl, false);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetAccountReadEntryRead) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  dual_model_->SetReadStatusIfExists(kUrl, true);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetCommonUnreadEntryUnread) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{TestEntryBuilder(
+          kUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  dual_model_->SetReadStatusIfExists(kUrl, false);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetCommonUnreadEntryRead) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/{TestEntryBuilder(
+          kUrl, clock_.Now())},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  dual_model_->SetReadStatusIfExists(kUrl, true);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetCommonReadEntryUnread) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/
+      {TestEntryBuilder(kUrl, clock_.Now()).SetRead()},
+      /*initial_account_entries_builders=*/
+      {TestEntryBuilder(kUrl, clock_.Now())
+           .SetRead(clock_.Now() + base::Seconds(1))}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/1ul),
+                             _));
+
+  dual_model_->SetReadStatusIfExists(kUrl, false);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/1ul));
+}
+
+TEST_F(DualReadingListModelTest,
+       ShouldMaintainCountsWhenSetCommonReadEntryRead) {
+  ASSERT_TRUE(ResetStorageAndTriggerLoadCompletion(
+      /*initial_local_or_syncable_entries_builders=*/
+      {TestEntryBuilder(kUrl, clock_.Now()).SetRead()},
+      /*initial_account_entries_builders=*/
+      {TestEntryBuilder(kUrl, clock_.Now())
+           .SetRead(clock_.Now() + base::Seconds(1))}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInBothModels);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  dual_model_->SetReadStatusIfExists(kUrl, true);
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenSyncMergeReadEntryWithUnreadEntryWhenSyncEnabled) {
+  ASSERT_TRUE(
+      ResetStorageAndMimicSyncEnabled(/*initial_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now() + base::Seconds(1)).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = local_or_syncable_model_ptr_->BeginBatchUpdates();
+  scoped_refptr<const ReadingListEntry> merged_entry =
+      local_or_syncable_model_ptr_->SyncMergeEntry(
+          TestEntryBuilder(kUrl, clock_.Now()).Build());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenSyncMergeUnreadEntryWithReadEntryWhenSyncEnabled) {
+  ASSERT_TRUE(
+      ResetStorageAndMimicSyncEnabled(/*initial_syncable_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = local_or_syncable_model_ptr_->BeginBatchUpdates();
+  scoped_refptr<const ReadingListEntry> merged_entry =
+      local_or_syncable_model_ptr_->SyncMergeEntry(
+          TestEntryBuilder(kUrl, clock_.Now() + base::Seconds(1))
+              .SetRead()
+              .Build());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenSyncMergeReadEntryWithUnreadEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now() + base::Seconds(1)).SetRead()}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                              /*unread_size=*/0ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  scoped_refptr<const ReadingListEntry> merged_entry =
+      account_model_ptr_->SyncMergeEntry(
+          TestEntryBuilder(kUrl, clock_.Now()).Build());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/0ul,
+                                            /*unread_size=*/0ul));
+}
+
+TEST_F(
+    DualReadingListModelTest,
+    ShouldMaintainCountsWhenSyncMergeUnreadEntryWithReadEntryWhenSignedInSyncDisabled) {
+  ASSERT_TRUE(ResetStorageAndMimicSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now() + base::Seconds(1))}));
+  ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
+            StorageStateForTesting::kExistsInAccountModelOnly);
+
+  ASSERT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
+
+  EXPECT_CALL(observer_, ReadingListWillMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+  EXPECT_CALL(observer_, ReadingListDidMoveEntry(
+                             HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                              /*unread_size=*/1ul),
+                             _));
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  scoped_refptr<const ReadingListEntry> merged_entry =
+      account_model_ptr_->SyncMergeEntry(
+          TestEntryBuilder(kUrl, clock_.Now()).SetRead().Build());
+
+  EXPECT_THAT(dual_model_, HasCountersEqual(/*size=*/1ul, /*unseen_size=*/1ul,
+                                            /*unread_size=*/1ul));
 }
 
 }  // namespace

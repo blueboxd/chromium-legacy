@@ -19,24 +19,25 @@ import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {DeepLinkingMixin} from '../deep_linking_mixin.js';
-import {KeyboardSettingsObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
+import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
-import {RouteObserverMixin} from '../route_observer_mixin.js';
+import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
 
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from './device_page_browser_proxy.js';
-import {FakeInputDeviceSettingsProvider} from './fake_input_device_settings_provider.js';
-import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
-import {InputDeviceSettingsProviderInterface, Keyboard} from './input_device_settings_types.js';
+import {Keyboard} from './input_device_settings_types.js';
 import {getTemplate} from './per_device_keyboard.html.js';
 
 const SettingsPerDeviceKeyboardElementBase =
-    DeepLinkingMixin(RouteObserverMixin(PolymerElement));
+    DeepLinkingMixin(RouteObserverMixin(I18nMixin(PolymerElement))) as {
+      new (): PolymerElement & I18nMixinInterface &
+          RouteObserverMixinInterface & DeepLinkingMixinInterface,
+    };
 
 export class SettingsPerDeviceKeyboardElement extends
     SettingsPerDeviceKeyboardElementBase {
@@ -50,8 +51,36 @@ export class SettingsPerDeviceKeyboardElement extends
 
   static get properties(): PolymerElementProperties {
     return {
+      /** Preferences state. Used for auto repeat settings. */
+      prefs: {
+        type: Object,
+        notify: true,
+      },
+
       keyboards: {
         type: Array,
+      },
+
+      /**
+       * Auto-repeat delays (in ms) for the corresponding slider values, from
+       * long to short. The values were chosen to provide a large range while
+       * giving several options near the defaults.
+       */
+      autoRepeatDelays: {
+        type: Array,
+        value: [2000, 1500, 1000, 500, 300, 200, 150],
+        readOnly: true,
+      },
+
+      /**
+       * Auto-repeat intervals (in ms) for the corresponding slider values, from
+       * long to short. The slider itself is labeled "rate", the inverse of
+       * interval, and goes from slow (long interval) to fast (short interval).
+       */
+      autoRepeatIntervals: {
+        type: Array,
+        value: [2000, 1000, 500, 300, 200, 100, 50, 30, 20],
+        readOnly: true,
       },
 
       /**
@@ -60,6 +89,7 @@ export class SettingsPerDeviceKeyboardElement extends
       supportedSettingIds: {
         type: Object,
         value: () => new Set<Setting>([
+          Setting.kKeyboardAutoRepeat,
           Setting.kKeyboardShortcuts,
         ]),
       },
@@ -67,16 +97,11 @@ export class SettingsPerDeviceKeyboardElement extends
   }
 
   protected keyboards: Keyboard[];
+  private prefs: chrome.settingsPrivate.PrefObject;
+  private autoRepeatDelays: number[];
+  private autoRepeatIntervals: number[];
   private browserProxy: DevicePageBrowserProxy =
       DevicePageBrowserProxyImpl.getInstance();
-  private keyboardSettingsObserverReceiver: KeyboardSettingsObserverReceiver;
-  private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface =
-      getInputDeviceSettingsProvider();
-
-  constructor() {
-    super();
-    this.observeKeyboardSettings();
-  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -93,20 +118,6 @@ export class SettingsPerDeviceKeyboardElement extends
     this.attemptDeepLink();
   }
 
-  private observeKeyboardSettings(): void {
-    if (this.inputDeviceSettingsProvider instanceof
-        FakeInputDeviceSettingsProvider) {
-      this.inputDeviceSettingsProvider.observeKeyboardSettings(this);
-      return;
-    }
-
-    this.keyboardSettingsObserverReceiver =
-        new KeyboardSettingsObserverReceiver(this);
-
-    this.inputDeviceSettingsProvider.observeKeyboardSettings(
-        this.keyboardSettingsObserverReceiver.$.bindNewPipeAndPassRemote());
-  }
-
   private onShowKeyboardShortcutViewerTap(): void {
     this.browserProxy.showKeyboardShortcutViewer();
   }
@@ -117,8 +128,8 @@ export class SettingsPerDeviceKeyboardElement extends
         /*dynamicParams=*/ undefined, /*removeSearch=*/ true);
   }
 
-  onKeyboardListUpdated(keyboards: Keyboard[]): void {
-    this.keyboards = keyboards;
+  protected hasKeyboards(): boolean {
+    return this.keyboards.length > 0;
   }
 }
 

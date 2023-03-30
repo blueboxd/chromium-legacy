@@ -15,6 +15,14 @@
     ],
     "dependencies": [ "manifest:chromeos_system_extension" ]
   },
+  "os.events": {
+    "channel": "stable",
+    "extension_types": [
+      "chromeos_system_extension"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "dependencies": [ "manifest:chromeos_system_extension" ]
+  },
   "os.telemetry": {
     "channel": "stable",
     "extension_types": [

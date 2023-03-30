@@ -6,15 +6,30 @@
 #define ASH_CURTAIN_REMOTE_MAINTENANCE_CURTAIN_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/views/layout/flex_layout_view.h"
+#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
+#include "ui/views/view.h"
+
+namespace ash {
+class AshWebView;
+class StackLayout;
+}  // namespace ash
+
+namespace gfx {
+class Rect;
+class Size;
+}  // namespace gfx
 
 namespace ash::curtain {
+
+// ID given to the `AshWebView` that renders the WebUI part of the curtain.
+// Used by pixel tests to wait for the WebUI to render.
+// (the value is randomly chosen).
+constexpr int kRemoteMaintenanceCurtainAshWebViewId = 14569;
 
 // The root view shown as the security curtain overlay when the security curtain
 // is created by an enterprise admin through the 'start crd session' remote
 // command.
-class ASH_EXPORT RemoteMaintenanceCurtainView : public views::FlexLayoutView {
+class ASH_EXPORT RemoteMaintenanceCurtainView : public views::View {
  public:
   RemoteMaintenanceCurtainView();
   RemoteMaintenanceCurtainView(const RemoteMaintenanceCurtainView&) = delete;
@@ -22,10 +37,19 @@ class ASH_EXPORT RemoteMaintenanceCurtainView : public views::FlexLayoutView {
       delete;
   ~RemoteMaintenanceCurtainView() override;
 
-  METADATA_HEADER(RemoteMaintenanceCurtainView);
-
  private:
+  // `views::View` implementation:
+  void OnBoundsChanged(const gfx::Rect&) override;
+
+  void UpdateChildrenSize(const gfx::Size& new_size);
+
   void Initialize();
+  void AddWallpaper();
+  void AddCurtainWebView();
+
+  raw_ptr<StackLayout> layout_ = nullptr;
+  raw_ptr<AshWebView> curtain_view_ = nullptr;
+  raw_ptr<views::View> wallpaper_view_ = nullptr;
 };
 
 }  // namespace ash::curtain

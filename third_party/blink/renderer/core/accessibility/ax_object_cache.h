@@ -218,6 +218,8 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
                                    base::TimeDelta timeout,
                                    ui::AXTreeUpdate*) = 0;
 
+  virtual void MarkDocumentDirty() = 0;
+
   virtual void MarkElementDirty(const Node*) = 0;
 
   virtual void MarkAllImageAXObjectsDirty() = 0;
@@ -242,6 +244,10 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
       bool& had_end_of_test_event,
       bool& had_load_complete_messages,
       bool& need_to_send_location_changes) = 0;
+
+  // Returns a vector of the images found in |updates|.
+  virtual void GetImagesToAnnotate(ui::AXTreeUpdate& updates,
+                                   std::vector<ui::AXNodeData*>&) = 0;
 
   virtual void ClearDirtyObjectsAndPendingEvents() = 0;
 

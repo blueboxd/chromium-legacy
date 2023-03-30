@@ -247,6 +247,7 @@ source_set("policy_specific_browser_tests") {
       "test/task_manager_end_process_enabled_browsertest.cc",
       "test/web_rtc_event_log_collection_allowed_policy_browsertest.cc",
       "test/web_rtc_local_ips_allowed_urls_policy_browsertest.cc",
+      "test/web_rtc_text_log_collection_allowed_policy_browsertest.cc",
       "test/window_management_policy_browsertest.cc",
     ]
 
@@ -356,6 +357,7 @@ source_set("browser_tests") {
       "test/suggested_content_policy_browsertest.cc",
       "test/system_features_policy_browsertest.cc",
       "test/unified_desktop_enabled_browsertest.cc",
+      "test/user_avatar_customization_selectors_enabled_policy_browsertest.cc",
     ]
 
     deps += [

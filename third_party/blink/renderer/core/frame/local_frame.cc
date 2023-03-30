@@ -160,6 +160,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/prerender_handle.h"
+#include "third_party/blink/renderer/core/loader/resource_cache_impl.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
@@ -320,7 +321,8 @@ void LocalFrame::Init(Frame* opener,
                       const DocumentToken& document_token,
                       std::unique_ptr<PolicyContainer> policy_container,
                       const StorageKey& storage_key,
-                      ukm::SourceId document_ukm_source_id) {
+                      ukm::SourceId document_ukm_source_id,
+                      const KURL& creator_base_url) {
   if (!policy_container)
     policy_container = PolicyContainer::CreateEmpty();
 
@@ -333,7 +335,7 @@ void LocalFrame::Init(Frame* opener,
 
   SetOpenerDoNotNotify(opener);
   loader_.Init(document_token, std::move(policy_container), storage_key,
-               document_ukm_source_id);
+               document_ukm_source_id, creator_base_url);
 }
 
 void LocalFrame::SetView(LocalFrameView* view) {
@@ -430,6 +432,7 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(background_color_paint_image_generator_);
   visitor->Trace(box_shadow_paint_image_generator_);
   visitor->Trace(clip_path_paint_image_generator_);
+  visitor->Trace(resource_cache_);
 #if !BUILDFLAG(IS_ANDROID)
   visitor->Trace(window_controls_overlay_changed_delegate_);
 #endif
@@ -1029,11 +1032,10 @@ void LocalFrame::SetIsInert(bool inert) {
   }
 
   // Nodes all over the accessibility tree can change inertness which means they
-  // must be added or removed from the tree. The most foolproof way is to clear
-  // the entire tree and rebuild it, though a more clever way is probably
-  // possible.
-  if (Document* document = GetDocument())
-    document->ClearAXObjectCache();
+  // must be added or removed from the tree.
+  if (GetDocument()) {
+    GetDocument()->RefreshAccessibilityTree();
+  }
 }
 
 void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
@@ -1576,8 +1578,9 @@ bool LocalFrame::ShouldThrottleRendering() const {
 }
 
 void LocalFrame::PortalStateChanged() {
-  if (Document* document = GetDocument())
-    document->ClearAXObjectCache();
+  if (GetDocument()) {
+    GetDocument()->RefreshAccessibilityTree();
+  }
 
   if (IsOutermostMainFrame()) {
     intersection_state_.occlusion_state =
@@ -2426,6 +2429,13 @@ void LocalFrame::OnTaskCompleted(base::TimeTicks start_time,
                                     desired_execution_time, this);
   }
 }
+
+void LocalFrame::MainFrameInteractive() {
+  if (Page* page = GetPage()) {
+    page->GetV8CompileHints().GenerateData();
+  }
+}
+
 mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {
   return mojo_handler_->ReportingService();
 }
@@ -3479,6 +3489,17 @@ void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
       return;
     }
   }
+}
+
+void LocalFrame::SetResourceCacheImpl(ResourceCacheImpl* resource_cache) {
+  DCHECK(!resource_cache_);
+  resource_cache_ = resource_cache;
+}
+
+void LocalFrame::SetResourceCacheRemote(
+    mojo::PendingRemote<mojom::blink::ResourceCache> remote) {
+  CHECK(GetDocument());
+  GetDocument()->Fetcher()->SetResourceCache(std::move(remote));
 }
 
 }  // namespace blink

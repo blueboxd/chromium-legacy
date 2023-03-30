@@ -49,11 +49,12 @@ class TestRenderFrameHostCreationObserver : public WebContentsObserver {
 
   // WebContentsObserver implementation.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
   RenderFrameHost* last_created_frame() const { return last_created_frame_; }
 
  private:
-  raw_ptr<RenderFrameHost> last_created_frame_;
+  raw_ptr<RenderFrameHost> last_created_frame_ = nullptr;
 };
 
 class TestRenderFrameHost : public RenderFrameHostImpl,
@@ -85,6 +86,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderViewHost* GetRenderViewHost() const override;
   TestPage& GetPage() override;
   MockRenderProcessHost* GetProcess() const override;
+  MockAgentSchedulingGroupHost& GetAgentSchedulingGroup() override;
   TestRenderWidgetHost* GetRenderWidgetHost() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
@@ -113,9 +115,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   const std::vector<std::string>& GetConsoleMessages() override;
   int GetHeavyAdIssueCount(HeavyAdIssueType type) override;
   void SimulateManifestURLUpdate(const GURL& manifest_url) override;
-  TestRenderFrameHost* AppendFencedFrame(
-      blink::mojom::FencedFrameMode mode =
-          blink::mojom::FencedFrameMode::kDefault) override;
+  TestRenderFrameHost* AppendFencedFrame() override;
   void CreateWebUsbServiceForTesting(
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) override;
 
@@ -275,6 +275,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
           prefetch_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           topics_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          keep_alive_loader_factory,
       const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
       blink::mojom::PolicyContainerPtr policy_container,
       const blink::DocumentToken& document_token,

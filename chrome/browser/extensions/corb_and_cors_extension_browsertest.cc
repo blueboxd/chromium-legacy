@@ -92,19 +92,16 @@ constexpr char kOriginTrialPublicKeyForTesting[] =
 
 std::string CreateFetchScript(
     const GURL& resource,
-    absl::optional<base::Value> request_init = absl::nullopt) {
-  CHECK(request_init == absl::nullopt || request_init->is_dict());
-
+    absl::optional<base::Value::Dict> request_init = absl::nullopt) {
   const char kFetchScriptTemplate[] = R"(
     fetch($1, $2)
       .then(response => response.text())
       .then(text => domAutomationController.send(text))
       .catch(err => domAutomationController.send('error: ' + err));
   )";
-  return content::JsReplace(kFetchScriptTemplate, resource,
-                            request_init
-                                ? std::move(*request_init)
-                                : base::Value(base::Value::Type::DICT));
+  return content::JsReplace(
+      kFetchScriptTemplate, resource,
+      request_init ? std::move(*request_init) : base::Value::Dict());
 }
 
 std::string PopString(content::DOMMessageQueue* message_queue) {
@@ -380,27 +377,26 @@ class CorbAndCorsExtensionBrowserTest : public CorbAndCorsExtensionTestBase {
 
   bool RegisterServiceWorkerForExtension(
       const std::string& service_worker_script) {
-    const char kServiceWorkerPath[] = "service_worker.js";
+    static constexpr char kServiceWorkerPath[] = "service_worker.js";
     dir_.WriteFile(base::FilePath::FromASCII(kServiceWorkerPath).value(),
                    service_worker_script);
 
-    const char kRegistrationScript[] = R"(
+    static constexpr char kRegistrationScript[] = R"(
         navigator.serviceWorker.register($1).then(function() {
           // Wait until the service worker is active.
           return navigator.serviceWorker.ready;
         }).then(function(r) {
-          window.domAutomationController.send('SUCCESS');
+          chrome.test.sendScriptResult('SUCCESS');
         }).catch(function(err) {
-          window.domAutomationController.send('ERROR: ' + err.message);
+          chrome.test.sendScriptResult('ERROR: ' + err.message);
         }); )";
     std::string registration_script =
         content::JsReplace(kRegistrationScript, kServiceWorkerPath);
 
-    std::string result =
+    base::Value result =
         ExecuteScriptInBackgroundPage(extension_->id(), registration_script);
     if (result != "SUCCESS") {
       ADD_FAILURE() << "Failed to register the service worker: " << result;
-      return false;
     }
     return !::testing::Test::HasFailure();
   }
@@ -1319,8 +1315,8 @@ IN_PROC_BROWSER_TEST_F(
   {
     content::DOMMessageQueue message_queue(active_web_contents());
 
-    base::Value request_init(base::Value::Type::DICT);
-    request_init.SetStringPath("trustToken.type", "token-redemption");
+    base::Value::Dict request_init;
+    request_init.SetByDottedPath("trustToken.type", "token-redemption");
 
     EXPECT_TRUE(ExecuteContentScript(
         active_web_contents(),
@@ -1343,8 +1339,8 @@ IN_PROC_BROWSER_TEST_F(
   {
     content::DOMMessageQueue message_queue(active_web_contents());
 
-    base::Value request_init(base::Value::Type::DICT);
-    request_init.SetStringPath("trustToken.type", "token-redemption");
+    base::Value::Dict request_init;
+    request_init.SetByDottedPath("trustToken.type", "token-redemption");
 
     EXPECT_TRUE(ExecuteContentScript(
         active_web_contents(),
@@ -1529,8 +1525,8 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
   // Performs a cross-origin fetch from the background page in "no-cors" mode.
   GURL cross_site_resource(
       embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
-  base::Value request_init(base::Value::Type::DICT);
-  request_init.SetStringPath("mode", "no-cors");
+  base::Value::Dict request_init;
+  request_init.Set("mode", "no-cors");
   std::string script =
       CreateFetchScript(cross_site_resource, std::move(request_init));
   content::WebContents* background_web_contents =
@@ -1658,9 +1654,9 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
     GURL cross_site_resource2(
         embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
 
-    base::Value request_init(base::Value::Type::DICT);
-    request_init.SetStringPath("method", "GET");
-    request_init.SetStringPath("mode", "no-cors");
+    base::Value::Dict request_init;
+    request_init.Set("method", "GET");
+    request_init.Set("mode", "no-cors");
 
     content::WebContents* background_web_contents =
         ProcessManager::Get(browser()->profile())

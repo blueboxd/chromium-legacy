@@ -37,7 +37,7 @@ using HPRTLookupRequestCallback =
     base::OnceCallback<void(std::unique_ptr<V5::SearchHashesRequest>)>;
 
 using HPRTLookupResponseCallback =
-    base::OnceCallback<void(bool, absl::optional<SBThreatType>)>;
+    base::OnceCallback<void(bool, absl::optional<SBThreatType>, SBThreatType)>;
 
 class OhttpKeyService;
 class VerdictCacheManager;
@@ -86,7 +86,13 @@ class HashRealTimeService : public KeyedService {
 
  private:
   friend class HashRealTimeServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest, TestLookupFailure_Error);
+  FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest, TestLookupFailure_NetError);
+  FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
+                           TestLookupFailure_NetErrorHttpCodeFailure);
+  FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
+                           TestLookupFailure_OuterResponseCodeError);
+  FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
+                           TestLookupFailure_InnerResponseCodeError);
   FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
                            TestLookupFailure_ParseResponse);
   FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
@@ -152,12 +158,13 @@ class HashRealTimeService : public KeyedService {
       base::TimeTicks request_start_time,
       scoped_refptr<base::SequencedTaskRunner> response_callback_task_runner,
       HPRTLookupResponseCallback response_callback,
+      SBThreatType locally_cached_results_threat_type,
       absl::optional<std::string> key);
 
   // Callback for requests sent via OHTTP. Most parameters are used by
   // |OnURLLoaderComplete|, see the description above |OnURLLoaderComplete| for
-  // details. |response_body| and |net_error| are returned from the OHTTP
-  // client.
+  // details. |response_body|, |net_error| and |response_code| are returned from
+  // the OHTTP client.
   void OnOhttpComplete(
       const GURL& url,
       const std::vector<std::string>& hash_prefixes_in_request,
@@ -165,8 +172,10 @@ class HashRealTimeService : public KeyedService {
       base::TimeTicks request_start_time,
       scoped_refptr<base::SequencedTaskRunner> response_callback_task_runner,
       HPRTLookupResponseCallback response_callback,
+      SBThreatType locally_cached_results_threat_type,
       const absl::optional<std::string>& response_body,
-      int net_error);
+      int net_error,
+      int response_code);
 
   // Callback for requests sent directly to the Safe Browsing server. Most
   // parameters are used by |OnURLLoaderComplete|, see the description above
@@ -181,6 +190,7 @@ class HashRealTimeService : public KeyedService {
       base::TimeTicks request_start_time,
       scoped_refptr<base::SequencedTaskRunner> response_callback_task_runner,
       HPRTLookupResponseCallback response_callback,
+      SBThreatType locally_cached_results_threat_type,
       std::unique_ptr<std::string> response_body);
 
   // Called when the response from the Safe Browsing V5 remote endpoint is
@@ -200,6 +210,8 @@ class HashRealTimeService : public KeyedService {
   //  - |response_callback_task_runner| is the callback the original caller
   //    passed through that will be called when the method completes.
   //  - |response_callback| is the callback the original caller passed through.
+  //  - |locally_cached_results_threat_type| is the threat type based on locally
+  //    cached results only. This is only used for logging purposes.
   //  - |response_body| is the unparsed response from the server.
   //  - |net_error| is the net error code from the server.
   //  - |response_code| is the HTTP status code from the server.
@@ -210,6 +222,7 @@ class HashRealTimeService : public KeyedService {
       base::TimeTicks request_start_time,
       scoped_refptr<base::SequencedTaskRunner> response_callback_task_runner,
       HPRTLookupResponseCallback response_callback,
+      SBThreatType locally_cached_results_threat_type,
       std::unique_ptr<std::string> response_body,
       int net_error,
       int response_code);
@@ -217,10 +230,14 @@ class HashRealTimeService : public KeyedService {
   // Determines the most severe threat type based on |result_full_hashes|, which
   // contains the merged caching and server response results. The |url| is
   // required in order to filter down |result_full_hashes| to ones that match
-  // the |url| full hashes.
+  // the |url| full hashes. |log_threat_info_size| determines whether to log
+  // SafeBrowsing.HPRT.ThreatInfoSize during the method call.
   static SBThreatType DetermineSBThreatType(
       const GURL& url,
-      const std::vector<V5::FullHash>& result_full_hashes);
+      const std::vector<V5::FullHash>& result_full_hashes,
+      // TODO(crbug.com/1410253): Deprecate this once the experiment is
+      // complete.
+      bool log_threat_info_size);
 
   // Returns a number representing the severity of the threat type. The lower
   // the number, the more severe it is. Severity is used to narrow down to a

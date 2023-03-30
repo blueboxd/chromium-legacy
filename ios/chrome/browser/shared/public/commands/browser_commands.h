@@ -8,8 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
-
 @class ReadingListAddCommand;
 
 // Protocol for commands that will generally be handled by the "current tab",
@@ -20,11 +18,8 @@
 // TODO(crbug.com/1272540): Remove this command.
 - (void)addToReadingList:(ReadingListAddCommand*)command;
 
-// Preloads voice search on the current BVC.
-- (void)preloadVoiceSearch;
-
-// Prepares the browser to display a popup menu.
-- (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type;
+// Prepares the browser to display the overflow menu.
+- (void)prepareForOverflowMenuPresentation;
 
 @end
 

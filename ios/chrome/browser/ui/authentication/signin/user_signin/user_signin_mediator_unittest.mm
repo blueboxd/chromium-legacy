@@ -6,9 +6,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/feature_list.h"
 #import "base/functional/callback_helpers.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/consent_auditor/fake_consent_auditor.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/sync/test/mock_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
@@ -128,7 +130,7 @@ class UserSigninMediatorTest : public PlatformTest {
           NSLog(@" signInIdentity ");
           authentication_service()->SignIn(identity_);
         });
-    if (postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC) {
+    if (postSignInAction == PostSignInAction::kCommitSync) {
       OCMExpect(
           [performer_mock_
               shouldHandleMergeCaseForIdentity:identity_
@@ -218,9 +220,14 @@ class UserSigninMediatorTest : public PlatformTest {
   // then the consent is given. The list is ordered according to the position
   // on the screen.
   const std::vector<int> ExpectedConsentStringIds() const {
+    const int sync_dialog_title =
+        base::FeatureList::IsEnabled(
+            password_manager::features::kEnablePasswordsAccountStorage)
+            ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE_WITHOUT_PASSWORDS
+            : IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE;
     return {
         IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE,
-        IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE,
+        sync_dialog_title,
         IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE,
         IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS,
     };
@@ -286,8 +293,8 @@ class UserSigninMediatorTest : public PlatformTest {
 
 // Tests a successful authentication for a given identity.
 TEST_F(UserSigninMediatorTest, AuthenticateWithIdentitySuccess) {
-  CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC);
-  SetPerformerSigninExpectations(POST_SIGNIN_ACTION_COMMIT_SYNC);
+  CreateAuthenticationFlow(PostSignInAction::kCommitSync);
+  SetPerformerSigninExpectations(PostSignInAction::kCommitSync);
 
   // Retrieving coordinator data for the mediator delegate.
   OCMExpect(
@@ -314,8 +321,8 @@ TEST_F(UserSigninMediatorTest, AuthenticateWithIdentitySuccess) {
 
 // Tests authenticating the identity when the settings link has been tapped.
 TEST_F(UserSigninMediatorTest, AuthenticateWithSettingsLinkTapped) {
-  CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC);
-  SetPerformerSigninExpectations(POST_SIGNIN_ACTION_COMMIT_SYNC);
+  CreateAuthenticationFlow(PostSignInAction::kCommitSync);
+  SetPerformerSigninExpectations(PostSignInAction::kCommitSync);
 
   OCMExpect(
       [mediator_delegate_mock_ userSigninMediatorGetSettingsLinkWasTapped])
@@ -336,7 +343,7 @@ TEST_F(UserSigninMediatorTest, AuthenticateWithSettingsLinkTapped) {
 
 // Tests authentication failure for a given identity.
 TEST_F(UserSigninMediatorTest, AuthenticateWithIdentityError) {
-  CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC);
+  CreateAuthenticationFlow(PostSignInAction::kCommitSync);
   SetPerformerFailureExpectations();
 
   OCMExpect(
@@ -410,7 +417,7 @@ TEST_F(UserSigninMediatorTest, CancelAndDismissAuthenticationNotInProgress) {
 // authentication is in progress.
 TEST_F(UserSigninMediatorTest,
        CancelAndDismissAuthenticationInProgressWithAnimation) {
-  CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC);
+  CreateAuthenticationFlow(PostSignInAction::kCommitSync);
   SetPerformerCancelAndDismissExpectations(/*animated=*/YES);
 
   OCMExpect(
@@ -439,7 +446,7 @@ TEST_F(UserSigninMediatorTest,
 // authentication is in progress.
 TEST_F(UserSigninMediatorTest,
        CancelAndDismissAuthenticationInProgressWithoutAnimation) {
-  CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC);
+  CreateAuthenticationFlow(PostSignInAction::kCommitSync);
   SetPerformerCancelAndDismissExpectations(/*animated=*/NO);
 
   OCMExpect(
@@ -467,8 +474,8 @@ TEST_F(UserSigninMediatorTest,
 // Tests a user sign-in operation cancel and dismiss without animation when
 // authentication is in progress.
 TEST_F(UserSigninMediatorTest, CancelSyncAndStaySignin) {
-  CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC);
-  SetPerformerSigninExpectations(POST_SIGNIN_ACTION_COMMIT_SYNC);
+  CreateAuthenticationFlow(PostSignInAction::kCommitSync);
+  SetPerformerSigninExpectations(PostSignInAction::kCommitSync);
 
   OCMExpect(
       [mediator_delegate_mock_ userSigninMediatorGetSettingsLinkWasTapped])
@@ -511,9 +518,9 @@ TEST_F(UserSigninMediatorTest, OpenSettingsLinkWithDifferentIdentityAndCancel) {
   authentication_service()->SignIn(identity2);
 
   // Opens the settings link with identity 1.
-  CreateAuthenticationFlow(POST_SIGNIN_ACTION_NONE);
+  CreateAuthenticationFlow(PostSignInAction::kNone);
   SetPerformerSignoutExpectations();
-  SetPerformerSigninExpectations(POST_SIGNIN_ACTION_NONE);
+  SetPerformerSigninExpectations(PostSignInAction::kNone);
   OCMExpect(
       [mediator_delegate_mock_ userSigninMediatorGetSettingsLinkWasTapped])
       .andReturn(YES);
@@ -563,9 +570,9 @@ TEST_F(UserSigninMediatorTest,
   authentication_service()->SignIn(identity2);
 
   // Opens the settings link with identity 1.
-  CreateAuthenticationFlow(POST_SIGNIN_ACTION_NONE);
+  CreateAuthenticationFlow(PostSignInAction::kNone);
   SetPerformerSignoutExpectations();
-  SetPerformerSigninExpectations(POST_SIGNIN_ACTION_NONE);
+  SetPerformerSigninExpectations(PostSignInAction::kNone);
 
   OCMExpect(
       [mediator_delegate_mock_ userSigninMediatorGetSettingsLinkWasTapped])

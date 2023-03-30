@@ -9,6 +9,7 @@
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "ui/views/view.h"
 
@@ -18,6 +19,7 @@ class Label;
 
 namespace ash {
 
+class AppListToastView;
 class AssistantOnboardingView;
 class AssistantViewDelegate;
 
@@ -35,7 +37,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantZeroStateView
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void OnThemeChanged() override;
 
   // AssistantController:
   void OnAssistantControllerDestroying() override;
@@ -50,6 +51,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantZeroStateView
  private:
   void InitLayout();
   void UpdateLayout();
+  void OnLearnMoreButtonPressed();
 
   // Owned by AssistantController.
   AssistantViewDelegate* const delegate_;
@@ -57,6 +59,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantZeroStateView
   // Owned by view hierarchy;
   AssistantOnboardingView* onboarding_view_ = nullptr;
   views::Label* greeting_label_ = nullptr;
+  base::raw_ptr<views::View> spacer_ = nullptr;
+  base::raw_ptr<AppListToastView> learn_more_toast_ = nullptr;
 
   base::ScopedObservation<AssistantController, AssistantControllerObserver>
       assistant_controller_observation_{this};

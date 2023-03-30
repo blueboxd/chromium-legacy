@@ -546,7 +546,6 @@
           'expiration': 18000,
           'hard_timeout': 14400,
         },
-        'experiment_percentage': 100,
         'merge': {
           'args': [
             '--verbose',
@@ -848,8 +847,6 @@
           # https://github.com/intel/libva/blob/master/va/va_fool.c#L47
           '--env-var', 'LIBVA_DRIVERS_PATH', './',
           '--env-var', 'LIBVA_DRIVER_NAME', 'libfake',
-          '--env-var', 'LIBVA_FOOL_DECODE', '1',
-          '--env-var', 'LIBVA_FOOL_POSTP', '1',
           '--gtest_filter="VaapiTest.*"',
         ],
       },
@@ -893,6 +890,88 @@
       'interactive_ui_tests': {
         'swarming': {
           'shards': 10,
+        },
+      },
+    },
+
+    'chromium_dev_android_gtests': {
+      'chrome_public_smoke_test': {},
+    },
+
+    'chromium_dev_desktop_gtests': {
+      'base_unittests': {},
+      'content_browsertests': {},
+      'content_unittests': {},
+      'interactive_ui_tests': {},
+      'net_unittests': {},
+      'unit_tests': {},
+    },
+
+    'chromium_dev_linux_gtests': {
+      'base_unittests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+        },
+      },
+      'browser_tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+          'shards': 8,
+        },
+      },
+      'content_browsertests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+          'shards': 5,
+        },
+      },
+      'content_unittests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '2',
+            },
+          ],
+        },
+      },
+      'interactive_ui_tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+          'shards': 3,
+        },
+      },
+      'net_unittests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+        },
+      },
+      'unit_tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '2',
+            },
+          ],
         },
       },
     },
@@ -1436,88 +1515,6 @@
       },
     },
 
-    'chromium_swarm_android_gtests': {
-      'base_unittests': {},
-    },
-
-    'chromium_swarm_desktop_gtests': {
-      'base_unittests': {},
-      'content_browsertests': {},
-      'content_unittests': {},
-      'interactive_ui_tests': {},
-      'net_unittests': {},
-      'unit_tests': {},
-    },
-
-    'chromium_swarm_linux_gtests': {
-      'base_unittests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-        },
-      },
-      'browser_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-          'shards': 8,
-        },
-      },
-      'content_browsertests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-          'shards': 5,
-        },
-      },
-      'content_unittests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '2',
-            },
-          ],
-        },
-      },
-      'interactive_ui_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-          'shards': 3,
-        },
-      },
-      'net_unittests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-        },
-      },
-      'unit_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '2',
-            },
-          ],
-        },
-      },
-    },
-
     # On some bots we don't have capacity to run all standard tests (for example
     # Android Pie), however there are tracing integration tests we want to
     # ensure are still working.
@@ -1825,228 +1822,6 @@
           'pie_fleet',
           'walleye',
         ],
-      },
-    },
-
-    'dangling_pointer_detection_chromium_web_tests_and_wpt_webdriver_isolated_scripts': {
-      'blink_web_tests': {
-        # layout test failures are retried 3 times when '--test-list' is not
-        # passed, but 0 times when '--test-list' is passed. We want to always
-        # retry 3 times, so we explicitly specify it.
-        'args': [
-          '--num-retries=3',
-        ],
-        'isolate_name': 'blink_web_tests',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'mixins': [
-          'blink_tests_write_run_histories',
-           # TODO(crbug.com/1327314): Enable for blink web tests.
-          'disable_check_flakiness_web_tests',
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'blink_wpt_tests': {
-        # layout test failures are retried 3 times when '--test-list' is not
-        # passed, but 0 times when '--test-list' is passed. We want to always
-        # retry 3 times, so we explicitly specify it.
-        'args': [
-          '--num-retries=3',
-          '--step-name=blink-wpt-tests',
-        ],
-        'isolate_name': 'blink_wpt_tests',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'mixins': [
-          'blink_tests_write_run_histories',
-          # TODO(crbug.com/1327314): Enable for blink web tests.
-          'disable_check_flakiness_web_tests',
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 7,
-        },
-      },
-      'dangling_pointer_detection_blink_web_tests': {
-        # layout test failures are retried 3 times when '--test-list' is not
-        # passed, but 0 times when '--test-list' is passed. We want to always
-        # retry 3 times, so we explicitly specify it.
-        'args': [
-          '--additional-driver-flag=--enable-features=PartitionAllocDanglingPtr:mode/crash',
-          '--num-retries=3',
-        ],
-        'isolate_name': 'blink_web_tests',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'mixins': [
-          'blink_tests_write_run_histories',
-           # TODO(crbug.com/1327314): Enable for blink web tests.
-          'disable_check_flakiness_web_tests',
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'dangling_pointer_detection_blink_wpt_tests': {
-        # layout test failures are retried 3 times when '--test-list' is not
-        # passed, but 0 times when '--test-list' is passed. We want to always
-        # retry 3 times, so we explicitly specify it.
-        'args': [
-          '--additional-driver-flag=--enable-features=PartitionAllocDanglingPtr:mode/crash',
-          '--num-retries=3',
-          '--step-name=blink-wpt-tests',
-        ],
-        'isolate_name': 'blink_wpt_tests',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'mixins': [
-          'blink_tests_write_run_histories',
-          # TODO(crbug.com/1327314): Enable for blink web tests.
-          'disable_check_flakiness_web_tests',
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 7,
-        },
-      },
-    },
-
-    'dangling_pointer_detection_tests': {
-      'dangling_pointer_detection_base_unittests': {
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'base_unittests',
-        'swarming': {
-          'shards': 8,
-        },
-      },
-      'dangling_pointer_detection_blink_common_unittests': {
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'blink_common_unittests',
-      },
-      'dangling_pointer_detection_blink_platform_unittests': {
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'blink_platform_unittests',
-      },
-      'dangling_pointer_detection_cast_unittests': {
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'cast_unittests',
-      },
-      'dangling_pointer_detection_cc_unittests': {
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'cc_unittests',
-      },
-      'dangling_pointer_detection_components_browsertests': {
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'components_browsertests',
-      },
-      'dangling_pointer_detection_components_unittests': {
-        'android_swarming': {
-          'shards': 6,
-        },
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'components_unittests',
-      },
-      'dangling_pointer_detection_content_browsertests': {
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-          # On non-Android platforms, this suite is dominated by crashes
-          # caught by DPD. This typically ups the per-shard number of
-          # tests from 1.3k to well over 2k and chokes all shards into
-          # timeout. Unlike regular flakes, dangling pointers should not
-          # be retried away; so, at the expense of regular flakes, we
-          # zero the number of retries.
-          '--num-retries=0',
-        ],
-        'test': 'content_browsertests',
-        'android_swarming': {
-          'shards': 15,
-        },
-        'swarming': {
-          'shards': 8,
-        },
-      },
-      'dangling_pointer_detection_content_unittests': {
-        'android_swarming': {
-          'shards': 3,
-        },
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'content_unittests',
-      },
-      'dangling_pointer_detection_unit_tests': {
-        'android_swarming': {
-          'shards': 2,
-        },
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'unit_tests',
-      },
-      'dangling_pointer_detection_webkit_unit_tests': {
-        'android_swarming': {
-          'shards': 6,
-        },
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'blink_unittests',
-      },
-      'dangling_pointer_detection_wtf_unittests': {
-        'args': [
-          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
-        ],
-        'test': 'wtf_unittests',
       },
     },
 
@@ -2599,6 +2374,24 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter',
         ],
       },
+    },
+
+    # This is a set of selected tests to test the test facility only. The
+    # principle of the selection includes time cost, scenario coverage,
+    # stability, etc; and it's subject to change. In theory, it should only be
+    # used by the EngProd team to verify a new test facility setup.
+    'fuchsia_facility_gtests': {
+      'aura_unittests': {},
+      'blink_common_unittests': {},
+      'courgette_unittests': {},
+      'crypto_unittests': {},
+      'filesystem_service_unittests': {},
+      'web_engine_integration_tests': {
+        'args': [
+          '--test-arg=--vmodule=test_navigation_listener=1',
+        ],
+      },
+      'web_engine_unittests': {},
     },
 
     'fuchsia_sizes_tests': {
@@ -3970,71 +3763,21 @@
     },
 
     'ios_blink_tests': {
-      'base_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'blink_platform_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'blink_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'cc_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'content_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'device_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'media_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'midi_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'mojo_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'skia_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'storage_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'viz_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
-      'wtf_unittests': {
-        'args': [
-          '--single-process-tests',
-        ],
-      },
+      'base_unittests': {},
+      'blink_platform_unittests': {},
+      'blink_unittests': {},
+      'cc_unittests': {},
+      'content_unittests': {},
+      'device_unittests': {},
+      'gl_unittests': {},
+      'gpu_unittests': {},
+      'media_unittests': {},
+      'midi_unittests': {},
+      'mojo_unittests': {},
+      'skia_unittests': {},
+      'storage_unittests': {},
+      'viz_unittests': {},
+      'wtf_unittests': {},
     },
 
     'ios_clang_tests': {
@@ -4148,6 +3891,9 @@
     'js_code_coverage_browser_tests' : {
       'js_code_coverage_browser_tests': {
         'args': [],
+        'swarming': {
+          'shards': 16,
+        },
         'test': 'browser_tests',
       }
     },
@@ -4198,12 +3944,22 @@
       },
     },
 
-    # TODO(crbug.com/1204231): Re-enable vaapi_unittest.
     'lacros_device_or_vm_gtests': {
       'aura_unittests': {},
       'cc_unittests': {},
       'interactive_ui_tests': {},
       'ozone_unittests': {},
+      'vaapi_unittest': {
+        'args': [
+          '--stop-ui',
+          # Tell libva to do dummy encoding/decoding. For more info, see:
+          # https://github.com/intel/libva/blob/master/va/va_fool.c#L47
+          '--env-var', 'LIBVA_DRIVERS_PATH', './',
+          '--env-var', 'LIBVA_DRIVER_NAME', 'libfake',
+          '--gtest_filter="VaapiTest.*"',
+        ],
+	'ci_only': True, # https://crbug.com/1425489
+      },
     },
 
     'lacros_fyi_tast_tests': {
@@ -4789,6 +4545,9 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_tests.filter',
           '--test-launcher-jobs=1',
         ],
+        'swarming': {
+          'shards': 3,
+        },
         'test': 'browser_tests',
         'mixins': [
           'skia_gold_test',
@@ -4814,7 +4573,7 @@
         'args': [
           '--browser-ui-tests-verify-pixels',
           '--enable-pixel-output-in-tests',
-          '--gtest_filter=KioskPixelTest.*',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-chromeos.browser_tests.pixel_tests.filter',
         ],
         'experiment_percentage': 100,
         'test': 'browser_tests',
@@ -5081,7 +4840,6 @@
           'expiration': 18000,
           'hard_timeout': 14400,
         },
-        'experiment_percentage': 100,
         'merge': {
           'args': [
             '--verbose',
@@ -5343,6 +5101,7 @@
 
     'webengine_android_gtests': {
       'webengine_support_instrumentation_test_apk': {},
+      'weblayer_browsertests': {},
     },
 
     'webrtc_chromium_baremetal_gtests': {
@@ -5437,7 +5196,8 @@
           '--num-retries=3',
           '-t',
           'Release',
-          'external/wpt/webrtc'
+          'external/wpt/webrtc',
+          'external/wpt/webrtc-svc',
         ],
         'isolate_name': 'blink_wpt_tests',
         'merge': {
@@ -5960,7 +5720,6 @@
 
     'backuprefptr_gtests': [
       'backuprefptr_generic_gtests',
-      'dangling_pointer_detection_tests',
     ],
 
     'bfcache_android_gtests': [
@@ -6005,22 +5764,6 @@
       'desktop_chromium_isolated_scripts',
       'performance_smoke_test_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
-    ],
-
-    'chromium_linux_and_dangling_pointer_detection_gtests': [
-      'dangling_pointer_detection_tests',
-      'aura_gtests',
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'chromium_gtests_for_linux_and_chromeos_only',
-      'chromium_gtests_for_linux_and_mac_only',
-      'chromium_gtests_for_linux_only',
-      'chromium_gtests_for_win_and_linux_only',
-      'linux_flavor_specific_chromium_gtests',
-      'linux_specific_xr_gtests',
-      'non_android_and_cast_and_chromeos_chromium_gtests',
-      'non_android_chromium_gtests',
-      'vr_platform_specific_chromium_gtests',
     ],
 
     # This is meant to be a superset of 'chromium_linux_and_gl_gtests'. Any
@@ -6127,17 +5870,6 @@
       'gpu_dawn_webgpu_blink_web_tests',
     ],
 
-    'chromium_mac_and_dangling_pointer_detection_gtests': [
-      'dangling_pointer_detection_tests',
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'chromium_gtests_for_linux_and_mac_only',
-      'mac_specific_chromium_gtests',
-      'nocompile_tests',
-      'non_android_and_cast_and_chromeos_chromium_gtests',
-      'non_android_chromium_gtests',
-    ],
-
     'chromium_mac_gtests': [
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
@@ -6193,20 +5925,6 @@
     # 'chromium_win_gtests' + 'pixel_browser_tests_gtests' +
     # 'non_android_chromium_gtests_skia_gold'.
     'chromium_win10_gtests': [
-      'aura_gtests',
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'chromium_gtests_for_win_and_linux_only',
-      'non_android_and_cast_and_chromeos_chromium_gtests',
-      'non_android_chromium_gtests',
-      'non_android_chromium_gtests_skia_gold',
-      'pixel_browser_tests_gtests',
-      'vr_platform_specific_chromium_gtests',
-      'win_specific_chromium_gtests',
-    ],
-
-    'chromium_win_and_dangling_pointer_detection_gtests': [
-      'dangling_pointer_detection_tests',
       'aura_gtests',
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
@@ -6907,47 +6625,22 @@
       },
     },
 
-    'ios15_sdk_simulator_tests': {
-      'ios_common_tests': {
+    'gpu_fyi_lacros_device_release_telemetry_tests': {
+      # TODO(crbug.com/1392806): Enable more tests if bots are not busy.
+      'gpu_common_and_optional_telemetry_tests': {
         'variants': [
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_6S_14_5',
-        ],
-      },
-      'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
-        'variants': [
-          'SIM_IPHONE_7_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_X_14_5',
+          'LACROS_ASH_TOT',
         ]
       },
-      'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
+      # 'gpu_mediapipe_passthrough_telemetry_tests',
+      'gpu_passthrough_telemetry_tests': {
         'variants': [
-          'SIM_IPHONE_7_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_X_14_5',
+          'LACROS_ASH_TOT',
         ]
       },
-      'ios_screen_size_dependent_tests': {
-        'variants': [
-          'SIM_IPHONE_6S_PLUS_14_5',
-          'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_SE_1ST_GEN_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_6S_PLUS_15_5',
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_SE_1ST_GEN_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-        ],
-      },
+      # 'gpu_webcodecs_telemetry_test',
+      # 'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
+      # 'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
     },
 
     'ios16_beta_simulator_tests': {
@@ -7003,7 +6696,6 @@
         'variants': [
           'SIM_IPHONE_8_16_2',
           'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_6S_14_4',
         ],
       },
       'ios_crash_xcuitests': {
@@ -7011,7 +6703,6 @@
         'variants': [
           'SIM_IPHONE_X_16_2',
           'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_6S_14_4',
         ]
       },
       'ios_eg2_tests': {
@@ -7023,9 +6714,7 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_7_14_4',
-          'SIM_IPAD_AIR_2_14_4',
-          'SIM_IPHONE_X_14_4',
+          'SIM_IPHONE_7_15_5',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
           'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
@@ -7039,9 +6728,6 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_7_14_4',
-          'SIM_IPAD_AIR_2_14_4',
-          'SIM_IPHONE_X_14_4',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
           'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
@@ -7053,6 +6739,10 @@
           'SIM_IPHONE_SE_3RD_GEN_16_2',
           'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_6S_PLUS_15_5',
+          'SIM_IPHONE_6S_15_5',
+          'SIM_IPHONE_SE_1ST_GEN_15_5',
+          'SIM_IPAD_AIR_2_15_5',
         ],
       },
       'ios_swift_interop_xcuitests': {
@@ -7234,24 +6924,24 @@
     'ios_simulator_multi_window_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
       }
     },
@@ -7259,16 +6949,11 @@
     'ios_simulator_noncq_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_6S_14_5',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_X_14_5',
           'SIM_IPHONE_X_15_5',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
           'SIM_IPAD_PRO_3RD_GEN_16_2_T2',
@@ -7277,21 +6962,12 @@
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_6S_PLUS_14_5',
-          'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPHONE_SE_1ST_GEN_14_5',
-          'SIM_IPAD_AIR_2_14_5',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_14_5',
-          'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_SE_1ST_GEN_14_5',
-          'SIM_IPAD_AIR_2_14_5',
           'SIM_IPHONE_6S_PLUS_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_SE_3RD_GEN_16_2',
@@ -7302,7 +6978,6 @@
         'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_7_15_5',
-          'SIM_IPHONE_7_14_5',
         ]
       },
     },
@@ -7369,8 +7044,8 @@
     'lacros_amd64_generic_rel_skylab_fyi': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_OCTOPUS_FULL',
-          'CROS_EVE_FULL',
+          'CROS_OCTOPUS_PUBLIC_LKGM',
+          'CROS_EVE_PUBLIC_LKGM',
         ]
       },
     },
@@ -7378,7 +7053,7 @@
     'lacros_arm64_generic_rel_skylab': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_KEVIN_PUBLIC',
+          'CROS_KEVIN_PUBLIC_LKGM',
         ]
       },
     },
@@ -7386,9 +7061,9 @@
     'lacros_arm64_generic_rel_skylab_fyi': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_JACUZZI_PUBLIC',
-          'CROS_JACUZZI_CQ_PUBLIC',
-          'CROS_KEVIN_PUBLIC',
+          'CROS_JACUZZI_PUBLIC_LKGM',
+          'CROS_JACUZZI_CQ_PUBLIC_LKGM',
+          'CROS_KEVIN_PUBLIC_LKGM',
         ]
       },
     },
@@ -7396,7 +7071,7 @@
     'lacros_arm_generic_rel_skylab': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_JACUZZI_PUBLIC',
+          'CROS_JACUZZI_PUBLIC_LKGM',
         ]
       },
     },
@@ -7404,8 +7079,8 @@
     'lacros_arm_generic_rel_skylab_fyi': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_JACUZZI_PUBLIC',
-          'CROS_KEVIN_PUBLIC',
+          'CROS_JACUZZI_PUBLIC_LKGM',
+          'CROS_KEVIN_PUBLIC_LKGM',
         ]
       },
     },

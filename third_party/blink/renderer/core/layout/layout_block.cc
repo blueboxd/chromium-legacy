@@ -49,19 +49,18 @@
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
-#include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -330,7 +329,7 @@ void LayoutBlock::AddChildBeforeDescendant(LayoutObject* new_child,
     if (new_child->IsInline() ||
         (new_child->IsFloatingOrOutOfFlowPositioned() &&
          (StyleRef().IsDeprecatedFlexboxUsingFlexLayout() ||
-          (!IsFlexibleBoxIncludingNG() && !IsLayoutGridIncludingNG()))) ||
+          (!IsFlexibleBoxIncludingNG() && !IsLayoutNGGrid()))) ||
         before_descendant->Parent()->SlowFirstChild() != before_descendant) {
       before_descendant_container->AddChild(new_child, before_descendant);
     } else {
@@ -374,7 +373,7 @@ void LayoutBlock::AddChild(LayoutObject* new_child,
   if (new_child->IsInline() ||
       (new_child->IsFloatingOrOutOfFlowPositioned() &&
        (StyleRef().IsDeprecatedFlexboxUsingFlexLayout() ||
-        (!IsFlexibleBoxIncludingNG() && !IsLayoutGridIncludingNG())))) {
+        (!IsFlexibleBoxIncludingNG() && !IsLayoutNGGrid())))) {
     // If we're inserting an inline child but all of our children are blocks,
     // then we have to make sure it is put into an anomyous block box. We try to
     // use an existing anonymous box if possible, otherwise a new one is created
@@ -417,11 +416,6 @@ void LayoutBlock::RemoveLeftoverAnonymousBlock(LayoutBlock* child) {
   // Remove all the information in the flow thread associated with the leftover
   // anonymous block.
   child->RemoveFromLayoutFlowThread();
-
-  // LayoutGrid keeps track of its children, we must notify it about changes in
-  // the tree.
-  if (child->Parent()->IsLayoutGrid())
-    To<LayoutGrid>(child->Parent())->DirtyGrid();
 
   // Now remove the leftover anonymous block from the tree, and destroy it.
   // We'll rip it out manually from the tree before destroying it, because we
@@ -968,30 +962,6 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
   if (positioned_object->NeedsLayout())
     positioned_object->UpdateLayout();
 
-  LayoutObject* parent = positioned_object->Parent();
-  bool layout_changed = false;
-  if ((parent->IsLayoutNGFlexibleBox() &&
-       !positioned_object->IsLayoutNGObject() &&
-       LayoutFlexibleBox::SetStaticPositionForChildInFlexNGContainer(
-           *positioned_object, To<LayoutBlock>(parent))) ||
-      (parent->IsFlexibleBox() &&
-       To<LayoutFlexibleBox>(parent)->SetStaticPositionForPositionedLayout(
-           *positioned_object))) {
-    // The static position of an abspos child of a flexbox depends on its size
-    // (for example, they can be centered). So we may have to reposition the
-    // item after layout.
-    // TODO(cbiesinger): We could probably avoid a layout here and just
-    // reposition?
-    positioned_object->ForceLayout();
-    layout_changed = true;
-  }
-
-  // Lay out again if our estimate was wrong.
-  if (!layout_changed && needs_block_direction_location_set_before_layout &&
-      logical_top_estimate != LogicalTopForChild(*positioned_object)) {
-    positioned_object->ForceLayout();
-  }
-
   if (is_paginated)
     UpdateFragmentationInfoForChild(*positioned_object);
 }
@@ -1077,7 +1047,7 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
 
 bool LayoutBlock::IsAnonymousNGFieldsetContentWrapper() const {
   NOT_DESTROYED();
-  return Parent() && Parent()->IsLayoutNGFieldset() && IsAnonymous();
+  return Parent() && Parent()->IsFieldset() && IsAnonymous();
 }
 
 void LayoutBlock::InvalidatePaint(
@@ -1553,8 +1523,9 @@ MinMaxSizes LayoutBlock::ComputeIntrinsicLogicalWidths() const {
     if (default_inline_size != kIndefiniteSize) {
       sizes.max_size += default_inline_size;
       // <textarea>'s intrinsic size should ignore scrollbar existence.
-      if (IsTextAreaIncludingNG())
+      if (IsTextArea()) {
         sizes -= scrollbar_thickness;
+      }
       if (!StyleRef().LogicalWidth().IsPercentOrCalc())
         sizes.min_size = sizes.max_size;
       return sizes;
@@ -1582,16 +1553,6 @@ MinMaxSizes LayoutBlock::ComputeIntrinsicLogicalWidths() const {
   if (UNLIKELY(IsListBox(this) && StyleRef().LogicalWidth().IsPercentOrCalc()))
     child_sizes.min_size = LayoutUnit();
 
-  if (IsTableCellLegacy()) {
-    Length table_cell_width =
-        To<LayoutTableCell>(this)->StyleOrColLogicalWidth();
-    if (table_cell_width.IsFixed() && table_cell_width.Value() > 0) {
-      child_sizes.max_size = std::max(
-          child_sizes.min_size, AdjustContentBoxLogicalWidthForBoxSizing(
-                                    LayoutUnit(table_cell_width.Value())));
-    }
-  }
-
   sizes += child_sizes;
   return sizes;
 }
@@ -1606,9 +1567,7 @@ MinMaxSizes LayoutBlock::PreferredLogicalWidths() const {
   // values for width.
   const ComputedStyle& style_to_use = StyleRef();
   if (!IsTableCell() && style_to_use.LogicalWidth().IsFixed() &&
-      style_to_use.LogicalWidth().Value() >= 0 &&
-      !(IsFlexItemCommon() && Parent()->StyleRef().IsDeprecatedWebkitBox() &&
-        !style_to_use.LogicalWidth().IntValue())) {
+      style_to_use.LogicalWidth().Value() >= 0) {
     sizes = AdjustBorderBoxLogicalWidthForBoxSizing(
         LayoutUnit(style_to_use.LogicalWidth().Value()));
   } else {
@@ -1893,22 +1852,6 @@ LayoutUnit LayoutBlock::BaselinePosition(
     LayoutUnit baseline_pos = (IsWritingModeRoot() && !IsRubyRun())
                                   ? LayoutUnit(-1)
                                   : InlineBlockBaseline(direction);
-
-    if (IsDeprecatedFlexibleBox()) {
-      // Historically, we did this check for all baselines. But we can't
-      // remove this code from deprecated flexbox, because it effectively
-      // breaks -webkit-line-clamp, which is used in the wild -- we would
-      // calculate the baseline as if -webkit-line-clamp wasn't used.
-      // For simplicity, we use this for all uses of deprecated flexbox.
-      LayoutUnit bottom_of_content =
-          direction == kHorizontalLine
-              ? Size().Height() - BorderBottom() - PaddingBottom() -
-                    ComputeScrollbars().bottom
-              : Size().Width() - BorderLeft() - PaddingLeft() -
-                    ComputeScrollbars().left;
-      if (baseline_pos > bottom_of_content)
-        baseline_pos = LayoutUnit(-1);
-    }
     if (baseline_pos != -1)
       return BeforeMarginInLineDirection(direction) + baseline_pos;
 
@@ -1961,8 +1904,9 @@ absl::optional<LayoutUnit> LayoutBlock::FirstLineBoxBaselineOverride() const {
 
   // Orthogonal grid items can participate in baseline alignment along column
   // axis.
-  if (IsWritingModeRoot() && !IsRubyRun() && !IsGridItem())
+  if (IsWritingModeRoot() && !IsRubyRun()) {
     return LayoutUnit(-1);
+  }
 
   return absl::nullopt;
 }
@@ -2289,14 +2233,13 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
 
   LayoutBlock* layout_block;
   if (new_display == EDisplay::kFlex) {
-    layout_block = LayoutObjectFactory::CreateFlexibleBox(parent->GetDocument(),
-                                                          *new_style, legacy);
+    layout_block =
+        MakeGarbageCollected<LayoutNGFlexibleBox>(/* element */ nullptr);
   } else if (new_display == EDisplay::kGrid) {
-    layout_block = LayoutObjectFactory::CreateGrid(parent->GetDocument(),
-                                                   *new_style, legacy);
+    layout_block = MakeGarbageCollected<LayoutNGGrid>(/* element */ nullptr);
   } else if (new_display == EDisplay::kBlockMath) {
-    layout_block = LayoutObjectFactory::CreateMath(parent->GetDocument(),
-                                                   *new_style, legacy);
+    layout_block =
+        MakeGarbageCollected<LayoutNGMathMLBlock>(/* element */ nullptr);
   } else {
     DCHECK(new_display == EDisplay::kBlock ||
            new_display == EDisplay::kFlowRoot);
@@ -2497,17 +2440,11 @@ LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
        (!style.LogicalTop().IsAuto() && !style.LogicalBottom().IsAuto()));
 
   LayoutUnit stretched_flex_height(-1);
-  if (IsFlexItem()) {
-    const auto* flex_box = To<LayoutFlexibleBox>(Parent());
-    if (flex_box->UseOverrideLogicalHeightForPerentageResolution(*this))
-      stretched_flex_height = OverrideContentLogicalHeight();
-  } else if (HasOverrideLogicalHeight() && IsOverrideLogicalHeightDefinite()) {
+  if (HasOverrideLogicalHeight() && IsOverrideLogicalHeightDefinite()) {
     stretched_flex_height = OverrideContentLogicalHeight();
   }
   if (stretched_flex_height != LayoutUnit(-1)) {
     available_height = stretched_flex_height;
-  } else if (IsGridItem() && HasOverrideLogicalHeight()) {
-    available_height = OverrideContentLogicalHeight();
   } else if (style.LogicalHeight().IsFixed()) {
     LayoutUnit content_box_height = AdjustContentBoxLogicalHeightForBoxSizing(
         style.LogicalHeight().Value());

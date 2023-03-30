@@ -220,7 +220,8 @@ TEST_F(PrerenderHostTest, MainFrameNavigationForReservedHost) {
     prerender_host_observer.WaitForDestroyed();
     EXPECT_FALSE(prerender_host_observer.was_activated());
     EXPECT_EQ(registry().FindHostByUrlForTesting(kPrerenderingUrl), nullptr);
-    ExpectFinalStatus(PrerenderFinalStatus::kCrossSiteNavigation);
+    ExpectFinalStatus(
+        PrerenderFinalStatus::kCrossSiteNavigationInMainFrameNavigation);
   }
 
   // The activation falls back to regular navigation.
@@ -258,7 +259,7 @@ TEST_F(PrerenderHostTest, ActivationAfterPageStateUpdate) {
 
   // Perform a navigation in the primary frame tree which activates the
   // prerendered page. The main expectation is that this navigation commits
-  // successfully and doesn't hit any DCHECKs.
+  // successfully and doesn't hit any CHECKs.
   contents()->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderFinalStatus::kActivated);
 

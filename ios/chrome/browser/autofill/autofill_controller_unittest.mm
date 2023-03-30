@@ -358,9 +358,10 @@ void AutofillControllerTest::SetUp() {
   accessory_mediator_ =
       [[FormInputAccessoryMediator alloc] initWithConsumer:nil
                                                    handler:nil
-                                              webStateList:NULL
-                                       personalDataManager:NULL
-                                             passwordStore:nullptr
+                                              webStateList:nullptr
+                                       personalDataManager:nullptr
+                                      profilePasswordStore:nullptr
+                                      accountPasswordStore:nullptr
                                       securityAlertHandler:nil
                                     reauthenticationModule:nil];
 
@@ -573,7 +574,7 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
           ChromeBrowserState::FromBrowserState(browser_state_.get()));
-  personal_data_manager->OnSyncServiceInitialized(nullptr);
+  personal_data_manager->SetSyncServiceForTest(nullptr);
   PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
@@ -767,7 +768,7 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
           ChromeBrowserState::FromBrowserState(browser_state_.get()));
-  personal_data_manager->OnSyncServiceInitialized(nullptr);
+  personal_data_manager->SetSyncServiceForTest(nullptr);
 
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetCreditCards().size());

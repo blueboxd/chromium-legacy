@@ -370,6 +370,10 @@ void ForEachServiceWithPrefix(
 // Deletes `service_name` system service and returns `true` on success.
 [[nodiscard]] bool DeleteService(const std::wstring& service_name);
 
+// Logs CLSID entries in HKLM and HKCU under both the 64-bit and 32-bit hives
+// for the given CLSID.
+void LogClsidEntries(REFCLSID clsid);
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_UTIL_WIN_UTIL_H_

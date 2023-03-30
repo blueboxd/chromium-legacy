@@ -10,8 +10,9 @@ import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
 import {TriggerAttestation} from './attribution.mojom-webui.js';
-import {Factory, HandlerInterface, HandlerRemote, ObserverInterface, ObserverReceiver, ReportID, SourceStatus, WebUIDebugReport, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
+import {Factory, HandlerInterface, HandlerRemote, ObserverInterface, ObserverReceiver, ReportID, SourceStatus, WebUIDebugReport, WebUIOsRegistration, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
+import {OsRegistrationResult, OsRegistrationType} from './attribution_reporting.mojom-webui.js';
 import {SourceRegistrationError} from './source_registration_error.mojom-webui.js';
 import {SourceType} from './source_type.mojom-webui.js';
 import {StoreSourceResult} from './store_source_result.mojom-webui.js';
@@ -700,6 +701,97 @@ class AggregatableAttributionReportTableModel extends
   }
 }
 
+class OsRegistration {
+  timestamp: Date;
+  registrationUrl: string;
+  topLevelOrigin: string;
+  registrationType: string;
+  debugKeyAllowed: boolean;
+  result: string;
+
+  constructor(mojo: WebUIOsRegistration) {
+    this.timestamp = new Date(mojo.time);
+    this.registrationUrl = mojo.registrationUrl.url;
+    this.topLevelOrigin = originToText(mojo.topLevelOrigin);
+    this.debugKeyAllowed = mojo.isDebugKeyAllowed;
+
+    switch (mojo.type) {
+      case OsRegistrationType.kSource:
+        this.registrationType = 'OS Source';
+        break;
+      case OsRegistrationType.kTrigger:
+        this.registrationType = 'OS Trigger';
+        break;
+      default:
+        assertNotReached();
+    }
+
+    switch (mojo.result) {
+      case OsRegistrationResult.kPassedToOs:
+        this.result = 'Passed to OS';
+        break;
+      case OsRegistrationResult.kUnsupported:
+        this.result = 'Unsupported';
+        break;
+      case OsRegistrationResult.kInvalidRegistrationUrl:
+        this.result = 'Invalid registration URL';
+        break;
+      case OsRegistrationResult.kProhibitedByBrowserPolicy:
+        this.result = 'Prohibited by browser policy';
+        break;
+      case OsRegistrationResult.kExcessiveQueueSize:
+        this.result = 'Excessive queue size';
+        break;
+      default:
+        assertNotReached();
+    }
+  }
+}
+
+class OsRegistrationTableModel extends TableModel<OsRegistration> {
+  private osRegistrations: OsRegistration[] = [];
+
+  constructor() {
+    super(
+        [
+          new DateColumn<OsRegistration>('Timestamp', (e) => e.timestamp),
+          new ValueColumn<OsRegistration, string>(
+              'Registration Type', (e) => e.registrationType),
+          new ValueColumn<OsRegistration, string>(
+              'Registration URL', (e) => e.registrationUrl),
+          new ValueColumn<OsRegistration, string>(
+              'Top-Level Origin', (e) => e.topLevelOrigin),
+          new ValueColumn<OsRegistration, boolean>(
+              'Debug Key Allowed', (e) => e.debugKeyAllowed),
+          new ValueColumn<OsRegistration, string>('Result', (e) => e.result),
+        ],
+        0,
+        'No OS Registrations',
+    );
+  }
+
+  override getRows() {
+    return this.osRegistrations;
+  }
+
+  addOsRegistration(osRegistration: OsRegistration) {
+    // Prevent the page from consuming ever more memory if the user leaves the
+    // page open for a long time.
+    if (this.osRegistrations.length >= 1000) {
+      this.osRegistrations = [];
+    }
+
+    this.osRegistrations.push(osRegistration);
+    this.notifyRowsChanged();
+  }
+
+  clear() {
+    this.osRegistrations = [];
+    this.notifyRowsChanged();
+  }
+}
+
+
 class DebugReport {
   body: string;
   url: string;
@@ -931,6 +1023,7 @@ class AttributionInternals implements ObserverInterface {
   private readonly sourceRegistrations = new SourceRegistrationTableModel();
   private readonly triggers = new TriggerTableModel();
   private readonly debugReports = new DebugReportTableModel();
+  private readonly osRegistrations = new OsRegistrationTableModel();
   private readonly eventLevelReports: EventLevelReportTableModel;
   private readonly aggregatableReports: AggregatableAttributionReportTableModel;
 
@@ -971,6 +1064,9 @@ class AttributionInternals implements ObserverInterface {
         this.debugReports,
         document.querySelector<HTMLElement>('#debug-reports-tab')!);
 
+    installUnreadIndicator(
+        this.osRegistrations, document.querySelector<HTMLElement>('#os-tab')!);
+
     document
         .querySelector<AttributionInternalsTableElement<Source>>(
             '#sourceTable')!.setModel(this.sources);
@@ -995,6 +1091,10 @@ class AttributionInternals implements ObserverInterface {
     document
         .querySelector<AttributionInternalsTableElement<DebugReport>>(
             '#debugReportTable')!.setModel(this.debugReports);
+
+    document
+        .querySelector<AttributionInternalsTableElement<OsRegistration>>(
+            '#osRegistrationTable')!.setModel(this.osRegistrations);
 
     Factory.getRemote().create(
         new ObserverReceiver(this).$.bindNewPipeAndPassRemote(),
@@ -1029,6 +1129,10 @@ class AttributionInternals implements ObserverInterface {
     this.triggers.addRegistration(new Trigger(mojo));
   }
 
+  onOsRegistration(mojo: WebUIOsRegistration) {
+    this.osRegistrations.addOsRegistration(new OsRegistration(mojo));
+  }
+
   private addSentOrDroppedReport(mojo: WebUIReport) {
     if (mojo.data.eventLevelData !== undefined) {
       this.eventLevelReports.addSentOrDroppedReport(new EventLevelReport(mojo));
@@ -1051,6 +1155,7 @@ class AttributionInternals implements ObserverInterface {
     this.eventLevelReports.clear();
     this.aggregatableReports.clear();
     this.debugReports.clear();
+    this.osRegistrations.clear();
     this.handler.clearStorage();
   }
 
@@ -1071,6 +1176,10 @@ class AttributionInternals implements ObserverInterface {
       if (!response.debugMode) {
         debugModeContent.innerText = '';
       }
+
+      const osSupport = document.querySelector<HTMLElement>('#os-support')!;
+      osSupport.innerText = response.hasOsSupport ? 'enabled' : 'disabled';
+      osSupport.classList.toggle('disabled', !response.hasOsSupport);
     });
 
     this.updateSources();

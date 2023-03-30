@@ -123,7 +123,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Launch.BrowserTab.WebAppLaunchHandlerClientMode"
-    enum="WebAppLaunchHandlerClientMode" expires_after="2023-07-02">
+    enum="WebAppLaunchHandlerClientMode" expires_after="2023-09-17">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -788,7 +788,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Install.Result" enum="BooleanSuccess"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>phillis@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -943,7 +943,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Launcher.LaunchResult"
-    enum="WebAppLauncherLaunchResult" expires_after="2023-07-02">
+    enum="WebAppLauncherLaunchResult" expires_after="2023-09-24">
   <owner>davidbienvenu@chromium.org</owner>
   <owner>jessemckenna@google.com</owner>
   <summary>
@@ -994,6 +994,41 @@ chromium-metrics-reviews@google.com.
     Recorded when Chrome is launched to open a Web App; e.g., with --app-id.
     Metric describes how the web app opened; e.g., in a standalone window or in
     a tab. Previously recorded in Launch.Modes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.OsSettingsUninstallRegistration.Result"
+    enum="BooleanSuccess" expires_after="2023-10-10">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of result of registering a PWA with the OS's app
+    management surface, which is used to offer uninstallation. This currently is
+    only implemented on Windows, and this causes the app to appear in the
+    control panel's list of installed applications. This is triggered during
+    installations or updates. Updates can occur when the app's name has been
+    changed, or when the system has determined that the user can uninstall this
+    app. For example, if this app was installed by the user and policy (so the
+    user cannot uninstall it, due to policy), but then the policy is removed.
+    The app is now uninstallable by the user, so this will be registered with
+    the OS.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.OsSettingsUninstallUnregistration.Result"
+    enum="BooleanSuccess" expires_after="2023-10-10">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of result of unregistering a PWA with the OS's app
+    management surface, which is used to offer uninstallation. This currently is
+    only implemented on Windows, and this causes the app to no longer appear in
+    the control panel's list of installed applications. This is triggered during
+    uninstallations or updates. Updates can occur when the app's name has been
+    changed, or when the system has determined that the user cannot uninstall
+    this app. For example, if this app was installed by the user (which is
+    uninstallable), but then it is force-installed by policy. The app is no
+    longer uninstallable by the user, so this will be unregistered with the OS.
   </summary>
 </histogram>
 

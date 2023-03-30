@@ -58,7 +58,6 @@
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h"
-#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
@@ -85,7 +84,7 @@
 #include "chrome/browser/ui/focus_tab_after_navigation_helper.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
-#include "chrome/browser/ui/performance_controls/tab_discard_tab_helper.h"
+#include "chrome/browser/ui/performance_controls/high_efficiency_chip_tab_helper.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_prompt_helper.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
@@ -273,8 +272,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // If already adopted, nothing to be done.
   base::SupportsUserData::Data* adoption_tag =
       web_contents->GetUserData(&kTabContentsAttachedTabHelpersUserDataKey);
-  if (adoption_tag)
+  if (adoption_tag) {
     return;
+  }
 
   // Mark as adopted.
   web_contents->SetUserData(&kTabContentsAttachedTabHelpersUserDataKey,
@@ -343,7 +343,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   HistoryClustersTabHelper::CreateForWebContents(web_contents);
   HttpsOnlyModeTabHelper::CreateForWebContents(web_contents);
   webapps::InstallableManager::CreateForWebContents(web_contents);
-  PrefetchProxyTabHelper::CreateForWebContents(web_contents);
   login_detection::LoginDetectionTabHelper::MaybeCreateForWebContents(
       web_contents);
   if (MediaEngagementService::IsEnabled())
@@ -490,7 +489,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   TabDialogs::CreateForWebContents(web_contents);
   if (base::FeatureList::IsEnabled(
           performance_manager::features::kHighEfficiencyModeAvailable)) {
-    TabDiscardTabHelper::CreateForWebContents(web_contents);
+    HighEfficiencyChipTabHelper::CreateForWebContents(web_contents);
   }
   if (base::FeatureList::IsEnabled(features::kTabHoverCardImages) ||
       base::FeatureList::IsEnabled(features::kWebUITabStrip)) {

@@ -195,6 +195,11 @@ struct BLINK_EXPORT WebNavigationInfo {
   // src. Only container-initiated navigation report resource timing to the
   // parent.
   bool is_container_initiated = false;
+
+  // True if the initiator requested that the tab become fullscreen
+  // after navigation (e.g. the initial navigation of a fullscreen popup).
+  // See: https://chromestatus.com/feature/6002307972464640
+  bool is_fullscreen_requested = false;
 };
 
 // This structure holds all information provided by the embedder that is
@@ -276,14 +281,11 @@ struct BLINK_EXPORT WebNavigationParams {
   // a failed navigation.
   WebURL pre_redirect_url_for_failed_navigations;
 
-  // If `url` is about:srcdoc, this is the default base URL to use for the new
-  // document. It corresponds to the initiator's base URL snapshotted when the
-  // navigation started.
-  // Note: this value is only used when the NewBaseUrlInheritanceBehavior
-  // feature is enabled in the embedder.
-  // TODO(wjmaclean): Revisit the naming here when we expand to sending base
-  // URLs for about:blank.
-  WebURL fallback_srcdoc_base_url;
+  // If `url` is about:srcdoc or about:blank, this is the default base URL to
+  // use for the new document. It corresponds to the initiator's base URL
+  // snapshotted when the navigation started. Note: this value is only used when
+  // the NewBaseUrlInheritanceBehavior feature is enabled in the embedder.
+  WebURL fallback_base_url;
 
   // The net error code for failed navigation. Must be non-zero when
   // |unreachable_url| is non-null.
@@ -532,7 +534,7 @@ struct BLINK_EXPORT WebNavigationParams {
       modified_runtime_features;
 
   // Whether the document should be loaded with the has_storage_access bit set.
-  bool has_storage_access = false;
+  bool load_with_storage_access = false;
 };
 
 }  // namespace blink

@@ -282,21 +282,6 @@ void ImageLoader::SetImageForTest(ImageResourceContent* new_image) {
   SetImageWithoutConsideringPendingLoadEvent(new_image);
 }
 
-bool ImageLoader::ShouldUpdateOnInsertedInto(
-    ContainerNode& insertion_point) const {
-  // If we're being inserted into a disconnected tree, we don't need to update.
-  if (!insertion_point.isConnected())
-    return false;
-
-  // If we already have image content, then we don't need an update.
-  if (image_content_)
-    return false;
-
-  // Finally, try to update if we're idle. This could be an indication that we
-  // skipped a previous load when inserted into an inactive document.
-  return !HasPendingActivity();
-}
-
 bool ImageLoader::ImageIsPotentiallyAvailable() const {
   bool is_lazyload = lazy_image_load_state_ == LazyImageLoadState::kDeferred;
 
@@ -381,6 +366,12 @@ static void ConfigureRequest(
 }
 
 inline void ImageLoader::DispatchErrorEvent() {
+  // The error event should not fire if the image data update is a result of
+  // environment change.
+  // https://html.spec.whatwg.org/C/#the-img-element:the-img-element-55
+  if (suppress_error_events_) {
+    return;
+  }
   // There can be cases where DispatchErrorEvent() is called when there is
   // already a scheduled error event for the previous load attempt.
   // In such cases we cancel the previous event (by overwriting
@@ -450,8 +441,15 @@ void ImageLoader::DoUpdateFromElement(
   load_delay_counter.swap(delay_until_do_update_from_element_);
 
   Document& document = element_->GetDocument();
-  if (!document.IsActive())
+  if (!document.IsActive()) {
+    // Clear if the loader was moved into a not fully active document - or the
+    // document was detached - after the microtask was queued. If moved into a
+    // not fully active document, ElementDidMoveToNewDocument() will have
+    // called ClearImage() already, but in the case of a detached document it
+    // won't have.
+    ClearImage();
     return;
+  }
 
   AtomicString image_source_url = element_->ImageSourceURL();
   const KURL url = ImageSourceToKURL(image_source_url);
@@ -819,11 +817,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* content) {
     if (error && error->IsAccessCheck())
       CrossSiteOrCSPViolationOccurred(AtomicString(error->FailingURL()));
 
-    // The error event should not fire if the image data update is a result of
-    // environment change.
-    // https://html.spec.whatwg.org/C/#the-img-element:the-img-element-55
-    if (!suppress_error_events_)
-      DispatchErrorEvent();
+    DispatchErrorEvent();
     return;
   }
 

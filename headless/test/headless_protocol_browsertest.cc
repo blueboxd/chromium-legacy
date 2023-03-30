@@ -268,11 +268,26 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeHistoryNavigation,
                        "emulation/virtual-time-history-navigation.js")
 HEADLESS_PROTOCOL_TEST(VirtualTimeHistoryNavigationSameDoc,
                        "emulation/virtual-time-history-navigation-same-doc.js")
-HEADLESS_PROTOCOL_TEST(VirtualTimeWorkerBasic,
+HEADLESS_PROTOCOL_TEST(VirtualTimeSVG, "emulation/virtual-time-svg.js")
+
+// Flaky on Mac. TODO(crbug.com/1419801): Re-enable.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_VirtualTimeWorkerBasic DISABLED_VirtualTimeWorkerBasic
+#else
+#define MAYBE_VirtualTimeWorkerBasic VirtualTimeWorkerBasic
+#endif
+HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeWorkerBasic,
                        "emulation/virtual-time-worker-basic.js")
 HEADLESS_PROTOCOL_TEST(VirtualTimeWorkerLockstep,
                        "emulation/virtual-time-worker-lockstep.js")
-HEADLESS_PROTOCOL_TEST(VirtualTimeWorkerFetch,
+
+// Flaky on Mac. TODO(crbug.com/1419801): Re-enable.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_VirtualTimeWorkerFetch DISABLED_VirtualTimeWorkerFetch
+#else
+#define MAYBE_VirtualTimeWorkerFetch VirtualTimeWorkerFetch
+#endif
+HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeWorkerFetch,
                        "emulation/virtual-time-worker-fetch.js")
 
 // Flaky on Mac. TODO(crbug.com/1164173): Re-enable.
@@ -342,6 +357,9 @@ HEADLESS_PROTOCOL_TEST(ShowFilePickerInterception,
                        "sanity/show-file-picker-interception.js")
 
 HEADLESS_PROTOCOL_TEST(WindowSizeOnStart, "sanity/window-size-on-start.js")
+
+HEADLESS_PROTOCOL_TEST(LargeBrowserWindowSize,
+                       "sanity/large-browser-window-size.js")
 
 HEADLESS_PROTOCOL_TEST(ScreencastBasics, "sanity/screencast-basics.js")
 

@@ -34,7 +34,7 @@
               },
               "run_tests_serially": true,
               "skylab_upload_location": {
-                "gs_bucket": "lacros-arm64-generic-rel-skylab-try",
+                "gs_bucket": "chromium-ci-skylab",
                 "gs_extra": "chromeos_gpu"
               }
             }
@@ -46,6 +46,12 @@
           "bucket": "ci",
           "builder": "ChromeOS FYI Release Skylab (kevin)",
           "project": "chromium"
+        }
+      ],
+      "mirroring_builder_group_and_names": [
+        {
+          "builder": "gpu-fyi-try-chromeos-skylab-kevin",
+          "group": "tryserver.chromium.chromiumos"
         }
       ]
     }

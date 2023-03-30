@@ -375,6 +375,8 @@
 #define glConvertYUVAMailboxesToRGBINTERNAL \
   GLES2_GET_FUN(ConvertYUVAMailboxesToRGBINTERNAL)
 #define glCopySharedImageINTERNAL GLES2_GET_FUN(CopySharedImageINTERNAL)
+#define glCopySharedImageToTextureINTERNAL \
+  GLES2_GET_FUN(CopySharedImageToTextureINTERNAL)
 #define glReadbackARGBImagePixelsINTERNAL \
   GLES2_GET_FUN(ReadbackARGBImagePixelsINTERNAL)
 #define glEnableiOES GLES2_GET_FUN(EnableiOES)
@@ -400,6 +402,10 @@
 #define glEndPixelLocalStorageANGLE GLES2_GET_FUN(EndPixelLocalStorageANGLE)
 #define glPixelLocalStorageBarrierANGLE \
   GLES2_GET_FUN(PixelLocalStorageBarrierANGLE)
+#define glFramebufferPixelLocalStorageInterruptANGLE \
+  GLES2_GET_FUN(FramebufferPixelLocalStorageInterruptANGLE)
+#define glFramebufferPixelLocalStorageRestoreANGLE \
+  GLES2_GET_FUN(FramebufferPixelLocalStorageRestoreANGLE)
 #define glGetFramebufferPixelLocalStorageParameterfvANGLE \
   GLES2_GET_FUN(GetFramebufferPixelLocalStorageParameterfvANGLE)
 #define glGetFramebufferPixelLocalStorageParameterivANGLE \

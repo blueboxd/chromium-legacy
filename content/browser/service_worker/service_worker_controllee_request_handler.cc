@@ -294,9 +294,9 @@ void ServiceWorkerControlleeRequestHandler::InitializeContainerHost(
   storage_key_ = storage_key;
 
   container_host_->UpdateUrls(stripped_url_,
-                              // TODO(1199077): Use top_frame_origin from
-                              // `storage_key_` instead, since that is populated
-                              // also for workers.
+                              // The storage key only has a top_level_site, not
+                              // an origin, so we must extract the origin from
+                              // trusted_params.
                               tentative_resource_request.trusted_params
                                   ? tentative_resource_request.trusted_params
                                         ->isolation_info.top_frame_origin()
@@ -608,10 +608,14 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
             RecordSkipReason(
                 FetchHandlerSkipReason::
                     kBypassFetchHandlerForAllOnlyIfServiceWorkerNotStarted_Status_Stop);
-            MaybeStartServiceWorker(
-                std::move(active_version),
-                ServiceWorkerMetrics::EventType::
-                    BYPASS_ONLY_IF_SERVICE_WORKER_NOT_STARTED);
+            base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                FROM_HERE,
+                base::BindOnce(&ServiceWorkerControlleeRequestHandler::
+                                   MaybeStartServiceWorker,
+                               weak_factory_.GetWeakPtr(),
+                               std::move(active_version),
+                               ServiceWorkerMetrics::EventType::
+                                   BYPASS_ONLY_IF_SERVICE_WORKER_NOT_STARTED));
             return;
           case EmbeddedWorkerStatus::STARTING:
             // If the status is STARTING, the Serviceworker is not actually

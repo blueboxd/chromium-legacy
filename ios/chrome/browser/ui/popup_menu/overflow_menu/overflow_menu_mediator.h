@@ -20,6 +20,9 @@ class Tracker;
 namespace web {
 class WebState;
 }
+namespace syncer {
+class SyncService;
+}
 
 @protocol ActivityServiceCommands;
 @protocol ApplicationCommands;
@@ -32,6 +35,7 @@ class OverlayPresenter;
 @protocol PopupMenuCommands;
 @protocol PriceNotificationsCommands;
 class PrefService;
+class PromosManager;
 @protocol FindInPageCommands;
 @protocol TextZoomCommands;
 class WebNavigationBrowserAgent;
@@ -100,6 +104,12 @@ class FollowBrowserAgent;
 // The number of destinations immediately visible to the user when opening the
 // new overflow menu (i.e. the number of "above-the-fold" destinations).
 @property(nonatomic, assign) int visibleDestinationsCount;
+
+// The Sync Service that provides the status of Sync.
+@property(nonatomic, assign) syncer::SyncService* syncService;
+
+// The Promos Manager to alert if the user uses What's New.
+@property(nonatomic, assign) PromosManager* promosManager;
 
 // Updates the pin state of the tab corresponding to the given `webState` in
 // `webStateList`.

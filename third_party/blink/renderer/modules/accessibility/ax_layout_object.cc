@@ -73,15 +73,15 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
-#include "third_party/blink/renderer/core/layout/layout_table.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
-#include "third_party/blink/renderer/core/layout/layout_table_row.h"
-#include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -244,9 +244,9 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObjectOrNode() const {
     }
     if (layout_object_->IsSVGShape())
       return ax::mojom::blink::Role::kGraphicsSymbol;
-    if (layout_object_->IsSVGForeignObjectIncludingNG() ||
-        IsA<SVGGElement>(node))
+    if (layout_object_->IsSVGForeignObject() || IsA<SVGGElement>(node)) {
       return ax::mojom::blink::Role::kGroup;
+    }
     if (IsA<SVGUseElement>(node))
       return ax::mojom::blink::Role::kGraphicsObject;
   }
@@ -380,9 +380,9 @@ bool AXLayoutObject::IsPlaceholder() const {
     return false;
 
   LayoutObject* parent_layout_object = parent_object->GetLayoutObject();
-  if (!parent_layout_object ||
-      !parent_layout_object->IsTextControlIncludingNG())
+  if (!parent_layout_object || !parent_layout_object->IsTextControl()) {
     return false;
+  }
 
   const auto* text_control_element =
       To<TextControlElement>(parent_layout_object->GetNode());

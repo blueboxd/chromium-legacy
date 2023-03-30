@@ -58,9 +58,6 @@ namespace content {
 
 namespace {
 
-// For ad cost truncation and stochastic rounding
-constexpr unsigned kAdCostBits = 8;
-
 // All event-level reporting URLs received from worklets must be valid HTTPS
 // URLs. It's up to callers to call ReportBadMessage() on invalid URLs.
 bool IsEventLevelReportingUrlValid(const GURL& url) {
@@ -68,6 +65,17 @@ bool IsEventLevelReportingUrlValid(const GURL& url) {
 }
 
 }  // namespace
+
+BASE_FEATURE(kFledgeRounding,
+             "FledgeRounding",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+// For now default bid and score to full resolution.
+const base::FeatureParam<int> kFledgeBidReportingBits{
+    &kFledgeRounding, "fledge_bid_reporting_bits", 53};
+const base::FeatureParam<int> kFledgeScoreReportingBits{
+    &kFledgeRounding, "fledge_score_reporting_bits", 53};
+const base::FeatureParam<int> kFledgeAdCostReportingBits{
+    &kFledgeRounding, "fledge_ad_cost_reporting_bits", 8};
 
 InterestGroupAuctionReporter::SellerWinningBidInfo::SellerWinningBidInfo() =
     default;
@@ -240,7 +248,7 @@ double InterestGroupAuctionReporter::RoundStochasticallyToKBits(double value,
   }
 
   double precision_scaled_value = std::ldexp(norm_value, k);
-  double noisy_scaled_value = precision_scaled_value + base::RandDouble();
+  double noisy_scaled_value = precision_scaled_value + 0.5 * base::RandDouble();
   double truncated_scaled_value = std::floor(noisy_scaled_value);
 
   return std::ldexp(truncated_scaled_value, value_exp - k);
@@ -258,19 +266,16 @@ void InterestGroupAuctionReporter::RequestSellerWorklet(
   // base::Unretained is safe to use for these callbacks because destroying
   // `seller_worklet_handle_` will prevent the callbacks from being invoked, if
   // `this` is destroyed while still waiting on the callbacks.
-  if (auction_worklet_manager_->RequestSellerWorklet(
-          seller_info->auction_config->decision_logic_url,
-          seller_info->auction_config->trusted_scoring_signals_url,
-          seller_info->auction_config->seller_experiment_group_id,
-          base::BindOnce(&InterestGroupAuctionReporter::OnSellerWorkletReceived,
-                         base::Unretained(this), base::Unretained(seller_info),
-                         top_seller_signals),
-          base::BindOnce(
-              &InterestGroupAuctionReporter::OnSellerWorkletFatalError,
-              base::Unretained(this), base::Unretained(seller_info)),
-          seller_worklet_handle_)) {
-    OnSellerWorkletReceived(seller_info, top_seller_signals);
-  }
+  auction_worklet_manager_->RequestSellerWorklet(
+      seller_info->auction_config->decision_logic_url,
+      seller_info->auction_config->trusted_scoring_signals_url,
+      seller_info->auction_config->seller_experiment_group_id,
+      base::BindOnce(&InterestGroupAuctionReporter::OnSellerWorkletReceived,
+                     base::Unretained(this), base::Unretained(seller_info),
+                     top_seller_signals),
+      base::BindOnce(&InterestGroupAuctionReporter::OnSellerWorkletFatalError,
+                     base::Unretained(this), base::Unretained(seller_info)),
+      seller_worklet_handle_);
 }
 
 void InterestGroupAuctionReporter::OnSellerWorkletFatalError(
@@ -313,7 +318,9 @@ void InterestGroupAuctionReporter::OnSellerWorkletReceived(
         auction_worklet::mojom::ComponentAuctionReportResultParams::New(
             /*top_level_seller_signals=*/std::move(top_seller_signals).value(),
             /*modified_bid=*/
-            seller_info->component_auction_modified_bid_params->bid,
+            RoundStochasticallyToKBits(
+                seller_info->component_auction_modified_bid_params->bid,
+                kFledgeBidReportingBits.Get()),
             /*has_modified_bid=*/
             seller_info->component_auction_modified_bid_params->has_bid);
   }
@@ -328,8 +335,13 @@ void InterestGroupAuctionReporter::OnSellerWorkletReceived(
           seller_info->subresource_url_builder.get()),
       std::move(other_seller),
       winning_bid_info_.storage_interest_group->interest_group.owner,
-      winning_bid_info_.render_url, seller_info->bid, seller_info->score,
-      seller_info->highest_scoring_other_bid,
+      winning_bid_info_.render_url,
+      RoundStochasticallyToKBits(seller_info->bid,
+                                 kFledgeBidReportingBits.Get()),
+      RoundStochasticallyToKBits(seller_info->score,
+                                 kFledgeScoreReportingBits.Get()),
+      RoundStochasticallyToKBits(seller_info->highest_scoring_other_bid,
+                                 kFledgeBidReportingBits.Get()),
       std::move(browser_signals_component_auction_report_result_params),
       seller_info->scoring_signals_data_version.value_or(0),
       seller_info->scoring_signals_data_version.has_value(),
@@ -462,18 +474,15 @@ void InterestGroupAuctionReporter::RequestBidderWorklet(
   // base::Unretained is safe to use for these callbacks because destroying
   // `bidder_worklet_handle_` will prevent the callbacks from being invoked, if
   // `this` is destroyed while still waiting on the callbacks.
-  if (auction_worklet_manager_->RequestBidderWorklet(
-          interest_group.bidding_url.value_or(GURL()),
-          interest_group.bidding_wasm_helper_url,
-          interest_group.trusted_bidding_signals_url, experiment_group_id,
-          base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletReceived,
-                         base::Unretained(this), signals_for_winner),
-          base::BindOnce(
-              &InterestGroupAuctionReporter::OnBidderWorkletFatalError,
-              base::Unretained(this)),
-          bidder_worklet_handle_)) {
-    OnBidderWorkletReceived(signals_for_winner);
-  }
+  auction_worklet_manager_->RequestBidderWorklet(
+      interest_group.bidding_url.value_or(GURL()),
+      interest_group.bidding_wasm_helper_url,
+      interest_group.trusted_bidding_signals_url, experiment_group_id,
+      base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletReceived,
+                     base::Unretained(this), signals_for_winner),
+      base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletFatalError,
+                     base::Unretained(this)),
+      bidder_worklet_handle_);
 }
 
 void InterestGroupAuctionReporter::OnBidderWorkletReceived(
@@ -524,7 +533,7 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
   absl::optional<double> rounded_ad_cost;
   if (winning_bid_info_.ad_cost.has_value()) {
     rounded_ad_cost = RoundStochasticallyToKBits(
-        winning_bid_info_.ad_cost.value(), kAdCostBits);
+        winning_bid_info_.ad_cost.value(), kFledgeAdCostReportingBits.Get());
   }
   bidder_worklet_handle_->GetBidderWorklet()->ReportWin(
       group_name, auction_config->non_shared_params.auction_signals.value(),
@@ -534,9 +543,12 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
           winning_bid_info_.storage_interest_group->interest_group.owner),
       InterestGroupAuction::GetDirectFromSellerAuctionSignals(
           seller_info.subresource_url_builder.get()),
-      signals_for_winner, winning_bid_info_.render_url, winning_bid_info_.bid,
+      signals_for_winner, winning_bid_info_.render_url,
+      RoundStochasticallyToKBits(winning_bid_info_.bid,
+                                 kFledgeBidReportingBits.Get()),
       /*browser_signal_highest_scoring_other_bid=*/
-      seller_info.highest_scoring_other_bid,
+      RoundStochasticallyToKBits(seller_info.highest_scoring_other_bid,
+                                 kFledgeBidReportingBits.Get()),
       seller_info.highest_scoring_other_bid_owner.has_value() &&
           winning_bid_info_.storage_interest_group->interest_group.owner ==
               seller_info.highest_scoring_other_bid_owner.value(),

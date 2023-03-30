@@ -19,6 +19,8 @@
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/promos_manager/mock_promos_manager.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_test_utils.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -76,6 +78,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     web_state_list_ = browser_->GetWebStateList();
     fake_web_state_ = std::make_unique<web::FakeWebState>();
     fake_web_state_->SetBrowserState(chrome_browser_state_.get());
+    NewTabPageTabHelper::CreateForWebState(fake_web_state_.get());
     dispatcher_ =
         OCMProtocolMock(@protocol(ContentSuggestionsMediatorDispatcher));
     consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
@@ -108,6 +111,9 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     mediator_.webStateList = browser_.get()->GetWebStateList();
     mediator_.webState = fake_web_state_.get();
 
+    promos_manager_ = std::make_unique<MockPromosManager>();
+    mediator_.promosManager = promos_manager_.get();
+
     StartSurfaceRecentTabBrowserAgent::CreateForBrowser(browser_.get());
     UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
     FakeUrlLoadingBrowserAgent::InjectForBrowser(browser_.get());
@@ -119,6 +125,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
  protected:
   std::unique_ptr<web::FakeWebState> CreateWebState(const char* url) {
     auto test_web_state = std::make_unique<web::FakeWebState>();
+    NewTabPageTabHelper::CreateForWebState(test_web_state.get());
     test_web_state->SetCurrentURL(GURL(url));
     test_web_state->SetNavigationManager(
         std::make_unique<web::FakeNavigationManager>());
@@ -137,6 +144,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
   id dispatcher_;
   id consumer_;
   std::unique_ptr<favicon::LargeIconServiceImpl> large_icon_service_;
+  std::unique_ptr<MockPromosManager> promos_manager_;
   ContentSuggestionsMediator* mediator_;
   FakeUrlLoadingBrowserAgent* url_loader_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
@@ -199,9 +207,11 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTab) {
   web_state_list_->InsertWebState(1, CreateWebState("chrome://newtab"),
                                   WebStateList::INSERT_ACTIVATE,
                                   WebStateOpener());
+  web::WebState* ntp_web_state = web_state_list_->GetActiveWebState();
+  mediator_.webState = ntp_web_state;
+  NewTabPageTabHelper::FromWebState(ntp_web_state)->SetShowStartSurface(true);
 
   OCMExpect([consumer_ showReturnToRecentTabTileWithConfig:[OCMArg any]]);
-  mediator_.showingStartSurface = YES;
   [mediator_
       configureMostRecentTabItemWithWebState:browser_agent->most_recent_tab()
                                    timeLabel:@"12 hours ago"];

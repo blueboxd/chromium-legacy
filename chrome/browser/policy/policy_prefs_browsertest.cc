@@ -51,7 +51,7 @@
 
 namespace policy {
 
-const size_t kNumChunks = 8;
+const size_t kNumChunks = 32;
 
 namespace {
 

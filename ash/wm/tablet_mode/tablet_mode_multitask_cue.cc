@@ -63,10 +63,7 @@ void TabletModeMultitaskCue::MaybeShowCue(aura::Window* active_window) {
   // or non-maximizable window, any existing cue should still be dismissed.
   DismissCue();
 
-  // Floated windows do not have the multitask menu.
-  // TODO(hewer): Consolidate checks with ones for multitask menu in a helper.
-  WindowState* state = WindowState::Get(active_window);
-  if (state->IsFloated() || !state->CanMaximize()) {
+  if (!TabletModeMultitaskMenuEventHandler::CanShowMenu(active_window)) {
     return;
   }
 
@@ -140,15 +137,17 @@ void TabletModeMultitaskCue::OnWindowBoundsChanged(
 void TabletModeMultitaskCue::OnWindowActivated(ActivationReason reason,
                                                aura::Window* gained_active,
                                                aura::Window* lost_active) {
-  auto* event_handler = Shell::Get()
-                            ->tablet_mode_controller()
-                            ->tablet_mode_window_manager()
-                            ->tablet_mode_multitask_menu_event_handler();
-  DCHECK(event_handler);
-
   if (!gained_active) {
     return;
   }
+
+  auto* window_manager =
+      Shell::Get()->tablet_mode_controller()->tablet_mode_window_manager();
+  DCHECK(window_manager);
+
+  auto* event_handler =
+      window_manager->tablet_mode_multitask_menu_event_handler();
+  DCHECK(event_handler);
 
   // TODO(b/263519133): Stop the cue from reappearing after using non-app
   // windows like popups.

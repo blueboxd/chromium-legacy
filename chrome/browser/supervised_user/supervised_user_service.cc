@@ -25,7 +25,7 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -33,6 +33,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/supervised_user/core/browser/kids_chrome_management_client.h"
 #include "components/supervised_user/core/browser/supervised_user_service_observer.h"
 #include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
@@ -47,8 +48,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #endif
@@ -225,13 +224,20 @@ bool SupervisedUserService::IsURLFilteringEnabled() const {
 #else
   return profile_->IsChild() &&
          base::FeatureList::IsEnabled(
-             supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty);
+             supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 #endif
 }
 
 bool SupervisedUserService::AreExtensionsPermissionsEnabled() const {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
   return profile_->IsChild();
+#else
+  return profile_->IsChild() &&
+         base::FeatureList::IsEnabled(
+             supervised_user::
+                 kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+#endif
 #else
   return false;
 #endif
@@ -255,6 +261,7 @@ void SupervisedUserService::RemoveObserver(
 SupervisedUserService::SupervisedUserService(
     Profile* profile,
     signin::IdentityManager* identity_manager,
+    KidsChromeManagementClient* kids_chrome_management_client,
     PrefService& user_prefs,
     supervised_user::SupervisedUserSettingsService& settings_service,
     syncer::SyncService& sync_service,
@@ -266,11 +273,8 @@ SupervisedUserService::SupervisedUserService(
       sync_service_(sync_service),
       profile_(profile),
       identity_manager_(identity_manager),
-      active_(false),
+      kids_chrome_management_client_(kids_chrome_management_client),
       delegate_(nullptr),
-      is_profile_active_(false),
-      did_init_(false),
-      did_shutdown_(false),
       url_filter_(std::move(check_webstore_url_callback),
                   std::move(url_filter_delegate)),
       denylist_state_(DenylistLoadState::NOT_LOADED) {
@@ -322,19 +326,6 @@ bool SupervisedUserService::
       prefs::kSupervisedUserExtensionsMayRequestPermissions);
 }
 
-void SupervisedUserService::
-    SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
-        bool enabled) {
-  // TODO(crbug/1024646): kSupervisedUserExtensionsMayRequestPermissions is
-  // currently set indirectly by setting geolocation requests. Update Kids
-  // Management server to set a new bit for extension permissions and update
-  // this setter function.
-  settings_service_->SetLocalSetting(supervised_user::kGeolocationDisabled,
-                                     base::Value(!enabled));
-  user_prefs_->SetBoolean(prefs::kSupervisedUserExtensionsMayRequestPermissions,
-                          enabled);
-}
-
 bool SupervisedUserService::CanInstallExtensions() const {
   return HasACustodian() &&
          GetSupervisedUserExtensionsMayRequestPermissionsPref();
@@ -376,14 +367,6 @@ void SupervisedUserService::SetActive(bool active) {
     delegate_->SetActive(active_);
 
   settings_service_->SetActive(active_);
-
-  // Now activate/deactivate anything not handled by the delegate yet.
-#if BUILDFLAG(IS_CHROMEOS)
-  // Re-set the default theme to turn the SU theme on/off.
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  if (theme_service->UsingDefaultTheme() || theme_service->UsingSystemTheme())
-    theme_service->UseDefaultTheme();
-#endif
 
   // Trigger a sync reconfig to enable/disable the right SU data types.
   // The logic to do this lives in the SupervisedUserSyncModelTypeController.
@@ -449,13 +432,14 @@ void SupervisedUserService::SetActive(bool active) {
     BrowserList::AddObserver(this);
 #endif
   } else {
-    web_approvals_manager_.ClearRemoteApprovalRequestsCreators();
+    remote_web_approvals_manager_.ClearApprovalRequestsCreators();
 
     pref_change_registrar_.Remove(
         prefs::kDefaultSupervisedUserFilteringBehavior);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     pref_change_registrar_.Remove(prefs::kSupervisedUserApprovedExtensions);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+    pref_change_registrar_.Remove(prefs::kSupervisedUserSafeSites);
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualHosts);
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualURLs);
     for (const char* pref : supervised_user::kCustodianInfoPrefs) {
@@ -549,9 +533,7 @@ void SupervisedUserService::UpdateAsyncUrlChecker() {
 
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
     if (use_online_check) {
-      url_filter_.InitAsyncURLChecker(
-          KidsChromeManagementClientFactory::GetInstance()
-              ->GetForBrowserContext(profile_));
+      url_filter_.InitAsyncURLChecker(kids_chrome_management_client_);
     } else {
       url_filter_.ClearAsyncURLChecker();
     }

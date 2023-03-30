@@ -90,7 +90,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                                  dest='resultDB',
                                  action='store_false',
                                  default=True,
-                                 help='Do not Fetch results from resultDB.'),
+                                 help=optparse.SUPPRESS_HELP),
             self.no_optimize_option,
             self.dry_run_option,
             self.results_directory_option,
@@ -98,7 +98,6 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         self._tool = tool
         self.git_cl = None
         self._builders = []
-        self._resultdb_fetcher = False
 
     def _check_builders(self, option, _opt_str, value, parser):
         selected_builders = getattr(parser.values, option.dest, set())
@@ -126,7 +125,6 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     def execute(self, options, args, tool):
         self._tool = tool
         self._dry_run = options.dry_run
-        self._resultdb_fetcher = options.resultDB
         self.git_cl = self.git_cl or GitCL(tool)
         # '--dry-run' implies '--no-trigger-jobs'.
         options.trigger_jobs = options.trigger_jobs and not self._dry_run
@@ -252,26 +250,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 continue
 
             step_names = results_fetcher.get_layout_test_step_names(build)
-            unavailable_step_names = []
             for step_name in step_names:
-                if self._resultdb_fetcher:
-                    maybe_result = results_fetcher.gather_results(
-                        build, step_name)
-                else:
-                    maybe_result = results_fetcher.fetch_results(
-                        build, False, step_name)
-                if maybe_result:
-                    builds_to_results[build].append(maybe_result)
-                else:
-                    unavailable_step_names.append(step_name)
-
-            if unavailable_step_names:
-                _log.warning('Failed to fetch some results for "%s".',
-                             build.builder_name)
-                for step_name in unavailable_step_names:
-                    results_url = results_fetcher.results_url(
-                        build.builder_name, build.build_number, step_name)
-                    _log.warning('Results URL: %s/results.html', results_url)
+                results = results_fetcher.gather_results(build, step_name)
+                if len(results) > 0:
+                    builds_to_results[build].append(results)
         return builds_to_results
 
     def _make_test_baseline_set_from_file(self, filename, builds_to_results):
@@ -368,9 +350,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             A sorted list of tests to rebaseline for this build.
         """
         unexpected_results = web_test_results.didnt_run_as_expected_results()
-        tests = sorted(
-            r.test_name() for r in unexpected_results
-            if r.is_missing_baseline() or r.has_non_reftest_mismatch())
+        tests = sorted(r.test_name() for r in unexpected_results
+                       if r.is_missing_baseline() or r.has_mismatch())
         if not tests:
             # no need to fetch retry summary in this case
             return []

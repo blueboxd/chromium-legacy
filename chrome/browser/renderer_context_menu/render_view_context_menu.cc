@@ -133,6 +133,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/policy/content/policy_blocklist_service.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -1046,7 +1047,8 @@ void RenderViewContextMenu::InitMenu() {
     AppendLinkToTextItems();
   }
 
-  if (user_notes::IsUserNotesEnabled()) {
+  if (user_notes::IsUserNotesEnabled() && GetBrowser() &&
+      GetBrowser()->is_type_normal()) {
     AppendUserNotesItems();
   }
 
@@ -1695,7 +1697,11 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
   const Browser* browser = GetBrowser();
   if (browser && browser->app_name() ==
                      web_app::GenerateApplicationNameFromAppId(*link_app_id)) {
-    open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP_SAMEAPP;
+    if (provider->registrar_unsafe().IsTabbedWindowModeEnabled(*link_app_id)) {
+      open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKWEBAPP_NEWTAB;
+    } else {
+      open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP_SAMEAPP;
+    }
   } else {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP;
   }
@@ -1762,7 +1768,8 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
 
   menu_model_.AddItem(GetSearchForImageIdc(), menu_string);
 
-  if (base::FeatureList::IsEnabled(lens::features::kEnableImageTranslate) &&
+  if (base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
+      base::FeatureList::IsEnabled(lens::features::kEnableImageTranslate) &&
       provider && !provider->image_translate_url().empty() &&
       provider->image_translate_url_ref().IsValid(
           service->search_terms_data())) {
@@ -2819,12 +2826,21 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       ExecRotateCCW();
       break;
 
+    // When the context menu was initialized, we checked whether there were
+    // back/forward entries. Session history may have changed while the context
+    // menu was open. So we need to check `CanGoBack`/`CanGoForward` again.
     case IDC_BACK:
-      embedder_web_contents_->GetController().GoBack();
+      if (auto& controller = embedder_web_contents_->GetController();
+          controller.CanGoBack()) {
+        controller.GoBack();
+      }
       break;
 
     case IDC_FORWARD:
-      embedder_web_contents_->GetController().GoForward();
+      if (auto& controller = embedder_web_contents_->GetController();
+          controller.CanGoForward()) {
+        controller.GoForward();
+      }
       break;
 
     case IDC_SAVE_PAGE:
@@ -3535,9 +3551,9 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
   if (!IsURLAllowedInIncognito(params_.link_url, browser_context_))
     return false;
 
-  IncognitoModePrefs::Availability incognito_avail =
+  policy::IncognitoModeAvailability incognito_avail =
       IncognitoModePrefs::GetAvailability(GetPrefs(browser_context_));
-  return incognito_avail != IncognitoModePrefs::Availability::kDisabled;
+  return incognito_avail != policy::IncognitoModeAvailability::kDisabled;
 }
 
 void RenderViewContextMenu::ExecOpenWebApp() {

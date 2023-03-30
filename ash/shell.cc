@@ -92,6 +92,7 @@
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/projector/projector_controller_impl.h"
+#include "ash/public/cpp/accelerator_keycode_lookup_cache.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/nearby_share_delegate.h"
@@ -115,7 +116,9 @@
 #include "ash/shutdown_controller_impl.h"
 #include "ash/style/ash_color_mixer.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_palette_controller.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
+#include "ash/style/style_util.h"
 #include "ash/system/audio/audio_effects_controller.h"
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_device_status_ui_handler.h"
@@ -132,13 +135,13 @@
 #include "ash/system/human_presence/human_presence_orientation_controller.h"
 #include "ash/system/human_presence/snooping_protection_controller.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
+#include "ash/system/input_device_settings/input_device_settings_dispatcher.h"
 #include "ash/system/input_device_settings/input_device_tracker.h"
 #include "ash/system/input_device_settings/keyboard_modifier_metrics_recorder.h"
 #include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
-#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/media/media_notification_provider.h"
 #include "ash/system/message_center/message_center_ash_impl.h"
 #include "ash/system/message_center/message_center_controller.h"
@@ -179,6 +182,7 @@
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_controller.h"
+#include "ash/wm/desks/templates/saved_desk_controller.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
@@ -689,6 +693,7 @@ Shell::~Shell() {
 
   ash_dbus_services_.reset();
 
+  saved_desk_controller_.reset();
   saved_desk_delegate_.reset();
   desks_controller_->Shutdown();
 
@@ -739,6 +744,7 @@ Shell::~Shell() {
 
   event_rewriter_controller_.reset();
   keyboard_modifier_metrics_recorder_.reset();
+  input_device_settings_dispatcher_.reset();
   input_device_tracker_.reset();
   input_device_settings_controller_.reset();
 
@@ -805,10 +811,6 @@ Shell::~Shell() {
   // Shutdown the clipboard history controller to clean up the child windows and
   // widgets that may be animating out.
   clipboard_history_controller_->Shutdown();
-
-  // Destroy UserSettingsEventLogger before |system_tray_model_| and
-  // |video_detector_| which it observes.
-  ml::UserSettingsEventLogger::DeleteInstance();
 
   toast_manager_.reset();
 
@@ -916,6 +918,10 @@ Shell::~Shell() {
   rgb_keyboard_manager_.reset();
 
   ash_color_provider_.reset();
+
+  // Depends on `dark_light_mode_controller_` and `wallpaper_controller_` so it
+  // should be destroyed first.
+  color_palette_controller_.reset();
 
   // Depends on `geolocation_controller_` and `wallpaper_controller_`, so it
   // must be destructed before the geolocation controller and wallpaper
@@ -1229,6 +1235,9 @@ void Shell::Init(
 
   dark_light_mode_controller_ = std::make_unique<DarkLightModeControllerImpl>();
 
+  color_palette_controller_ = ColorPaletteController::Create(
+      dark_light_mode_controller_.get(), wallpaper_controller_.get());
+
   // Privacy Screen depends on the display manager, so initialize it after
   // display manager was properly initialized.
   privacy_screen_controller_ = std::make_unique<PrivacyScreenController>();
@@ -1249,12 +1258,18 @@ void Shell::Init(
   window_modality_controller_ =
       std::make_unique<::wm::WindowModalityController>(this, env);
 
-  // The `InputDeviceSettingsController` is a dependency of the
-  // `EventRewriterController`, `InputDeviceTracker` and
-  // `KeyboardModifierMetricsRecorder` so it must be initialized first.
+  // The `InputDeviceSettingsController` is a dependency of the following so it
+  // must be initialized first:
+  //  - `EventRewriterController`
+  //  - `InputDeviceTracker`
+  //  - `KeyboardModifierMetricsRecorder`
+  //  - `InputDeviceSettingsDispatcher`
   input_device_settings_controller_ =
       std::make_unique<InputDeviceSettingsControllerImpl>();
   input_device_tracker_ = std::make_unique<InputDeviceTracker>();
+  input_device_settings_dispatcher_ =
+      std::make_unique<InputDeviceSettingsDispatcher>(
+          ui::OzonePlatform::GetInstance()->GetInputController());
   keyboard_modifier_metrics_recorder_ =
       std::make_unique<KeyboardModifierMetricsRecorder>();
   event_rewriter_controller_ = std::make_unique<EventRewriterControllerImpl>();
@@ -1294,6 +1309,10 @@ void Shell::Init(
   // controller.
   desks_controller_ = std::make_unique<DesksController>();
   saved_desk_delegate_ = shell_delegate_->CreateSavedDeskDelegate();
+  // Initialized here since it depends on desks.
+  if (base::FeatureList::IsEnabled(features::kAppLaunchAutomation)) {
+    saved_desk_controller_ = std::make_unique<SavedDeskController>();
+  }
 
   Shell::SetRootWindowForNewWindows(GetPrimaryRootWindow());
 
@@ -1303,6 +1322,9 @@ void Shell::Init(
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
+  // Must be initialized after InputMethodManager.
+  accelerator_keycode_lookup_cache_ =
+      std::make_unique<AcceleratorKeycodeLookupCache>();
   ash_accelerator_configuration_ =
       std::make_unique<AshAcceleratorConfiguration>();
   ash_accelerator_configuration_->Initialize();
@@ -1457,7 +1479,9 @@ void Shell::Init(
   video_detector_ = std::make_unique<VideoDetector>();
 
   tooltip_controller_ = std::make_unique<views::corewm::TooltipController>(
-      std::make_unique<views::corewm::TooltipAura>(), activation_client());
+      std::make_unique<views::corewm::TooltipAura>(
+          base::BindRepeating(&StyleUtil::CreateAshStyleTooltipView)),
+      activation_client());
   AddPreTargetHandler(tooltip_controller_.get());
 
   modality_filter_ = std::make_unique<SystemModalContainerEventFilter>(this);
@@ -1564,10 +1588,6 @@ void Shell::Init(
   snap_controller_ = std::make_unique<SnapControllerImpl>();
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
 
-  // Create UserSettingsEventLogger after |system_tray_model_| and
-  // |video_detector_| which it observes.
-  ml::UserSettingsEventLogger::CreateInstance();
-
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
   // is started.
@@ -1608,7 +1628,7 @@ void Shell::Init(
         std::make_unique<federated::FederatedServiceControllerImpl>();
   }
 
-  if (features::IsWelcomeTourEnabled()) {
+  if (features::IsUserEducationEnabled()) {
     user_education_controller_ = std::make_unique<UserEducationController>(
         shell_delegate_->CreateUserEducationDelegate());
   }

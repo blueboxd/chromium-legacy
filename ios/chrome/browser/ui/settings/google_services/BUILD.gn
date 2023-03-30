@@ -32,7 +32,6 @@ source_set("google_services") {
   deps = [
     ":constants",
     "resources:google_services_enterprise",
-    "resources:google_services_sync_error",
     "//base",
     "//components/autofill/core/common",
     "//components/browser_sync",
@@ -54,6 +53,8 @@ source_set("google_services") {
     "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/prefs:pref_names",
+    "//ios/chrome/browser/settings/sync/utils:identity_error_util",
+    "//ios/chrome/browser/shared/coordinator/alert",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
@@ -65,7 +66,6 @@ source_set("google_services") {
     "//ios/chrome/browser/signin:system_identity",
     "//ios/chrome/browser/signin:system_identity_manager",
     "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:authentication_constants",
     "//ios/chrome/browser/ui/authentication/cells",
@@ -130,7 +130,7 @@ source_set("eg_test_support+eg2") {
     "google_services_settings_app_interface.h",
     "google_services_settings_app_interface_stub.mm",
   ]
-  deps = [ "//ios/third_party/earl_grey2:test_lib" ]
+  deps = [ "//ios/testing/earl_grey:eg_test_support+eg2" ]
 }
 
 source_set("eg2_tests") {
@@ -158,18 +158,17 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/ui/elements:constants",
+    "//ios/chrome/browser/shared/ui/elements:eg_test_support+eg2",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/bookmarks:eg_test_support+eg2",
-    "//ios/chrome/browser/ui/elements:constants",
-    "//ios/chrome/browser/ui/elements:eg_test_support+eg2",
     "//ios/chrome/browser/ui/settings:constants",
     "//ios/chrome/browser/ui/settings/google_services:constants",
     "//ios/chrome/common/ui/promo_style:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:switches",
     "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/third_party/earl_grey2:test_lib",
     "//net:test_support",
     "//ui/base",
   ]

@@ -37,6 +37,9 @@ namespace password_manager {
 
 namespace {
 
+using testing::IsNull;
+using testing::NotNull;
+
 using UsernameDetectionMethod = FormDataParser::UsernameDetectionMethod;
 
 // Use this value in FieldDataDescription.value to get an arbitrary unique value
@@ -346,9 +349,9 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
           mode == FormDataParser::Mode::kFilling ? fill_result : save_result;
 
       if (expected_ids.IsEmpty()) {
-        EXPECT_FALSE(parsed_form) << "Expected no parsed results";
+        EXPECT_THAT(parsed_form, IsNull()) << "Expected no parsed results";
       } else {
-        ASSERT_TRUE(parsed_form) << "Expected successful parsing";
+        ASSERT_THAT(parsed_form, NotNull()) << "Expected successful parsing";
         EXPECT_EQ(PasswordForm::Scheme::kHtml, parsed_form->scheme);
         EXPECT_FALSE(parsed_form->blocked_by_user);
         EXPECT_EQ(PasswordForm::Type::kFormSubmission, parsed_form->type);
@@ -1018,16 +1021,19 @@ TEST(FormParserTest, DisabledFields) {
 }
 
 TEST(FormParserTest, SkippingFieldsWithCreditCardFields) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kDisablePasswordsDropdownForCvcFields);
   CheckTestData({
       {
           .description_for_logging =
               "Simple form, all fields are credit-card-related",
           .fields =
               {
-                  {.role = ElementRole::USERNAME,
+                  {.role_saving = ElementRole::USERNAME,
                    .autocomplete_attribute = "cc-name",
                    .form_control_type = "text"},
-                  {.role = ElementRole::CURRENT_PASSWORD,
+                  {.role_saving = ElementRole::CURRENT_PASSWORD,
                    .autocomplete_attribute = "cc-any-string",
                    .form_control_type = "password"},
               },
@@ -1767,7 +1773,10 @@ TEST(FormParserTest, ComplementingResults) {
 }
 
 // The parser should avoid identifying CVC fields as passwords.
-TEST(FormParserTest, CVC) {
+TEST(FormParserTest, IgnoreCvcFields) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kDisablePasswordsDropdownForCvcFields);
   CheckTestData({
       {
           .description_for_logging =
@@ -1790,8 +1799,9 @@ TEST(FormParserTest, CVC) {
               "Server hints: CREDIT_CARD_VERIFICATION_CODE on only password.",
           .fields =
               {
-                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
-                  {.role = ElementRole::CURRENT_PASSWORD,
+                  {.role_saving = ElementRole::USERNAME,
+                   .form_control_type = "text"},
+                  {.role_saving = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = "password",
                    .prediction = {.type =
                                       autofill::CREDIT_CARD_VERIFICATION_CODE}},
@@ -1828,18 +1838,61 @@ TEST(FormParserTest, CVC) {
   });
 }
 
+TEST(FormParserTest, ServerHintsForCvcFieldsOverrideAutocomplete) {
+  CheckTestData({
+      {
+          .description_for_logging =
+              "Credit card server hints override autocomplete=*-password",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.autocomplete_attribute = "current-password",
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::CREDIT_CARD_NUMBER}},
+                  {.autocomplete_attribute = "new-password",
+                   .form_control_type = "password",
+                   .prediction = {.type =
+                                      autofill::CREDIT_CARD_VERIFICATION_CODE}},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+              },
+          .fallback_only = false,
+      },
+      {
+          .description_for_logging =
+              "Server hint turns autocomplete=cc-csc into a password field",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .autocomplete_attribute = "cc-csc",
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::PASSWORD}},
+              },
+          // TODO(crbug.com/913965): As server predictions are not used in the
+          // saving mode, it is only for fallback. Ideally, a server hint should
+          // override autocomplete and enable a regular prompt.
+          .fallback_only = true,
+      },
+  });
+}
+
 // The parser should avoid identifying Credit Card Number fields as passwords
 // if the server identifies the fields as CC Number fields. This should be
 // relatively safe as it should be unlikely that the server misclassifies a
 // field as a CC Number field.
 TEST(FormParserTest, CCNumber) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kDisablePasswordsDropdownForCvcFields);
   CheckTestData({
       {
           .description_for_logging = "Server hints: CREDIT_CARD_NUMBER.",
           .fields =
               {
-                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
-                  {.role = ElementRole::CURRENT_PASSWORD,
+                  {.role_saving = ElementRole::USERNAME,
+                   .form_control_type = "text"},
+                  {.role_saving = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = "password",
                    .prediction = {.type = autofill::CREDIT_CARD_NUMBER}},
               },
@@ -1867,11 +1920,11 @@ TEST(FormParserTest, CCNumber) {
                                      "date are both password fields.",
           .fields =
               {
-                  {.role = ElementRole::USERNAME,
+                  {.role_saving = ElementRole::USERNAME,
                    .name = u"cardholder",
                    .form_control_type = "text",
                    .prediction = {.type = autofill::CREDIT_CARD_NAME_FULL}},
-                  {.role = ElementRole::CURRENT_PASSWORD,
+                  {.role_saving = ElementRole::CURRENT_PASSWORD,
                    .name = u"ccnumber",
                    .form_control_type = "password",
                    .prediction = {.type = autofill::CREDIT_CARD_NUMBER}},
@@ -1879,7 +1932,7 @@ TEST(FormParserTest, CCNumber) {
                    .form_control_type = "text",
                    .prediction =
                        {.type = autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR}},
-                  {.role = ElementRole::NEW_PASSWORD,
+                  {.role_saving = ElementRole::NEW_PASSWORD,
                    .name = u"cvc",
                    .form_control_type = "password",
                    .prediction = {.type =
@@ -1914,7 +1967,7 @@ TEST(FormParserTest, SSN_and_OTP_Old_Regex) {
         },
         {
             .description_for_logging = "Create a fallback for the only password"
-                                       "field being an SSN/OTP field",
+                                       " field being an SSN/OTP field.",
             .fields =
                 {
                     {.role = ElementRole::USERNAME,
@@ -1955,7 +2008,7 @@ TEST(FormParserTest, SSN_and_OTP) {
         },
         {
             .description_for_logging = "Create a fallback for the only password"
-                                       "field being an SSN/OTP field",
+                                       " field being an SSN/OTP field.",
             .fields =
                 {
                     {.role = ElementRole::USERNAME,
@@ -2115,6 +2168,7 @@ TEST(FormParserTest, NotPasswordFieldDespiteAutocompleteAttribute) {
               {
                   {.role = ElementRole::USERNAME, .form_control_type = "text"},
                   {.role = ElementRole::CURRENT_PASSWORD,
+                   .autocomplete_attribute = "current-password",
                    .form_control_type = "password",
                    .prediction = {.type = autofill::NOT_PASSWORD}},
               },
@@ -2696,9 +2750,9 @@ TEST(FormParserTest, ContradictingPasswordPredictionAndAutocomplete) {
   CheckTestData({{
       .description_for_logging =
           "Server data and autocomplete contradics each other",
-      // On saving, server predictions for passwords are ignored.
-      // So autocomplete attributes define the role. On filling,
-      // both server predictions and autocomplete are considered and
+      // On saving, server predictions for passwords are ignored
+      // (crbug.com/913965). So autocomplete attributes define the role. On
+      // filling, both server predictions and autocomplete are considered and
       // server predictions have higher priority and therefore
       // define the role. An autofill attributes cannot override it.
       .fields =

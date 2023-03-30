@@ -62,6 +62,10 @@ class ScriptTimingInfo : public GarbageCollected<ScriptTimingInfo> {
   void SetDesiredExecutionStartTime(base::TimeTicks queue_time) {
     desired_execution_start_time_ = queue_time;
   }
+  base::TimeDelta PauseDuration() const { return pause_duration_; }
+  void SetPauseDuration(base::TimeDelta duration) {
+    pause_duration_ = duration;
+  }
   base::TimeDelta StyleDuration() const { return style_duration_; }
   base::TimeDelta LayoutDuration() const { return layout_duration_; }
   const ScriptSourceLocation& GetSourceLocation() const {
@@ -88,6 +92,7 @@ class ScriptTimingInfo : public GarbageCollected<ScriptTimingInfo> {
   base::TimeTicks desired_execution_start_time_;
   base::TimeDelta style_duration_;
   base::TimeDelta layout_duration_;
+  base::TimeDelta pause_duration_;
   ScriptSourceLocation source_location_;
   WeakMember<LocalDOMWindow> window_;
 };
@@ -131,6 +136,9 @@ class AnimationFrameTimingInfo
     scripts_ = scripts;
   }
 
+  void SetDidPause() { did_pause_ = true; }
+  bool DidPause() const { return did_pause_; }
+
   virtual void Trace(Visitor*) const;
 
  private:
@@ -157,6 +165,9 @@ class AnimationFrameTimingInfo
   base::TimeTicks first_ui_event_time;
 
   HeapVector<Member<ScriptTimingInfo>> scripts_;
+
+  // Whether the LoAF included sync XHR or alerts (pause).
+  bool did_pause_ = false;
 };
 
 }  // namespace blink

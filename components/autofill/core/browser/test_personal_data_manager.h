@@ -40,7 +40,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   // PersonalDataManager overrides.  These functions are overridden as needed
   // for various tests, whether to skip calls to uncreated databases/services,
   // or to make things easier in general to toggle.
-  void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
   AutofillSyncSigninState GetSyncSigninState() const override;
   void RecordUseOf(absl::variant<const AutofillProfile*, const CreditCard*>
                        profile_or_credit_card) override;
@@ -52,6 +51,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void AddProfile(const AutofillProfile& profile) override;
   void UpdateProfile(const AutofillProfile& profile) override;
   void RemoveByGUID(const std::string& guid) override;
+  bool IsEligibleForAddressAccountStorage() const override;
   void AddCreditCard(const CreditCard& credit_card) override;
   std::string AddIBAN(const IBAN& iban) override;
   void DeleteLocalCreditCards(const std::vector<CreditCard>& cards) override;
@@ -73,7 +73,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   bool ShouldSuggestServerCards() const override;
   std::string CountryCodeForCurrentTimezone() const override;
   void ClearAllLocalData() override;
-  CreditCard* GetCreditCardByNumber(const std::string& number) override;
   bool IsDataLoaded() const override;
   bool IsSyncFeatureEnabled() const override;
   CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
@@ -135,8 +134,6 @@ class TestPersonalDataManager : public PersonalDataManager {
     return num_times_save_upi_id_called_;
   }
 
-  bool sync_service_initialized() const { return sync_service_initialized_; }
-
   void SetAutofillCreditCardEnabled(bool autofill_credit_card_enabled) {
     autofill_credit_card_enabled_ = autofill_credit_card_enabled;
   }
@@ -147,6 +144,10 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void SetAutofillWalletImportEnabled(bool autofill_wallet_import_enabled) {
     autofill_wallet_import_enabled_ = autofill_wallet_import_enabled;
+  }
+
+  void SetIsEligibleForAddressAccountStorage(bool eligible) {
+    eligible_for_account_storage_ = eligible;
   }
 
   void SetPaymentsCustomerData(
@@ -175,10 +176,10 @@ class TestPersonalDataManager : public PersonalDataManager {
   absl::optional<bool> autofill_profile_enabled_;
   absl::optional<bool> autofill_credit_card_enabled_;
   absl::optional<bool> autofill_wallet_import_enabled_;
+  absl::optional<bool> eligible_for_account_storage_;
   bool sync_feature_enabled_ = false;
   AutofillSyncSigninState sync_and_signin_state_ =
       AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;
-  bool sync_service_initialized_ = false;
   CoreAccountInfo account_info_;
 
   TestInMemoryStrikeDatabase inmemory_strike_database_;

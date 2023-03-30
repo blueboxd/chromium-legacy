@@ -82,10 +82,19 @@ Config::Config() {
     labels_from_entities = GetFieldTrialParamByFeatureAsBool(
         internal::kJourneysLabels, "labels_from_entities",
         labels_from_entities);
+
+    labels_from_search_visit_entities = GetFieldTrialParamByFeatureAsBool(
+        internal::kJourneysLabels, "labels_from_search_visit_entities",
+        labels_from_search_visit_entities);
   }
 
   // The `kJourneysImages` feature.
-  { images = base::FeatureList::IsEnabled(internal::kJourneysImages); }
+  {
+    images = base::FeatureList::IsEnabled(internal::kJourneysImages);
+
+    images_cover = GetFieldTrialParamByFeatureAsBool(
+        internal::kJourneysImages, "JourneysImagesCover", images_cover);
+  }
 
   // The `kPersistedClusters` feature and child params.
   {
@@ -127,14 +136,6 @@ Config::Config() {
   // The `kOmniboxAction` feature and child params.
   {
     omnibox_action = base::FeatureList::IsEnabled(internal::kOmniboxAction);
-
-    omnibox_action_on_urls = base::GetFieldTrialParamByFeatureAsBool(
-        internal::kOmniboxAction, "omnibox_action_on_urls",
-        omnibox_action_on_urls);
-
-    omnibox_action_on_noisy_urls = base::GetFieldTrialParamByFeatureAsBool(
-        internal::kOmniboxAction, "omnibox_action_on_noisy_urls",
-        omnibox_action_on_noisy_urls);
 
     omnibox_action_with_pedals = base::GetFieldTrialParamByFeatureAsBool(
         internal::kOmniboxAction, "omnibox_action_with_pedals",
@@ -244,7 +245,7 @@ Config::Config() {
     DCHECK_LE(entity_relevance_threshold, 100);
 
     content_visibility_threshold = GetFieldTrialParamByFeatureAsDouble(
-        features::kOnDeviceClustering, "content_visibility_threshold", 0.7);
+        features::kOnDeviceClustering, "content_visibility_threshold", 0.5);
     // Ensure that the value is [0.0 and 1.0].
     DCHECK_GE(content_visibility_threshold, 0.0f);
     DCHECK_LE(content_visibility_threshold, 1.0f);
@@ -279,6 +280,10 @@ Config::Config() {
   {
     content_clustering_enabled = base::FeatureList::IsEnabled(
         features::kOnDeviceClusteringContentClustering);
+
+    content_clustering_search_visits_only = GetFieldTrialParamByFeatureAsBool(
+        features::kOnDeviceClusteringContentClustering, "search_visits_only",
+        content_clustering_search_visits_only);
 
     content_clustering_similarity_threshold =
         GetFieldTrialParamByFeatureAsDouble(
@@ -338,6 +343,12 @@ Config::Config() {
         "search_results_page_ranking_weight",
         search_results_page_ranking_weight);
     DCHECK_GE(search_results_page_ranking_weight, 0.0f);
+
+    has_url_keyed_image_ranking_weight = GetFieldTrialParamByFeatureAsDouble(
+        features::kOnDeviceClusteringVisitRanking,
+        "has_url_keyed_image_ranking_weight",
+        has_url_keyed_image_ranking_weight);
+    DCHECK_GE(has_url_keyed_image_ranking_weight, 0.0f);
   }
 
   // The `kHistoryClustersNavigationContextClustering` feature and child params.
@@ -398,6 +409,9 @@ Config::Config() {
 
     include_synced_visits =
         base::FeatureList::IsEnabled(internal::kJourneysIncludeSyncedVisits);
+
+    persist_caches_to_prefs =
+        base::FeatureList::IsEnabled(internal::kJourneysPersistCachesToPrefs);
   }
 }
 

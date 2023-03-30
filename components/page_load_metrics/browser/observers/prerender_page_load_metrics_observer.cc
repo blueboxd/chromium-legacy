@@ -14,6 +14,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 
 namespace internal {
 
@@ -38,8 +39,6 @@ const char
         [] = "PageLoad.Clients.Prerender.LayoutInstability."
              "MaxCumulativeShiftScore.SessionWindow."
              "Gap1000ms.Max5000ms2";
-const char kHistogramPrerenderPageEndReason[] =
-    "PageLoad.Clients.Prerender.PageEndReason";
 
 // Responsiveness metrics.
 const char
@@ -56,6 +55,10 @@ const char
 const char kHistogramPrerenderWorstUserInteractionLatencyMaxEventDuration[] =
     "PageLoad.InteractiveTiming.WorstUserInteractionLatency.MaxEventDuration."
     "Prerender";
+
+// Monitors serving preload cache to prerender.
+const char kPageLoadPrerenderActivatedPageLoaderStatus[] =
+    "PageLoad.Internal.Prerender2.ActivatedPageLoaderStatus";
 
 // This metric is used for debugging https://crbug.com/1379491.
 // Intentionally this metric doesn't record observer events per trigger type
@@ -265,7 +268,35 @@ void PrerenderPageLoadMetricsObserver::OnComplete(
   base::UmaHistogramEnumeration(
       internal::kPageLoadPrerenderObserverEvent,
       internal::PageLoadPrerenderObserverEvent::kOnComplete);
-  RecordSessionEndHistograms(timing, /*app_entering_background=*/false);
+  RecordSessionEndHistograms(timing);
+}
+
+void PrerenderPageLoadMetricsObserver::OnLoadedResource(
+    const page_load_metrics::ExtraRequestCompleteInfo&
+        extra_request_complete_info) {
+  // Return early if this load is not for the main resource of the main frame of
+  // the prerendered page.
+  if (extra_request_complete_info.request_destination !=
+      network::mojom::RequestDestination::kDocument) {
+    return;
+  }
+
+  CHECK(!main_resource_load_status_);
+  main_resource_load_status_ =
+      static_cast<net::Error>(extra_request_complete_info.net_error);
+}
+
+void PrerenderPageLoadMetricsObserver::MaybeRecordMainResourceLoadStatus() {
+  // Only record UMA for the activated prerendered page that has started
+  // loading. If the trigger type is not set, the page is not activated since it
+  // is set at `DidActivatePrerenderedPage`.  If the main_resource_load_status_
+  // is not set, the page is not loaded.
+  if (!trigger_type_ || !main_resource_load_status_.has_value()) {
+    return;
+  }
+  base::UmaHistogramSparse(
+      AppendSuffix(internal::kPageLoadPrerenderActivatedPageLoaderStatus),
+      std::abs(*main_resource_load_status_));
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -274,16 +305,16 @@ PrerenderPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   base::UmaHistogramEnumeration(internal::kPageLoadPrerenderObserverEvent,
                                 internal::PageLoadPrerenderObserverEvent::
                                     kFlushMetricsOnAppEnterBackground);
-  RecordSessionEndHistograms(timing, /*app_entering_background=*/true);
+  RecordSessionEndHistograms(timing);
   return STOP_OBSERVING;
 }
 
 void PrerenderPageLoadMetricsObserver::RecordSessionEndHistograms(
-    const page_load_metrics::mojom::PageLoadTiming& main_frame_timing,
-    bool app_entering_background) {
+    const page_load_metrics::mojom::PageLoadTiming& main_frame_timing) {
   base::UmaHistogramEnumeration(
       internal::kPageLoadPrerenderObserverEvent,
       internal::PageLoadPrerenderObserverEvent::kRecordSessionEndHistograms);
+  MaybeRecordMainResourceLoadStatus();
 
   if (!GetDelegate().WasPrerenderedThenActivatedInForeground() ||
       !main_frame_timing.activation_start) {
@@ -291,20 +322,6 @@ void PrerenderPageLoadMetricsObserver::RecordSessionEndHistograms(
     // notified by the renderer. Ignore such page loads.
     return;
   }
-
-  // Records the reason how a page load ends.
-  auto page_end_reason = GetDelegate().GetPageEndReason();
-  if (page_end_reason == page_load_metrics::PageEndReason::END_NONE &&
-      app_entering_background) {
-    page_end_reason =
-        page_load_metrics::PageEndReason::END_APP_ENTER_BACKGROUND;
-  }
-  ukm::builders::PrerenderPageLoad(GetDelegate().GetPageUkmSourceId())
-      .SetPageEndReason(page_end_reason)
-      .Record(ukm::UkmRecorder::Get());
-  base::UmaHistogramEnumeration(
-      AppendSuffix(internal::kHistogramPrerenderPageEndReason), page_end_reason,
-      page_load_metrics::PAGE_END_REASON_COUNT);
 
   // Records Largest Contentful Paint (LCP) to UMA and UKM.
   const page_load_metrics::ContentfulPaintTimingInfo& largest_contentful_paint =
@@ -361,8 +378,9 @@ void PrerenderPageLoadMetricsObserver::RecordLayoutShiftScoreMetrics(
       GetDelegate().GetNormalizedCLSData(
           page_load_metrics::PageLoadMetricsObserverDelegate::BfcacheStrategy::
               ACCUMULATE);
-  if (normalized_cls_data.data_tainted)
+  if (normalized_cls_data.data_tainted) {
     return;
+  }
 
   page_load_metrics::UmaMaxCumulativeShiftScoreHistogram10000x(
       AppendSuffix(
@@ -387,8 +405,9 @@ void PrerenderPageLoadMetricsObserver::RecordNormalizedResponsivenessMetrics() {
   const page_load_metrics::NormalizedResponsivenessMetrics&
       normalized_responsiveness_metrics =
           GetDelegate().GetNormalizedResponsivenessMetrics();
-  if (!normalized_responsiveness_metrics.num_user_interactions)
+  if (!normalized_responsiveness_metrics.num_user_interactions) {
     return;
+  }
 
   const page_load_metrics::NormalizedInteractionLatencies& max_event_durations =
       normalized_responsiveness_metrics.normalized_max_event_durations;

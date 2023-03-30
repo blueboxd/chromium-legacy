@@ -50,6 +50,12 @@
     <message name="IDS_SETTINGS_ABOUT_PAGE_SEND_FEEDBACK" desc="Text of the button which allows the user to send feedback with Chrome.">
       Send feedback
     </message>
+    <message name="IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME" desc="Section title for the 'Get the most out of Chrome' page.">
+      Get the most ouf of Chrome
+    </message>
+    <message name="IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_DESCRIPTION" desc="Explanatory text for the link to the 'Get the most out of Chrome' page.">
+      This guide helps you understand your choices, so that Chrome works the way you want to
+    </message>
   </if>
   <if expr="is_macosx">
     <message name="IDS_ABOUT_CHROME_AUTOUPDATE_ALL" desc="The 'Automatically update Chrome for all users.' button in the About window.  Mac-only.">
@@ -82,6 +88,18 @@
   <message name="IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE" desc="Subtitle for screen reader image labels feature.">
     If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google.
   </message>
+  <message name="IDS_SETTINGS_PDF_OCR_DOWNLOAD_COMPLETE" desc="Success message when it has downloaded PDF OCR files.">
+    Text recognition files downloaded
+  </message>
+  <message name="IDS_SETTINGS_PDF_OCR_DOWNLOAD_ERROR" desc="Generic error message when it fails to download PDF OCR files.">
+    Can't download text recognition files. Try again later.
+  </message>
+  <message name="IDS_SETTINGS_PDF_OCR_DOWNLOAD_PROGRESS" desc="Download progress indicator after PDF OCR is enabled. The user needs to download certain files for the feature to work.">
+    Downloading text recognition files… <ph name="PERCENT">$1<ex>17</ex></ph>%
+  </message>
+  <message name="IDS_SETTINGS_PDF_OCR_DOWNLOADING" desc="Generic message when it has started downloading PDF OCR files.">
+    Downloading text recognition files
+  </message>
   <message name="IDS_SETTINGS_PDF_OCR_TITLE" desc="Description for screen reader pdf ocr feature.">
     Convert images to text
   </message>
@@ -90,6 +108,12 @@
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_TITLE" desc="Name of the setting to enable Live Caption feature.">
     Live Caption
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_TRANSLATE_TITLE" desc="Name of the setting to enable Live Translate feature.">
+    Live Translate
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_TRANSLATE_SUBTITLE" desc="Description text for Live Translate feature.">
+    Automatically translate captions to a target language.
   </message>
   <if expr="chromeos_ash">
     <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE_ENGLISH_ONLY" desc="Description text for Live Caption feature. When audio or video is playing, the user will see captions on the screen. Only works in Chrome browser initially. Currently only works for English media.">
@@ -405,7 +429,7 @@
   <message name="IDS_SETTINGS_LOCAL_CARD_REMOVE_CONFIRMATION_TITLE" desc="Local card remove dialog confirmation title.">
     Delete card
   </message>
-  <message name="IDS_SETTINGS_LOCAL_CARD_REMOVE_CONFIRMATION_DESCRIPTION" desc="The notice/warning for the user before the card deletion.">
+  <message name="IDS_SETTINGS_LOCAL_PAYMENT_METHOD_REMOVE_CONFIRMATION_DESCRIPTION" desc="The notice/warning for the user before the card or IBAN (International Bank Account Number) deletion.">
     This payment method will be deleted from this device
   </message>
   <message name="IDS_SETTINGS_PAYMENTS_MANAGE_CREDIT_CARDS" desc="Shown in the payments section of settings. Descriptive text to inform the user that credit cards can be accessed online. Has a link.">
@@ -453,6 +477,9 @@
   <message name="IDS_SETTINGS_CREDIT_CARD_NICKNAME_INVALID" desc="The error message that is shown when user uses digit numbers in credit card nickname">
     Nickname can’t include numbers
   </message>
+  <message name="IDS_SETTINGS_ADD_PAYMENT_METHODS" desc="The (accessibility) label that appears in the drop-down button for adding either an IBAN (International Bank Account Number), or a credit/debit card.">
+    Add payment methods
+  </message>
   <message name="IDS_SETTINGS_ADD_PAYMENT_METHOD_CREDIT_OR_DEBIT_CARD" desc="The label that appears in the drop-down selector when adding a local payment method, which allows users to add a credit or debit card.">
     Credit/Debit card
   </message>
@@ -480,8 +507,8 @@
   <message name="IDS_SETTINGS_IBAN_EDIT" desc="Label for a context menu item that edits the selected IBAN (International Bank Account Number)." meaning="Edit selected IBAN.">
     Edit
   </message>
-  <message name="IDS_SETTINGS_IBAN_REMOVE" desc="Label for a context menu item that removes the selected IBAN (International Bank Account Number)." meaning="Remove selected IBAN.">
-    Remove
+  <message name="IDS_SETTINGS_LOCAL_IBAN_REMOVE_CONFIRMATION_TITLE" desc="Local IBAN (International Bank Account Number) remove dialog confirmation title.">
+    Delete IBAN
   </message>
   <message name="IDS_SETTINGS_UPI_ID_LABEL" desc="A label which appears next to UPI IDs, when they are listed as stored payment info, but it is visually separate from the UPI ID. It lets the user know this is a UPI ID (e.g. as opposed to a credit card number). UPI is a system for payments in India. A UPI ID is an email-like string.">
     UPI ID
@@ -960,6 +987,23 @@
      =1 {1 password not imported}
      other {{NUM_PASSWORDS} passwords not imported}}
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICTS_TITLE" desc="The title of a dialog, which offers the ability for the user to import passwords into Password Manager. Shown when conflicts were found in the imported file and the user needs to resolve them.">
+    {NUM_PASSWORDS, plural,
+     =1 {1 existing password found}
+     other {{NUM_PASSWORDS} existing passwords found}}
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICTS_DESCRIPTION" desc="Text shown to the user on the dialog for import passwords, in case some conflicts were found during the import process.">
+    You already have passwords for these accounts in your <ph name="BRAND">$1<ex>Google Password Manager</ex></ph>. If you choose to import one of the passwords below, it will replace the existing one.
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_IMPORT_CANCEL" desc="A button in the dialog for importing passwords into Password Manager. By clicking the button, the import will be canceled and the dialog will be closed.">
+    Cancel import
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_IMPORT_SKIP" desc="A button in the dialog for importing passwords into Password Manager. By clicking the button, the import will be resumed and no passwords will be replaced.">
+    Skip
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_IMPORT_REPLACE" desc="A button in the dialog for importing passwords into Password Manager. By clicking the button, the import will be resumed and selected passwords will be replaced.">
+    Replace
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_IMPORT_ALREADY_ACTIVE" desc="Message is shown on the dialog for importing passwords if there is the import process is already running in another tab.">
     You're already importing passwords in another tab
   </message>
@@ -998,6 +1042,9 @@
   </message>
   <message name="IDS_SETTINGS_PASSWORD_ROW_FEDERATED_MORE_ACTIONS" desc="The ARIA (accessibility) message for the More Actions button, which sits in every row of the password list. For this row does not include a password, only information of the account. It opens a menu with a list of actions, which apply to the account presented on this row.">
     More actions, saved account for <ph name="USERNAME">$1<ex>example@gmail.com</ex></ph> on <ph name="DOMAIN">$2<ex>www.google.com</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_PASSWORD_TABLE_ARIA_LABEL" is_accessibility_with_no_ui="true" desc="The ARIA (accessibility) message for the password table containing the list of user's persisted passwords">
+    Saved passwords table
   </message>
   <message name="IDS_SETTINGS_PASSWORD_ROW_PASSWORD_DETAIL_PAGE" desc="The ARIA (accessibility) message for the password subpage button, which sits in every row of the password list.">
     Credential details for <ph name="USERNAME">$1<ex>example@gmail.com</ex></ph> on <ph name="DOMAIN">$2<ex>www.google.com</ex></ph>
@@ -1384,9 +1431,16 @@
   <message name="IDS_SETTINGS_CLEAR_COOKIES" desc="Checkbox for deleting Cookies and other site data">
     Cookies and other site data
   </message>
-  <message name="IDS_SETTINGS_CLEAR_PASSWORDS" desc="Checkbox for deleting Passwords and other sign-in data">
-    Passwords and other sign-in data
-  </message>
+  <if expr="not is_macosx">
+    <message name="IDS_SETTINGS_CLEAR_PASSWORDS" desc="Checkbox for deleting Passwords and other sign-in data">
+      Passwords and other sign-in data
+    </message>
+  </if>
+  <if expr="is_macosx">
+    <message name="IDS_SETTINGS_CLEAR_PASSWORDS" desc="Checkbox for deleting Passwords and passkeys. Refer to Glossary for the translation of passkey.">
+      Passwords and passkeys
+    </message>
+  </if>
   <message name="IDS_SETTINGS_CLEAR_FORM_DATA" desc="Checkbox for deleting form data saved for Autofill">
     Autofill form data
   </message>
@@ -1535,6 +1589,9 @@
   <message name="IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE" desc="Name of the settings dialog which allows enabling additional languages.">
     Add languages
   </message>
+  <message name="IDS_SETTINGS_LANGUAGES_NO_LANGUAGES_ADDED" desc="Placeholder for language list settings when no languages have been added, on the Manage Languages page.">
+    No languages added
+  </message>
   <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_LANGUAGES_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the language options. Only visible by screen reader software.">
       Show language options
@@ -1559,9 +1616,6 @@
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_MANAGED_DIALOG_BODY" desc="Body text for the dialog informing users that the language they tried modifying is managed.">
       Your administrator has set a default language which cannot be modified.
-    </message>
-    <message name="IDS_SETTINGS_LANGUAGES_NO_LANGUAGES_ADDED" desc="Placeholder for language list settings when no languages have been added, on the Manage Languages page.">
-      No languages added
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_ADD_ARIA_LABEL" desc="Text read by screen readers when focusing on the checkbox for adding a language. This text is only announced by screen readers and is not visible in the UI.">
       Add <ph name="LANGUAGE_NAME">$1<ex>Swahili</ex></ph>

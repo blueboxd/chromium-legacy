@@ -134,6 +134,7 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/size.h"
 
 // Populates parameters from texImage2D except for border, width, height, and
@@ -1755,11 +1756,9 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
     return false;
   if (!CopyRenderingResultsFromDrawingBuffer(Host()->ResourceProvider(),
                                              source_buffer)) {
-    // Currently, CopyRenderingResultsFromDrawingBuffer is expected to always
-    // succeed because cases where canvas()-buffer() is not accelerated are
-    // handled before reaching this point.  If that assumption ever stops
-    // holding true, we may need to implement a fallback right here.
-    NOTREACHED();
+    // CopyRenderingResultsFromDrawingBuffer handles both the
+    // hardware-accelerated and software cases, so there is no
+    // possible additional fallback for failures seen at this point.
     return false;
   }
   return true;
@@ -5634,7 +5633,7 @@ void WebGLRenderingContextBase::TexImageHelperImageData(TexImageParams params,
   }
 
   auto pixmap = pixels->GetSkPixmap();
-  auto image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
+  auto image = SkImages::RasterFromPixmap(pixmap, nullptr, nullptr);
   TexImageSkImage(params, std::move(image), /*image_has_flip_y=*/false);
 }
 

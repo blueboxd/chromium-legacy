@@ -1470,21 +1470,27 @@ CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange& range,
   return nullptr;
 }
 
-CSSNumericLiteralValue* ConsumeResolution(CSSParserTokenRange& range) {
-  const CSSParserToken& token = range.Peek();
+CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange& range,
+                                     const CSSParserContext& context) {
+  if (const CSSParserToken& token = range.Peek();
+      token.GetType() == kDimensionToken) {
+    CSSPrimitiveValue::UnitType unit = token.GetUnitType();
+    if (!CSSPrimitiveValue::IsResolution(unit)) {
+      return nullptr;
+    }
 
-  // Unlike the other types, calc() does not work with <resolution>.
-  if (token.GetType() != kDimensionToken) {
-    return nullptr;
+    return CSSNumericLiteralValue::Create(
+        range.ConsumeIncludingWhitespace().NumericValue(), unit);
   }
 
-  CSSPrimitiveValue::UnitType unit = token.GetUnitType();
-  if (!CSSPrimitiveValue::IsResolution(unit)) {
-    return nullptr;
+  MathFunctionParser math_parser(range, context,
+                                 CSSPrimitiveValue::ValueRange::kAll);
+  const CSSMathFunctionValue* math_value = math_parser.Value();
+  if (math_value && math_value->IsResolution()) {
+    return math_parser.ConsumeValue();
   }
 
-  return CSSNumericLiteralValue::Create(
-      range.ConsumeIncludingWhitespace().NumericValue(), unit);
+  return nullptr;
 }
 
 // https://drafts.csswg.org/css-values-4/#ratio-value
@@ -1978,7 +1984,7 @@ static bool ParseLCHOrOKLCHParameters(CSSParserTokenRange& range,
 
 static bool ConsumeColorInterpolationSpace(
     CSSParserTokenRange& args,
-    Color::ColorInterpolationSpace& color_space,
+    Color::ColorSpace& color_space,
     Color::HueInterpolationMethod& hue_interpolation) {
   if (!RuntimeEnabledFeatures::CSSColor4Enabled()) {
     return false;
@@ -1988,38 +1994,38 @@ static bool ConsumeColorInterpolationSpace(
     return false;
   }
 
-  absl::optional<Color::ColorInterpolationSpace> read_color_space;
+  absl::optional<Color::ColorSpace> read_color_space;
   if (ConsumeIdent<CSSValueID::kXyz>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kXYZD65;
+    read_color_space = Color::ColorSpace::kXYZD65;
   } else if (ConsumeIdent<CSSValueID::kXyzD50>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kXYZD50;
+    read_color_space = Color::ColorSpace::kXYZD50;
   } else if (ConsumeIdent<CSSValueID::kXyzD65>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kXYZD65;
+    read_color_space = Color::ColorSpace::kXYZD65;
   } else if (ConsumeIdent<CSSValueID::kSRGBLinear>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kSRGBLinear;
+    read_color_space = Color::ColorSpace::kSRGBLinear;
   } else if (ConsumeIdent<CSSValueID::kLab>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kLab;
+    read_color_space = Color::ColorSpace::kLab;
   } else if (ConsumeIdent<CSSValueID::kOklab>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kOklab;
+    read_color_space = Color::ColorSpace::kOklab;
   } else if (ConsumeIdent<CSSValueID::kLch>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kLch;
+    read_color_space = Color::ColorSpace::kLch;
   } else if (ConsumeIdent<CSSValueID::kOklch>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kOklch;
+    read_color_space = Color::ColorSpace::kOklch;
   } else if (ConsumeIdent<CSSValueID::kSRGB>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kSRGB;
+    read_color_space = Color::ColorSpace::kSRGB;
   } else if (ConsumeIdent<CSSValueID::kHsl>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kHSL;
+    read_color_space = Color::ColorSpace::kHSL;
   } else if (ConsumeIdent<CSSValueID::kHwb>(args)) {
-    read_color_space = Color::ColorInterpolationSpace::kHWB;
+    read_color_space = Color::ColorSpace::kHWB;
   }
 
   if (read_color_space) {
     color_space = read_color_space.value();
     absl::optional<Color::HueInterpolationMethod> read_hue;
-    if (color_space == Color::ColorInterpolationSpace::kHSL ||
-        color_space == Color::ColorInterpolationSpace::kHWB ||
-        color_space == Color::ColorInterpolationSpace::kLch ||
-        color_space == Color::ColorInterpolationSpace::kOklch) {
+    if (color_space == Color::ColorSpace::kHSL ||
+        color_space == Color::ColorSpace::kHWB ||
+        color_space == Color::ColorSpace::kLch ||
+        color_space == Color::ColorSpace::kOklch) {
       if (ConsumeIdent<CSSValueID::kShorter>(args)) {
         read_hue = Color::HueInterpolationMethod::kShorter;
       } else if (ConsumeIdent<CSSValueID::kLonger>(args)) {
@@ -2057,7 +2063,7 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
 
   CSSParserTokenRange args = ConsumeFunction(range);
   // First argument is the colorspace
-  Color::ColorInterpolationSpace color_space;
+  Color::ColorSpace color_space;
   Color::HueInterpolationMethod hue_interpolation_method =
       Color::HueInterpolationMethod::kShorter;
   if (!ConsumeColorInterpolationSpace(args, color_space,
@@ -3048,7 +3054,7 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
   // [ ellipse || [ <length> | <percentage> ]{2} ] |
   // [ [ circle | ellipse] || <size-keyword> ]] ]
 
-  Color::ColorInterpolationSpace color_space;
+  Color::ColorSpace color_space;
   Color::HueInterpolationMethod hue_interpolation_method =
       Color::HueInterpolationMethod::kShorter;
   bool has_color_space = ConsumeColorInterpolationSpace(
@@ -3162,7 +3168,7 @@ static CSSValue* ConsumeLinearGradient(
   // First part of grammar, the size/shape/color space clause:
   // [ in <color-space>? || [ <angle> | to <side-or-corner> ]?]
   bool expect_comma = true;
-  Color::ColorInterpolationSpace color_space;
+  Color::ColorSpace color_space;
   Color::HueInterpolationMethod hue_interpolation_method =
       Color::HueInterpolationMethod::kShorter;
   bool has_color_space = ConsumeColorInterpolationSpace(
@@ -3225,7 +3231,7 @@ static CSSValue* ConsumeLinearGradient(
 static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
                                       const CSSParserContext& context,
                                       cssvalue::CSSGradientRepeat repeating) {
-  Color::ColorInterpolationSpace color_space;
+  Color::ColorSpace color_space;
   Color::HueInterpolationMethod hue_interpolation_method =
       Color::HueInterpolationMethod::kShorter;
   bool has_color_space = ConsumeColorInterpolationSpace(
@@ -3534,20 +3540,13 @@ static CSSImageSetOptionValue* ConsumeImageSetOption(
   // Type could appear before or after resolution
   CSSImageSetTypeValue* type = ConsumeImageSetType(range, context);
 
-  CSSNumericLiteralValue* resolution = nullptr;
-  if (range.Peek().GetType() == kDimensionToken ||
-      !RuntimeEnabledFeatures::CSSImageSetEnabled()) {
-    if (range.Peek().GetUnitType() != CSSPrimitiveValue::UnitType::kX &&
-        !RuntimeEnabledFeatures::CSSImageSetEnabled()) {
-      return nullptr;
-    }
-
-    resolution = ConsumeResolution(range);
-    if (!resolution || (resolution->GetDoubleValue() <= 0.0 &&
-                        !RuntimeEnabledFeatures::CSSImageSetEnabled())) {
-      return nullptr;
-    }
+  if (!RuntimeEnabledFeatures::CSSImageSetEnabled() &&
+      range.Peek().GetType() != kDimensionToken &&
+      range.Peek().GetUnitType() != CSSPrimitiveValue::UnitType::kX) {
+    return nullptr;
   }
+
+  CSSPrimitiveValue* resolution = ConsumeResolution(range, context);
 
   if (!type) {
     type = ConsumeImageSetType(range, context);
@@ -4322,9 +4321,10 @@ CSSValue* ConsumeAnimationDelay(CSSParserTokenRange& range,
 }
 
 CSSValue* ConsumeAnimationRange(CSSParserTokenRange& range,
-                                const CSSParserContext& context) {
+                                const CSSParserContext& context,
+                                double default_offset_percent) {
   DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
-  if (CSSValue* ident = ConsumeIdent<CSSValueID::kAuto>(range)) {
+  if (CSSValue* ident = ConsumeIdent<CSSValueID::kNormal>(range)) {
     return ident;
   }
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
@@ -4333,12 +4333,13 @@ CSSValue* ConsumeAnimationRange(CSSParserTokenRange& range,
     return nullptr;
   }
   list->Append(*range_name);
-  CSSValue* percentage = ConsumeLengthOrPercent(
+  CSSPrimitiveValue* percentage = ConsumeLengthOrPercent(
       range, context, CSSPrimitiveValue::ValueRange::kAll);
-  if (!percentage) {
-    return nullptr;
+  if (percentage &&
+      !(percentage->IsPercentage() &&
+        percentage->GetValue<double>() == default_offset_percent)) {
+    list->Append(*percentage);
   }
-  list->Append(*percentage);
   return list;
 }
 
@@ -6410,8 +6411,11 @@ CSSValue* ConsumeRay(CSSParserTokenRange& range,
     }
     return nullptr;
   }
-  if (!angle || !size) {
+  if (!angle) {
     return nullptr;
+  }
+  if (!size) {
+    size = CSSIdentifierValue::Create(CSSValueID::kClosestSide);
   }
   range = function_range;
   return MakeGarbageCollected<cssvalue::CSSRayValue>(*angle, *size, contain);

@@ -11,6 +11,9 @@
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
+#include "components/sync_preferences/pref_model_associator_client.h"
+#include "components/sync_preferences/syncable_prefs_database.h"
 
 namespace sync_preferences {
 
@@ -35,9 +38,17 @@ void DualLayerUserPrefStore::UnderlyingPrefStoreObserver::OnPrefValueChanged(
   }
   // Otherwise: This must've been a write directly to the underlying store, so
   // notify any observers.
-  // TODO(crbug.com/1416477): Observers should only be notified if the
-  // effective value of a pref changes - i.e. not if a pref gets modified in the
-  // local store which also has a value in the account store.
+  // Note: Observers should only be notified if the effective value of a pref
+  // changes - i.e. not if a pref gets modified in the local store which also
+  // has a value in the account store.
+  // TODO(crbug.com/1416479): Update the logic for mergeable prefs, since for
+  // those, a change in the local store should generally lead to a change in the
+  // effective value.
+  if (!is_account_store_ &&
+      outer_->GetAccountPrefStore()->GetValue(key, nullptr)) {
+    return;
+  }
+
   for (PrefStore::Observer& observer : outer_->observers_) {
     observer.OnPrefValueChanged(key);
   }
@@ -56,11 +67,13 @@ void DualLayerUserPrefStore::UnderlyingPrefStoreObserver::
 }
 
 DualLayerUserPrefStore::DualLayerUserPrefStore(
-    scoped_refptr<PersistentPrefStore> local_pref_store)
+    scoped_refptr<PersistentPrefStore> local_pref_store,
+    const PrefModelAssociatorClient* pref_model_associator_client)
     : local_pref_store_(std::move(local_pref_store)),
       account_pref_store_(base::MakeRefCounted<ValueMapPrefStore>()),
       local_pref_store_observer_(this, /*is_account_store=*/false),
-      account_pref_store_observer_(this, /*is_account_store=*/true) {
+      account_pref_store_observer_(this, /*is_account_store=*/true),
+      pref_model_associator_client_(pref_model_associator_client) {
   local_pref_store_->AddObserver(&local_pref_store_observer_);
   account_pref_store_->AddObserver(&account_pref_store_observer_);
 }
@@ -99,7 +112,7 @@ bool DualLayerUserPrefStore::IsInitializationComplete() const {
 
 bool DualLayerUserPrefStore::GetValue(base::StringPiece key,
                                       const base::Value** result) const {
-  if (!IsPrefKeySyncable(key)) {
+  if (!IsPrefKeySyncable(std::string(key))) {
     return local_pref_store_->GetValue(key, result);
   }
 
@@ -136,6 +149,12 @@ base::Value::Dict DualLayerUserPrefStore::GetValues() const {
 void DualLayerUserPrefStore::SetValue(const std::string& key,
                                       base::Value value,
                                       uint32_t flags) {
+  const base::Value* initial_value = nullptr;
+  // Only notify if something actually changed.
+  // Note: `value` is still added to the stores in case `key` was missing from
+  // any or had a different value.
+  bool should_notify =
+      !GetValue(key, &initial_value) || (*initial_value != value);
   {
     base::AutoReset<bool> setting_prefs(&is_setting_prefs_, true);
     // TODO(crbug.com/1416479): Implement un-merging, i.e. split updates and
@@ -146,14 +165,20 @@ void DualLayerUserPrefStore::SetValue(const std::string& key,
     local_pref_store_->SetValue(key, std::move(value), flags);
   }
 
-  // TODO(crbug.com/1416477): Only notify if something actually changed.
-  for (PrefStore::Observer& observer : observers_) {
-    observer.OnPrefValueChanged(key);
+  if (should_notify) {
+    for (PrefStore::Observer& observer : observers_) {
+      observer.OnPrefValueChanged(key);
+    }
   }
 }
 
 void DualLayerUserPrefStore::RemoveValue(const std::string& key,
                                          uint32_t flags) {
+  // Only proceed if the pref exists.
+  if (!GetValue(key, nullptr)) {
+    return;
+  }
+
   {
     base::AutoReset<bool> setting_prefs(&is_setting_prefs_, true);
     local_pref_store_->RemoveValue(key, flags);
@@ -162,7 +187,6 @@ void DualLayerUserPrefStore::RemoveValue(const std::string& key,
     }
   }
 
-  // TODO(crbug.com/1416477): Only notify if something was actually removed.
   for (PrefStore::Observer& observer : observers_) {
     observer.OnPrefValueChanged(key);
   }
@@ -286,9 +310,53 @@ void DualLayerUserPrefStore::OnStoreDeletionFromDisk() {
   local_pref_store_->OnStoreDeletionFromDisk();
 }
 
-bool DualLayerUserPrefStore::IsPrefKeySyncable(base::StringPiece key) const {
-  // TODO(crbug.com/1416477): Hook up to the list of syncable prefs.
-  return true;
+bool DualLayerUserPrefStore::IsPrefKeySyncable(const std::string& key) const {
+  if (!pref_model_associator_client_) {
+    // Safer this way.
+    return false;
+  }
+  auto metadata = pref_model_associator_client_->GetSyncablePrefsDatabase()
+                      .GetSyncablePrefMetadata(key);
+  return metadata.has_value() && active_types_.count(metadata->model_type());
+}
+
+void DualLayerUserPrefStore::EnableType(syncer::ModelType model_type) {
+  CHECK(model_type == syncer::PREFERENCES ||
+        model_type == syncer::PRIORITY_PREFERENCES
+#if BUILDFLAG(IS_CHROMEOS)
+        || model_type == syncer::OS_PREFERENCES ||
+        model_type == syncer::OS_PRIORITY_PREFERENCES
+#endif
+  );
+  active_types_.insert(model_type);
+}
+
+void DualLayerUserPrefStore::DisableTypeAndClearAccountStore(
+    syncer::ModelType model_type) {
+  CHECK(model_type == syncer::PREFERENCES ||
+        model_type == syncer::PRIORITY_PREFERENCES
+#if BUILDFLAG(IS_CHROMEOS)
+        || model_type == syncer::OS_PREFERENCES ||
+        model_type == syncer::OS_PRIORITY_PREFERENCES
+#endif
+  );
+  active_types_.erase(model_type);
+
+  if (!pref_model_associator_client_) {
+    // No pref is treated as syncable in this case. No need to clear the account
+    // store.
+    return;
+  }
+
+  // Clear all synced preferences from the account store.
+  for (auto [pref_name, pref_value] : account_pref_store_->GetValues()) {
+    if (!IsPrefKeySyncable(pref_name)) {
+      // The write flags only affect persistence, and the account store is in
+      // memory only.
+      account_pref_store_->RemoveValue(
+          pref_name, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+    }
+  }
 }
 
 }  // namespace sync_preferences

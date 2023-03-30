@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 
 class AuthenticationService;
+class Browser;
 class ChromeAccountManagerService;
 class PrefService;
 @protocol SigninPresenter;
@@ -49,6 +50,7 @@ class PrefRegistrySyncable;
 // SigninPromoViewConfigurator. This class makes the link between the model and
 // the view. The consumer will receive notification if default identity is
 // changed or updated.
+// TODO(crbug.com/1425862): This class needs to be split with a coordinator.
 @interface SigninPromoViewMediator : NSObject<SigninPromoViewDelegate>
 
 // Consumer to handle identity update notifications.
@@ -71,6 +73,11 @@ class PrefRegistrySyncable;
 @property(nonatomic, assign, readonly, getter=isInvalidClosedOrNeverVisible)
     BOOL invalidClosedOrNeverVisible;
 
+// If YES, SigninPromoViewMediator will trigger the sign-in flow with sign-in
+// only. Otherwise, SigninPromoViewMediator will trigger a command for sign-in
+// and sync.
+@property(nonatomic, assign) BOOL signInOnly;
+
 // Registers the feature preferences.
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
 
@@ -82,17 +89,20 @@ class PrefRegistrySyncable;
                                   (AuthenticationService*)authenticationService
                                         prefService:(PrefService*)prefService;
 
-// See -[SigninPromoViewMediator initWithBrowserState:].
+// See `-[SigninPromoViewMediator initWithBrowser:accountManagerService:
+// authService:prefService:accessPointpresenter:baseViewController]`.
 - (instancetype)init NS_UNAVAILABLE;
 
 // Designated initializer.
-- (instancetype)
-    initWithAccountManagerService:
-        (ChromeAccountManagerService*)accountManagerService
-                      authService:(AuthenticationService*)authService
-                      prefService:(PrefService*)prefService
-                      accessPoint:(signin_metrics::AccessPoint)accessPoint
-                        presenter:(id<SigninPresenter>)presenter
+// `baseViewController` is the view to present UI for sign-in.
+- (instancetype)initWithBrowser:(Browser*)browser
+          accountManagerService:
+              (ChromeAccountManagerService*)accountManagerService
+                    authService:(AuthenticationService*)authService
+                    prefService:(PrefService*)prefService
+                    accessPoint:(signin_metrics::AccessPoint)accessPoint
+                      presenter:(id<SigninPresenter>)presenter
+             baseViewController:(UIViewController*)baseViewController
     NS_DESIGNATED_INITIALIZER;
 
 - (SigninPromoViewConfigurator*)createConfigurator;

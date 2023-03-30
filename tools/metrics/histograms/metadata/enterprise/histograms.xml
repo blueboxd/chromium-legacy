@@ -105,7 +105,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Enterprise.AccountStatusCheckResult"
-    enum="EnterpriseAccountStatus" expires_after="2023-04-01">
+    enum="EnterpriseAccountStatus" expires_after="2023-12-01">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -610,7 +610,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.DeviceRemoteCommand.Crd.SessionType"
-    enum="EnterpriseCrdUserType" expires_after="2023-06-01">
+    enum="EnterpriseCrdUserType" expires_after="2023-09-17">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
   <summary>
@@ -1129,7 +1129,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ActiveFileEventsCount" units="entries"
-    expires_after="2023-06-01">
+    expires_after="2023-09-17">
   <owner>accorsi@google.com</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1180,7 +1180,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.DataTransferControllerStarted" enum="Boolean"
-    expires_after="2023-06-01">
+    expires_after="2023-09-17">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1261,7 +1261,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.Errors.FilesPolicySetup" enum="Boolean"
-    expires_after="2023-06-01">
+    expires_after="2023-09-17">
   <owner>accorsi@google.com</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1724,40 +1724,6 @@ chromium-metrics-reviews@google.com.
 
     Warning: this histogram was expired from 2021-12-05 to 2022-02-01. Data may
     be missing.
-  </summary>
-</histogram>
-
-<histogram
-    name="Enterprise.EnrollmentAttestationBased.EnrollmentCertificateStatus.InitialAttempt"
-    enum="EnrollmentAttestationBasedCertificateStatus"
-    expires_after="2023-12-01">
-  <owner>asumaneev@google.com</owner>
-  <owner>sergiyb@chromium.org</owner>
-  <owner>chromeos-commercial-remote-management@google.com</owner>
-  <summary>
-    Status of possibly existing cached enrollment certificate recorded at the
-    first registration attempt during attestation-based enrollment.
-
-    Note that the certificate request status is not in the scope of this metric
-    and is recorded on &quot;EnterpriseEnrollmentType&quot; events by
-    &quot;Enterprise.Enrollment*&quot; metrics.
-  </summary>
-</histogram>
-
-<histogram
-    name="Enterprise.EnrollmentAttestationBased.EnrollmentCertificateStatus.SubsequentAttempt"
-    enum="EnrollmentAttestationBasedCertificateStatus"
-    expires_after="2023-12-01">
-  <owner>asumaneev@google.com</owner>
-  <owner>sergiyb@chromium.org</owner>
-  <owner>chromeos-commercial-remote-management@google.com</owner>
-  <summary>
-    Status of refreshed enrollment certificate recorded at the subsequent
-    registration attempt during attestation-based enrollment.
-
-    Note that the certificate request status is not in the scope of this metric
-    and is recorded on &quot;EnterpriseEnrollmentType&quot; events by
-    &quot;Enterprise.Enrollment*&quot; metrics.
   </summary>
 </histogram>
 
@@ -2235,28 +2201,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded after the ManagementStatus cache is updated. Reports whether the
     Management authority trustworthiness changed after the cache update.
-  </summary>
-</histogram>
-
-<histogram name="Enterprise.MultipartDataPipe.WriteDuration" units="ms"
-    expires_after="2022-06-17">
-  <owner>domfc@chromium.org</owner>
-  <owner>anthonyvd@chromium.org</owner>
-  <summary>
-    This metric is recorded every time a file is uploaded for deep scanning. It
-    measures the total duration for a complete writing of the file from the
-    browser process to the network service.
-  </summary>
-</histogram>
-
-<histogram name="Enterprise.MultipartDataPipe.WriteRate"
-    units="kilobytes per second" expires_after="2023-04-30">
-  <owner>domfc@chromium.org</owner>
-  <owner>anthonyvd@chromium.org</owner>
-  <summary>
-    This metric is recorded every time a file is uploaded for deep scanning. It
-    measures the writing rate of that file's contents from the browser process
-    to the network service.
   </summary>
 </histogram>
 
@@ -2869,7 +2813,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.InDomain" enum="BooleanEnabled"
-    expires_after="2023-04-30">
+    expires_after="2024-03-01">
+  <owner>ydago@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <summary>

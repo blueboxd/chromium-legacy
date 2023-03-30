@@ -12,7 +12,7 @@
 #include "media/base/video_types.h"
 #include "media/filters/ivf_parser.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/v4l2/test/av1_pix_fmt.h"
+#include "media/gpu/v4l2/test/upstream_pix_fmt.h"
 #include "third_party/libgav1/src/src/warp_prediction.h"
 
 namespace media {
@@ -579,13 +579,11 @@ std::unique_ptr<Av1Decoder> Av1Decoder::Create(
 
   auto v4l2_ioctl = std::make_unique<V4L2IoctlShim>(kDriverCodecFourcc);
   uint32_t uncompressed_fourcc = V4L2_PIX_FMT_NV12;
-  int num_planes = 1;
 
   if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
                                       uncompressed_fourcc)) {
     // Fall back to MM21 for MediaTek platforms
-    uncompressed_fourcc = v4l2_fourcc('M', 'M', '2', '1');
-    num_planes = 2;
+    uncompressed_fourcc = V4L2_PIX_FMT_MM21;
 
     if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
                                         uncompressed_fourcc)) {
@@ -601,17 +599,13 @@ std::unique_ptr<Av1Decoder> Av1Decoder::Create(
   // https://buganizer.corp.google.com/issues/202214561#comment31
   auto OUTPUT_queue = std::make_unique<V4L2Queue>(
       V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, kDriverCodecFourcc,
-      bitstream_coded_size,
-      /*num_planes=*/1, V4L2_MEMORY_MMAP, /*num_buffers=*/1);
+      bitstream_coded_size, V4L2_MEMORY_MMAP, kNumberOfBuffersInOutputQueue);
 
   // TODO(stevecho): enable V4L2_MEMORY_DMABUF memory for CAPTURE queue.
-  // |num_planes| represents separate memory buffers, not planes for Y, U, V.
   // https://www.kernel.org/doc/html/v5.16/userspace-api/media/v4l/pixfmt-v4l2-mplane.html#c.V4L.v4l2_plane_pix_format
   auto CAPTURE_queue = std::make_unique<V4L2Queue>(
       V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, uncompressed_fourcc,
-      bitstream_coded_size,
-      /*num_planes=*/num_planes, V4L2_MEMORY_MMAP,
-      /*num_buffers=*/kNumberOfBuffersInCaptureQueue);
+      bitstream_coded_size, V4L2_MEMORY_MMAP, kNumberOfBuffersInCaptureQueue);
 
   return base::WrapUnique(
       new Av1Decoder(std::move(ivf_parser), std::move(v4l2_ioctl),
@@ -652,10 +646,10 @@ void Av1Decoder::CopyFrameData(const libgav1::ObuFrameHeader& frame_hdr,
   CHECK_EQ(queue->num_planes(), 1u)
       << "Number of planes is expected to be 1 for OUTPUT queue.";
 
-  scoped_refptr<MmapedBuffer> buffer = queue->GetBuffer(0);
+  scoped_refptr<MmappedBuffer> buffer = queue->GetBuffer(0);
 
-  buffer->mmaped_planes()[0].CopyIn(ivf_frame_data_,
-                                    ivf_frame_header_.frame_size);
+  buffer->mmapped_planes()[0].CopyIn(ivf_frame_data_,
+                                     ivf_frame_header_.frame_size);
 }
 
 // 5.9.2. Uncompressed header syntax
@@ -880,7 +874,7 @@ void Av1Decoder::SetupFrameParams(
 std::set<int> Av1Decoder::RefreshReferenceSlots(
     const libgav1::ObuFrameHeader& frame_hdr,
     const libgav1::RefCountedBufferPtr current_frame,
-    const scoped_refptr<MmapedBuffer> buffer,
+    const scoped_refptr<MmappedBuffer> buffer,
     const uint32_t last_queued_buffer_id) {
   state_->UpdateReferenceFrames(
       current_frame, base::strict_cast<int>(frame_hdr.refresh_frame_flags));
@@ -980,9 +974,9 @@ void Av1Decoder::QueueReusableBuffersInCaptureQueue(
   }
 }
 
-VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
-                                                 std::vector<char>& u_plane,
-                                                 std::vector<char>& v_plane,
+VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
+                                                 std::vector<uint8_t>& u_plane,
+                                                 std::vector<uint8_t>& v_plane,
                                                  gfx::Size& size,
                                                  const int frame_number) {
   libgav1::RefCountedBufferPtr current_frame;
@@ -1019,16 +1013,13 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
   }
 
   if (current_frame_header.show_existing_frame) {
-    scoped_refptr<MmapedBuffer> repeated_frame_buffer =
+    scoped_refptr<MmappedBuffer> repeated_frame_buffer =
         ref_frames_[current_frame_header.frame_to_show];
 
     size = CAPTURE_queue_->display_size();
-    ConvertMM21ToYUV(y_plane, u_plane, v_plane, size,
-                     static_cast<char*>(
-                         repeated_frame_buffer->mmaped_planes()[0].start_addr),
-                     static_cast<char*>(
-                         repeated_frame_buffer->mmaped_planes()[1].start_addr),
-                     CAPTURE_queue_->coded_size());
+    ConvertToYUV(y_plane, u_plane, v_plane, size,
+                 repeated_frame_buffer->mmapped_planes(),
+                 CAPTURE_queue_->coded_size(), CAPTURE_queue_->fourcc());
 
     // Repeated frames normally don't need to update reference frames. But in
     // this special case when the repeated frame is pointing to a key frame, all
@@ -1107,26 +1098,10 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
     LOG(FATAL) << "VIDIOC_DQBUF failed for CAPTURE queue.";
   }
 
-  scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
+  scoped_refptr<MmappedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
   size = CAPTURE_queue_->display_size();
-  if (CAPTURE_queue_->fourcc() == V4L2_PIX_FMT_NV12) {
-    CHECK_EQ(buffer->mmaped_planes().size(), 1u)
-        << "NV12 should have exactly 1 plane but CAPTURE queue does not.";
-
-    ConvertNV12ToYUV(y_plane, u_plane, v_plane, size,
-                     static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
-                     CAPTURE_queue_->coded_size());
-  } else if (CAPTURE_queue_->fourcc() == v4l2_fourcc('M', 'M', '2', '1')) {
-    CHECK_EQ(buffer->mmaped_planes().size(), 2u)
-        << "MM21 should have exactly 2 planes but CAPTURE queue does not.";
-
-    ConvertMM21ToYUV(y_plane, u_plane, v_plane, size,
-                     static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
-                     static_cast<char*>(buffer->mmaped_planes()[1].start_addr),
-                     CAPTURE_queue_->coded_size());
-  } else {
-    LOG(FATAL) << "Unsupported CAPTURE queue format";
-  }
+  ConvertToYUV(y_plane, u_plane, v_plane, size, buffer->mmapped_planes(),
+               CAPTURE_queue_->coded_size(), CAPTURE_queue_->fourcc());
 
   const std::set<int> reusable_buffer_ids = RefreshReferenceSlots(
       current_frame_header, current_frame, CAPTURE_queue_->GetBuffer(buffer_id),

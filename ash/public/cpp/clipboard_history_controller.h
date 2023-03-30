@@ -28,6 +28,7 @@ class ASH_PUBLIC_EXPORT ClipboardHistoryController {
  public:
   using GetHistoryValuesCallback =
       base::OnceCallback<void(std::vector<ClipboardHistoryItem>)>;
+  using OnMenuClosingCallback = base::OnceCallback<void(bool will_paste_item)>;
 
   class Observer : public base::CheckedObserver {
    public:
@@ -50,12 +51,20 @@ class ASH_PUBLIC_EXPORT ClipboardHistoryController {
   // Returns whether the clipboard history menu is able to show.
   virtual bool CanShowMenu() const = 0;
 
-  // Shows the clipboard history menu triggered by `source_type` at the
-  // specified position.
-  virtual void ShowMenu(
+  // Attempts to show the clipboard history menu triggered by `source_type` at
+  // the position specified by `anchor_rect`. Returns whether the menu was
+  // shown. `show_source` indicates how the user opened the menu. As long as the
+  // menu is shown, `callback` runs just before the menu closes to indicate
+  // whether a clipboard history paste is imminent.
+  virtual bool ShowMenu(
       const gfx::Rect& anchor_rect,
       ui::MenuSourceType source_type,
       crosapi::mojom::ClipboardHistoryControllerShowSource show_source) = 0;
+  virtual bool ShowMenu(
+      const gfx::Rect& anchor_rect,
+      ui::MenuSourceType source_type,
+      crosapi::mojom::ClipboardHistoryControllerShowSource show_source,
+      OnMenuClosingCallback callback) = 0;
 
   // Notify the clipboard history that a screenshot notification was created.
   virtual void OnScreenshotNotificationCreated() = 0;

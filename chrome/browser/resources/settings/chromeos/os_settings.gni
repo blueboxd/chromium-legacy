@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../settings.gni")
-
 ts_definition_files = [
   "//tools/typescript/definitions/bluetooth.d.ts",
   "//tools/typescript/definitions/bluetooth_private.d.ts",
@@ -81,7 +79,9 @@ web_component_files = [
   "chromeos/internet_page/internet_known_networks_subpage.ts",
   "chromeos/internet_page/internet_page.ts",
   "chromeos/internet_page/internet_subpage.ts",
+  "chromeos/internet_page/internet_subpage_menu.ts",
   "chromeos/internet_page/network_always_on_vpn.ts",
+  "chromeos/internet_page/network_device_info_dialog.ts",
   "chromeos/internet_page/network_proxy_section.ts",
   "chromeos/internet_page/network_summary_item.ts",
   "chromeos/internet_page/network_summary.ts",
@@ -103,6 +103,7 @@ web_component_files = [
   "chromeos/multidevice_page/multidevice_subpage.ts",
   "chromeos/multidevice_page/multidevice_task_continuation_disabled_link.ts",
   "chromeos/multidevice_page/multidevice_task_continuation_item.ts",
+  "chromeos/multidevice_page/multidevice_task_continuation_item_lacros.ts",
   "chromeos/multidevice_page/multidevice_tether_item.ts",
   "chromeos/multidevice_page/multidevice_wifi_sync_disabled_link.ts",
   "chromeos/multidevice_page/multidevice_wifi_sync_item.ts",
@@ -132,6 +133,7 @@ web_component_files = [
   "chromeos/os_about_page/channel_switcher_dialog.ts",
   "chromeos/os_about_page/consumer_auto_update_toggle_dialog.ts",
   "chromeos/os_about_page/detailed_build_info_subpage.ts",
+  "chromeos/os_about_page/eol_offer_section.ts",
   "chromeos/os_about_page/edit_hostname_dialog.ts",
   "chromeos/os_about_page/os_about_page.ts",
   "chromeos/os_about_page/update_warning_dialog.ts",
@@ -174,6 +176,7 @@ web_component_files = [
   "chromeos/os_files_page/os_files_page.ts",
   "chromeos/os_files_page/smb_shares_page.ts",
   "chromeos/os_files_page/google_drive_subpage.ts",
+  "chromeos/os_files_page/google_drive_disconnect_drive_dialog.ts",
   "chromeos/os_languages_page/add_input_methods_dialog.ts",
   "chromeos/os_languages_page/add_items_dialog.ts",
   "chromeos/os_languages_page/add_spellcheck_languages_dialog.ts",
@@ -320,6 +323,7 @@ non_web_component_files = [
   "chromeos/device_page/fake_input_device_settings_provider.ts",
   "chromeos/device_page/input_device_mojo_interface_provider.ts",
   "chromeos/device_page/input_device_settings_types.ts",
+  "chromeos/device_page/input_device_settings_utils.ts",
   "chromeos/ensure_lazy_loaded.ts",
   "chromeos/guest_os/guest_os_browser_proxy.ts",
   "chromeos/internet_page/cellular_setup_settings_delegate.ts",

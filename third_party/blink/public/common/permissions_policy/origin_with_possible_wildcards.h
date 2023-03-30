@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_PERMISSIONS_POLICY_ORIGIN_WITH_POSSIBLE_WILDCARDS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_PERMISSIONS_POLICY_ORIGIN_WITH_POSSIBLE_WILDCARDS_H_
 
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "url/origin.h"
 
@@ -33,8 +34,10 @@ struct BLINK_COMMON_EXPORT OriginWithPossibleWildcards {
   // This constructs a OriginWithPossibleWildcards from an allowlist_entry which
   // might or might not have a subdomain wildcard (only if the type is kHeader).
   // This does not support special types like *, 'self', 'src', or 'none'.
-  static OriginWithPossibleWildcards Parse(const std::string& allowlist_entry,
-                                           const NodeType type);
+  // If the entry cannot be parsed then absl::nullopt is returned.
+  static absl::optional<OriginWithPossibleWildcards> Parse(
+      const std::string& allowlist_entry,
+      const NodeType type);
 
   // This should neatly undo the work of Parse, which is to say it
   // serializes the origin and inserts a *. back into the front of the host
@@ -55,8 +58,7 @@ struct BLINK_COMMON_EXPORT OriginWithPossibleWildcards {
   // https://github.com/w3c/webappsec-permissions-policy/pull/482
   bool DoesMatchOrigin(const url::Origin& match_origin) const;
 
-  url::Origin origin;
-  bool has_subdomain_wildcard{false};
+  network::mojom::CSPSource csp_source;
 };
 
 bool BLINK_COMMON_EXPORT operator==(const OriginWithPossibleWildcards& lhs,

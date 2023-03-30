@@ -38,7 +38,6 @@
 <translation id="208586643495776849">Versuche es bitte noch einmal</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 Tag}other{# Tage}}</translation>
 <translation id="2148716181193084225">Heute</translation>
-<translation id="2161656808144014275">Text</translation>
 <translation id="2168039046890040389">Nach oben</translation>
 <translation id="2190355936436201913">(leer)</translation>
 <translation id="2192232475740621500">Niedrige Anzeigedichte verwenden</translation>
@@ -90,7 +89,6 @@
 <translation id="3622035490309591977">Zwischenablagenverlauf</translation>
 <translation id="364720409959344976">Ordner zum Hochladen auswählen</translation>
 <translation id="3660179305079774227">Aufwärtspfeil</translation>
-<translation id="3670030362669914947">Nummer</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
@@ -212,7 +210,7 @@
 <translation id="8867568208303837180">Wird gesendet...</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
-<translation id="8996630695507351249">Prüfe, ob "<ph name="TARGET_DEVICE_NAME" />" mit dem Internet verbunden ist.</translation>
+<translation id="8996630695507351249">"<ph name="TARGET_DEVICE_NAME" />" muss mit dem Internet verbunden sein.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9059834730836941392">Benachrichtigung minimieren</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>

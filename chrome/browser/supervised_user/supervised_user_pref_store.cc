@@ -17,9 +17,10 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/history/core/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/safe_search_api/safe_search_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -53,7 +54,7 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
     },
     {
         supervised_user::kForceSafeSearch,
-        prefs::kForceGoogleSafeSearch,
+        policy::policy_prefs::kForceGoogleSafeSearch,
     },
     {
         supervised_user::kSafeSitesEnabled,
@@ -121,10 +122,10 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     // Set hardcoded prefs and defaults.
     prefs_->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                        supervised_user::SupervisedUserURLFilter::ALLOW);
-    prefs_->SetBoolean(prefs::kForceGoogleSafeSearch, true);
-    prefs_->SetInteger(prefs::kForceYouTubeRestrict,
+    prefs_->SetBoolean(policy::policy_prefs::kForceGoogleSafeSearch, true);
+    prefs_->SetInteger(policy::policy_prefs::kForceYouTubeRestrict,
                        safe_search_api::YOUTUBE_RESTRICT_MODERATE);
-    prefs_->SetBoolean(prefs::kHideWebStoreIcon, false);
+    prefs_->SetBoolean(policy::policy_prefs::kHideWebStoreIcon, false);
     prefs_->SetBoolean(prefs::kSigninAllowed, false);
     prefs_->SetBoolean(feed::prefs::kEnableSnippets, false);
 
@@ -150,17 +151,18 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
       // First-party sites use signed-in cookies to ensure that parental
       // restrictions are applied for Unicorn accounts.
       prefs_->SetInteger(
-          prefs::kIncognitoModeAvailability,
-          static_cast<int>(IncognitoModePrefs::Availability::kDisabled));
+          policy::policy_prefs::kIncognitoModeAvailability,
+          static_cast<int>(policy::IncognitoModeAvailability::kDisabled));
     }
 
     {
-      // Note that |prefs::kForceGoogleSafeSearch| is set automatically as part
-      // of |kSupervisedUserSettingsPrefMapping|, but this can't be done for
-      // |prefs::kForceYouTubeRestrict| because it is an int, not a bool.
+      // Note that |policy::policy_prefs::kForceGoogleSafeSearch| is set
+      // automatically as part of |kSupervisedUserSettingsPrefMapping|, but this
+      // can't be done for |policy::policy_prefs::kForceYouTubeRestrict| because
+      // it is an int, not a bool.
       bool force_safe_search =
           settings.FindBool(supervised_user::kForceSafeSearch).value_or(true);
-      prefs_->SetInteger(prefs::kForceYouTubeRestrict,
+      prefs_->SetInteger(policy::policy_prefs::kForceYouTubeRestrict,
                          force_safe_search
                              ? safe_search_api::YOUTUBE_RESTRICT_MODERATE
                              : safe_search_api::YOUTUBE_RESTRICT_OFF);

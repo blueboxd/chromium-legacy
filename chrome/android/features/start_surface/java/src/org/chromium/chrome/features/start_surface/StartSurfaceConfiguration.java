@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import android.text.TextUtils;
-
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
@@ -15,7 +13,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
-import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
@@ -25,9 +22,6 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
  */
 public class StartSurfaceConfiguration {
     private static final String TAG = "StartSurfaceConfig";
-    public static final StringCachedFieldTrialParameter START_SURFACE_VARIATION =
-            new StringCachedFieldTrialParameter(
-                    ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation", "single");
     public static final BooleanCachedFieldTrialParameter
             START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB =
                     new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
@@ -44,38 +38,10 @@ public class StartSurfaceConfiguration {
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "open_start_as_homepage", false);
 
-    private static final String TAB_COUNT_BUTTON_ON_START_SURFACE_PARAM =
-            "tab_count_button_on_start_surface";
-    public static final BooleanCachedFieldTrialParameter TAB_COUNT_BUTTON_ON_START_SURFACE =
-            new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
-                    TAB_COUNT_BUTTON_ON_START_SURFACE_PARAM, true);
-
     private static final String SHOW_TABS_IN_MRU_ORDER_PARAM = "show_tabs_in_mru_order";
     public static final BooleanCachedFieldTrialParameter SHOW_TABS_IN_MRU_ORDER =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, SHOW_TABS_IN_MRU_ORDER_PARAM, false);
-
-    private static final String BEHAVIOURAL_TARGETING_PARAM = "behavioural_targeting";
-    public static final StringCachedFieldTrialParameter BEHAVIOURAL_TARGETING =
-            new StringCachedFieldTrialParameter(
-                    ChromeFeatureList.START_SURFACE_ANDROID, BEHAVIOURAL_TARGETING_PARAM, "");
-
-    private static final String USER_CLICK_THRESHOLD_PARAM = "user_clicks_threshold";
-    public static final IntCachedFieldTrialParameter USER_CLICK_THRESHOLD =
-            new IntCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
-                    USER_CLICK_THRESHOLD_PARAM, Integer.MAX_VALUE);
-
-    private static final String NUM_DAYS_KEEP_SHOW_START_AT_STARTUP_PARAM =
-            "num_days_keep_show_start_at_startup";
-    public static final IntCachedFieldTrialParameter NUM_DAYS_KEEP_SHOW_START_AT_STARTUP =
-            new IntCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
-                    NUM_DAYS_KEEP_SHOW_START_AT_STARTUP_PARAM, 7);
-
-    private static final String NUM_DAYS_USER_CLICK_BELOW_THRESHOLD_PARAM =
-            "num_days_user_click_below_threshold";
-    public static final IntCachedFieldTrialParameter NUM_DAYS_USER_CLICK_BELOW_THRESHOLD =
-            new IntCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
-                    NUM_DAYS_USER_CLICK_BELOW_THRESHOLD_PARAM, 7);
 
     private static final String SIGNIN_PROMO_NTP_COUNT_LIMIT_PARAM = "signin_promo_NTP_count_limit";
     public static final IntCachedFieldTrialParameter SIGNIN_PROMO_NTP_COUNT_LIMIT =
@@ -128,13 +94,6 @@ public class StartSurfaceConfiguration {
     }
 
     /**
-     * @return Whether the Start Surface SinglePane is enabled.
-     */
-    public static boolean isStartSurfaceSinglePaneEnabled() {
-        return isStartSurfaceFlagEnabled() && START_SURFACE_VARIATION.getValue().equals("single");
-    }
-
-    /**
      * Records histograms of showing the StartSurface. Nothing will be recorded if timeDurationMs
      * isn't valid.
      */
@@ -153,7 +112,7 @@ public class StartSurfaceConfiguration {
 
     @CalledByNative
     private static boolean isBehaviouralTargetingEnabled() {
-        return !TextUtils.isEmpty(BEHAVIOURAL_TARGETING.getValue());
+        return false;
     }
 
     @VisibleForTesting

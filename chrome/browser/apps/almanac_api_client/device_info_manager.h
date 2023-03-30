@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/apps/almanac_api_client/proto/client_context.pb.h"
 #include "components/version_info/channel.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -35,11 +36,24 @@ struct DeviceInfo {
   DeviceInfo& operator=(const DeviceInfo& other);
   ~DeviceInfo();
 
+  // Returns a ClientDeviceContext proto containing the device-specific fields
+  // from this DeviceInfo.
+  proto::ClientDeviceContext ToDeviceContext() const;
+
+  // Returns a ClientUserContext proto containing the user-specific fields from
+  // this DeviceInfo.
+  proto::ClientUserContext ToUserContext() const;
+
   // The board family of the device. e.g. "brya"
   std::string board;
 
   // The model of the device. e.g. "taniks"
   std::string model;
+
+  // The HWID which identifies the hardware configuration of the device. Set to
+  // "unknown" if not running on a ChromeOS device. e.g.
+  // "REDRIX-CLQY C4B-G4H-D3D-U7F-X54-I9N".
+  std::string hardware_id;
 
   // The user type of the profile currently running. e.g. "unmanaged"
   std::string user_type;
@@ -65,7 +79,9 @@ class DeviceInfoManager {
   ~DeviceInfoManager();
 
   // Asynchronously fetches device information. Must be called from the UI
-  // thread.
+  // thread. DeviceInfo is not expected to change over the lifetime of a
+  // Profile, so it is okay (and more efficient) to store the DeviceInfo instead
+  // of repeatedly querying this method.
   void GetDeviceInfo(base::OnceCallback<void(DeviceInfo)> callback);
 
  private:
@@ -77,7 +93,6 @@ class DeviceInfoManager {
                    base::SysInfo::HardwareInfo hardware_info);
 
   base::raw_ptr<Profile> profile_;
-  absl::optional<DeviceInfo> device_info_ = absl::nullopt;
 
   // |weak_ptr_factory_| must be the last member of this class.
   base::WeakPtrFactory<DeviceInfoManager> weak_ptr_factory_{this};

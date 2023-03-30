@@ -22,6 +22,7 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -44,10 +45,8 @@ import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppFactoryDelegate;
 import org.chromium.components.payments.PaymentAppFactoryInterface;
 import org.chromium.components.payments.PaymentAppService;
-import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.components.payments.PaymentRequestService.PaymentRequestServiceObserverForTest;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
@@ -118,10 +117,6 @@ import java.util.concurrent.atomic.AtomicReference;
      * "Select" hint.
      */
     /* package */ static final int FIRST_BILLING_ADDRESS = 1;
-
-    /** Command line flag to enable payment details modifiers in tests. */
-    /* package */ static final String ENABLE_WEB_PAYMENTS_MODIFIERS =
-            "enable-features=" + PaymentFeatureList.WEB_PAYMENTS_MODIFIERS;
 
     /** Command line flag to enable experimental web platform features in tests. */
     /* package */ static final String ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES =
@@ -433,7 +428,7 @@ import java.util.concurrent.atomic.AtomicReference;
     /* package */ void clickAndroidBackButtonInEditorAndWait(CallbackHelper helper)
             throws TimeoutException {
         int callCount = helper.getCallCount();
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+        PostTask.runOrPostTask(TaskTraits.UI_DEFAULT, () -> {
             mUI.getEditorDialog().dispatchKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
             mUI.getEditorDialog().dispatchKeyEvent(

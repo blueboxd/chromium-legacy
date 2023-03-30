@@ -18,6 +18,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/safe_ref.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation_traits.h"
@@ -146,7 +147,7 @@ class PushMessagingManager;
 class RenderProcessHostCreationObserver;
 class RenderProcessHostFactory;
 class RenderProcessHostPriorityClients;
-class RenderProcessHostTest;
+class RenderProcessHostTestBase;
 class RenderWidgetHelper;
 class SiteInfo;
 class SiteInstance;
@@ -786,7 +787,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   friend class RenderFrameHostImplSubframeReuseBrowserTest_MultipleDelays_Test;
   friend class VisitRelayingRenderProcessHost;
   friend class StoragePartitonInterceptor;
-  friend class RenderProcessHostTest;
+  friend class RenderProcessHostTestBase;
   // TODO(crbug.com/1111231): This class is a friend so that it can call our
   // private mojo implementation methods, acting as a pass-through. This is only
   // necessary during the associated interface migration, after which,
@@ -1109,7 +1110,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The globally-unique identifier for this RenderProcessHost.
   const int id_;
 
-  BrowserContext* browser_context_ = nullptr;
+  // This field is not a raw_ptr<> because problems related to passing to a
+  // templated && parameter, which is later forwarded to something that doesn't
+  // vibe with raw_ptr<T>.
+  RAW_PTR_EXCLUSION BrowserContext* browser_context_ = nullptr;
 
   // Owned by |browser_context_|.
   //

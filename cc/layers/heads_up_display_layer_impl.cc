@@ -60,6 +60,7 @@
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
@@ -287,10 +288,9 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     const auto& caps = gpu_raster
                            ? raster_context_provider->ContextCapabilities()
                            : context_provider->ContextCapabilities();
-    viz::ResourceFormat format =
-        gpu_raster
-            ? viz::PlatformColor::BestSupportedRenderBufferResourceFormat(caps)
-            : viz::PlatformColor::BestSupportedTextureResourceFormat(caps);
+    viz::SharedImageFormat format =
+        gpu_raster ? viz::PlatformColor::BestSupportedRenderBufferFormat(caps)
+                   : viz::PlatformColor::BestSupportedTextureFormat(caps);
     pool_resource = pool_->AcquireResource(internal_content_bounds_, format,
                                            gfx::ColorSpace());
 
@@ -315,10 +315,9 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       if (backing->overlay_candidate)
         flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
       backing->mailbox = sii->CreateSharedImage(
-          viz::SharedImageFormat::SinglePlane(pool_resource.format()),
-          pool_resource.size(), pool_resource.color_space(),
-          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags,
-          gpu::kNullSurfaceHandle);
+          pool_resource.format(), pool_resource.size(),
+          pool_resource.color_space(), kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, flags, gpu::kNullSurfaceHandle);
       if (gpu_raster) {
         auto* ri = raster_context_provider->RasterInterface();
         ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
@@ -344,7 +343,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     DCHECK_EQ(draw_mode, DRAW_MODE_SOFTWARE);
 
     pool_resource = pool_->AcquireResource(internal_content_bounds_,
-                                           viz::RGBA_8888, gfx::ColorSpace());
+                                           viz::SinglePlaneFormat::kRGBA_8888,
+                                           gfx::ColorSpace());
 
     if (!pool_resource.software_backing()) {
       auto backing = std::make_unique<HudSoftwareBacking>();
@@ -426,7 +426,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
         mailbox_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
     gl->BindTexture(backing->texture_target, mailbox_texture_id);
-    DCHECK(GLSupportsFormat(pool_resource.format()));
+    DCHECK(GLSupportsFormat(pool_resource.format().resource_format()));
     // We should use gl compatible format for skia SW rasterization.
     constexpr GLenum format = SK_B32_SHIFT ? GL_RGBA : GL_BGRA_EXT;
     constexpr GLenum type = GL_UNSIGNED_BYTE;

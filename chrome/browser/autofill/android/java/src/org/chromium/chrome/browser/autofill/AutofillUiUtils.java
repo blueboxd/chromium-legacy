@@ -29,6 +29,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -489,37 +490,55 @@ public class AutofillUiUtils {
     }
 
     /**
-     * If the {@code cardArtUrl} is valid, it tries to fetch the bitmap of the required size from
-     * PersonalDataManager. If it is not available in cache, then the bitmap of the required size is
-     * fetched and stored in cache for the next time.
+     * If {@code showCustomIcon} is true, and the {@code cardArtUrl} is valid, it fetches the bitmap
+     * of the required size from PersonalDataManager. If not, the default icon {@code defaultIconId}
+     * is fetched from the resources. If the bitmap is not available in cache, then it is fetched
+     * from the server and stored in cache for the next time.
      * @param context Context required to get resources.
      * @param cardArtUrl The URL to fetch the icon.
      * @param defaultIconId Resource Id for the default (network) icon if the card art could not be
      *        retrieved.
      * @param widthId Resource Id for the width spec.
      * @param heightId Resource Id for the height spec.
-     * @return {@link Drawable} that can be set as the card icon.
+     * @param showCustomIcon If true, custom card icon is fetched, else, default icon is fetched.
+     * @return {@link Drawable} that can be set as the card icon. If neither the custom icon nor the
+     *         default icon is available, returns null.
      */
-    public static Drawable getCardIcon(
-            Context context, GURL cardArtUrl, int defaultIconId, int widthId, int heightId) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_CARD_ART_IMAGE)) {
-            if (cardArtUrl.isValid()) {
-                Resources resources = context.getResources();
-                Bitmap customIconBitmap =
-                        PersonalDataManager.getInstance()
-                                .getCustomImageForAutofillSuggestionIfAvailable(
-                                        getCCIconURLWithParams(cardArtUrl,
-                                                resources.getDimensionPixelSize(widthId),
-                                                resources.getDimensionPixelSize(heightId)));
-                if (customIconBitmap != null) {
-                    // Scale the icon to the desired dimension.
-                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(customIconBitmap,
-                            resources.getDimensionPixelSize(widthId),
-                            resources.getDimensionPixelSize(heightId), true);
-                    return new BitmapDrawable(resources, scaledBitmap);
-                }
-            }
+    public static @Nullable Drawable getCardIcon(Context context, GURL cardArtUrl,
+            int defaultIconId, int widthId, int heightId, boolean showCustomIcon) {
+        Drawable defaultIcon =
+                defaultIconId == 0 ? null : AppCompatResources.getDrawable(context, defaultIconId);
+        if (!showCustomIcon || !cardArtUrl.isValid()) {
+            return defaultIcon;
         }
-        return AppCompatResources.getDrawable(context, defaultIconId);
+        Resources resources = context.getResources();
+        Bitmap customIconBitmap =
+                PersonalDataManager.getInstance().getCustomImageForAutofillSuggestionIfAvailable(
+                        getCCIconURLWithParams(cardArtUrl, resources.getDimensionPixelSize(widthId),
+                                resources.getDimensionPixelSize(heightId)));
+        if (customIconBitmap == null) {
+            return defaultIcon;
+        }
+        // Scale the icon to the desired dimension.
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(customIconBitmap,
+                resources.getDimensionPixelSize(widthId), resources.getDimensionPixelSize(heightId),
+                true);
+        return new BitmapDrawable(resources, scaledBitmap);
+    }
+
+    public static int getSettingsPageIconWidthId() {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES)) {
+            return R.dimen.settings_page_card_icon_width_new;
+        }
+        return R.dimen.settings_page_card_icon_width;
+    }
+
+    public static int getSettingsPageIconHeightId() {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES)) {
+            return R.dimen.settings_page_card_icon_height_new;
+        }
+        return R.dimen.settings_page_card_icon_height;
     }
 }

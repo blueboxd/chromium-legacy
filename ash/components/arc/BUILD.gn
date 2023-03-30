@@ -217,6 +217,7 @@ static_library("arc_base_utils") {
 
   public_deps = [ ":arc_features" ]
   deps = [
+    "//ash:ash",
     "//ash/components/arc:prefs",
     "//ash/components/arc/session:arc_base_enums",
     "//ash/constants",
@@ -308,8 +309,6 @@ static_library("arc_test_support") {
     "test/fake_app_host.h",
     "test/fake_app_instance.cc",
     "test/fake_app_instance.h",
-    "test/fake_apps_tracker.cc",
-    "test/fake_apps_tracker.h",
     "test/fake_arc_bridge_host.cc",
     "test/fake_arc_bridge_host.h",
     "test/fake_arc_session.cc",
@@ -344,10 +343,10 @@ static_library("arc_test_support") {
     "test/fake_process_instance.h",
     "test/fake_sharesheet_instance.cc",
     "test/fake_sharesheet_instance.h",
-    "test/fake_snapshot_reboot_notification.cc",
-    "test/fake_snapshot_reboot_notification.h",
     "test/fake_storage_manager_instance.cc",
     "test/fake_storage_manager_instance.h",
+    "test/fake_system_state_instance.cc",
+    "test/fake_system_state_instance.h",
     "test/fake_system_ui_instance.cc",
     "test/fake_system_ui_instance.h",
     "test/fake_timer_instance.cc",
@@ -377,7 +376,6 @@ static_library("arc_test_support") {
 
   deps = [
     ":arc",
-    "//ash/components/arc/enterprise",
     "//ash/constants",
     "//base",
     "//components/keyed_service/content",
@@ -414,12 +412,6 @@ source_set("unit_tests") {
     "compat_mode/resize_util_unittest.cc",
     "compat_mode/touch_mode_mouse_rewriter_unittest.cc",
     "crash_collector/arc_crash_collector_bridge_unittest.cc",
-    "enterprise/arc_data_remove_requested_pref_handler_unittest.cc",
-    "enterprise/arc_data_snapshotd_bridge_unittest.cc",
-    "enterprise/arc_data_snapshotd_manager_unittest.cc",
-    "enterprise/snapshot_hours_policy_service_unittest.cc",
-    "enterprise/snapshot_reboot_controller_unittest.cc",
-    "enterprise/snapshot_session_controller_unittest.cc",
     "ime/arc_ime_service_unittest.cc",
     "ime/key_event_result_receiver_unittest.cc",
     "lock_screen/arc_lock_screen_bridge_unittest.cc",
@@ -451,8 +443,8 @@ source_set("unit_tests") {
   # TODO(b/129295708): Clean up unused deps. Update users of this target.
   deps = [
     ":arc",
+    "//ash:test_support",
     "//ash/components/arc:arc_test_support",
-    "//ash/components/arc/enterprise",
     "//ash/components/arc/media_session",
     "//ash/components/arc/video_accelerator:common",
     "//ash/constants",

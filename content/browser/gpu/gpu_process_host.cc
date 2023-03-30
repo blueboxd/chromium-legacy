@@ -144,7 +144,6 @@ const char* GetProcessLifetimeUmaName(gpu::GpuMode gpu_mode) {
       NOTREACHED();
       return nullptr;
     case gpu::GpuMode::HARDWARE_GL:
-    case gpu::GpuMode::HARDWARE_METAL:
     case gpu::GpuMode::HARDWARE_VULKAN:
       return kProcessLifetimeEventsHardwareAccelerated;
     case gpu::GpuMode::SWIFTSHADER:
@@ -297,6 +296,7 @@ static const char* const kSwitchNames[] = {
 #if BUILDFLAG(IS_ANDROID)
     switches::kEnableReachedCodeProfiler,
     switches::kReachedCodeSamplingIntervalUs,
+    switches::kDisableAdpf,
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
     switches::kPlatformDisallowsChromeOSDirectVideoDecoder,

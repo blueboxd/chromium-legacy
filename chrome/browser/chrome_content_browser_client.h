@@ -144,9 +144,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // update our I/O thread cache of this value.
   static void SetApplicationLocale(const std::string& locale);
 
-  // Whether DNS prefetching and preconnect are allowed.
-  static bool ShouldPreconnect(content::BrowserContext* browser_context);
-
   // content::ContentBrowserClient:
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       bool is_integration_test) override;
@@ -235,7 +232,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& current_effective_url,
       const GURL& destination_effective_url) override;
   bool ShouldIsolateErrorPage(bool in_main_frame) override;
-  bool ShouldAssignSiteForURL(const GURL& url) override;
   std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
   bool ShouldEnableStrictSiteIsolation() override;
   bool ShouldDisableSiteIsolation(
@@ -275,6 +271,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const absl::optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::BrowserContext* context) override;
+  bool MayDeleteServiceWorkerRegistration(
+      const GURL& scope,
+      content::BrowserContext* browser_context) override;
   void UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
       content::BrowserContext* context,
       const GURL& script_url,
@@ -648,6 +647,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   GetWebAuthenticationRequestDelegate(
       content::RenderFrameHost* render_frame_host) override;
 #endif
+#if BUILDFLAG(IS_CHROMEOS)
+  content::SmartCardDelegate* GetSmartCardDelegate(
+      content::BrowserContext* browser_context) override;
+#endif
   bool ShowPaymentHandlerWindow(
       content::BrowserContext* browser_context,
       const GURL& url,
@@ -869,6 +872,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const url::Origin& top_level_origin) override;
 
+  bool IsTransientActivationRequiredForShowFileOrDirectoryPicker(
+      content::WebContents* web_contents) override;
+
+  bool ShouldUseFirstPartyStorageKey(const url::Origin& origin) override;
+
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,
@@ -974,6 +982,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
   std::unique_ptr<permissions::BluetoothDelegateImpl> bluetooth_delegate_;
   std::unique_ptr<ChromeUsbDelegate> usb_delegate_;
+
+#if BUILDFLAG(IS_CHROMEOS)
+  std::unique_ptr<content::SmartCardDelegate> smart_card_delegate_;
+#endif
 
 #if BUILDFLAG(ENABLE_VR)
   std::unique_ptr<vr::ChromeXrIntegrationClient> xr_integration_client_;

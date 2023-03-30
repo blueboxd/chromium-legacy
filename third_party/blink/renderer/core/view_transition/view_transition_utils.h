@@ -10,9 +10,11 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/core/view_transition/view_transition.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_request_forward.h"
 
 namespace blink {
+
+class ViewTransition;
 
 class CORE_EXPORT ViewTransitionUtils {
  public:
@@ -123,6 +125,21 @@ class CORE_EXPORT ViewTransitionUtils {
   // Returns true if the given layout object corresponds to the root
   // ::view-transition pseudo element of a view transition hierarchy.
   static bool IsViewTransitionRoot(const LayoutObject& object);
+
+  // Returns true if this object represents an element that is a view transition
+  // participant.
+  static bool IsViewTransitionParticipant(const LayoutObject& object);
+
+  // Returns true if this element is a view transition participant. This is a
+  // slow check that walks all of the view transition elements in the
+  // ViewTransitionStyleTracker.
+  static bool IsViewTransitionParticipantFromSupplement(const Element& element);
+
+  // Returns true if this object represents an element that is a view transition
+  // participant. This is a slow check that walks all of the view transition
+  // elements in the ViewTransitionStyleTracker.
+  static bool IsViewTransitionParticipantFromSupplement(
+      const LayoutObject& object);
 };
 
 }  // namespace blink

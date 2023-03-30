@@ -74,6 +74,12 @@ NSString* kSpotlightDebuggerErrorLogKey = @"SpotlightDebuggerErrorLogKey";
   }
 }
 
+- (void)logDeletionOfItemsInDomains:(NSArray<NSString*>*)domains {
+  for (NSString* domain in domains) {
+    [self logDeletionOfItemsInDomain:domain];
+  }
+}
+
 - (void)logDeletionOfAllItems {
   [self.knownItems removeAllObjects];
 }
@@ -110,12 +116,15 @@ NSString* kSpotlightDebuggerErrorLogKey = @"SpotlightDebuggerErrorLogKey";
 }
 
 + (void)logSpotlightError:(NSError*)error {
+  UMA_HISTOGRAM_SPARSE("IOSSpotlightErrorCode", error.code);
+  if (!error) {
+    return;
+  }
   if ([self sharedLogger]) {
     [[self sharedLogger] logSpotlightError:error];
   } else {
     // Dump as much info from the wild as we can about the error.
     base::debug::DumpWithoutCrashing();
-    UMA_HISTOGRAM_SPARSE("IOSSpotlightErrorCode", error.code);
   }
 }
 

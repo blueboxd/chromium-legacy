@@ -82,7 +82,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableCanvas2dImageChromium(
       enable_canvas_2d_image_chromium);
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   const bool enable_web_gl_image_chromium =
       command_line.HasSwitch(
           blink::switches::kEnableGpuMemoryBufferCompositorResources) &&
@@ -260,8 +260,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableMediaCastOverlayButton, raw_ref(media::kMediaCastOverlayButton)},
     {wf::EnableMediaEngagementBypassAutoplayPolicies,
      raw_ref(media::kMediaEngagementBypassAutoplayPolicies)},
-    {wf::EnableMouseSubframeNoImplicitCapture,
-     raw_ref(features::kMouseSubframeNoImplicitCapture)},
     {wf::EnableNotificationContentImage,
      raw_ref(features::kNotificationContentImage), kSetOnlyIfOverridden},
     {wf::EnablePaymentApp, raw_ref(features::kServiceWorkerPaymentApps)},
@@ -270,7 +268,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(features::kWindowsScrollingPersonality)},
     {wf::EnablePeriodicBackgroundSync,
      raw_ref(features::kPeriodicBackgroundSync)},
-    {wf::EnablePointerLockOptions, raw_ref(features::kPointerLockOptions)},
     {wf::EnablePushMessagingSubscriptionChange,
      raw_ref(features::kPushSubscriptionChangeEvent)},
     {wf::EnableRestrictGamepadAccess,
@@ -291,8 +288,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableUserActivationSameOriginVisibility,
      raw_ref(features::kUserActivationSameOriginVisibility)},
     {wf::EnableVideoPlaybackQuality, raw_ref(features::kVideoPlaybackQuality)},
-    {wf::EnableVideoWakeLockOptimisationHiddenMuted,
-     raw_ref(media::kWakeLockOptimisationHiddenMuted)},
     {wf::EnableWebBluetooth, raw_ref(features::kWebBluetooth),
      kSetOnlyIfOverridden},
     {wf::EnableWebBluetoothGetDevices,
@@ -319,6 +314,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(device::features::kWebXrIncubations)},
     {wf::EnableWebXRLayers, raw_ref(device::features::kWebXrLayers)},
     {wf::EnableWebXRPlaneDetection,
+     raw_ref(device::features::kWebXrIncubations)},
+    {wf::EnableWebXRPoseMotionData,
      raw_ref(device::features::kWebXrIncubations)},
 #endif
     {wf::EnableRemoveMobileViewportDoubleTap,
@@ -555,6 +552,9 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
       content::IsBackForwardCacheEnabled());
 
   if (base::FeatureList::IsEnabled(network::features::kPrivateStateTokens)) {
+    WebRuntimeFeatures::EnablePrivateStateTokens(true);
+    WebRuntimeFeatures::EnablePrivateStateTokensAlwaysAllowIssuance(true);
+  } else if (base::FeatureList::IsEnabled(network::features::kFledgePst)) {
     // See https://bit.ly/configuring-trust-tokens.
     using network::features::TrustTokenOriginTrialSpec;
     switch (

@@ -21,13 +21,16 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/style_util.h"
+#include "ash/style/typography.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -59,12 +62,10 @@ constexpr int kViewCornerRadiusTablet = 20;
 constexpr int kTaskMinWidth = 204;
 constexpr int kTaskMaxWidth = 264;
 
-gfx::ImageSkia CreateIconWithCircleBackground(
-    const gfx::ImageSkia& icon,
-    ColorProvider::ControlsLayerType color_id) {
+gfx::ImageSkia CreateIconWithCircleBackground(const gfx::ImageSkia& icon,
+                                              SkColor color) {
   return gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
-      kCircleRadius, ColorProvider::Get()->GetControlsLayerColor(color_id),
-      icon);
+      kCircleRadius, color, icon);
 }
 
 int GetCornerRadius(bool tablet_mode) {
@@ -75,7 +76,7 @@ int GetCornerRadius(bool tablet_mode) {
 
 ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
                                    bool tablet_mode)
-    : view_delegate_(view_delegate), is_tablet_mode_(tablet_mode) {
+    : view_delegate_(view_delegate) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -90,7 +91,13 @@ ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
   views::HighlightPathGenerator::Install(this,
                                          std::move(ink_drop_highlight_path));
   SetInstallFocusRingOnFocus(true);
-  views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
+
+  const bool is_jelly_enabled = chromeos::features::IsJellyEnabled();
+  const ui::ColorId focus_ring_color =
+      is_jelly_enabled
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysFocusRing)
+          : ui::kColorAshFocusRing;
+  views::FocusRing::Get(this)->SetColorId(focus_ring_color);
   SetFocusPainter(nullptr);
 
   views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
@@ -98,10 +105,34 @@ ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
   SetHasInkDropActionOnClick(true);
   SetShowInkDropWhenHotTracked(false);
 
-  StyleUtil::ConfigureInkDropAttributes(
-      this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity);
+  if (is_jelly_enabled) {
+    StyleUtil::ConfigureInkDropAttributes(
+        this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity,
+        tablet_mode ? cros_tokens::kCrosSysRippleNeutralOnSubtle
+                    : cros_tokens::kCrosSysHoverOnSubtle);
+  } else {
+    StyleUtil::ConfigureInkDropAttributes(
+        this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity);
+  }
 
-  UpdateStyleForTabletMode();
+  if (tablet_mode) {
+    layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+    layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
+    layer()->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(GetCornerRadius(/*tablet_mode=*/true)));
+
+    const ui::ColorId background_color =
+        is_jelly_enabled
+            ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)
+            : kColorAshShieldAndBase60;
+    SetBackground(views::CreateThemedSolidBackground(background_color));
+    SetBorder(std::make_unique<views::HighlightBorder>(
+        GetCornerRadius(/*tablet_mode=*/true),
+        is_jelly_enabled
+            ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+            : views::HighlightBorder::Type::kHighlightBorder2,
+        /*use_light_colors=*/false));
+  }
 
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -122,16 +153,25 @@ ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
 
   title_ = label_container->AddChildView(
       std::make_unique<views::Label>(std::u16string()));
-  bubble_utils::ApplyStyle(title_, bubble_utils::TypographyStyle::kBody1);
+  if (is_jelly_enabled) {
+    bubble_utils::ApplyStyle(title_, TypographyToken::kCrosButton1,
+                             cros_tokens::kCrosSysOnSurface);
+  } else {
+    bubble_utils::ApplyStyle(title_, TypographyToken::kCrosBody1);
+  }
   title_->SetAccessibleName(std::u16string());
   title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   title_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
 
   subtitle_ = label_container->AddChildView(
       std::make_unique<views::Label>(std::u16string()));
-  bubble_utils::ApplyStyle(subtitle_,
-                           bubble_utils::TypographyStyle::kAnnotation1,
-                           kColorAshTextColorSecondary);
+  if (is_jelly_enabled) {
+    bubble_utils::ApplyStyle(subtitle_, TypographyToken::kCrosAnnotation1,
+                             kColorAshTextColorSecondary);
+  } else {
+    bubble_utils::ApplyStyle(subtitle_, TypographyToken::kCrosAnnotation1,
+                             cros_tokens::kCrosSysSecondary);
+  }
   subtitle_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   subtitle_->SetElideBehavior(gfx::ElideBehavior::ELIDE_MIDDLE);
 
@@ -145,7 +185,6 @@ ContinueTaskView::~ContinueTaskView() {}
 void ContinueTaskView::OnThemeChanged() {
   views::View::OnThemeChanged();
   UpdateIcon();
-  UpdateStyleForTabletMode();
 }
 
 gfx::Size ContinueTaskView::GetMaximumSize() const {
@@ -174,15 +213,31 @@ void ContinueTaskView::UpdateIcon() {
     return;
   }
 
+  if (!GetWidget()) {
+    return;
+  }
+
   const gfx::ImageSkia& icon = result()->chip_icon();
   icon_->SetImage(CreateIconWithCircleBackground(
       icon.size() == GetIconSize()
           ? icon
           : gfx::ImageSkiaOperations::CreateResizedImage(
                 icon, skia::ImageOperations::RESIZE_BEST, GetIconSize()),
-      result()->result_type() == AppListSearchResultType::kZeroStateHelpApp
-          ? ColorProvider::ControlsLayerType::kControlBackgroundColorActive
-          : ColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
+      GetColorProvider()->GetColor(GetIconBackgroundColorId())));
+}
+
+ui::ColorId ContinueTaskView::GetIconBackgroundColorId() const {
+  if (result()->result_type() == AppListSearchResultType::kZeroStateHelpApp) {
+    if (chromeos::features::IsJellyEnabled()) {
+      return cros_tokens::kCrosSysPrimary;
+    }
+    return kColorAshControlBackgroundColorActive;
+  }
+
+  if (chromeos::features::IsJellyEnabled()) {
+    return cros_tokens::kCrosSysSystemOnBase;
+  }
+  return kColorAshControlBackgroundColorInactive;
 }
 
 gfx::Size ContinueTaskView::GetIconSize() const {
@@ -344,25 +399,6 @@ void ContinueTaskView::CloseContextMenu() {
   if (!IsMenuShowing())
     return;
   context_menu_runner_->Cancel();
-}
-
-void ContinueTaskView::UpdateStyleForTabletMode() {
-  // Do nothing if the view is not in tablet mode.
-  if (!is_tablet_mode_)
-    return;
-
-  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
-  layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
-  layer()->SetRoundedCornerRadius(
-      gfx::RoundedCornersF(GetCornerRadius(/*tablet_mode=*/true)));
-
-  SetBackground(
-      views::CreateSolidBackground(ColorProvider::Get()->GetBaseLayerColor(
-          ColorProvider::BaseLayerType::kTransparent60)));
-  SetBorder(std::make_unique<views::HighlightBorder>(
-      GetCornerRadius(/*tablet_mode=*/true),
-      views::HighlightBorder::Type::kHighlightBorder2,
-      /*use_light_colors=*/false));
 }
 
 void ContinueTaskView::LogMetricsOnResultRemoved() {

@@ -29,6 +29,8 @@
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
@@ -307,6 +309,11 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if BUILDFLAG(IS_MAC)
     {"aboutLearnMoreUpdating", IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_UPDATING},
 #endif
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    {"getTheMostOutOfChrome", IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME},
+    {"getTheMostOutOfChromeDescription",
+     IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_DESCRIPTION},
+#endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -348,6 +355,9 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddString("aboutTermsURL", chrome::kChromeUITermsURL);
   html_source->AddLocalizedString("aboutProductTos",
                                   IDS_ABOUT_TERMS_OF_SERVICE);
+  html_source->AddBoolean(
+      "showGetTheMostOutOfChromeSection",
+      base::FeatureList::IsEnabled(features::kGetTheMostOutOfChrome));
 #endif
 }
 
@@ -942,6 +952,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_DESCRIPTION},
     {"genericCreditCard", IDS_AUTOFILL_CC_GENERIC},
     {"creditCards", IDS_AUTOFILL_PAYMENT_METHODS},
+    {"paymentsMethodsTableAriaLabel",
+     IDS_AUTOFILL_PAYMENT_METHODS_TABLE_ARIA_LABEL},
     {"noPaymentMethodsFound", IDS_SETTINGS_PAYMENT_METHODS_NONE},
     {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
     {"googlePaymentsCached", IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED},
@@ -954,6 +966,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"enableCreditCardFIDOAuthSublabel",
      IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_SUBLABEL},
     {"addresses", IDS_AUTOFILL_ADDRESSES},
+    {"addressesTableAriaLabel", IDS_AUTOFILL_ADDRESSES_TABLE_ARIA_LABEL},
     {"addressesTitle", IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE},
     {"addAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE},
     {"editAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_EDIT_TITLE},
@@ -979,8 +992,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_AUTOFILL_DELETE_LOCAL_ADDRESS_SOURCE_NOTICE},
     {"removeLocalCreditCardConfirmationTitle",
      IDS_SETTINGS_LOCAL_CARD_REMOVE_CONFIRMATION_TITLE},
-    {"removeLocalCreditCardConfirmationDescription",
-     IDS_SETTINGS_LOCAL_CARD_REMOVE_CONFIRMATION_DESCRIPTION},
+    {"removeLocalPaymentMethodConfirmationDescription",
+     IDS_SETTINGS_LOCAL_PAYMENT_METHOD_REMOVE_CONFIRMATION_DESCRIPTION},
     {"addressRemovedMessage", IDS_SETTINGS_ADDRESS_REMOVED_MESSAGE},
     {"editAddressRequiredFieldError",
      IDS_AUTOFILL_EDIT_ADDRESS_REQUIRED_FIELD_FORM_ERROR},
@@ -998,6 +1011,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"creditCardExpired", IDS_SETTINGS_CREDIT_CARD_EXPIRED},
     {"editCreditCardTitle", IDS_SETTINGS_EDIT_CREDIT_CARD_TITLE},
     {"addCreditCardTitle", IDS_SETTINGS_ADD_CREDIT_CARD_TITLE},
+    {"addPaymentMethods", IDS_SETTINGS_ADD_PAYMENT_METHODS},
     {"addPaymentMethodCreditOrDebitCard",
      IDS_SETTINGS_ADD_PAYMENT_METHOD_CREDIT_OR_DEBIT_CARD},
     {"addPaymentMethodIban", IDS_SETTINGS_ADD_PAYMENT_METHOD_IBAN},
@@ -1009,7 +1023,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"moreActionsForIbanDescription",
      IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_FOR_IBAN_DESCRIPTION},
     {"editIban", IDS_SETTINGS_IBAN_EDIT},
-    {"removeIban", IDS_SETTINGS_IBAN_REMOVE},
+    {"removeLocalIbanConfirmationTitle",
+     IDS_SETTINGS_LOCAL_IBAN_REMOVE_CONFIRMATION_TITLE},
     {"migrateCreditCardsLabel", IDS_SETTINGS_MIGRATABLE_CARDS_LABEL},
     {"migratableCardsInfoSingle", IDS_SETTINGS_SINGLE_MIGRATABLE_CARD_INFO},
     {"migratableCardsInfoMultiple",
@@ -1141,8 +1156,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"passwordRowMoreActionsButton", IDS_SETTINGS_PASSWORD_ROW_MORE_ACTIONS},
     {"passwordRowFederatedMoreActionsButton",
      IDS_SETTINGS_PASSWORD_ROW_FEDERATED_MORE_ACTIONS},
+    {"passwordTableAriaLabel", IDS_SETTINGS_PASSWORD_TABLE_ARIA_LABEL},
     {"passwordRowPasswordDetailPageButton",
      IDS_SETTINGS_PASSWORD_ROW_PASSWORD_DETAIL_PAGE},
+    {"localPasswordManager",
+     IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE},
     {"importMenuItem", IDS_SETTINGS_PASSWORDS_IMPORT_MENU_ITEM},
     {"importPasswordsTitle", IDS_SETTINGS_PASSWORDS_IMPORT_TITLE},
     {"importPasswordsErrorTitle", IDS_SETTINGS_PASSWORDS_IMPORT_ERROR_TITLE},
@@ -1169,6 +1187,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICT_DEVICE},
     {"importPasswordsConflictAccount",
      IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICT_ACCOUNT},
+    {"importPasswordsConflictsDescription",
+     IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICTS_DESCRIPTION},
+    {"importPasswordsCancel", IDS_SETTINGS_PASSWORDS_IMPORT_CANCEL},
+    {"importPasswordsSkip", IDS_SETTINGS_PASSWORDS_IMPORT_SKIP},
+    {"importPasswordsReplace", IDS_SETTINGS_PASSWORDS_IMPORT_REPLACE},
     {"importPasswordsUnknownError",
      IDS_SETTINGS_PASSWORDS_IMPORT_ERROR_UNKNOWN},
     {"importPasswordsBadFormatError",
@@ -1620,8 +1643,15 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
                           ProfileShortcutManager::IsFeatureEnabled());
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  html_source->AddBoolean("signinAvailable",
-                          AccountConsistencyModeManager::IsDiceSignInAllowed());
+  auto* profile_entry =
+      g_browser_process->profile_manager()
+          ? g_browser_process->profile_manager()
+                ->GetProfileAttributesStorage()
+                .GetProfileAttributesWithPath(profile->GetPath())
+          : nullptr;
+  html_source->AddBoolean(
+      "signinAvailable",
+      AccountConsistencyModeManager::IsDiceSignInAllowed(profile_entry));
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

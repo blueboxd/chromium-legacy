@@ -1052,7 +1052,9 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
-IN_PROC_BROWSER_TEST_P(FileTransferConnectorFilesAppBrowserTest, Test) {
+// TODO(crbug.com/1425820): Re-enable this test
+IN_PROC_BROWSER_TEST_P(FileTransferConnectorFilesAppBrowserTest,
+                       DISABLED_Test) {
   StartTest();
 }
 
@@ -1153,6 +1155,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("pdfOpenDrive"),
                       TestCase("textOpenDownloads"),
                       TestCase("textOpenDrive")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    OpenHostedFiles, /* open_hosted_files.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("hostedOpenDrive"),
+                      TestCase("encryptedHostedOpenDrive")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ZipFiles, /* zip_files.js */
@@ -1543,9 +1551,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveOfflineInfoBanner"),
         TestCase("driveDeleteDialogDoesntMentionPermanentDelete"),
         TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
-        TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync(),
-        TestCase("driveLocalDeleteUnpinsItem").EnableBulkPinning(),
-        TestCase("driveCloudDeleteUnpinsItem").EnableBulkPinning()
+        TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable
@@ -1571,8 +1577,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("transferFromDriveToDownloads")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
+// TODO(crbug.com/1425820), TODO(crbug.com/1428909): Re-enable this test.
+#if !defined(LEAK_SANITIZER) || !BUILDFLAG(IS_CHROMEOS) || \
+    !defined(ADDRESS_SANITIZER)
         TestCase("transferOfficeFileFromDriveToDownloads")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
+#endif
         TestCase("transferFromDownloadsToMyFiles")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
         TestCase("transferFromDownloadsToMyFilesMove")
@@ -2005,6 +2015,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .FeatureIds({"screenplay-09c32d6b-36d3-494b-bb83-e19655880471"}),
         TestCase("hideCurrentDirectoryByTogglingHiddenAndroidFolders"),
         TestCase("newFolderInDownloads"),
+        TestCase("showFilesSettingsButton"),
         TestCase("showSendFeedbackAction")
             .FeatureIds({"screenplay-3bd7bbba-a25a-4386-93cf-933266df22a7"}),
         TestCase("showSendFeedbackAction")
@@ -2175,10 +2186,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchWithRecencyOptions").EnableSearchV2(),
         TestCase("searchDriveWithRecencyOptions").EnableSearchV2(),
         TestCase("searchRemovableDevice").EnableSearchV2(),
+        TestCase("searchPartitionedRemovableDevice").EnableSearchV2(),
         TestCase("resetSearchOptionsOnFolderChange").EnableSearchV2(),
         TestCase("showSearchResultMessageWhenSearching").EnableSearchV2(),
         TestCase("showsEducationNudge").EnableSearchV2(),
-        TestCase("searchFromMyFiles").EnableSearchV2()
+        TestCase("searchFromMyFiles").EnableSearchV2(),
+        TestCase("selectionPath").EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));

@@ -222,7 +222,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   RemoveTrack(blink::RTCRtpSenderPlatform* web_sender);
 
-  virtual scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
+  virtual rtc::scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const String& label,
       const webrtc::DataChannelInit& init);
   virtual webrtc::PeerConnectionInterface* NativePeerConnection();
@@ -243,8 +243,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // Asynchronously calls native_peer_connection_->getStats on the signaling
   // thread.
   void GetStandardStatsForTracker(
-      scoped_refptr<webrtc::RTCStatsCollectorCallback> observer);
-  void GetStats(webrtc::StatsObserver* observer,
+      rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback> observer);
+  void GetStats(rtc::scoped_refptr<webrtc::StatsObserver> observer,
                 webrtc::PeerConnectionInterface::StatsOutputLevel level,
                 rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector);
 
@@ -313,7 +313,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
       std::vector<blink::RtpTransceiverState> transceiver_states,
       bool is_remote_description,
       bool is_rollback);
-  void OnDataChannel(scoped_refptr<webrtc::DataChannelInterface> channel);
+  void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel);
   void OnIceCandidate(const String& sdp,
                       const String& sdp_mid,
                       int sdp_mline_index,
@@ -471,7 +471,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   CrossThreadPersistent<Observer> peer_connection_observer_;
 
   // |native_peer_connection_| is the libjingle native PeerConnection object.
-  scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
+  rtc::scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
 
   // The last applied configuration. Used so that the constraints
   // used when constructing the PeerConnection carry over when

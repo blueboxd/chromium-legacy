@@ -56,6 +56,8 @@ class AllocatorState {
   static constexpr size_t kMaxMetadata = 2048;
   // Invalid metadata index.
   static constexpr MetadataIdx kInvalidMetadataIdx = kMaxMetadata;
+  // Maximum number of metadata slots used by the Lightweight UAF Detector.
+  static constexpr size_t kMaxLightweightMetadata = 32768;
 
   // Maximum number of stack trace frames to collect for an allocation or
   // deallocation.
@@ -184,6 +186,12 @@ class AllocatorState {
   AllocatorState::SlotMetadata& GetLightweightSlotMetadataById(
       LightweightDetector::MetadataId,
       SlotMetadata* metadata_arr);
+
+  // The relationship between a metadata slot and an ID is one-to-many.
+  // This function returns true if the ID stored in the slot matches
+  // the ID that's used to access the slot.
+  bool HasLightweightMetadataForId(LightweightDetector::MetadataId,
+                                   SlotMetadata* metadata_arr);
 
   uintptr_t pages_base_addr = 0;     // Points to start of mapped region.
   uintptr_t pages_end_addr = 0;      // Points to the end of mapped region.

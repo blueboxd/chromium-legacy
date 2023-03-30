@@ -23,6 +23,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/storage_partition.h"
+#include "sql/database.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace attribution_reporting {
@@ -34,7 +35,6 @@ class GUID;
 }  // namespace base
 
 namespace sql {
-class Database;
 class Statement;
 class StatementID;
 }  // namespace sql
@@ -53,18 +53,18 @@ enum class RateLimitResult : int;
 class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
  public:
   // Version number of the database.
-  static constexpr int kCurrentVersionNumber = 47;
+  static constexpr int kCurrentVersionNumber = 48;
 
   // Earliest version which can use a `kCurrentVersionNumber` database
   // without failing.
-  static constexpr int kCompatibleVersionNumber = 47;
+  static constexpr int kCompatibleVersionNumber = 48;
 
   // Latest version of the database that cannot be upgraded to
   // `kCurrentVersionNumber` without razing the database.
   //
   // Note that all versions >=15 were introduced during the transitional state
   // of the Attribution Reporting API and can be removed when done.
-  static constexpr int kDeprecatedVersionNumber = 34;
+  static constexpr int kDeprecatedVersionNumber = 35;
 
   static_assert(kCompatibleVersionNumber <= kCurrentVersionNumber);
   static_assert(kDeprecatedVersionNumber < kCompatibleVersionNumber);
@@ -404,10 +404,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   absl::optional<DbStatus> db_init_status_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
-  // May be null if the database:
-  //  - could not be opened
-  //  - table/index initialization failed
-  std::unique_ptr<sql::Database> db_ GUARDED_BY_CONTEXT(sequence_checker_);
+  sql::Database db_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   std::unique_ptr<AttributionStorageDelegate> delegate_
       GUARDED_BY_CONTEXT(sequence_checker_);

@@ -308,14 +308,6 @@ struct GPU_EXPORT StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.machine_model_version;
   }
 
-  static const std::string& gl_implementation(const gpu::GPUInfo& input) {
-    return input.gl_implementation;
-  }
-
-  static const std::string& angle_implementation(const gpu::GPUInfo& input) {
-    return input.angle_implementation;
-  }
-
   static const std::string& display_type(const gpu::GPUInfo& input) {
     return input.display_type;
   }
@@ -352,8 +344,9 @@ struct GPU_EXPORT StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.gl_reset_notification_strategy;
   }
 
-  static bool software_rendering(const gpu::GPUInfo& input) {
-    return input.software_rendering;
+  static const gl::GLImplementationParts gl_implementation_parts(
+      const gpu::GPUInfo& input) {
+    return input.gl_implementation_parts;
   }
 
   static const std::string& direct_rendering_version(

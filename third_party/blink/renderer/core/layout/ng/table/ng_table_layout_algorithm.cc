@@ -370,10 +370,16 @@ class ColumnGeometriesBuilder {
     LayoutUnit column_inline_size = column_locations[end_column_index].offset +
                                     column_locations[end_column_index].size -
                                     column_locations[start_column_index].offset;
-    col.GetLayoutBox()->SetLogicalWidth(column_inline_size);
-    // Table column block-size is only set when at the last table box fragment.
-    if (table_column_block_size != kIndefiniteSize)
-      col.GetLayoutBox()->SetLogicalHeight(table_column_block_size);
+
+    if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
+      col.GetLayoutBox()->SetLogicalWidth(column_inline_size);
+      // Table column block-size is only set when at the last table box
+      // fragment.
+      if (table_column_block_size != kIndefiniteSize) {
+        col.GetLayoutBox()->SetLogicalHeight(table_column_block_size);
+      }
+    }
+
     column_geometries.emplace_back(start_column_index, span,
                                    column_locations[start_column_index].offset -
                                        column_locations[0].offset,
@@ -393,10 +399,16 @@ class ColumnGeometriesBuilder {
     LayoutUnit colgroup_size = column_locations[last_column_index].offset +
                                column_locations[last_column_index].size -
                                column_locations[start_column_index].offset;
-    colgroup.GetLayoutBox()->SetLogicalWidth(colgroup_size);
-    // Table column block-size is only set when at the last table box fragment.
-    if (table_column_block_size != kIndefiniteSize)
-      colgroup.GetLayoutBox()->SetLogicalHeight(table_column_block_size);
+
+    if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
+      colgroup.GetLayoutBox()->SetLogicalWidth(colgroup_size);
+      // Table column block-size is only set when at the last table box
+      // fragment.
+      if (table_column_block_size != kIndefiniteSize) {
+        colgroup.GetLayoutBox()->SetLogicalHeight(table_column_block_size);
+      }
+    }
+
     column_geometries.emplace_back(start_column_index, span,
                                    column_locations[start_column_index].offset -
                                        column_locations[0].offset,
@@ -430,6 +442,15 @@ class ColumnGeometriesBuilder {
                   return b.start_column >= a.start_column;
                 }
               });
+
+    if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
+      wtf_size_t column_idx = 0;
+      for (const auto& col : column_geometries) {
+        To<LayoutNGTableColumn>(col.node.GetLayoutBox())
+            ->SetColumnIndex(column_idx);
+        column_idx++;
+      }
+    }
   }
 
   ColumnGeometriesBuilder(const Vector<NGTableColumnLocation>& column_locations,
@@ -917,9 +938,11 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   // subsequent fragment.
   LayoutUnit border_spacing_before_first_section = border_spacing.block_size;
 
+  LayoutUnit monolithic_overflow;
   bool is_past_table_box = false;
   if (BreakToken()) {
     previously_consumed_block_size = BreakToken()->ConsumedBlockSize();
+    monolithic_overflow = BreakToken()->MonolithicOverflow();
     incoming_table_break_data =
         DynamicTo<NGTableBreakTokenData>(BreakToken()->TokenData());
     if (incoming_table_break_data) {
@@ -1143,6 +1166,15 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     }
   }
 
+  bool has_entered_non_repeated_section = false;
+  if (monolithic_overflow) {
+    // If the page was overflowed by monolithic content (inside the table) on a
+    // previous page, it has to mean that we've already entered a non-repeated
+    // section, since those are the only ones that can cause fragmentation
+    // overflow.
+    has_entered_non_repeated_section = true;
+  }
+
   LayoutUnit grid_block_size_inflation;
   LayoutUnit repeated_header_block_size;
   bool broke_inside = false;
@@ -1177,6 +1209,8 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     LayoutUnit child_block_end_margin;  // Captions allow margins.
     absl::optional<TableBoxExtent> new_table_box_extent;
     bool is_repeated_section = false;
+    bool has_overlapping_repeated_header = false;
+
     if (child.IsTableCaption()) {
       if (!relayout_captions)
         continue;
@@ -1263,6 +1297,18 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
           // block-size, AND fragmentainer block-offset, when laying out
           // non-repeated content (i.e. regular sections).
           offset_before_repeated_header.emplace(child_block_offset);
+
+          if (monolithic_overflow) {
+            // There's monolithic content from previous pages in the way, but we
+            // still want to place the table header at the block-start. In
+            // addition to this (probably) making sense, our implementation
+            // requires it. Once we have decided to repeat a table section, we
+            // need to be consistent about it. Take the header "out of flow",
+            // and just restore the block-offset back to
+            // offset_before_repeated_header afterwards.
+            child_block_offset = -monolithic_overflow;
+            has_overlapping_repeated_header = true;
+          }
 
           // A header will share its collapsed border with the block-start of
           // the table. However when repeated it will draw the whole border
@@ -1351,6 +1397,9 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
         To<NGPhysicalBoxFragment>(child_result->PhysicalFragment());
     NGBoxFragment fragment(table_writing_direction, physical_fragment);
     if (child.IsTableSection()) {
+      if (!is_repeated_section) {
+        has_entered_non_repeated_section = true;
+      }
       if (!first_baseline) {
         if (const auto& section_first_baseline = fragment.FirstBaseline())
           first_baseline = child_block_offset + *section_first_baseline;
@@ -1368,6 +1417,12 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
         repeated_header_block_size = child_block_offset -
                                      *offset_before_repeated_header +
                                      border_spacing.block_size;
+
+        if (has_overlapping_repeated_header) {
+          // The header was taken "out of flow" and placed on top of monolithic
+          // content. Now restore the offset.
+          child_block_offset = *offset_before_repeated_header;
+        }
       }
 
       if (new_table_box_extent) {
@@ -1429,7 +1484,25 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     }
     DCHECK_EQ(entry.GetNode(), grouped_children.footer);
 
-    LogicalOffset offset(section_inline_offset, child_block_offset);
+    // The only case where we should allow a break before a repeatable section
+    // is when we haven't processed a non-repeated section yet (a regular TBODY,
+    // for instance). In all other cases we should make sure that the footer
+    // fits, by forcefully making room for it, if necessary. This may be
+    // necessary when there's monolithic content that overflows the current
+    // page. We'll then place the repeated footer on top of any overflowing
+    // monolithic content, at the bottom of the page. Our implementation
+    // requires that once we've started repeating a section, it needs to be
+    // present in *every* subsequent table fragment that contains parts of the
+    // table box (i.e. non-captions).
+    LayoutUnit adjusted_child_block_offset = child_block_offset;
+    if (has_entered_non_repeated_section) {
+      adjusted_child_block_offset =
+          std::min(adjusted_child_block_offset,
+                   UnclampedFragmentainerSpaceLeft(ConstraintSpace()) -
+                       repeated_footer_block_size);
+    }
+
+    LogicalOffset offset(section_inline_offset, adjusted_child_block_offset);
     NGConstraintSpace child_space = CreateSectionConstraintSpace(
         grouped_children.footer, offset.block_offset, entry.GetSectionIndex(),
         /* reserved_space */ LayoutUnit(), kMayRepeatAgain);

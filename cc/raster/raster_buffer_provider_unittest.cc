@@ -179,7 +179,7 @@ class RasterBufferProviderTest
         raster_buffer_provider_ =
             std::make_unique<ZeroCopyRasterBufferProvider>(
                 &gpu_memory_buffer_manager_, context_provider_.get(),
-                viz::RGBA_8888);
+                viz::SinglePlaneFormat::kRGBA_8888);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dResourceProvider();
@@ -187,14 +187,14 @@ class RasterBufferProviderTest
             base::SingleThreadTaskRunner::GetCurrentDefault().get(),
             context_provider_.get(), worker_context_provider_.get(),
             &gpu_memory_buffer_manager_, kMaxBytesPerCopyOperation, false,
-            false, kMaxStagingBuffers, viz::RGBA_8888);
+            false, kMaxStagingBuffers, viz::SinglePlaneFormat::kRGBA_8888);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(), false,
-            viz::RGBA_8888, gfx::Size(), true, pending_raster_queries_.get(),
-            1);
+            viz::SinglePlaneFormat::kRGBA_8888, gfx::Size(), true,
+            pending_raster_queries_.get(), 1);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
@@ -249,7 +249,8 @@ class RasterBufferProviderTest
   }
 
   ResourcePool::InUsePoolResource AllocateResource(const gfx::Size& size) {
-    return pool_->AcquireResource(size, viz::RGBA_8888, gfx::ColorSpace());
+    return pool_->AcquireResource(size, viz::SinglePlaneFormat::kRGBA_8888,
+                                  gfx::ColorSpace());
   }
 
   void AppendTask(unsigned id,

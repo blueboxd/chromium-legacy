@@ -29,7 +29,7 @@ class WallpaperControllerClientImplTest;
 }
 
 namespace wallpaper_handlers {
-class BackdropFetcherDelegate;
+class WallpaperFetcherDelegate;
 }  // namespace wallpaper_handlers
 
 // Handles chrome-side wallpaper control alongside the ash-side controller.
@@ -39,8 +39,8 @@ class WallpaperControllerClientImpl
       public session_manager::SessionManagerObserver {
  public:
   explicit WallpaperControllerClientImpl(
-      std::unique_ptr<wallpaper_handlers::BackdropFetcherDelegate>
-          backdrop_fetcher_delegate);
+      std::unique_ptr<wallpaper_handlers::WallpaperFetcherDelegate>
+          wallpaper_fetcher_delegate);
 
   WallpaperControllerClientImpl(const WallpaperControllerClientImpl&) = delete;
   WallpaperControllerClientImpl& operator=(
@@ -185,12 +185,6 @@ class WallpaperControllerClientImpl
       ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
           response);
 
-  void OnGooglePhotosTokenFetched(
-      FetchGooglePhotosAccessTokenCallback callback,
-      std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> fetcher,
-      GoogleServiceAuthError error,
-      signin::AccessTokenInfo access_token_info);
-
   void ObserveVolumeManagerForAccountId(const AccountId& account_id);
 
   // WallpaperController interface in ash.
@@ -213,8 +207,8 @@ class WallpaperControllerClientImpl
            std::unique_ptr<wallpaper_handlers::GooglePhotosPhotosFetcher>>
       google_photos_photos_fetchers_;
 
-  const std::unique_ptr<wallpaper_handlers::BackdropFetcherDelegate>
-      backdrop_fetcher_delegate_;
+  const std::unique_ptr<wallpaper_handlers::WallpaperFetcherDelegate>
+      wallpaper_fetcher_delegate_;
 
   base::ScopedMultiSourceObservation<file_manager::VolumeManager,
                                      file_manager::VolumeManagerObserver>

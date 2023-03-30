@@ -444,8 +444,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
 // Disabled because the test always fails the first time it runs on the Win Aura
 // bots, and usually but not always passes second-try (See crbug.com/179532).
-// Flaky on CrOS as well: https://crbug.com/856079
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+// Flaky on CrOS and Linux as well: https://crbug.com/856079
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_LINUX)
 #define MAYBE_QuickOverscrollDirectionChange \
   DISABLED_QuickOverscrollDirectionChange
 #else
@@ -594,7 +594,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
     auto drop_cb = view->GetDropCallback(event);
     ASSERT_TRUE(drop_cb);
     ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-    std::move(drop_cb).Run(std::move(data), output_drag_op);
+    std::move(drop_cb).Run(std::move(data), output_drag_op,
+                           /*drag_image_layer_owner=*/nullptr);
 
     run_loop.Run();
 
@@ -630,7 +631,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
     auto drop_cb = view->GetDropCallback(event);
     ASSERT_TRUE(drop_cb);
     ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-    std::move(drop_cb).Run(std::move(data), output_drag_op);
+    std::move(drop_cb).Run(std::move(data), output_drag_op,
+                           /*drag_image_layer_owner=*/nullptr);
 
     run_loop.Run();
 
@@ -672,7 +674,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, Drop_DeepScanOK) {
   auto drop_cb = view->GetDropCallback(event);
   ASSERT_TRUE(drop_cb);
   ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(std::move(data), output_drag_op);
+  std::move(drop_cb).Run(std::move(data), output_drag_op,
+                         /*drag_image_layer_owner=*/nullptr);
 
   // The user should be able to drag other content over Chrome while the scan is
   // occurring without affecting it.
@@ -690,7 +693,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, Drop_DeepScanOK) {
   view->OnDragEntered(new_event);
   drop_cb = view->GetDropCallback(new_event);
   output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(std::move(new_data), output_drag_op);
+  std::move(drop_cb).Run(std::move(new_data), output_drag_op,
+                         /*drag_image_layer_owner=*/nullptr);
   EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());
 
   delegate_ptr->FinishScan();
@@ -730,7 +734,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, Drop_DeepScanBad) {
   auto drop_cb = view->GetDropCallback(event);
   ASSERT_TRUE(drop_cb);
   ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(std::move(data), output_drag_op);
+  std::move(drop_cb).Run(std::move(data), output_drag_op,
+                         /*drag_image_layer_owner=*/nullptr);
 
   // The user should be able to drag other content over Chrome while the scan is
   // occurring without affecting it.
@@ -748,7 +753,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, Drop_DeepScanBad) {
   view->OnDragEntered(new_event);
   drop_cb = view->GetDropCallback(new_event);
   output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(std::move(new_data), output_drag_op);
+  std::move(drop_cb).Run(std::move(new_data), output_drag_op,
+                         /*drag_image_layer_owner=*/nullptr);
   EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());
 
   delegate_ptr->FinishScan();
@@ -994,7 +1000,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, GetDropCallback_Run) {
   auto drop_cb = view->GetDropCallback(event);
   ASSERT_TRUE(drop_cb);
   ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(std::move(data), output_drag_op);
+  std::move(drop_cb).Run(std::move(data), output_drag_op,
+                         /*drag_image_layer_owner=*/nullptr);
 
   run_loop.Run();
 

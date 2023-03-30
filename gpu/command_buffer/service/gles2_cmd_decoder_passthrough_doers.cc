@@ -2512,7 +2512,7 @@ error::Error GLES2DecoderPassthroughImpl::DoReadbackARGBImagePixelsINTERNAL(
       return error::kNoError;
     }
   }
-  ScopedPixelLocalStorageDeactivate scoped_pls_deactivate(this);
+  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(this);
   ui::ScopedMakeCurrent smc(lazy_context_->shared_context_state()->context(),
                             lazy_context_->shared_context_state()->surface());
 
@@ -5119,7 +5119,7 @@ error::Error GLES2DecoderPassthroughImpl::DoConvertRGBAToYUVAMailboxesINTERNAL(
       return error::kNoError;
     }
   }
-  ScopedPixelLocalStorageDeactivate scoped_pls_deactivate(this);
+  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(this);
   ui::ScopedMakeCurrent smc(lazy_context_->shared_context_state()->context(),
                             lazy_context_->shared_context_state()->surface());
   CopySharedImageHelper helper(group_->shared_image_representation_factory(),
@@ -5143,7 +5143,7 @@ error::Error GLES2DecoderPassthroughImpl::DoConvertYUVAMailboxesToRGBINTERNAL(
       return error::kNoError;
     }
   }
-  ScopedPixelLocalStorageDeactivate scoped_pls_deactivate(this);
+  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(this);
   ui::ScopedMakeCurrent smc(lazy_context_->shared_context_state()->context(),
                             lazy_context_->shared_context_state()->surface());
   CopySharedImageHelper helper(group_->shared_image_representation_factory(),
@@ -5171,13 +5171,57 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySharedImageINTERNAL(
       return error::kNoError;
     }
   }
-  ScopedPixelLocalStorageDeactivate scoped_pls_deactivate(this);
+  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(this);
   ui::ScopedMakeCurrent smc(lazy_context_->shared_context_state()->context(),
                             lazy_context_->shared_context_state()->surface());
   CopySharedImageHelper helper(group_->shared_image_representation_factory(),
                                lazy_context_->shared_context_state());
   auto result = helper.CopySharedImage(xoffset, yoffset, x, y, width, height,
                                        unpack_flip_y, mailboxes);
+  if (!result.has_value()) {
+    InsertError(result.error().gl_error, result.error().msg);
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoCopySharedImageToTextureINTERNAL(
+    GLuint texture,
+    GLenum target,
+    GLuint internal_format,
+    GLenum type,
+    GLint src_x,
+    GLint src_y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean flip_y,
+    const volatile GLbyte* src_mailbox) {
+  if (!lazy_context_) {
+    lazy_context_ = LazySharedContextState::Create(this);
+    if (!lazy_context_) {
+      return error::kNoError;
+    }
+  }
+  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(this);
+  ui::ScopedMakeCurrent smc(lazy_context_->shared_context_state()->context(),
+                            lazy_context_->shared_context_state()->surface());
+
+  if (GLenumToTextureTarget(target) == TextureTarget::kUnkown) {
+    InsertError(GL_INVALID_VALUE, "Invalid texture target");
+    return error::kNoError;
+  }
+
+  GLuint gl_texture_service_id = GetTextureServiceID(
+      api(), texture, resources_, /*create_if_missing=*/false);
+  if (gl_texture_service_id == 0) {
+    InsertError(GL_INVALID_OPERATION, "Cannot get texture service id");
+    return error::kNoError;
+  }
+
+  CopySharedImageHelper helper(group_->shared_image_representation_factory(),
+                               lazy_context_->shared_context_state());
+  auto result = helper.CopySharedImageToGLTexture(
+      gl_texture_service_id, target, internal_format, type, src_x, src_y, width,
+      height, flip_y, src_mailbox);
   if (!result.has_value()) {
     InsertError(result.error().gl_error, result.error().msg);
   }
@@ -5289,10 +5333,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginPixelLocalStorageANGLE(
   GLenum loadops_copy[kPassthroughMaxPLSPlanes];
   std::copy(loadops, loadops + n, loadops_copy);
   api()->glBeginPixelLocalStorageANGLEFn(n, loadops_copy);
-  // Query GL_PIXEL_LOCAL_STORAGE_ACTIVE_PLANES_ANGLE in case there was an error
-  // and the number of active planes isn't actually <n>.
-  api()->glGetIntegervFn(GL_PIXEL_LOCAL_STORAGE_ACTIVE_PLANES_ANGLE,
-                         &active_pls_plane_count_);
+  has_activated_pixel_local_storage_ = true;
   return error::kNoError;
 }
 
@@ -5316,10 +5357,6 @@ error::Error GLES2DecoderPassthroughImpl::DoEndPixelLocalStorageANGLE(
   GLenum storeops_copy[kPassthroughMaxPLSPlanes];
   std::copy(storeops, storeops + n, storeops_copy);
   api()->glEndPixelLocalStorageANGLEFn(n, storeops_copy);
-  // Query GL_PIXEL_LOCAL_STORAGE_ACTIVE_PLANES_ANGLE in case there was an error
-  // and the number of active planes isn't actually zero.
-  api()->glGetIntegervFn(GL_PIXEL_LOCAL_STORAGE_ACTIVE_PLANES_ANGLE,
-                         &active_pls_plane_count_);
   return error::kNoError;
 }
 
@@ -5329,6 +5366,24 @@ error::Error GLES2DecoderPassthroughImpl::DoPixelLocalStorageBarrierANGLE() {
     return error::kNoError;
   }
   api()->glPixelLocalStorageBarrierANGLEFn();
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::DoFramebufferPixelLocalStorageInterruptANGLE() {
+  if (IsEmulatedFramebufferBound(GL_DRAW_FRAMEBUFFER)) {
+    return error::kNoError;
+  }
+  api()->glFramebufferPixelLocalStorageInterruptANGLEFn();
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::DoFramebufferPixelLocalStorageRestoreANGLE() {
+  if (IsEmulatedFramebufferBound(GL_DRAW_FRAMEBUFFER)) {
+    return error::kNoError;
+  }
+  api()->glFramebufferPixelLocalStorageRestoreANGLEFn();
   return error::kNoError;
 }
 

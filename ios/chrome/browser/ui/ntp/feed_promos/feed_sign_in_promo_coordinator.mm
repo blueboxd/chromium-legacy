@@ -12,8 +12,7 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/ntp/feed_promos/feed_sign_in_promo_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
@@ -46,20 +45,6 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
 
 - (void)start {
   DCHECK(IsFeedCardMenuSignInPromoEnabled());
-
-  ChromeAccountManagerService* accountManagerService =
-      ChromeAccountManagerServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-
-  // Show sign-in only flow when there's one or more device-level user account.
-  if (accountManagerService->HasIdentities()) {
-    [self showSignInFlowWithSignInOnly:YES];
-    return;
-  }
-
-  self.feedMetricsRecorder = DiscoverFeedServiceFactory::GetForBrowserState(
-                                 self.browser->GetBrowserState())
-                                 ->GetFeedMetricsRecorder();
 
   FeedSignInPromoViewController* signInPromoViewController =
       [[FeedSignInPromoViewController alloc] init];
@@ -109,11 +94,10 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
   [self.feedMetricsRecorder recordSignInPromoUIContinueTapped];
   if (self.baseViewController.presentedViewController) {
     __weak __typeof(self) weakSelf = self;
-    [self.baseViewController
-        dismissViewControllerAnimated:YES
-                           completion:^{
-                             [weakSelf showSignInFlowWithSignInOnly:NO];
-                           }];
+    [self.baseViewController dismissViewControllerAnimated:YES
+                                                completion:^{
+                                                  [weakSelf showSyncFlow];
+                                                }];
   }
 }
 
@@ -124,14 +108,13 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
 
 #pragma mark - Helpers
 
-- (void)showSignInFlowWithSignInOnly:(BOOL)signInOnly {
+- (void)showSyncFlow {
   const signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO;
   id<ApplicationCommands> handler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:signInOnly ? AuthenticationOperationSigninOnly
-                                   : AuthenticationOperationSigninAndSync
+      initWithOperation:AuthenticationOperationSigninAndSync
             accessPoint:access_point];
   signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
   [handler showSignin:command baseViewController:self.baseViewController];

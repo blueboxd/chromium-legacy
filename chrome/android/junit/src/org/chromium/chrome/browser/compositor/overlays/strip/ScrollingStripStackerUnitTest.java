@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -17,8 +15,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.ui.base.LocalizationUtils;
 
 /** Tests for {@link ScrollingStripStacker}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -59,28 +55,11 @@ public final class ScrollingStripStackerUnitTest {
             draw_x += TAB_WIDTH;
             ideal_x += TAB_WIDTH;
         }
-        setTabStripImprovementFeature(false);
     }
 
     @Test
-    public void testSetTabOffsets() {
-        mTarget.setTabOffsets(2, mInput, 0, 0, 0, 0, 0, 0, false, false, CACHED_TAB_WIDTH);
-
-        float expected_x = 0;
-        for (StripLayoutTab tab : mInput) {
-            verify(tab).setDrawX(expected_x);
-            verify(tab).setDrawY(TAB_OFFSET_Y);
-            verify(tab).setVisiblePercentage(1.f);
-            verify(tab).setContentOffsetX(0.f);
-            expected_x += TAB_WIDTH;
-        }
-    }
-
-    @Test
-    public void testSetTabOffsets_withTabStripImprovement_tabNotClosing() {
-        setTabStripImprovementFeature(true);
-
-        mTarget.setTabOffsets(2, mInput, 0, 0, 0, 0, 0, 0, false, false, CACHED_TAB_WIDTH);
+    public void testSetTabOffsets_tabNotClosing() {
+        mTarget.setTabOffsets(2, mInput, 0, 0, 0, 0, 0, 0, false, false, false, CACHED_TAB_WIDTH);
 
         float expected_x = 0;
         for (StripLayoutTab tab : mInput) {
@@ -94,10 +73,9 @@ public final class ScrollingStripStackerUnitTest {
     }
 
     @Test
-    public void testSetTabOffsets_withTabStripImprovement_tabClosing() {
-        setTabStripImprovementFeature(true);
-
-        mTarget.setTabOffsets(2, mInput, 0, 0, 0, 0, 0, STRIP_WIDTH, false, true, CACHED_TAB_WIDTH);
+    public void testSetTabOffsets_tabClosing() {
+        mTarget.setTabOffsets(
+                2, mInput, 0, 0, 0, 0, 0, STRIP_WIDTH, false, true, false, CACHED_TAB_WIDTH);
 
         for (StripLayoutTab tab : mInput) {
             verify(tab).setDrawY(TAB_OFFSET_Y);
@@ -105,6 +83,25 @@ public final class ScrollingStripStackerUnitTest {
             verify(tab).setContentOffsetX(0.f);
             verify(tab).getOffsetY();
             verifyNoMoreInteractions(tab);
+        }
+    }
+
+    @Test
+    public void testSetTabOffsets_tabCreating() {
+        mTarget.setTabOffsets(
+                2, mInput, 0, 0, 0, 0, 0, STRIP_WIDTH, false, false, true, CACHED_TAB_WIDTH);
+
+        float expected_x = 0;
+        for (StripLayoutTab tab : mInput) {
+            verify(tab).getIdealX();
+            verify(tab).getOffsetX();
+            verify(tab).setDrawX(expected_x);
+            verify(tab).setDrawY(TAB_OFFSET_Y);
+            verify(tab).setVisiblePercentage(1.f);
+            verify(tab).setContentOffsetX(0.f);
+            verify(tab).getOffsetY();
+            verifyNoMoreInteractions(tab);
+            expected_x += TAB_WIDTH;
         }
     }
 
@@ -119,24 +116,5 @@ public final class ScrollingStripStackerUnitTest {
                 verify(tab).setVisible(true);
             }
         }
-    }
-
-    @Test
-    public void testComputeNewTabButtonOffset() {
-        float value = mTarget.computeNewTabButtonOffset(mInput, TAB_OVERLAP, STRIP_MARGIN,
-                STRIP_MARGIN, STRIP_WIDTH, BUTTON_WIDTH, 0, CACHED_TAB_WIDTH, true);
-        assertThat("Button offset does not match", value, is(96.5f));
-    }
-
-    @Test
-    public void testComputeNewTabButtonOffsetRTL() {
-        LocalizationUtils.setRtlForTesting(true);
-        float value = mTarget.computeNewTabButtonOffset(mInput, TAB_OVERLAP, STRIP_MARGIN,
-                STRIP_MARGIN, STRIP_WIDTH, BUTTON_WIDTH, 0, CACHED_TAB_WIDTH, true);
-        assertThat("Button offset does not match", value, is(66.5f));
-    }
-
-    private void setTabStripImprovementFeature(boolean value) {
-        ChromeFeatureList.sTabStripImprovements.setForTesting(value);
     }
 }

@@ -6,10 +6,9 @@
 
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
-#import "components/metrics/metrics_features.h"
 #import "components/metrics/metrics_log_uploader.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "services/metrics/public/cpp/ukm_builders.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,11 +37,6 @@ IOSChromeDefaultBrowserMetricsProvider::
     ~IOSChromeDefaultBrowserMetricsProvider() {}
 
 void IOSChromeDefaultBrowserMetricsProvider::OnDidCreateMetricsLog() {
-  if (!base::FeatureList::IsEnabled(
-          metrics::features::kEmitHistogramsEarlier)) {
-    return;
-  }
-
   if (metrics_service_type_ ==
       metrics::MetricsLogUploader::MetricServiceType::UMA) {
     ProvideUmaHistograms();
@@ -55,9 +49,7 @@ void IOSChromeDefaultBrowserMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   switch (metrics_service_type_) {
     case metrics::MetricsLogUploader::MetricServiceType::UMA:
-      if (!base::FeatureList::IsEnabled(
-              metrics::features::kEmitHistogramsEarlier) ||
-          !emitted_) {
+      if (!emitted_) {
         ProvideUmaHistograms();
       }
       return;

@@ -20,11 +20,11 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
 import android.util.Rational;
 import android.view.View;
 
 import androidx.annotation.RequiresApi;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
@@ -54,6 +54,7 @@ import org.chromium.content_public.browser.overlay_window.PlaybackState;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.media_session.mojom.MediaSessionAction;
+import org.chromium.ui.test.util.DeviceRestriction;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -65,6 +66,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
 @RequiresApi(Build.VERSION_CODES.O)
 public class PictureInPictureActivityTest {
     @Rule
@@ -218,6 +220,17 @@ public class PictureInPictureActivityTest {
         Assert.assertEquals(actions.size(), 3);
         Assert.assertEquals(actions.get(0), manager.mPreviousTrack);
         Assert.assertEquals(actions.get(2), manager.mNextTrack);
+        Assert.assertTrue(actions.get(0).isEnabled());
+        Assert.assertFalse(actions.get(2).isEnabled());
+
+        // Both next slide and previous slide button should be visible when only one of them is
+        // enabled. The one that is not handled should be visible and disabled.
+        activity.updateVisibleActions(
+                new int[] {MediaSessionAction.PLAY, MediaSessionAction.PREVIOUS_SLIDE});
+        actions = manager.getActionsForPictureInPictureParams();
+        Assert.assertEquals(actions.size(), 3);
+        Assert.assertEquals(actions.get(0), manager.mPreviousSlide);
+        Assert.assertEquals(actions.get(2), manager.mNextSlide);
         Assert.assertTrue(actions.get(0).isEnabled());
         Assert.assertFalse(actions.get(2).isEnabled());
 

@@ -32,9 +32,11 @@ async function runSelectRawURL(href, resolve_to_config = false) {
     // gracefully fail rather than bring the whole test down.
   }
   return await sharedStorage.selectURL(
-      "test-url-selection-operation", [{url: href}],
-      {data: {'mockResult': 0}, resolveToConfig: resolve_to_config}
-  );
+      'test-url-selection-operation', [{url: href}], {
+        data: {'mockResult': 0},
+        resolveToConfig: resolve_to_config,
+        keepAlive: true
+      });
 }
 
 // Similar to generateURL, but creates
@@ -240,10 +242,13 @@ function attachFrameContext(element_name, generator_api, resolve_to_config, html
     attributes.forEach(attribute => {
       frame.setAttribute(attribute[0], attribute[1]);
     });
-    if (resolve_to_config) {
+    if (element_name == "iframe") {
+      frame.src = id;
+    } else if (id instanceof FencedFrameConfig) {
       frame.config = id;
     } else {
-      frame.src = id;
+      const config = new FencedFrameConfig(id);
+      frame.config = config;
     }
     document.body.append(frame);
     return frame;
@@ -253,10 +258,13 @@ function attachFrameContext(element_name, generator_api, resolve_to_config, html
 
 function replaceFrameContext(frame_proxy, {generator_api="", resolve_to_config=false, html="", headers=[], origin=""}={}) {
   frame_constructor = (id) => {
-    if (resolve_to_config) {
+    if (frame_proxy.element.nodeName == "IFRAME") {
+      frame_proxy.element.src = id;
+    } else if (id instanceof FencedFrameConfig) {
       frame_proxy.element.config = id;
     } else {
-      frame_proxy.element.src = id;
+      const config = new FencedFrameConfig(id);
+      frame_proxy.element.config = config;
     }
     return frame_proxy.element;
   };
@@ -319,21 +327,18 @@ async function stringToStashKey(string) {
 
 // Create a fenced frame. Then navigate it using the given `target`, which can
 // be either an urn:uuid or a fenced frame config object.
-function attachFencedFrame(target, mode='') {
+function attachFencedFrame(target) {
   assert_implements(
       window.HTMLFencedFrameElement,
       'The HTMLFencedFrameElement should be exposed on the window object');
 
   const fenced_frame = document.createElement('fencedframe');
-  assert_true('mode' in fenced_frame);
-  if (mode) {
-    fenced_frame.mode = mode;
-  }
 
   if (target instanceof FencedFrameConfig) {
     fenced_frame.config = target;
   } else {
-    fenced_frame.src = target;
+    const config = new FencedFrameConfig(target);
+    fenced_frame.config = config;
   }
 
   document.body.append(fenced_frame);

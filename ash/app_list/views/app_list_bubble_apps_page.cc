@@ -31,14 +31,17 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/typography.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -225,7 +228,11 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   separator_ =
       scroll_contents->AddChildView(std::make_unique<views::Separator>());
   separator_->SetBorder(views::CreateEmptyBorder(kSeparatorInsets));
-  separator_->SetColorId(ui::kColorAshSystemUIMenuSeparator);
+  if (chromeos::features::IsJellyEnabled()) {
+    separator_->SetColorId(cros_tokens::kCrosSysSeparator);
+  } else {
+    separator_->SetColorId(ui::kColorAshSystemUIMenuSeparator);
+  }
 
   // Add a empty container view. A toast view should be added to
   // `toast_container_` when the app list starts temporary sorting.
@@ -677,9 +684,11 @@ void AppListBubbleAppsPage::InitContinueLabelContainer(
   continue_label_ =
       continue_label_container_->AddChildView(std::make_unique<views::Label>(
           l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL)));
-  bubble_utils::ApplyStyle(continue_label_,
-                           bubble_utils::TypographyStyle::kAnnotation1,
-                           kColorAshTextColorSecondary);
+  bubble_utils::ApplyStyle(
+      continue_label_, TypographyToken::kCrosAnnotation1,
+      chromeos::features::IsJellyEnabled()
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSecondary)
+          : kColorAshTextColorSecondary);
   continue_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Button should be right aligned, so flex label to fill empty space.

@@ -5,7 +5,7 @@
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 
 import {mojoString16ToString} from './mojo_utils.js';
-import {Accelerator, AcceleratorCategory, AcceleratorId, AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, LayoutInfo, MojoAcceleratorConfig, MojoAcceleratorInfo, MojoLayoutInfo, StandardAcceleratorInfo, TextAcceleratorInfo} from './shortcut_types.js';
+import {Accelerator, AcceleratorCategory, AcceleratorId, AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, LayoutInfo, LayoutStyle, MojoAcceleratorConfig, MojoAcceleratorInfo, MojoLayoutInfo, StandardAcceleratorInfo, TextAcceleratorInfo} from './shortcut_types.js';
 import {areAcceleratorsEqual, getAccelerator, getAcceleratorId, isStandardAcceleratorInfo, isTextAcceleratorInfo} from './shortcut_utils.js';
 
 // Convert from Mojo types to the app types.
@@ -82,6 +82,10 @@ export class AcceleratorLookupManager {
    */
   private reverseAcceleratorLookup: ReverseAcceleratorLookupMap = new Map();
 
+  // Determine whether the keyboard has a launcher button or a search button. It
+  // is used to display the 'meta' key with correct icon.
+  private hasLauncherButton: boolean = false;
+
   /**
    * Used to generate the keys for the ReverseAcceleratorLookupMap.
    */
@@ -106,8 +110,8 @@ export class AcceleratorLookupManager {
     return acceleratorInfos;
   }
 
-  isStandardAccelerator(source: number|string, action: number|string): boolean {
-    return this.standardAcceleratorLookup.has(getAcceleratorId(source, action));
+  isStandardAccelerator(style: number|string): boolean {
+    return style === LayoutStyle.kDefault;
   }
 
   getAcceleratorLayout(
@@ -185,6 +189,14 @@ export class AcceleratorLookupManager {
 
   setAcceleratorLayoutLookup(layoutInfoList: MojoLayoutInfo[]): void {
     this.layoutInfoProvider.initializeLayoutInfo(layoutInfoList);
+  }
+
+  setHasLauncherButton(hasLauncherButton: boolean): void {
+    this.hasLauncherButton = hasLauncherButton;
+  }
+
+  getHasLauncherButton(): boolean {
+    return this.hasLauncherButton;
   }
 
   replaceAccelerator(

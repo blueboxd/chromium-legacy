@@ -45,11 +45,23 @@ enum class WebGPUAdapterName : uint32_t {
   kSwiftShader = 2,
 };
 
+// Affecting how chromium handles GPUPowerPreference in
+// GPURequestAdapterOptions.
+enum class WebGPUPowerPreference : uint32_t {
+  // Choose the preferred adapter when GPUPowerPreference is not given.
+  // Has no impact when GPUPowerPreference is given.
+  kDefaultLowPower = 0,
+  kDefaultHighPerformance = 1,
+  // Choose the forced adapter regardless of whether GPUPowerPreference is set
+  // or not.
+  kForceLowPower = 2,
+  kForceHighPerformance = 3,
+};
+
 enum class GrContextType : uint32_t {
-  kGL = 0,
-  kVulkan = 1,
-  kMetal = 2,
-  kDawn = 3,
+  kGL,
+  kVulkan,
+  kDawn,
   kLast = kDawn,
 };
 
@@ -231,10 +243,6 @@ struct GPU_EXPORT GpuPreferences {
   // when this limit is reached.
   uint32_t vulkan_sync_cpu_memory_limit = 0u;
 
-  // Use Metal for rasterization and Skia-based display compositing. Note that
-  // this is compatible with GL-based display compositing.
-  bool enable_metal = false;
-
   // ===================================
   // Settings from //cc/base/switches.h
   // Enable the GPU benchmarking extension; used by tests only.
@@ -252,6 +260,10 @@ struct GPU_EXPORT GpuPreferences {
 
   // The adapter to use for WebGPU content.
   WebGPUAdapterName use_webgpu_adapter = WebGPUAdapterName::kDefault;
+
+  // The adapter selecting strategy related to GPUPowerPreference.
+  WebGPUPowerPreference use_webgpu_power_preference =
+      WebGPUPowerPreference::kDefaultHighPerformance;
 
   // The Dawn features(toggles) enabled on the creation of Dawn devices.
   std::vector<std::string> enabled_dawn_features_list;

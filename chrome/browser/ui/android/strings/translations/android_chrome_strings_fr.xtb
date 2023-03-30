@@ -283,6 +283,7 @@ Les jetons d'état privés améliorent la confidentialité sur le Web et ne peuv
 <translation id="2581165646603367611">Cette action aura pour effet de vider le cache et de supprimer les cookies, ainsi que d'autres données de site que Chrome ne considère pas comme importantes.</translation>
 <translation id="2587052924345400782">Nouvelle version disponible</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2603212228005142861">Connectez-vous pour gérer vos préférences</translation>
 <translation id="2604446170045642109">Vous pouvez désactiver le thème sombre pour les sites dans les paramètres.</translation>
 <translation id="2612676031748830579">Numéro de carte</translation>
 <translation id="2625189173221582860">Mot de passe copié</translation>
@@ -476,6 +477,7 @@ Les jetons d'état privés améliorent la confidentialité sur le Web et ne peuv
 <translation id="3587596251841506391">Contribuer à sécuriser le Web</translation>
 <translation id="3597179440835065298">Obtenez de meilleures suggestions</translation>
 <translation id="3602290021589620013">Aperçu</translation>
+<translation id="360901359071773787">Supprimer les 15 dernières minutes ?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Gérer les fenêtres</translation>
 <translation id="3631987586758005671">Partage avec <ph name="DEVICE_NAME" />…</translation>
@@ -792,6 +794,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5342314432463739672">Demandes d'autorisation</translation>
 <translation id="53537532693258630">Les sites que vous supprimez s'afficheront ici</translation>
 <translation id="5355191726083956201">La protection renforcée est activée</translation>
+<translation id="5361107212971249203">texte</translation>
 <translation id="5368227114232678694">Pour naviguer en privé sur cet appareil, essayez la navigation privée</translation>
 <translation id="5375577065097716013">Rechercher image avec Google Lens <ph name="BEGIN_NEW" />Nouvelle<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">Pour continuer, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> partagera avec ce site vos nom, adresse e-mail et photo de profil.</translation>
@@ -821,6 +824,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5517095782334947753">Vous disposez des favoris, de l'historique, des mots de passe et d'autres paramètres du compte <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Pendant les essais, si Chrome vous a intégré aléatoirement à un essai actif, votre historique de navigation influe sur les annonces que vous voyez et les centres d'intérêt estimés ci-dessous. Pour protéger votre confidentialité, Chrome supprime vos centres d'intérêt tous les mois.</translation>
 <translation id="5524843473235508879">Redirection bloquée.</translation>
+<translation id="554297709083131118">Les données suivantes des 15 dernières minutes seront supprimées</translation>
 <translation id="5548606607480005320">Contrôle de sécurité</translation>
 <translation id="5555525474779371165">Choisir votre mode de navigation sécurisée</translation>
 <translation id="5556459405103347317">Actualiser</translation>
@@ -1075,6 +1079,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6824899148643461612">"<ph name="TAB_TITLE" />", onglet, sélectionné</translation>
 <translation id="6828070228333235514">Arrêter le suivi du prix</translation>
 <translation id="6830728435402077660">Non sécurisé</translation>
+<translation id="6831043979455480757">Traduire</translation>
 <translation id="6833996806551876956">Essai de Privacy Sandbox</translation>
 <translation id="6836206421467243968">Restaurer le groupe d'onglets "<ph name="TITLE_OF_GROUP" />" en tant que nouveau groupe d'onglets en arrière-plan.</translation>
 <translation id="6846298663435243399">Chargement…</translation>
@@ -1242,6 +1247,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7707922173985738739">Utilisera les données mobiles</translation>
 <translation id="7709094866268987903">Les centres d'intérêt que vous supprimez s'afficheront ici</translation>
 <translation id="7709918231054955894">Accédez à tous vos onglets</translation>
+<translation id="772434085369393266">Met à niveau les navigations en HTTPS et vous avertit avant de charger les sites qui n'acceptent pas ce protocole. Il n'est pas encore possible de modifier ce paramètre, car la Protection Avancée est activée.</translation>
 <translation id="7725024127233776428">Les pages que vous ajoutez aux favoris sont répertoriées ici</translation>
 <translation id="7757787379047923882">Texte partagé par <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Carte SD <ph name="SD_CARD_NUMBER" /></translation>
@@ -1260,6 +1266,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="78270725016672455">L'ordinateur souhaite enregistrer cet appareil pour se connecter à un site</translation>
 <translation id="7844171778363018843">Aucune donnée à synchroniser</translation>
 <translation id="7846296061357476882">Services Google</translation>
+<translation id="7847228556075070294">Historique, cookies et autres données supprimés</translation>
 <translation id="784934925303690534">Période</translation>
 <translation id="7851858861565204677">Autres appareils</translation>
 <translation id="7853202427316060426">Activité</translation>
@@ -1314,6 +1321,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8058746566562539958">Ouvrir dans nouvel onglet Chrome</translation>
 <translation id="8062594758852531064">Préchargement avancé :</translation>
 <translation id="8063895661287329888">Échec de l'ajout du favori</translation>
+<translation id="8066816452984416180">Ajoutez rapidement cette page à vos favoris. Pour modifier ce raccourci, appuyez dessus de manière prolongée.</translation>
 <translation id="806745655614357130">Conserver mes données à part</translation>
 <translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
 <translation id="8076492880354921740">Onglets</translation>
@@ -1345,6 +1353,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8216351761227087153">Regarder</translation>
 <translation id="8218622182176210845">Gérer votre compte</translation>
 <translation id="8223642481677794647">Menu de la carte de flux</translation>
+<translation id="8236097722223016103">Ajouter aux favoris</translation>
 <translation id="8250920743982581267">Documents</translation>
 <translation id="8255617931166444521">Les sites ne peuvent utiliser vos cookies que pour voir votre activité de navigation sur ces sites</translation>
 <translation id="8259179246279078674">Les pages préchargées étant chiffrées, Google n'analyse pas leur contenu. Les serveurs de Google voient quels sites sont préchargés en mode privé. Ces informations ne servent qu'à précharger les pages et ne sont liées à aucune autre information de votre compte Google.</translation>
@@ -1439,6 +1448,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="869891660844655955">Date d'expiration</translation>
 <translation id="8699120352855309748">Ne pas proposer de traduire ces langues</translation>
 <translation id="8712637175834984815">OK</translation>
+<translation id="8723453889042591629">Traduire rapidement cette page. Pour modifier ce raccourci, appuyez dessus de manière prolongée.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8746155870861185046">Partager le texte en surbrillance</translation>
 <translation id="874726034427945498">Pour de meilleures suggestions dans la barre d'adresse, synchronisez vos onglets et votre historique</translation>
@@ -1491,6 +1501,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8989968390305463310">Votre historique de navigation influe sur les annonces que vous voyez et les centres d'intérêt estimés ci-dessous. Pour protéger votre confidentialité, Chrome supprime automatiquement vos centres d'intérêt tous les mois. Les centres d'intérêt peuvent s'actualiser, sauf si vous les supprimez.</translation>
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode navigation privée</translation>
 <translation id="8996847606757455498">Sélectionner un autre fournisseur</translation>
+<translation id="8998289560386111590">Non disponible sur votre appareil</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chrome. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chrome, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="9022774213089566801">Consultés régulièrement</translation>
 <translation id="9022871169049522985">Les sites et les annonceurs peuvent mesurer les performances de leurs annonces</translation>

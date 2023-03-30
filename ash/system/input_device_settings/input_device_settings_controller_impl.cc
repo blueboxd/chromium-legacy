@@ -13,6 +13,9 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_notifier.h"
+#include "ash/system/input_device_settings/input_device_settings_defaults.h"
+#include "ash/system/input_device_settings/input_device_settings_metrics_manager.h"
+#include "ash/system/input_device_settings/input_device_settings_policy_handler.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
 #include "ash/system/input_device_settings/pref_handlers/keyboard_pref_handler_impl.h"
@@ -22,6 +25,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/bind.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/chromeos/events/keyboard_capability.h"
@@ -100,12 +104,29 @@ mojom::PointingStickPtr BuildMojomPointingStick(
 }
 }  // namespace
 
+// suppress_meta_fkey_rewrites must never be non-default for internal
+// keyboards, otherwise the keyboard settings are not valid.
+// Modifier remappings must only contain valid modifiers within the
+// modifier_keys array.
+bool keyboardSettingsAreValid(const mojom::Keyboard& keyboard,
+                              const mojom::KeyboardSettings& settings) {
+  for (const auto& remapping : settings.modifier_remappings) {
+    auto it = base::ranges::find(keyboard.modifier_keys, remapping.first);
+    if (it == keyboard.modifier_keys.end()) {
+      return false;
+    }
+  }
+  return keyboard.is_external || (settings.suppress_meta_fkey_rewrites ==
+                                  kDefaultSuppressMetaFKeyRewrites);
+}
+
 InputDeviceSettingsControllerImpl::InputDeviceSettingsControllerImpl()
     : keyboard_pref_handler_(std::make_unique<KeyboardPrefHandlerImpl>()),
       touchpad_pref_handler_(std::make_unique<TouchpadPrefHandlerImpl>()),
       mouse_pref_handler_(std::make_unique<MousePrefHandlerImpl>()),
       pointing_stick_pref_handler_(
-          std::make_unique<PointingStickPrefHandlerImpl>()) {
+          std::make_unique<PointingStickPrefHandlerImpl>()),
+      sequenced_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()) {
   Init();
 }
 
@@ -113,11 +134,13 @@ InputDeviceSettingsControllerImpl::InputDeviceSettingsControllerImpl(
     std::unique_ptr<KeyboardPrefHandler> keyboard_pref_handler,
     std::unique_ptr<TouchpadPrefHandler> touchpad_pref_handler,
     std::unique_ptr<MousePrefHandler> mouse_pref_handler,
-    std::unique_ptr<PointingStickPrefHandler> pointing_stick_pref_handler)
+    std::unique_ptr<PointingStickPrefHandler> pointing_stick_pref_handler,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : keyboard_pref_handler_(std::move(keyboard_pref_handler)),
       touchpad_pref_handler_(std::move(touchpad_pref_handler)),
       mouse_pref_handler_(std::move(mouse_pref_handler)),
-      pointing_stick_pref_handler_(std::move(pointing_stick_pref_handler)) {
+      pointing_stick_pref_handler_(std::move(pointing_stick_pref_handler)),
+      sequenced_task_runner_(std::move(task_runner)) {
   Init();
 }
 
@@ -145,6 +168,20 @@ void InputDeviceSettingsControllerImpl::Init() {
           base::BindRepeating(
               &InputDeviceSettingsControllerImpl::OnPointingStickListUpdated,
               base::Unretained(this)));
+  metrics_manager_ = std::make_unique<InputDeviceSettingsMetricsManager>();
+  InitializePolicyHandler();
+}
+
+void InputDeviceSettingsControllerImpl::InitializePolicyHandler() {
+  policy_handler_ =
+      std::make_unique<InputDeviceSettingsPolicyHandler>(base::BindRepeating(
+          &InputDeviceSettingsControllerImpl::OnKeyboardPoliciesChanged,
+          base::Unretained(this)));
+
+  // Only initialize the policy handler when in an active user session.
+  if (active_pref_service_) {
+    policy_handler_->Initialize(active_pref_service_);
+  }
 }
 
 InputDeviceSettingsControllerImpl::~InputDeviceSettingsControllerImpl() {
@@ -172,9 +209,29 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     return;
   }
   active_pref_service_ = pref_service;
+  InitializePolicyHandler();
+
+  // Device settings must be refreshed when the user pref service is updated,
+  // but all dependencies of `InputDeviceSettingsControllerImpl` must be updated
+  // due to the active pref service change first. Therefore, schedule a task so
+  // other dependencies are updated first.
+  if (!settings_refresh_pending_) {
+    settings_refresh_pending_ = true;
+    sequenced_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &InputDeviceSettingsControllerImpl::RefreshAllDeviceSettings,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void InputDeviceSettingsControllerImpl::RefreshAllDeviceSettings() {
+  settings_refresh_pending_ = false;
   for (const auto& [id, keyboard] : keyboards_) {
-    keyboard_pref_handler_->InitializeKeyboardSettings(active_pref_service_,
-                                                       keyboard.get());
+    keyboard_pref_handler_->InitializeKeyboardSettings(
+        active_pref_service_, policy_handler_->keyboard_policies(),
+        keyboard.get());
+    metrics_manager_->RecordKeyboardInitialMetrics(*keyboard);
     DispatchKeyboardSettingsChanged(id);
   }
   for (const auto& [id, touchpad] : touchpads_) {
@@ -191,6 +248,15 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     pointing_stick_pref_handler_->InitializePointingStickSettings(
         active_pref_service_, pointing_stick.get());
     DispatchPointingStickSettingsChanged(id);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::OnKeyboardPoliciesChanged() {
+  for (const auto& [id, keyboard] : keyboards_) {
+    keyboard_pref_handler_->InitializeKeyboardSettings(
+        active_pref_service_, policy_handler_->keyboard_policies(),
+        keyboard.get());
+    DispatchKeyboardSettingsChanged(id);
   }
 }
 
@@ -289,12 +355,14 @@ void InputDeviceSettingsControllerImpl::SetKeyboardSettings(
     return;
   }
 
-  // TODO(dpad): Validate incoming settings to make sure the settings can apply
-  // to the given device.
   auto& found_keyboard = *found_keyboard_iter->second;
+  if (!keyboardSettingsAreValid(found_keyboard, *settings)) {
+    return;
+  }
   found_keyboard.settings = settings.Clone();
-  keyboard_pref_handler_->UpdateKeyboardSettings(active_pref_service_,
-                                                 found_keyboard);
+  keyboard_pref_handler_->UpdateKeyboardSettings(
+      active_pref_service_, policy_handler_->keyboard_policies(),
+      found_keyboard);
   DispatchKeyboardSettingsChanged(id);
   // Check the list of keyboards to see if any have the same |device_key|.
   // If so, their settings need to also be updated.
@@ -521,10 +589,10 @@ void InputDeviceSettingsControllerImpl::OnKeyboardListUpdated(
     // Get initial settings from the pref manager and generate our local storage
     // of the device.
     auto mojom_keyboard = BuildMojomKeyboard(keyboard);
-    if (active_pref_service_) {
-      keyboard_pref_handler_->InitializeKeyboardSettings(active_pref_service_,
-                                                         mojom_keyboard.get());
-    }
+    keyboard_pref_handler_->InitializeKeyboardSettings(
+        active_pref_service_, policy_handler_->keyboard_policies(),
+        mojom_keyboard.get());
+    metrics_manager_->RecordKeyboardInitialMetrics(*mojom_keyboard);
     keyboards_.insert_or_assign(keyboard.id, std::move(mojom_keyboard));
     DispatchKeyboardConnected(keyboard.id);
   }
@@ -539,10 +607,8 @@ void InputDeviceSettingsControllerImpl::OnTouchpadListUpdated(
     std::vector<DeviceId> touchpad_ids_to_remove) {
   for (const auto& touchpad : touchpads_to_add) {
     auto mojom_touchpad = BuildMojomTouchpad(touchpad);
-    if (active_pref_service_) {
-      touchpad_pref_handler_->InitializeTouchpadSettings(active_pref_service_,
-                                                         mojom_touchpad.get());
-    }
+    touchpad_pref_handler_->InitializeTouchpadSettings(active_pref_service_,
+                                                       mojom_touchpad.get());
     touchpads_.insert_or_assign(touchpad.id, std::move(mojom_touchpad));
     DispatchTouchpadConnected(touchpad.id);
   }
@@ -557,10 +623,8 @@ void InputDeviceSettingsControllerImpl::OnMouseListUpdated(
     std::vector<DeviceId> mouse_ids_to_remove) {
   for (const auto& mouse : mice_to_add) {
     auto mojom_mouse = BuildMojomMouse(mouse);
-    if (active_pref_service_) {
-      mouse_pref_handler_->InitializeMouseSettings(active_pref_service_,
-                                                   mojom_mouse.get());
-    }
+    mouse_pref_handler_->InitializeMouseSettings(active_pref_service_,
+                                                 mojom_mouse.get());
     mice_.insert_or_assign(mouse.id, std::move(mojom_mouse));
     DispatchMouseConnected(mouse.id);
   }
@@ -575,10 +639,8 @@ void InputDeviceSettingsControllerImpl::OnPointingStickListUpdated(
     std::vector<DeviceId> pointing_stick_ids_to_remove) {
   for (const auto& pointing_stick : pointing_sticks_to_add) {
     auto mojom_pointing_stick = BuildMojomPointingStick(pointing_stick);
-    if (active_pref_service_) {
-      pointing_stick_pref_handler_->InitializePointingStickSettings(
-          active_pref_service_, mojom_pointing_stick.get());
-    }
+    pointing_stick_pref_handler_->InitializePointingStickSettings(
+        active_pref_service_, mojom_pointing_stick.get());
     pointing_sticks_.insert_or_assign(pointing_stick.id,
                                       std::move(mojom_pointing_stick));
     DispatchPointingStickConnected(pointing_stick.id);
@@ -587,11 +649,6 @@ void InputDeviceSettingsControllerImpl::OnPointingStickListUpdated(
   for (const auto id : pointing_stick_ids_to_remove) {
     DispatchPointingStickDisconnectedAndEraseFromList(id);
   }
-}
-
-void InputDeviceSettingsControllerImpl::SetPrefHandlersForTesting(
-    std::unique_ptr<KeyboardPrefHandler> keyboard_pref_handler) {
-  keyboard_pref_handler_ = std::move(keyboard_pref_handler);
 }
 
 }  // namespace ash

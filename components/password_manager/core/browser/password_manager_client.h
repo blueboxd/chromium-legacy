@@ -96,7 +96,9 @@ enum class SyncState {
   kSyncingWithCustomPassphrase,
   // Sync is disabled but the user is signed in and opted in to passwords
   // account storage.
-  kAccountPasswordsActiveNormalEncryption
+  kAccountPasswordsActiveNormalEncryption,
+  // Same as above but the account has a custom passphrase set.
+  kAccountPasswordsActiveWithCustomPassphrase,
 };
 
 enum class ErrorMessageFlowType { kSaveFlow, kFillFlow };
@@ -131,10 +133,6 @@ class PasswordManagerClient {
   // TODO(crbug.com/1071842): This method's name is misleading as it also
   // determines whether saving prompts should be shown.
   virtual bool IsFillingEnabled(const GURL& url) const;
-
-  // Checks if manual filling fallback is enabled for the page that has |url|
-  // address.
-  virtual bool IsFillingFallbackEnabled(const GURL& url) const;
 
   // Checks if the auto sign-in functionality is enabled.
   virtual bool IsAutoSignInEnabled() const;

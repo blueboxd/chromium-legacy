@@ -117,6 +117,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       ClearDomainReliabilityCallback callback) override {}
   void ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
                            ClearTrustTokenDataCallback callback) override {}
+  void ClearTrustTokenSessionOnlyData(
+      ClearTrustTokenSessionOnlyDataCallback callback) override {}
   void SetDocumentReportingEndpoints(
       const base::UnguessableToken& reporting_source,
       const url::Origin& origin,
@@ -141,7 +143,6 @@ class TestNetworkContext : public mojom::NetworkContext {
                             mojom::NetworkConditionsPtr conditions) override {}
   void SetAcceptLanguage(const std::string& new_accept_language) override {}
   void SetEnableReferrers(bool enable_referrers) override {}
-  void SetEnablePreconnect(bool enable_preconnect) override {}
 #if BUILDFLAG(IS_CHROMEOS)
   void UpdateAdditionalCertificates(
       mojom::AdditionalCertificatesPtr additional_certificates) override {}

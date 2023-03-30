@@ -31,12 +31,16 @@ import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {KeyboardSettingsObserverReceiver, MouseSettingsObserverReceiver, PointingStickSettingsObserverReceiver, TouchpadSettingsObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Router} from '../router.js';
 
 import {getTemplate} from './device_page.html.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from './device_page_browser_proxy.js';
+import {FakeInputDeviceSettingsProvider} from './fake_input_device_settings_provider.js';
+import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
+import {InputDeviceSettingsProviderInterface, Keyboard, Mouse, PointingStick, Touchpad} from './input_device_settings_types.js';
 
 interface SettingsDevicePageElement {
   $: {
@@ -186,6 +190,22 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
           return loadTimeData.getBoolean('androidEnabled');
         },
       },
+
+      pointingSticks: {
+        type: Array,
+      },
+
+      keyboards: {
+        type: Array,
+      },
+
+      touchpads: {
+        type: Array,
+      },
+
+      mice: {
+        type: Array,
+      },
     };
   }
 
@@ -198,16 +218,33 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
     ];
   }
 
+  protected pointingSticks: PointingStick[];
+  protected keyboards: Keyboard[];
+  protected touchpads: Touchpad[];
+  protected mice: Mouse[];
   private browserProxy_: DevicePageBrowserProxy;
   private hasMouse_: boolean;
   private hasPointingStick_: boolean;
   private hasTouchpad_: boolean;
   private isDeviceSettingsSplitEnabled_: boolean;
+  private pointingStickSettingsObserverReceiver:
+      PointingStickSettingsObserverReceiver;
+  private keyboardSettingsObserverReceiver: KeyboardSettingsObserverReceiver;
+  private touchpadSettingsObserverReceiver: TouchpadSettingsObserverReceiver;
+  private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface;
+  private mouseSettingsObserverReceiver: MouseSettingsObserverReceiver;
 
   constructor() {
     super();
 
     this.browserProxy_ = DevicePageBrowserProxyImpl.getInstance();
+    if (this.isDeviceSettingsSplitEnabled_) {
+      this.inputDeviceSettingsProvider = getInputDeviceSettingsProvider();
+      this.observePointingStickSettings();
+      this.observeKeyboardSettings();
+      this.observeTouchpadSettings();
+      this.observeMouseSettings();
+    }
   }
 
   override connectedCallback() {
@@ -232,6 +269,79 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
         'storage-android-enabled-changed',
         this.set.bind(this, 'androidEnabled_'));
     this.browserProxy_.updateAndroidEnabled();
+  }
+
+  private observePointingStickSettings(): void {
+    if (this.inputDeviceSettingsProvider instanceof
+        FakeInputDeviceSettingsProvider) {
+      this.inputDeviceSettingsProvider.observePointingStickSettings(this);
+      return;
+    }
+
+    this.pointingStickSettingsObserverReceiver =
+        new PointingStickSettingsObserverReceiver(this);
+
+    this.inputDeviceSettingsProvider.observePointingStickSettings(
+        this.pointingStickSettingsObserverReceiver.$
+            .bindNewPipeAndPassRemote());
+  }
+
+  onPointingStickListUpdated(pointingSticks: PointingStick[]): void {
+    this.pointingSticks = pointingSticks;
+  }
+
+  private observeKeyboardSettings(): void {
+    if (this.inputDeviceSettingsProvider instanceof
+        FakeInputDeviceSettingsProvider) {
+      this.inputDeviceSettingsProvider.observeKeyboardSettings(this);
+      return;
+    }
+
+    this.keyboardSettingsObserverReceiver =
+        new KeyboardSettingsObserverReceiver(this);
+
+    this.inputDeviceSettingsProvider.observeKeyboardSettings(
+        this.keyboardSettingsObserverReceiver.$.bindNewPipeAndPassRemote());
+  }
+
+  onKeyboardListUpdated(keyboards: Keyboard[]): void {
+    this.keyboards = keyboards;
+  }
+
+  private observeTouchpadSettings(): void {
+    if (this.inputDeviceSettingsProvider instanceof
+        FakeInputDeviceSettingsProvider) {
+      this.inputDeviceSettingsProvider.observeTouchpadSettings(this);
+      return;
+    }
+
+    this.touchpadSettingsObserverReceiver =
+        new TouchpadSettingsObserverReceiver(this);
+
+    this.inputDeviceSettingsProvider.observeTouchpadSettings(
+        this.touchpadSettingsObserverReceiver.$.bindNewPipeAndPassRemote());
+  }
+
+  onTouchpadListUpdated(touchpads: Touchpad[]): void {
+    this.touchpads = touchpads;
+  }
+
+  private observeMouseSettings(): void {
+    if (this.inputDeviceSettingsProvider instanceof
+        FakeInputDeviceSettingsProvider) {
+      this.inputDeviceSettingsProvider.observeMouseSettings(this);
+      return;
+    }
+
+    this.mouseSettingsObserverReceiver =
+        new MouseSettingsObserverReceiver(this);
+
+    this.inputDeviceSettingsProvider.observeMouseSettings(
+        this.mouseSettingsObserverReceiver.$.bindNewPipeAndPassRemote());
+  }
+
+  onMouseListUpdated(mice: Mouse[]): void {
+    this.mice = mice;
   }
 
   private getPointersTitle_(): string {

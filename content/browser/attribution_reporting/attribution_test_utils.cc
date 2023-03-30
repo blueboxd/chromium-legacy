@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
+#include "components/aggregation_service/aggregation_service.mojom-forward.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/destination_set.h"
@@ -39,6 +40,13 @@
 #include "services/network/public/cpp/trigger_attestation_test_utils.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
+#include "content/browser/attribution_reporting/os_registration.h"
+#include "url/gurl.h"
+#include "url/origin.h"
+#endif
 
 namespace content {
 
@@ -469,7 +477,8 @@ AttributionReport ReportBuilder::Build() const {
       attribution_info_, report_time_, external_report_id_,
       /*failed_send_attempts=*/0,
       AttributionReport::EventLevelData(trigger_data_, priority_,
-                                        randomized_trigger_rate_, report_id_));
+                                        randomized_trigger_rate_, report_id_,
+                                        report_time_));
 }
 
 AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
@@ -561,7 +570,8 @@ bool operator==(const AttributionReport::EventLevelData& a,
                 const AttributionReport::EventLevelData& b) {
   const auto tie = [](const AttributionReport::EventLevelData& data) {
     return std::make_tuple(data.trigger_data, data.priority,
-                           data.randomized_trigger_rate);
+                           data.randomized_trigger_rate,
+                           data.initial_report_time);
   };
   return tie(a) == tie(b);
 }
@@ -575,7 +585,8 @@ bool operator==(const AttributionReport::AggregatableAttributionData& a,
   const auto tie =
       [](const AttributionReport::AggregatableAttributionData& data) {
         return std::make_tuple(data.contributions, data.initial_report_time,
-                               data.attestation_token);
+                               data.attestation_token,
+                               data.aggregation_coordinator);
       };
   return tie(a) == tie(b);
 }
@@ -802,7 +813,8 @@ std::ostream& operator<<(std::ostream& out,
   return out << "{trigger_data=" << data.trigger_data
              << ",priority=" << data.priority
              << ",randomized_trigger_rate=" << data.randomized_trigger_rate
-             << ",id=" << *data.id << "}";
+             << ",id=" << *data.id
+             << ",initial_report_time=" << data.initial_report_time << "}";
 }
 
 std::ostream& operator<<(
@@ -823,7 +835,9 @@ std::ostream& operator<<(
   } else {
     out << ",attestation_token=(null)";
   }
-  return out << "}";
+
+  return out << ",aggregation_coordinator=" << data.aggregation_coordinator
+             << "}";
 }
 
 namespace {
@@ -1095,5 +1109,22 @@ DefaultAggregatableHistogramContributions(
   }
   return contributions;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+
+bool operator==(const OsRegistration& a, const OsRegistration& b) {
+  const auto tie = [](const OsRegistration& r) {
+    return std::make_tuple(r.registration_url, r.top_level_origin, r.GetType());
+  };
+  return tie(a) == tie(b);
+}
+
+std::ostream& operator<<(std::ostream& out, const OsRegistration& r) {
+  return out << "{registration_url=" << r.registration_url
+             << ",top_level_origin=" << r.top_level_origin
+             << ",type=" << r.GetType() << "}";
+}
+
+#endif
 
 }  // namespace content

@@ -35,7 +35,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.ActioniOS" enum="NewTabPageActioniOS"
-    expires_after="2023-07-09">
+    expires_after="2023-09-17">
   <owner>justincohen@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -196,7 +196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Carts.DiscountConsentStatusAtLoad"
-    enum="CartDiscountConsentStatus" expires_after="2023-07-16">
+    enum="CartDiscountConsentStatus" expires_after="2023-09-17">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -995,6 +995,68 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.HistoryClusters.ImageLoadSuccess" enum="Boolean"
+    expires_after="2023-08-08">
+  <owner>romanarora@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs whether loading an image for a quests tile succeeded or failed (true
+    for success and false for failure). This is determined by whether or not we
+    get a URL back from the ImageService for a visit that we expected to have an
+    image for. Only logged in 1P NTP with the history clusters module enabled.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.HistoryClusters.IneligibleReason"
+    enum="NTPHistoryClustersIneligibleReason" expires_after="2023-08-08">
+  <owner>romanarora@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs the reason why the last candidate cluster of a list of of ineligible
+    candidate clusters was identified as such, resulting in the module not being
+    displayed. Logged when the NewTabPage is rendering the enabled modules. Only
+    logged on the 1P NTP and the history clusters module is enabled.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.HistoryClusters.Layout{LayoutNum}.Click"
+    enum="NTPHistoryClustersElementType" expires_after="2023-08-08">
+  <owner>romanarora@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Records the element type that was activated by the user on the NTP history
+    clusters module. Logged when a user clicks on an actionable element of the
+    module, such as a tile or button. Only logged on the 1P NTP when the history
+    clusters module is enabled.
+  </summary>
+  <token key="LayoutNum">
+    <variant name="1"/>
+    <variant name="2"/>
+    <variant name="3"/>
+  </token>
+</histogram>
+
+<histogram
+    name="NewTabPage.HistoryClusters.Layout{LayoutNum}.ImageDisplayState"
+    enum="NTPHistoryClustersImageDisplayState" expires_after="2023-08-08">
+  <owner>romanarora@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs the overall image absence or presence on the visit tiles displayed in
+    the NTP history clusters module. Logged at page unload time. Only logged on
+    the 1P NTP and when the history clusters module is enabled.
+  </summary>
+  <token key="LayoutNum">
+    <variant name="1"/>
+    <variant name="2"/>
+    <variant name="3"/>
+  </token>
+</histogram>
+
 <histogram
     name="NewTabPage.HistoryClusters.Layout{LayoutNum}.{Type}Tile.ClickIndex"
     units="index" expires_after="2023-08-08">
@@ -1084,7 +1146,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Lens.UploadDialog.DialogError"
-    enum="NewTabPageLensUploadDialogErrors" expires_after="2023-06-30">
+    enum="NewTabPageLensUploadDialogErrors" expires_after="2023-09-17">
   <owner>nguyenbryan@google.com</owner>
   <owner>yowakita@google.com</owner>
   <owner>bbonnet@google.com</owner>
@@ -1238,7 +1300,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Disabled{Interaction}" enum="NtpModules"
-    expires_after="2023-03-20">
+    expires_after="2023-09-01">
   <owner>danpeng@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1366,7 +1428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Hover" enum="NtpModules"
-    expires_after="2023-04-16">
+    expires_after="2023-09-01">
   <owner>danpeng@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1414,7 +1476,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Modules.InfoButtonClicked" enum="NtpModules"
-    expires_after="2023-04-16">
+    expires_after="2023-09-01">
   <owner>danpeng@google.com</owner>
   <owner>pauladedeji@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1461,7 +1523,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Modules.LoadedWith.{NtpModule}" enum="NtpModules"
-    expires_after="2023-03-20">
+    expires_after="2023-09-01">
   <owner>danpeng@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1814,46 +1876,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.RequestThrottler.PerDay" units="requests"
-    expires_after="2021-07-01">
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Records how many background requests of the given type the browser tried to
-    perform each day where the type is specified by the _suffix of the
-    histogram. The histogram is emitted only after midnight of the given day
-    passes - right before the first following request (which can be several days
-    later if the user does not use Chrome in the meantime). The histogram counts
-    requests with both QUOTA_GRANTED and QUOTA_EXCEEDED status, i.e. the count
-    can easily exceed the daily quota.
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.RequestThrottler.PerDayInteractive"
-    units="requests" expires_after="2021-07-01">
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Records how many interactive requests of the given type the browser tried to
-    perform each day where the type is specified by the _suffix of the
-    histogram. The histogram is emitted only after midnight of the given day
-    passes - right before the first following request (which can be several days
-    later if the user does not use Chrome in the meantime). The histogram counts
-    requests with both QUOTA_GRANTED and QUOTA_EXCEEDED status, i.e. the count
-    can easily exceed the daily quota.
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.RequestThrottler.RequestStatus"
-    enum="NtpRequestThrottlerStatus" expires_after="2021-07-01">
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Records the status w.r.t. the quota for all requests of the given type. The
-    type of request is specified by the _suffix of the histogram.
-  </summary>
-</histogram>
-
 <histogram name="NewTabPage.SearchAvailableLoadTime2.ColdStart" units="ms"
     expires_after="2022-02-20">
   <owner>fgorski@chromium.org</owner>
@@ -2061,7 +2083,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.TileTitleClicked" enum="NTPTileTitleSource"
-    expires_after="2023-07-23">
+    expires_after="2023-09-24">
   <owner>danielms@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -2072,7 +2094,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.TileType" enum="NTPTileVisualType"
-    expires_after="2023-03-19">
+    expires_after="2023-09-01">
   <owner>danpeng@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
@@ -2158,29 +2180,6 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>
     Records the status of the New Tab page URL when an NTP is opened.
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.UserClassifier.AverageHoursToOpenNTP" units="hours"
-    expires_after="2021-09-05">
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Android: The estimated average number of hours between two successive times
-    when a new tab page is opened. Recorded after each opening of a NTP (and
-    after updating the model used for the estimate).
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.UserClassifier.AverageHoursToShowSuggestions"
-    units="hours" expires_after="2021-09-05">
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Android: The estimated average number of hours between two successive times
-    when the list of content suggestions on a new tab page is shown (i.e. when
-    the user scrolls below the fold). Recorded after each time the suggestions
-    are shown (and after updating the model used for the estimate).
   </summary>
 </histogram>
 

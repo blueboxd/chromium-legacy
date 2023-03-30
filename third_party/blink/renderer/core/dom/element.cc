@@ -52,6 +52,8 @@
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/css/container_query_data.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
@@ -63,6 +65,7 @@
 #include "third_party/blink/renderer/core/css/css_selector_watch.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/post_style_update_scope.h"
@@ -80,11 +83,12 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/css_toggle.h"
+#include "third_party/blink/renderer/core/dom/css_toggle_map.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element_data_cache.h"
-#include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data_vector.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -131,6 +135,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_list.h"
+#include "third_party/blink/renderer/core/html/anchor_element_observer.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
@@ -420,22 +425,6 @@ bool DefinitelyNewFormattingContext(const Node& node,
   return false;
 }
 
-bool CalculateStyleShouldForceLegacyLayout(const Element& element,
-                                           const ComputedStyle& style) {
-  Document& document = element.GetDocument();
-
-  if (style.DisplayTypeRequiresLayoutNG()) {
-    return false;
-  }
-
-  if (document.Printing() && element == document.documentElement() &&
-      !RuntimeEnabledFeatures::LayoutNGPrintingEnabled()) {
-    return true;
-  }
-
-  return false;
-}
-
 bool HasLeftwardDirection(const Element& element) {
   auto* style = element.GetComputedStyle();
   if (!style) {
@@ -514,24 +503,17 @@ HeapLinkedHashSet<WeakMember<Element>>* GetExplicitlySetElementsForAttr(
 bool ElementIsDescendantOfShadowIncludingAncestor(
     const Element& attribute_element,
     const Element& candidate) {
-  // TODO(meredithl): Update this to allow setting relationships for elements
-  // outside of the DOM once the spec is finalized. For consistency and
-  // simplicity, for now it is disallowed.
-  if (!attribute_element.IsInTreeScope() || !candidate.IsInTreeScope()) {
-    return false;
-  }
-  ShadowRoot* nearest_root = attribute_element.ContainingShadowRoot();
-  const Element* shadow_host = &attribute_element;
-  while (nearest_root) {
-    shadow_host = &nearest_root->host();
-    if (candidate.IsDescendantOf(nearest_root)) {
+  auto* candidate_root = &candidate.TreeRoot();
+  auto* element_root = &attribute_element.TreeRoot();
+  while (true) {
+    if (candidate_root == element_root) {
       return true;
     }
-    nearest_root = shadow_host->ContainingShadowRoot();
+    if (!element_root->IsInShadowTree()) {
+      return false;
+    }
+    element_root = &element_root->OwnerShadowHost()->TreeRoot();
   }
-
-  Element* document_element = shadow_host->GetDocument().documentElement();
-  return candidate.IsDescendantOf(document_element);
 }
 
 // The first algorithm in
@@ -609,15 +591,6 @@ bool IsGuaranteedToEnterNGBlockNodeLayout(const LayoutObject& layout_object) {
     return false;
   }
   if (!NGBlockNode::CanUseNewLayout(*box)) {
-    return false;
-  }
-  // Out-of-flow positioned replaced elements take the legacy path for layout
-  // if the container for positioning is a legacy object. That is the case for
-  // LayoutView, which is a legacy object but does not otherwise force
-  // legacy layout objects.
-  if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled() &&
-      layout_object.IsOutOfFlowPositioned() &&
-      layout_object.IsLayoutReplaced()) {
     return false;
   }
   return true;
@@ -1002,7 +975,7 @@ HeapVector<Member<Element>>* Element::GetElementArrayAttribute(
 }
 
 NamedNodeMap* Element::attributesForBindings() const {
-  ElementRareDataBase& rare_data =
+  ElementRareDataVector& rare_data =
       const_cast<Element*>(this)->EnsureElementRareData();
   if (NamedNodeMap* attribute_map = rare_data.AttributeMap()) {
     return attribute_map;
@@ -1027,13 +1000,13 @@ Vector<AtomicString> Element::getAttributeNames() const {
   return attributesVector;
 }
 
-inline ElementRareDataBase* Element::GetElementRareData() const {
+inline ElementRareDataVector* Element::GetElementRareData() const {
   DCHECK(HasRareData());
-  return static_cast<ElementRareDataBase*>(RareData());
+  return static_cast<ElementRareDataVector*>(RareData());
 }
 
-inline ElementRareDataBase& Element::EnsureElementRareData() {
-  return static_cast<ElementRareDataBase&>(EnsureRareData());
+inline ElementRareDataVector& Element::EnsureElementRareData() {
+  return static_cast<ElementRareDataVector&>(EnsureRareData());
 }
 
 void Element::RemovePopoverData() {
@@ -1073,7 +1046,7 @@ ElementAnimations* Element::GetElementAnimations() const {
 }
 
 ElementAnimations& Element::EnsureElementAnimations() {
-  ElementRareDataBase& rare_data = EnsureElementRareData();
+  ElementRareDataVector& rare_data = EnsureElementRareData();
   if (!rare_data.GetElementAnimations()) {
     rare_data.SetElementAnimations(MakeGarbageCollected<ElementAnimations>());
   }
@@ -1326,18 +1299,65 @@ int Element::ClientTopNoLayout() const {
   return 0;
 }
 
-void Element::SaveIntrinsicSize(ResizeObserverSize* size) {
-  EnsureElementRareData().SaveLastIntrinsicSize(size);
+void Element::LastRememberedSizeChanged(ResizeObserverSize* size) {
+  if (ShouldUpdateLastRememberedBlockSize()) {
+    SetLastRememberedBlockSize(LayoutUnit(size->blockSize()));
+  }
+  if (ShouldUpdateLastRememberedInlineSize()) {
+    SetLastRememberedInlineSize(LayoutUnit(size->inlineSize()));
+  }
 }
 
-const ResizeObserverSize* Element::LastIntrinsicSize() const {
-  if (!HasRareData()) {
-    return nullptr;
+bool Element::ShouldUpdateLastRememberedBlockSize() const {
+  const auto* style = GetComputedStyle();
+  if (!style) {
+    return false;
   }
-  // If rare data exists, we are guaranteed that it's ElementRareData.
-  ElementRareDataBase* data = GetElementRareData();
-  DCHECK(data);
-  return data->LastIntrinsicSize();
+
+  if (style->IsHorizontalWritingMode()) {
+    return style->ContainIntrinsicHeight() &&
+           style->ContainIntrinsicHeight()->HasAuto();
+  }
+  return style->ContainIntrinsicWidth() &&
+         style->ContainIntrinsicWidth()->HasAuto();
+}
+
+bool Element::ShouldUpdateLastRememberedInlineSize() const {
+  const auto* style = GetComputedStyle();
+  if (!style) {
+    return false;
+  }
+
+  if (style->IsHorizontalWritingMode()) {
+    return style->ContainIntrinsicWidth() &&
+           style->ContainIntrinsicWidth()->HasAuto();
+  }
+  return style->ContainIntrinsicHeight() &&
+         style->ContainIntrinsicHeight()->HasAuto();
+}
+
+void Element::SetLastRememberedInlineSize(absl::optional<LayoutUnit> size) {
+  if (!size && !HasRareData()) {
+    return;
+  }
+  EnsureElementRareData().SetLastRememberedInlineSize(size);
+}
+
+void Element::SetLastRememberedBlockSize(absl::optional<LayoutUnit> size) {
+  if (!size && !HasRareData()) {
+    return;
+  }
+  EnsureElementRareData().SetLastRememberedBlockSize(size);
+}
+
+absl::optional<LayoutUnit> Element::LastRememberedInlineSize() const {
+  return HasRareData() ? GetElementRareData()->LastRememberedInlineSize()
+                       : absl::nullopt;
+}
+
+absl::optional<LayoutUnit> Element::LastRememberedBlockSize() const {
+  return HasRareData() ? GetElementRareData()->LastRememberedBlockSize()
+                       : absl::nullopt;
 }
 
 bool Element::IsViewportScrollElement() {
@@ -2002,7 +2022,7 @@ gfx::Rect Element::BoundsInWidget() const {
   // codepath below.
   auto* svg_element = DynamicTo<SVGElement>(this);
   if (svg_element && GetLayoutObject() &&
-      !GetLayoutObject()->IsSVGForeignObjectIncludingNG()) {
+      !GetLayoutObject()->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
     // TODO(pdr): This should include stroke.
     if (IsA<SVGGraphicsElement>(svg_element)) {
@@ -2102,7 +2122,7 @@ void Element::ClientQuads(Vector<gfx::QuadF>& quads) const {
   // codepath below.
   const auto* svg_element = DynamicTo<SVGElement>(this);
   if (svg_element && !element_layout_object->IsSVGRoot() &&
-      !element_layout_object->IsSVGForeignObjectIncludingNG()) {
+      !element_layout_object->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
     // TODO(pdr): ObjectBoundingBox does not include stroke and the spec is not
     // clear (see: https://github.com/w3c/svgwg/issues/339, crbug.com/529734).
@@ -2215,7 +2235,7 @@ AccessibleNode* Element::accessibleNode() {
     return nullptr;
   }
 
-  ElementRareDataBase& rare_data = EnsureElementRareData();
+  ElementRareDataVector& rare_data = EnsureElementRareData();
   return rare_data.EnsureAccessibleNode(this);
 }
 
@@ -2671,7 +2691,7 @@ Node::InsertionNotificationRequest Element::InsertedInto(
   }
 
   if (isConnected() && HasRareData()) {
-    ElementRareDataBase* rare_data = GetElementRareData();
+    ElementRareDataVector* rare_data = GetElementRareData();
     if (ElementIntersectionObserverData* observer_data =
             rare_data->IntersectionObserverData()) {
       observer_data->TrackWithController(
@@ -2761,6 +2781,11 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
   }
 
   document.UnobserveForIntrinsicSize(this);
+  if (auto* local_frame_view = document.View();
+      local_frame_view &&
+      (LastRememberedInlineSize() || LastRememberedBlockSize())) {
+    local_frame_view->NotifyElementWithRememberedSizeDisconnected(this);
+  }
 
   SetSavedLayerScrollOffset(ScrollOffset());
 
@@ -2798,7 +2823,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
   ClearElementFlag(ElementFlags::kIsInCanvasSubtree);
 
   if (HasRareData()) {
-    ElementRareDataBase* data = GetElementRareData();
+    ElementRareDataVector* data = GetElementRareData();
 
     data->ClearFocusgroupFlags();
     data->ClearRestyleFlags();
@@ -2837,6 +2862,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       frame->GetEditor().GetUndoStack().ElementRemoved(this);
     }
     frame->GetEditor().ElementRemoved(this);
+    frame->GetSpellChecker().ElementRemoved(this);
     frame->GetEventHandler().ElementRemoved(this);
   }
 }
@@ -2871,11 +2897,6 @@ void Element::AttachLayoutTree(AttachContext& context) {
     LegacyLayout legacy = children_context.force_legacy_layout
                               ? LegacyLayout::kForce
                               : LegacyLayout::kAuto;
-
-    if (legacy == LegacyLayout::kForce &&
-        style->IsContainerForSizeContainerQueries()) {
-      style_engine.ReportUseOfLegacyLayoutWithContainerQueries();
-    }
 
     LayoutTreeBuilderForElement builder(*this, context, style, legacy);
     builder.CreateLayoutObject();
@@ -2961,7 +2982,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
 void Element::DetachLayoutTree(bool performing_reattach) {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   if (HasRareData()) {
-    ElementRareDataBase* data = GetElementRareData();
+    ElementRareDataVector* data = GetElementRareData();
     if (!performing_reattach) {
       data->ClearPseudoElements();
       data->ClearContainerQueryData();
@@ -3483,17 +3504,6 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
     if (!new_style.IsContainerForSizeContainerQueries()) {
       return nullptr;
     }
-    if (LayoutObject* layout_object = element.GetLayoutObject()) {
-      if (layout_object->ForceLegacyLayout()) {
-        element.GetDocument()
-            .GetStyleEngine()
-            .ReportUseOfLegacyLayoutWithContainerQueries();
-      }
-    }
-  }
-  if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled() &&
-      element.GetDocument().Printing()) {
-    return nullptr;
   }
   // If we're switching to display:contents, any existing results cached on
   // ContainerQueryEvaluator are no longer valid, since any style recalc
@@ -3536,30 +3546,6 @@ static const StyleRecalcChange ApplyComputedStyleDiff(
 static bool LayoutViewCanHaveChildren(Element& element) {
   if (LayoutObject* view = element.GetDocument().GetLayoutView()) {
     return view->CanHaveChildren();
-  }
-  return false;
-}
-
-// LayoutTable[Row,Section,Cell] all amend their ComputedStyle in response
-// to StyleDidChange. Whenever we recalc the style of an element and find
-// no difference, we still need to do ApplyStyleChanges::kYes to perform the
-// amendment.
-static bool ForceApplyForLegacyLayout(const ComputedStyle& new_style,
-                                      const LayoutObject& layout_object) {
-  // See LayoutTable[Section, Row]::StyleDidChange.
-  if (layout_object.IsLegacyTableRow() ||
-      layout_object.IsLegacyTableSection()) {
-    if (new_style.HasInFlowPosition()) {
-      return true;
-    }
-  }
-  // See LayoutTableCell::StyleDidChange.
-  if (layout_object.IsTableCellLegacy()) {
-    if (layout_object.Parent() &&
-        new_style.GetWritingMode() !=
-            layout_object.Parent()->StyleRef().GetWritingMode()) {
-      return true;
-    }
   }
   return false;
 }
@@ -3738,7 +3724,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
   }
 
   if (!new_style && HasRareData()) {
-    ElementRareDataBase* rare_data = GetElementRareData();
+    ElementRareDataVector* rare_data = GetElementRareData();
     if (ElementAnimations* element_animations =
             rare_data->GetElementAnimations()) {
       element_animations->CssAnimations().Cancel();
@@ -3748,15 +3734,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
   }
   SetComputedStyle(new_style);
 
-  if (new_style && !new_style->ContainsSize() &&
-      ((new_style->ContainIntrinsicWidth() &&
-        new_style->ContainIntrinsicWidth()->HasAuto()) ||
-       (new_style->ContainIntrinsicHeight() &&
-        new_style->ContainIntrinsicHeight()->HasAuto()))) {
-    GetDocument().ObserveForIntrinsicSize(this);
-  } else {
-    GetDocument().UnobserveForIntrinsicSize(this);
-  }
+  ProcessContainIntrinsicSizeChanges();
 
   if (!child_change.ReattachLayoutTree() &&
       (GetForceReattachLayoutTree() || NeedsReattachLayoutTree() ||
@@ -3893,12 +3871,47 @@ StyleRecalcChange Element::RecalcOwnStyle(
         apply_changes = LayoutObject::ApplyStyleChanges::kYes;
       }
     }
-    if (ForceApplyForLegacyLayout(*layout_style, *layout_object)) {
-      apply_changes = LayoutObject::ApplyStyleChanges::kYes;
-    }
     layout_object->SetStyle(layout_style.get(), apply_changes);
   }
   return child_change;
+}
+
+void Element::ProcessContainIntrinsicSizeChanges() {
+  // It is important that we early out, since ShouldUpdateLastRemembered*Size
+  // functions only return meaningful results if we have computed style. If we
+  // don't have style, we also avoid clearing the last remembered sizes.
+  if (!GetComputedStyle()) {
+    GetDocument().UnobserveForIntrinsicSize(this);
+    return;
+  }
+
+  DisplayLockContext* context = GetDisplayLockContext();
+  // The only case where we _don't_ record new sizes is if we're skipping
+  // contents.
+  bool allowed_to_record_new_intrinsic_sizes = !context || !context->IsLocked();
+
+  // We should only record new sizes if we will update either the block or
+  // inline direction. IOW, if we have contain-intrinsic-size: auto on at least
+  // one of the directions.
+  bool should_record_new_intrinsic_sizes = false;
+  if (ShouldUpdateLastRememberedBlockSize()) {
+    should_record_new_intrinsic_sizes = true;
+  } else {
+    SetLastRememberedBlockSize(absl::nullopt);
+  }
+
+  if (ShouldUpdateLastRememberedInlineSize()) {
+    should_record_new_intrinsic_sizes = true;
+  } else {
+    SetLastRememberedInlineSize(absl::nullopt);
+  }
+
+  if (allowed_to_record_new_intrinsic_sizes &&
+      should_record_new_intrinsic_sizes) {
+    GetDocument().ObserveForIntrinsicSize(this);
+  } else {
+    GetDocument().UnobserveForIntrinsicSize(this);
+  }
 }
 
 void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
@@ -4346,7 +4359,7 @@ void Element::SetNeedsCompositingUpdate() {
 
 void Element::SetRegionCaptureCropId(
     std::unique_ptr<RegionCaptureCropId> crop_id) {
-  ElementRareDataBase& rare_data = EnsureElementRareData();
+  ElementRareDataVector& rare_data = EnsureElementRareData();
 
   CHECK(!rare_data.GetRegionCaptureCropId());
 
@@ -5647,6 +5660,7 @@ void Element::SetAffectedByMultipleHas() {
   EnsureElementRareData().SetAffectedByMultipleHas();
 }
 
+// TODO(1229581): Remove this function.
 bool Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
                                       const ComputedStyle* old_style) {
   // ::first-letter may cause structure discrepancies between DOM and layout
@@ -5662,8 +5676,7 @@ bool Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
   }
   bool needs_reattach = false;
   bool old_force = old_style && ShouldForceLegacyLayout();
-  SetStyleShouldForceLegacyLayout(
-      CalculateStyleShouldForceLegacyLayout(*this, new_style));
+  SetStyleShouldForceLegacyLayout(false);
   if (ShouldForceLegacyLayout()) {
     if (!old_force) {
       if (const LayoutObject* layout_object = GetLayoutObject()) {
@@ -5736,9 +5749,6 @@ bool Element::ForceLegacyLayoutInFormattingContext(
     if (container_recalc_root == ancestor) {
       DCHECK(found_fc)
           << "A size query container is always a formatting context";
-      GetDocument()
-          .GetStyleEngine()
-          .ReportUseOfLegacyLayoutWithContainerQueries();
       break;
     }
   }
@@ -5801,12 +5811,6 @@ bool Element::ForceLegacyLayoutInFragmentationContext(
   if (legacy_root->ForceLegacyLayoutInFormattingContext(
           *legacy_root->GetComputedStyle())) {
     needs_reattach = true;
-  }
-
-  if (legacy_root == container_recalc_root) {
-    GetDocument()
-        .GetStyleEngine()
-        .ReportUseOfLegacyLayoutWithContainerQueries();
   }
 
   return needs_reattach;
@@ -6537,8 +6541,8 @@ bool Element::ShouldStoreComputedStyle(const ComputedStyle& style) const {
   // If we're in a locked subtree and we're a top layer element, it means that
   // we shouldn't be creating a layout object. This path can happen if we're
   // force-updating style on the locked subtree and reach this node. Note that
-  // we already detached layout when this element was added to top-layer, so we
-  // simply maintain the fact that it doesn't have a layout object/subtree.
+  // we already detached layout when this element was added to the top layer, so
+  // we simply maintain the fact that it doesn't have a layout object/subtree.
   if (style.IsInTopLayer(*this) &&
       DisplayLockUtilities::LockedAncestorPreventingPaint(*this)) {
     return false;
@@ -7097,7 +7101,7 @@ Element* Element::closest(const AtomicString& selectors) {
 }
 
 DOMTokenList& Element::classList() {
-  ElementRareDataBase& rare_data = EnsureElementRareData();
+  ElementRareDataVector& rare_data = EnsureElementRareData();
   if (!rare_data.GetClassList()) {
     auto* class_list =
         MakeGarbageCollected<DOMTokenList>(*this, html_names::kClassAttr);
@@ -7109,7 +7113,7 @@ DOMTokenList& Element::classList() {
 }
 
 DOMStringMap& Element::dataset() {
-  ElementRareDataBase& rare_data = EnsureElementRareData();
+  ElementRareDataVector& rare_data = EnsureElementRareData();
   if (!rare_data.Dataset()) {
     rare_data.SetDataset(MakeGarbageCollected<DatasetDOMStringMap>(this));
   }
@@ -7278,13 +7282,13 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
   if (!GetDocument().InStyleRecalc()) {
     if (in_top_layer) {
       // Need to force re-attachment in case the element was removed and re-
-      // added between two lifecycle updates since the top-layer computed value
+      // added between two lifecycle updates since the overlay computed value
       // would not change, but the layout object order may have.
       SetForceReattachLayoutTree();
     }
 
     if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
-      // Needs a style recalc to update the top-layer property in
+      // Needs a style recalc to update the overlay property in
       // StyleAdjuster.
       SetNeedsStyleRecalc(
           kLocalStyleChange,
@@ -7311,24 +7315,10 @@ ScriptValue Element::requestPointerLock(ScriptState* script_state,
         "is no frame or that frame has no page.");
   }
 
-  if (RuntimeEnabledFeatures::PointerLockOptionsEnabled(
-          GetExecutionContext())) {
     if (exception_state.HadException()) {
       resolver->Reject(exception_state);
     }
     return promise.AsScriptValue();
-  }
-
-  // The current spec for PointerLock does not have any language about throwing
-  // exceptions. Therefore to be spec compliant we must clear all exceptions.
-  // When behind our experimental flag however, we will throw exceptions which
-  // should be caught as a promise rejection.
-  exception_state.ClearException();
-
-  // Detach the resolver, since we are not using it, to prepare it for garbage
-  // collection.
-  resolver->Detach();
-  return ScriptValue();
 }
 
 SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {
@@ -8306,7 +8296,7 @@ DOMTokenList* Element::GetPart() const {
 }
 
 DOMTokenList& Element::part() {
-  ElementRareDataBase& rare_data = EnsureElementRareData();
+  ElementRareDataVector& rare_data = EnsureElementRareData();
   DOMTokenList* part = rare_data.GetPart();
   if (!part) {
     part = MakeGarbageCollected<DOMTokenList>(*this, html_names::kPartAttr);
@@ -8907,26 +8897,37 @@ AnchorScrollData* Element::GetAnchorScrollData() const {
   return HasRareData() ? GetElementRareData()->GetAnchorScrollData() : nullptr;
 }
 
-void Element::IncrementAnchoredPopoverCount() {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
+void Element::IncrementImplicitlyAnchoredElementCount() {
   if (RuntimeEnabledFeatures::CSSAnchorPositioningEnabled() &&
-      !HasAnchoredPopover() && GetLayoutObject()) {
+      !HasImplicitlyAnchoredElement() && GetLayoutObject()) {
     // Invalidate layout to populate itself into NGPhysical/LogicalAnchorQuery.
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kAnchorPositioning);
     GetLayoutObject()->MarkMayHaveAnchorQuery();
   }
-  EnsureElementRareData().IncrementAnchoredPopoverCount();
+  EnsureElementRareData().IncrementImplicitlyAnchoredElementCount();
 }
-void Element::DecrementAnchoredPopoverCount() {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
-  EnsureElementRareData().DecrementAnchoredPopoverCount();
+void Element::DecrementImplicitlyAnchoredElementCount() {
+  DCHECK(HasRareData());
+  GetElementRareData()->DecrementImplicitlyAnchoredElementCount();
 }
-bool Element::HasAnchoredPopover() const {
-  return (HasRareData() && GetElementRareData()->HasAnchoredPopover()) ||
+bool Element::HasImplicitlyAnchoredElement() const {
+  // TODO(xiaochengh): <selectmenu> should also use the implicitly anchored
+  // element count on element rare data.
+  return (HasRareData() &&
+          GetElementRareData()->HasImplicitlyAnchoredElement()) ||
          IsA<HTMLSelectMenuElement>(this);
+}
+
+AnchorElementObserver* Element::GetAnchorElementObserver() const {
+  return HasRareData() ? GetElementRareData()->GetAnchorElementObserver()
+                       : nullptr;
+}
+
+AnchorElementObserver& Element::EnsureAnchorElementObserver() {
+  DCHECK(IsHTMLElement());
+  return EnsureElementRareData().EnsureAnchorElementObserver(
+      To<HTMLElement>(this));
 }
 
 Element* Element::ImplicitAnchorElement() {

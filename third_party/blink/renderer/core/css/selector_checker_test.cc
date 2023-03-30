@@ -120,6 +120,26 @@ ScopeProximityTestData scope_proximity_test_data[] = {
       )CSS",
       3
     },
+
+    // @scope(.a) creates two scopes, but the selector only matches in the
+    // outermost scope.
+    {
+      R"HTML(
+        <div class=b>
+          <div class=a>
+            <div class=a>
+              <div id=target></div>
+            </div>
+          </div>
+        </div>
+      )HTML",
+      R"CSS(
+        @scope (.a) {
+          .b > :scope #target { z-index: 1; }
+        }
+      )CSS",
+      2
+    },
     // clang-format on
 };
 
@@ -160,7 +180,6 @@ TEST_P(ScopeProximityTest, All) {
 
   auto* style_rule = DynamicTo<StyleRule>(rule);
   ASSERT_TRUE(style_rule);
-  ASSERT_TRUE(style_rule->FirstSelector()->IsLastInSelectorList());
 
   Element* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);

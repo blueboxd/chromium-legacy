@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices;
 
 import static org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappGeolocationBridge.EXTRA_NEW_LOCATION_ERROR_CALLBACK;
 
+import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -30,9 +31,11 @@ import androidx.browser.trusted.TrustedWebActivityCallback;
 import androidx.browser.trusted.TrustedWebActivityService;
 import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClientWrappers.Connection;
@@ -48,7 +51,6 @@ import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 import java.util.Set;
@@ -158,7 +160,7 @@ public class TrustedWebActivityClient {
             public void onConnected(Origin origin, Connection service) throws RemoteException {
                 Bundle commandArgs = new Bundle();
                 commandArgs.putString(ARG_NOTIFICATION_CHANNEL_NAME, channelName);
-                Bundle commandResult = service.sendExtraCommand(
+                Bundle commandResult = safeSendExtraCommand(service,
                         COMMAND_CHECK_NOTIFICATION_PERMISSION, commandArgs, /*callback=*/null);
                 boolean commandSuccess = commandResult == null
                         ? false
@@ -209,7 +211,7 @@ public class TrustedWebActivityClient {
             public void onConnected(Origin origin, Connection service) throws RemoteException {
                 Bundle commandArgs = new Bundle();
                 commandArgs.putString(ARG_NOTIFICATION_CHANNEL_NAME, channelName);
-                Bundle commandResult = service.sendExtraCommand(
+                Bundle commandResult = safeSendExtraCommand(service,
                         COMMAND_GET_NOTIFICATION_PERMISSION_REQUEST_PENDING_INTENT, commandArgs,
                         /*callback=*/null);
                 boolean commandSuccess = commandResult == null
@@ -245,7 +247,10 @@ public class TrustedWebActivityClient {
                 Intent extraIntent = new Intent();
                 extraIntent.putExtra(EXTRA_MESSENGER, new Messenger(handler));
                 try {
-                    pendingIntent.send(ContextUtils.getApplicationContext(), 0, extraIntent);
+                    ActivityOptions options = ActivityOptions.makeBasic();
+                    ApiCompatibilityUtils.setActivityOptionsBackgroundActivityStartMode(options);
+                    pendingIntent.send(ContextUtils.getApplicationContext(), 0, extraIntent, null,
+                            null, null, options.toBundle());
                 } catch (PendingIntent.CanceledException e) {
                     Log.e(TAG, "The PendingIntent was canceled.", e);
                 }
@@ -271,7 +276,7 @@ public class TrustedWebActivityClient {
                     @Override
                     public void onExtraCallback(String callbackName, @Nullable Bundle bundle) {
                         // Hop back to the UI thread because we are on a binder thread.
-                        PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
+                        PostTask.postTask(TaskTraits.UI_USER_VISIBLE, () -> {
                             boolean granted = false;
                             if (TextUtils.equals(
                                         callbackName, CHECK_LOCATION_PERMISSION_COMMAND_NAME)
@@ -286,8 +291,7 @@ public class TrustedWebActivityClient {
                         });
                     }
                 };
-
-                Bundle executionResult = service.sendExtraCommand(
+                Bundle executionResult = safeSendExtraCommand(service,
                         CHECK_LOCATION_PERMISSION_COMMAND_NAME, Bundle.EMPTY, resultCallback);
                 // Set permission to false if the service does not know how to handle the
                 // extraCommand or did not handle the command.
@@ -316,9 +320,8 @@ public class TrustedWebActivityClient {
             public void onConnected(Origin origin, Connection service) throws RemoteException {
                 Bundle args = new Bundle();
                 args.putBoolean(LOCATION_ARG_ENABLE_HIGH_ACCURACY, highAccuracy);
-                Bundle executionResult = service.sendExtraCommand(
-                        START_LOCATION_COMMAND_NAME, args, locationCallback);
-
+                Bundle executionResult = safeSendExtraCommand(
+                        service, START_LOCATION_COMMAND_NAME, args, locationCallback);
                 // Notify an error if the service does not know how to handle the extraCommand.
                 if (executionResult == null || !executionResult.getBoolean(EXTRA_COMMAND_SUCCESS)) {
                     notifyLocationUpdateError(
@@ -336,8 +339,8 @@ public class TrustedWebActivityClient {
     public void stopLocationUpdates(String url) {
         connectAndExecute(Uri.parse(url), new ExecutionCallback() {
             @Override
-            public void onConnected(Origin origin, Connection service) throws RemoteException {
-                service.sendExtraCommand(STOP_LOCATION_COMMAND_NAME, Bundle.EMPTY, null);
+            public void onConnected(Origin origin, Connection service) {
+                safeSendExtraCommand(service, STOP_LOCATION_COMMAND_NAME, Bundle.EMPTY, null);
             }
         });
     }
@@ -497,5 +500,19 @@ public class TrustedWebActivityClient {
         Bundle error = new Bundle();
         error.putString("message", message);
         callback.onExtraCallback(EXTRA_NEW_LOCATION_ERROR_CALLBACK, error);
+    }
+
+    @Nullable
+    private Bundle safeSendExtraCommand(Connection service, String commandName, Bundle args,
+            TrustedWebActivityCallback callback) {
+        try {
+            return service.sendExtraCommand(commandName, args, callback);
+        } catch (Exception e) {
+            // Catching all exceptions is really bad, but we need it here,
+            // because Android exposes us to client bugs by throwing a variety
+            // of exceptions. See crbug.com/1426591.
+            Log.e(TAG, "There was an error with the client implementation", e);
+            return null;
+        }
     }
 }

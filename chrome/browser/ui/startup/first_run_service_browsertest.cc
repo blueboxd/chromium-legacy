@@ -148,6 +148,8 @@ class FirstRunServiceBrowserTest : public InProcessBrowserTest {
 
     // Also make sure we will do another attempt at creating the service now
     // that the first run state changed.
+    ASSERT_FALSE(
+        FirstRunServiceFactory::GetForBrowserContextIfExists(profile()));
     FirstRunServiceFactory::GetInstance()->Disassociate(profile());
 
     identity_test_env_adaptor_ =
@@ -246,6 +248,62 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
       "ProfilePicker.FirstRun.ExitStatus",
       ProfilePicker::FirstRunExitStatus::kQuitAtEnd, 1);
 #endif
+}
+
+#if BUILDFLAG(IS_MAC)
+IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
+                       CloseChromeWithKeyboardShortcut) {
+  base::RunLoop run_loop;
+  base::HistogramTester histogram_tester;
+
+  ASSERT_TRUE(fre_service()->ShouldOpenFirstRun());
+  fre_service()->OpenFirstRunIfNeeded(
+      FirstRunService::EntryPoint::kOther,
+      ExpectProceed(false).Then(run_loop.QuitClosure()));
+  profiles::testing::WaitForPickerWidgetCreated();
+
+  ProfilePicker::GetViewForTesting()->AcceleratorPressed(
+      ui::Accelerator(ui::VKEY_Q, ui::EF_COMMAND_DOWN));
+  histogram_tester.ExpectBucketCount(
+      "ProfilePicker.FirstRun.ExitStatus",
+      ProfilePicker::FirstRunExitStatus::kAbandonedFlow, 1);
+  profiles::testing::WaitForPickerClosed();
+  run_loop.Run();
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
+                       OpenFirstRunIfNeededCalledTwice) {
+  // When `OpenFirstRunIfNeeded` is called twice, the callback passed to it the
+  // first time should be aborted (called with false) and replaced by the
+  // callback passed to it the second time, which will be later called with
+  // true on DICE and false on Lacros because it will quit early in the process.
+  base::RunLoop first_run_loop;
+  base::RunLoop second_run_loop;
+  base::HistogramTester histogram_tester;
+
+  ASSERT_TRUE(fre_service()->ShouldOpenFirstRun());
+  fre_service()->OpenFirstRunIfNeeded(
+      FirstRunService::EntryPoint::kOther,
+      ExpectProceed(false).Then(first_run_loop.QuitClosure()));
+  profiles::testing::WaitForPickerWidgetCreated();
+
+  bool second_proceed = true;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  second_proceed = false;
+#endif
+  fre_service()->OpenFirstRunIfNeeded(
+      FirstRunService::EntryPoint::kOther,
+      ExpectProceed(second_proceed).Then(second_run_loop.QuitClosure()));
+  first_run_loop.Run();
+
+  histogram_tester.ExpectBucketCount(
+      "ProfilePicker.FirstRun.ExitStatus",
+      ProfilePicker::FirstRunExitStatus::kAbortTask, 1);
+
+  ProfilePicker::Hide();
+  profiles::testing::WaitForPickerClosed();
+  second_run_loop.Run();
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -474,6 +532,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceCohortBrowserTest, PRE_GroupViaPrefs) {
   local_state->SetBoolean(prefs::kFirstRunFinished, true);
 }
 IN_PROC_BROWSER_TEST_F(FirstRunServiceCohortBrowserTest, GroupViaPrefs) {
+  EXPECT_TRUE(variations::HasSyntheticTrial("ForYouFreSynthetic"));
   // The registered group is read from the prefs, not from the feature param.
   EXPECT_TRUE(variations::IsInSyntheticTrialGroup("ForYouFreSynthetic",
                                                   kStudyTestGroupName2));

@@ -11,13 +11,13 @@
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
@@ -151,6 +151,10 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
 
     shill_clients::InitializeFakes();
     hermes_clients::InitializeFakes();
+
+    ShillManagerClient::Get()
+        ->GetTestInterface()
+        ->SetWifiServicesVisibleByDefault(false);
 
     network_state_handler_ = MockNetworkStateHandler::InitializeForTest();
     network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
@@ -1404,9 +1408,6 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, AllowCellularSimLock) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kSimLockPolicy);
-
   // Set 'AllowCellularSimLock' policy.
   EXPECT_TRUE(SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
                         "policy/policy_allow_cellular_sim_lock.onc"));

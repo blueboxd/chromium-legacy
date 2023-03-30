@@ -166,32 +166,13 @@ CreateWebAudioSourceFromMediaStreamTrack(MediaStreamComponent* component,
                                                         context_sample_rate);
 }
 
-// TODO(crbug.com/1302689): Move inside MediaStreamComponent.
-std::unique_ptr<MediaStreamVideoTrack> CloneNativeVideoMediaStreamTrack(
-    MediaStreamComponent* original) {
-  MediaStreamSource* source = original->Source();
-  DCHECK_EQ(source->GetType(), MediaStreamSource::kTypeVideo);
-  MediaStreamVideoSource* native_source =
-      MediaStreamVideoSource::GetVideoSource(source);
-  DCHECK(native_source);
-  MediaStreamVideoTrack* original_track = MediaStreamVideoTrack::From(original);
-  DCHECK(original_track);
-  return std::make_unique<MediaStreamVideoTrack>(
-      native_source, original_track->adapter_settings(),
-      original_track->noise_reduction(), original_track->is_screencast(),
-      original_track->min_frame_rate(), original_track->pan(),
-      original_track->tilt(), original_track->zoom(),
-      original_track->pan_tilt_zoom_allowed(),
-      MediaStreamVideoSource::ConstraintsOnceCallback(), original->Enabled());
-}
+void ConnectToSource(MediaStreamComponent* component) {
+  DCHECK(component);
+  DCHECK(component->Source());
 
-void DidCloneMediaStreamTrack(MediaStreamComponent* clone) {
-  DCHECK(clone);
-  DCHECK(clone->Source());
-
-  if (clone->GetSourceType() == MediaStreamSource::kTypeAudio) {
-    MediaStreamAudioSource::From(clone->Source())
-        ->ConnectToInitializedTrack(clone);
+  if (component->GetSourceType() == MediaStreamSource::kTypeAudio) {
+    MediaStreamAudioSource::From(component->Source())
+        ->ConnectToInitializedTrack(component);
   }
 }
 
@@ -247,6 +228,18 @@ MediaStreamTrack* MediaStreamTrackImpl::Create(ExecutionContext* context,
   }
 }
 
+MediaStreamTrackImpl* MediaStreamTrackImpl::CreateCloningComponent(
+    ExecutionContext* execution_context,
+    MediaStreamComponent* component) {
+  MediaStreamTrackImpl* track = MakeGarbageCollected<MediaStreamTrackImpl>(
+      execution_context, component->Clone(), component->GetReadyState(),
+      base::DoNothing());
+
+  ConnectToSource(track->Component());
+
+  return track;
+}
+
 MediaStreamTrackImpl::MediaStreamTrackImpl(ExecutionContext* context,
                                            MediaStreamComponent* component)
     : MediaStreamTrackImpl(context,
@@ -266,12 +259,11 @@ MediaStreamTrackImpl::MediaStreamTrackImpl(
     ExecutionContext* context,
     MediaStreamComponent* component,
     MediaStreamSource::ReadyState ready_state,
-    base::OnceClosure callback,
-    bool is_clone)
+    base::OnceClosure callback)
     : ready_state_(ready_state),
-      has_clones_(is_clone),
       component_(component),
       execution_context_(context) {
+  DCHECK(component_);
   component_->AddSourceObserver(this);
 
   // If the source is already non-live at this point, the observer won't have
@@ -432,17 +424,6 @@ void MediaStreamTrackImpl::stopTrack(ExecutionContext* execution_context) {
 
   PropagateTrackEnded();
 }
-// TODO(crbug.com/1302689): Move inside MediaStreamComponent.
-std::unique_ptr<MediaStreamTrackPlatform>
-MediaStreamTrackImpl::ClonePlatformTrack() {
-  switch (Component()->GetSourceType()) {
-    case MediaStreamSource::kTypeVideo:
-      return CloneNativeVideoMediaStreamTrack(Component());
-    case MediaStreamSource::kTypeAudio:
-      return MediaStreamAudioSource::From(Component()->Source())
-          ->CreateMediaStreamAudioTrack(Component()->Id().Utf8());
-  }
-}
 
 MediaStreamTrack* MediaStreamTrackImpl::clone(
     ExecutionContext* execution_context) {
@@ -451,8 +432,8 @@ MediaStreamTrack* MediaStreamTrackImpl::clone(
   // Instantiate the clone.
   MediaStreamTrackImpl* cloned_track =
       MakeGarbageCollected<MediaStreamTrackImpl>(
-          execution_context, Component()->Clone(ClonePlatformTrack()),
-          ready_state_, base::DoNothing(), /*is_clone=*/true);
+          execution_context, Component()->Clone(), ready_state_,
+          base::DoNothing());
 
   // Copy state.
   CloneInternal(cloned_track);
@@ -928,9 +909,14 @@ bool MediaStreamTrackImpl::TransferAllowed(String& message) const {
     message = "MediaStreamTrack has ended.";
     return false;
   }
-  if (has_clones_) {
-    message = "MediaStreamTracks with clones cannot be transferred.";
-    return false;
+  if (MediaStreamSource* source = component_->Source()) {
+    if (WebPlatformMediaStreamSource* platform_source =
+            source->GetPlatformSource()) {
+      if (platform_source->NumTracks() > 1) {
+        message = "MediaStreamTracks with clones cannot be transferred.";
+        return false;
+      }
+    }
   }
   if (!(device() && device()->serializable_session_id() &&
         IsMediaStreamDeviceTransferrable(*device()))) {
@@ -983,15 +969,13 @@ void MediaStreamTrackImpl::Trace(Visitor* visitor) const {
 void MediaStreamTrackImpl::CloneInternal(MediaStreamTrackImpl* cloned_track) {
   DCHECK(cloned_track);
 
-  DidCloneMediaStreamTrack(cloned_track->Component());
+  ConnectToSource(cloned_track->Component());
 
   cloned_track->SetInitialConstraints(constraints_);
 
   if (image_capture_) {
     cloned_track->image_capture_ = image_capture_->Clone();
   }
-
-  has_clones_ = true;
 }
 
 void MediaStreamTrackImpl::EnsureFeatureHandleForScheduler() {

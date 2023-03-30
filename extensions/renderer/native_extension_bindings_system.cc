@@ -44,6 +44,7 @@
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/renderer_extension_registry.h"
+#include "extensions/renderer/renderer_frame_context_data.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set_iterable.h"
 #include "extensions/renderer/storage_area.h"
@@ -498,8 +499,9 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = context->v8_context();
   v8::Local<v8::Object> chrome = GetOrCreateChrome(v8_context);
-  if (chrome.IsEmpty())
+  if (chrome.IsEmpty()) {
     return;
+  }
 
   DCHECK(GetBindingsDataFromContext(v8_context));
 
@@ -563,8 +565,9 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
   }
 
   FeatureCache::FeatureNameVector features =
-      feature_cache_.GetAvailableFeatures(context->context_type(),
-                                          context->extension(), context->url());
+      feature_cache_.GetAvailableFeatures(
+          context->context_type(), context->extension(), context->url(),
+          RendererFrameContextData(context->web_frame()));
   base::StringPiece last_accessor;
   for (const std::string& feature : features) {
     // If we've already set up an accessor for the immediate property of the
@@ -593,7 +596,8 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
 
   FeatureCache::FeatureNameVector dev_mode_features =
       feature_cache_.GetDeveloperModeRestrictedFeatures(
-          context->context_type(), context->extension(), context->url());
+          context->context_type(), context->extension(), context->url(),
+          RendererFrameContextData(context->web_frame()));
 
   for (const std::string& feature : dev_mode_features) {
     base::StringPiece accessor_name =

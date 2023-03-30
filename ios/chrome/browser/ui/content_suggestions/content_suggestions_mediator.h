@@ -34,6 +34,7 @@ class Browser;
 @protocol FeedDelegate;
 class GURL;
 class LargeIconCache;
+class PromosManager;
 class ReadingListModel;
 @protocol SnackbarCommands;
 class WebStateList;
@@ -77,14 +78,14 @@ class WebStateList;
 // The consumer that will be notified when the data change.
 @property(nonatomic, weak) id<ContentSuggestionsConsumer> consumer;
 
-// YES if the Start Surface is being shown.
-@property(nonatomic, assign) BOOL showingStartSurface;
-
 // WebStateList associated with this mediator.
 @property(nonatomic, assign) WebStateList* webStateList;
 
 // The web state associated with this NTP.
 @property(nonatomic, assign) web::WebState* webState;
+
+// The promos manager to alert if the user uses What's New.
+@property(nonatomic, assign) PromosManager* promosManager;
 
 // Disconnects the mediator.
 - (void)disconnect;

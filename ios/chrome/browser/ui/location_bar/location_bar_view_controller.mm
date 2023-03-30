@@ -12,17 +12,17 @@
 #import "components/omnibox/browser/omnibox_field_trial.h"
 #import "components/open_from_clipboard/clipboard_recent_content.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/load_query_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
@@ -146,7 +146,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 }
 
 - (void)setDispatcher:(id<ActivityServiceCommands,
-                          BrowserCommands,
+                          BrowserCoordinatorCommands,
                           ApplicationCommands,
                           LoadQueryCommands,
                           OmniboxCommands>)dispatcher {
@@ -479,13 +479,9 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
           forControlEvents:UIControlEventTouchUpInside];
 
       UIImage* shareImage =
-          UseSymbols()
-              ? DefaultSymbolWithPointSize(kShareSymbol, kSymbolImagePointSize)
-              : [UIImage imageNamed:@"location_bar_share"];
-      [self.locationBarSteadyView.trailingButton
-          setImage:[shareImage imageWithRenderingMode:
-                                   UIImageRenderingModeAlwaysTemplate]
-          forState:UIControlStateNormal];
+          DefaultSymbolWithPointSize(kShareSymbol, kSymbolImagePointSize);
+      [self.locationBarSteadyView.trailingButton setImage:shareImage
+                                                 forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
       self.locationBarSteadyView.trailingButton.accessibilityIdentifier =
@@ -503,14 +499,10 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                     action:@selector(startVoiceSearch)
           forControlEvents:UIControlEventTouchUpInside];
 
-      UIImage* micImage = UseSymbols()
-                              ? DefaultSymbolWithPointSize(
-                                    kMicrophoneSymbol, kSymbolImagePointSize)
-                              : [UIImage imageNamed:@"location_bar_voice"];
-      [self.locationBarSteadyView.trailingButton
-          setImage:[micImage imageWithRenderingMode:
-                                 UIImageRenderingModeAlwaysTemplate]
-          forState:UIControlStateNormal];
+      UIImage* micImage =
+          DefaultSymbolWithPointSize(kMicrophoneSymbol, kSymbolImagePointSize);
+      [self.locationBarSteadyView.trailingButton setImage:micImage
+                                                 forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_VOICE_SEARCH);
       self.locationBarSteadyView.trailingButton.accessibilityIdentifier =

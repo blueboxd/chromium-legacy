@@ -72,7 +72,7 @@ void OnContextLost(std::unique_ptr<bool> expect_loss, bool synthetic_loss) {
   if (expect_loss && *expect_loss)
     return;
   // TODO(https://crbug.com/1112841): Debugging contexts losts. WebView will
-  // intentionally crash in HardwareRendererViz::OnViz::DisplayOutputSurface
+  // intentionally crash in HardwareRenderer::OnViz::DisplayOutputSurface
   // that will happen after this callback. That crash happens on viz thread and
   // doesn't have any useful information. Crash here on RenderThread to
   // understand the reason of context losts.
@@ -102,10 +102,19 @@ OutputSurfaceProviderWebView::OutputSurfaceProviderWebView(
 
   InitializeContext();
 }
+
 OutputSurfaceProviderWebView::~OutputSurfaceProviderWebView() {
-  // We must to destroy |gl_surface_| before |shared_context_state_|, so we will
-  // still have context. NOTE: |shared_context_state_| holds ref to surface, but
-  // it loses it before context.
+  // We must destroy |gl_surface_| before |shared_context_state_|, so we will
+  // still have context. Note that with ANGLE we are not actually guaranteed to
+  // have a current context at this point, so ensure that it is current here (if
+  // not using ANGLE, RenderThreadManager::DestroyHardwareRendererOnRT() ensures
+  // that there is a current context via its creation of a
+  // ScopedAppGLStateRestoreImpl instance, which creates a dummy context).
+  // NOTE: |shared_context_state_| holds a ref to surface, but it explicitly
+  // drops it before releasing the context.
+  if (gl_surface_->is_angle()) {
+    shared_context_state_->MakeCurrent(nullptr);
+  }
   gl_surface_.reset();
 }
 

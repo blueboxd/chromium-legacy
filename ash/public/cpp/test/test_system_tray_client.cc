@@ -155,4 +155,10 @@ bool TestSystemTrayClient::IsUserFeedbackEnabled() {
   return user_feedback_enabled_;
 }
 
+void TestSystemTrayClient::ShowEolInfoPage() {
+  ++show_eol_info_count_;
+}
+
+void TestSystemTrayClient::RecordEolNoticeShown() {}
+
 }  // namespace ash

@@ -272,7 +272,7 @@ void FuzzedCompositorFrameBuilder::TryAddTileDrawQuad(
       tile_size, GetColorFromProtobuf(quad_spec.tile_quad().texture_color()));
   TransferableResource transferable_resource =
       TransferableResource::MakeSoftware(fuzzed_bitmap->id, fuzzed_bitmap->size,
-                                         RGBA_8888);
+                                         SinglePlaneFormat::kRGBA_8888);
 
   auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
   ConfigureSharedQuadState(shared_quad_state, quad_spec);
@@ -398,8 +398,8 @@ FuzzedBitmap* FuzzedCompositorFrameBuilder::AllocateFuzzedBitmap(
     const gfx::Size& size,
     SkColor4f color) {
   SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
-  base::MappedReadOnlyRegion shm =
-      bitmap_allocation::AllocateSharedBitmap(size, RGBA_8888);
+  base::MappedReadOnlyRegion shm = bitmap_allocation::AllocateSharedBitmap(
+      size, SinglePlaneFormat::kRGBA_8888);
 
   SkBitmap bitmap;
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());

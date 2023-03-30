@@ -32,6 +32,9 @@ BASE_FEATURE(kIPHDesktopTabGroupsNewGroupFeature,
 BASE_FEATURE(kIPHDesktopCustomizeChromeFeature,
              "IPH_DesktopCustomizeChrome",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHDownloadToolbarButtonFeature,
+             "IPH_DownloadToolbarButton",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHExtensionsMenuFeature,
              "IPH_ExtensionsMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -43,10 +46,10 @@ BASE_FEATURE(kIPHGMCCastStartStopFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHHighEfficiencyInfoModeFeature,
              "IPH_HighEfficiencyInfoMode",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHHighEfficiencyModeFeature,
              "IPH_HighEfficiencyMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHLiveCaptionFeature,
              "IPH_LiveCaption",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -62,6 +65,9 @@ BASE_FEATURE(kIPHPasswordsManagementBubbleAfterSaveFeature,
 BASE_FEATURE(kIPHPasswordsManagementBubbleDuringSigninFeature,
              "IPH_PasswordsManagementBubbleDuringSignin",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPasswordsWebAppProfileSwitchFeature,
+             "IPH_PasswordsWebAppProfileSwitch",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPerformanceNewBadgeFeature,
              "IPH_PerformanceNewBadge",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -128,6 +134,12 @@ BASE_FEATURE(kIPHAdaptiveButtonInTopToolbarCustomizationShareFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature,
              "IPH_AdaptiveButtonInTopToolbarCustomization_VoiceSearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHAdaptiveButtonInTopToolbarCustomizationTranslateFeature,
+             "IPH_AdaptiveButtonInTopToolbarCustomization_Translate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHAdaptiveButtonInTopToolbarCustomizationAddToBookmarksFeature,
+             "IPH_AdaptiveButtonInTopToolbarCustomization_AddToBookmarks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHAddToHomescreenMessageFeature,
              "IPH_AddToHomescreenMessage",
@@ -471,6 +483,9 @@ BASE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kIPHGoogleOneOfferNotificationFeature,
              "IPH_GoogleOneOfferNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHLauncherSearchHelpUiFeature,
+             "IPH_LauncherSearchHelpUi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

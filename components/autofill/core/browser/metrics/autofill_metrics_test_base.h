@@ -168,7 +168,8 @@ class AutofillMetricsBaseTest {
   void FillTestProfile(const FormData& form) {
     autofill_manager().FillOrPreviewForm(
         mojom::RendererFormDataAction::kFill, form, form.fields.front(),
-        MakeFrontendId({.profile_id = kTestProfileId}));
+        MakeFrontendId({.profile_id = kTestProfileId}),
+        AutofillTriggerSource::kPopup);
   }
 
   int MakeFrontendId(
@@ -221,7 +222,6 @@ class AutofillMetricsBaseTest {
   syncer::TestSyncService sync_service_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   raw_ptr<AutofillExternalDelegate> external_delegate_;
-  raw_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate_;
 
  private:
   void CreateTestAutofillProfiles();

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
@@ -18,6 +19,7 @@
 #include "components/webxr/mailbox_to_surface_bridge_impl.h"
 #include "device/vr/android/arcore/ar_image_transport.h"
 #include "device/vr/android/arcore/arcore_gl.h"
+#include "device/vr/android/compositor_delegate_provider.h"
 #include "device/vr/android/xr_java_coordinator.h"
 #include "device/vr/public/cpp/xr_frame_sink_client.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -97,23 +99,40 @@ class StubMailboxToSurfaceBridgeFactory : public MailboxToSurfaceBridgeFactory {
   }
 };
 
+class StubCompositorDelegateProvider : public CompositorDelegateProvider {
+ public:
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() const override {
+    return base::android::ScopedJavaLocalRef<jobject>();
+  }
+};
+
 class StubXrJavaCoordinator : public XrJavaCoordinator {
  public:
   StubXrJavaCoordinator() = default;
 
-  void RequestArSession(int render_process_id,
-                        int render_frame_id,
-                        bool use_overlay,
-                        bool can_render_dom_content,
-                        SurfaceReadyCallback ready_callback,
-                        SurfaceTouchCallback touch_callback,
-                        SurfaceDestroyedCallback destroyed_callback) override {
+  void RequestArSession(
+      int render_process_id,
+      int render_frame_id,
+      bool use_overlay,
+      bool can_render_dom_content,
+      const CompositorDelegateProvider& compositor_delegate_provider,
+      SurfaceReadyCallback ready_callback,
+      SurfaceTouchCallback touch_callback,
+      SurfaceDestroyedCallback destroyed_callback) override {
     // Return arbitrary screen geometry as stand-in for the expected
     // drawing surface. It's not actually a surface, hence the nullptr
     // instead of a WindowAndroid.
     std::move(ready_callback)
         .Run(nullptr, gpu::kNullSurfaceHandle, nullptr,
              display::Display::Rotation::ROTATE_0, {1024, 512});
+  }
+
+  void RequestVrSession(int render_process_id,
+                        int render_frame_id,
+                        SurfaceReadyCallback ready_callback,
+                        SurfaceTouchCallback touch_callback,
+                        SurfaceDestroyedCallback destroyed_callback) override {
+    NOTREACHED();
   }
   void EndSession() override {}
 
@@ -309,6 +328,7 @@ class ArCoreDeviceTest : public testing::Test {
         std::make_unique<StubArImageTransportFactory>(),
         std::make_unique<StubMailboxToSurfaceBridgeFactory>(),
         std::move(session_utils_ptr),
+        std::make_unique<StubCompositorDelegateProvider>(),
         base::BindRepeating(&FrameSinkClientFactory));
   }
 

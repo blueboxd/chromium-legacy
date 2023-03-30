@@ -35,6 +35,7 @@
 #include <limits>
 
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
@@ -55,10 +56,11 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -253,9 +255,8 @@ void RangeInputType::CreateShadowSubtree() {
 
 LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle& style,
                                                  LegacyLayout legacy) const {
-  // TODO(crbug.com/1131352): input[type=range] should not use
-  // LayoutFlexibleBox.
-  return LayoutObjectFactory::CreateFlexibleBox(GetElement(), style, legacy);
+  // TODO(crbug.com/1131352): input[type=range] should not use flexbox.
+  return MakeGarbageCollected<LayoutNGFlexibleBox>(&GetElement());
 }
 
 Decimal RangeInputType::ParseToNumber(const String& src,
@@ -320,6 +321,16 @@ void RangeInputType::WarnIfValueIsInvalid(const String& value) const {
     return;
   AddWarningToConsole(
       "The specified value %s cannot be parsed, or is out of range.", value);
+}
+
+String RangeInputType::RangeOverflowText(const Decimal& maximum) const {
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_RANGE_OVERFLOW,
+                                 LocalizeValue(Serialize(maximum)));
+}
+
+String RangeInputType::RangeUnderflowText(const Decimal& minimum) const {
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_RANGE_UNDERFLOW,
+                                 LocalizeValue(Serialize(minimum)));
 }
 
 void RangeInputType::DisabledAttributeChanged() {

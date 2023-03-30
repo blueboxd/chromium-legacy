@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/profiles/profiles_pixel_test_utils.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -58,6 +59,8 @@ const EnterpriseWelcomeTestParam kWindowTestParams[] = {
                           .use_right_to_left_language = true}},
     {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeSmallWindow",
                           .use_small_window = true}},
+    {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeCR2023",
+                          .use_chrome_refresh_2023_style = true}},
     {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeFre",
                           .use_fre_style = true},
      .use_tangible_sync_style = true},
@@ -69,6 +72,9 @@ const EnterpriseWelcomeTestParam kWindowTestParams[] = {
      .use_tangible_sync_style = true},
     {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeFreSmallWindow",
                           .use_small_window = true},
+     .use_tangible_sync_style = true},
+    {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeFreCR2023",
+                          .use_chrome_refresh_2023_style = true},
      .use_tangible_sync_style = true},
 };
 
@@ -86,6 +92,8 @@ const EnterpriseWelcomeTestParam kDialogTestParams[] = {
     {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeRtl",
                           .use_right_to_left_language = true},
      .show_link_data_checkbox = true},
+    {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeCR2023",
+                          .use_chrome_refresh_2023_style = true}},
     {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeFre"},
      .use_tangible_sync_style = true},
     {.pixel_test_param = {.test_suffix =
@@ -94,7 +102,8 @@ const EnterpriseWelcomeTestParam kDialogTestParams[] = {
      .use_tangible_sync_style = true},
     {.pixel_test_param =
          {.test_suffix = "EnterpriseWelcomeFreWithProfileCreationRequired"},
-     .profile_creation_required_by_policy = true},
+     .profile_creation_required_by_policy = true,
+     .use_tangible_sync_style = true},
     {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeFreDarkTheme",
                           .use_dark_theme = true},
      .show_link_data_checkbox = true,
@@ -102,6 +111,9 @@ const EnterpriseWelcomeTestParam kDialogTestParams[] = {
     {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeFreRtl",
                           .use_right_to_left_language = true},
      .show_link_data_checkbox = true,
+     .use_tangible_sync_style = true},
+    {.pixel_test_param = {.test_suffix = "EnterpriseWelcomeFreCR2023",
+                          .use_chrome_refresh_2023_style = true},
      .use_tangible_sync_style = true},
 };
 
@@ -171,6 +183,7 @@ class EnterpriseWelcomeUIWindowPixelTest
 
     if (GetParam().use_tangible_sync_style) {
       enabled_features.push_back(kEnterpriseWelcomeTangibleSyncStyle);
+      enabled_features.push_back(switches::kTangibleSync);
     } else {
       disabled_features.push_back(kEnterpriseWelcomeTangibleSyncStyle);
     }
@@ -253,6 +266,7 @@ class EnterpriseWelcomeUIDialogPixelTest
 
     if (GetParam().use_tangible_sync_style) {
       enabled_features.push_back(kEnterpriseWelcomeTangibleSyncStyle);
+      enabled_features.push_back(switches::kTangibleSync);
     } else {
       disabled_features.push_back(kEnterpriseWelcomeTangibleSyncStyle);
     }

@@ -16,6 +16,26 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Whether feed background refresh is enabled. This only checks if the feature
+// is enabled, not if the capability was enabled at startup.
+bool IsFeedBackgroundRefreshEnabledOnly() {
+  return base::FeatureList::IsEnabled(kEnableFeedBackgroundRefresh);
+}
+
+// Whether feed is refreshed in the background soon after the app is
+// backgrounded. This only checks if the feature is enabled, not if the
+// capability was enabled at startup.
+bool IsFeedAppCloseBackgroundRefreshEnabledOnly() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kEnableFeedInvisibleForegroundRefresh,
+      kEnableFeedAppCloseBackgroundRefresh,
+      /*default=*/false);
+}
+
+}  // namespace
+
 BASE_FEATURE(kEnableWebChannels,
              "EnableWebChannels",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -24,17 +44,13 @@ BASE_FEATURE(kEnableFeedBackgroundRefresh,
              "EnableFeedBackgroundRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableFeedForegroundRefresh,
-             "EnableFeedForegroundRefresh",
+BASE_FEATURE(kEnableFeedInvisibleForegroundRefresh,
+             "EnableFeedInvisibleForegroundRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCreateDiscoverFeedServiceEarly,
              "CreateDiscoverFeedServiceEarly",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnableGoodVisitsMetric,
-             "EnableGoodVisitsMetric",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableFeedBottomSignInPromo,
              "EnableFeedBottomSignInPromo",
@@ -52,15 +68,17 @@ BASE_FEATURE(kEnableFeedExperimentTagging,
              "EnableFeedExperimentTagging",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kIOSSetUpList, "IOSSetUpList", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Key for NSUserDefaults containing a bool indicating whether the next run
-// should enable feed background refresh. This is used because registering for
-// background refreshes must happen early in app initialization and FeatureList
-// is not yet available. Changing the `kEnableFeedBackgroundRefresh` feature
-// will always take effect after two cold starts after the feature has been
-// changed on the server (once for the Finch configuration, and another for
-// reading the stored value from NSUserDefaults).
-NSString* const kEnableFeedBackgroundRefreshForNextColdStart =
-    @"EnableFeedBackgroundRefreshForNextColdStart";
+// should enable feed background refresh capability. This is used because
+// registering for background refreshes must happen early in app initialization
+// and FeatureList is not yet available. Enabling or disabling background
+// refresh features will always take effect after two cold starts after the
+// feature has been changed on the server (once for the Finch configuration, and
+// another for reading the stored value from NSUserDefaults).
+NSString* const kEnableFeedBackgroundRefreshCapabilityForNextColdStart =
+    @"EnableFeedBackgroundRefreshCapabilityForNextColdStart";
 
 const char kEnableFollowingFeedBackgroundRefresh[] =
     "EnableFollowingFeedBackgroundRefresh";
@@ -73,13 +91,18 @@ const char kBackgroundRefreshIntervalInSeconds[] =
     "BackgroundRefreshIntervalInSeconds";
 const char kBackgroundRefreshMaxAgeInSeconds[] =
     "BackgroundRefreshMaxAgeInSeconds";
-
-const char kEnableFeedRefreshPostFeedSession[] =
-    "EnableFeedRefreshPostFeedSession";
-const char kEnableFeedRefreshOnAppBackgrounding[] =
-    "EnableFeedRefreshOnAppBackgrounding";
-const char kFeedSessionEndTimerTimeoutInSeconds[] =
-    "FeedSessionEndTimerTimeoutInSeconds";
+const char kEnableFeedSessionCloseForegroundRefresh[] =
+    "EnableFeedSessionCloseForegroundRefresh";
+const char kEnableFeedAppCloseForegroundRefresh[] =
+    "EnableFeedAppCloseForegroundRefresh";
+const char kEnableFeedAppCloseBackgroundRefresh[] =
+    "EnableFeedAppCloseBackgroundRefresh";
+const char kFeedRefreshEngagementCriteriaType[] =
+    "FeedRefreshEngagementCriteriaType";
+const char kAppCloseBackgroundRefreshIntervalInSeconds[] =
+    "AppCloseBackgroundRefreshIntervalInSeconds";
+const char kFeedRefreshTimerTimeoutInSeconds[] =
+    "FeedRefreshTimerTimeoutInSeconds";
 const char kFeedSeenRefreshThresholdInSeconds[] =
     "FeedSeenRefreshThresholdInSeconds";
 const char kFeedUnseenRefreshThresholdInSeconds[] =
@@ -93,26 +116,29 @@ bool IsDiscoverFeedServiceCreatedEarly() {
   return base::FeatureList::IsEnabled(kCreateDiscoverFeedServiceEarly);
 }
 
-bool IsGoodVisitsMetricEnabled() {
-  return base::FeatureList::IsEnabled(kEnableGoodVisitsMetric);
+bool IsFeedBackgroundRefreshEnabled() {
+  return IsFeedBackgroundRefreshCapabilityEnabled() &&
+         IsFeedBackgroundRefreshEnabledOnly();
 }
 
-bool IsFeedBackgroundRefreshEnabled() {
+bool IsFeedBackgroundRefreshCapabilityEnabled() {
 #if !BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
   return false;
 #else
   static bool feedBackgroundRefreshEnabled =
       [[NSUserDefaults standardUserDefaults]
-          boolForKey:kEnableFeedBackgroundRefreshForNextColdStart];
+          boolForKey:kEnableFeedBackgroundRefreshCapabilityForNextColdStart];
   return feedBackgroundRefreshEnabled;
 #endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
 }
 
-void SaveFeedBackgroundRefreshEnabledForNextColdStart() {
+void SaveFeedBackgroundRefreshCapabilityEnabledForNextColdStart() {
   DCHECK(base::FeatureList::GetInstance());
+  BOOL enabled = IsFeedBackgroundRefreshEnabledOnly() ||
+                 IsFeedAppCloseBackgroundRefreshEnabledOnly();
   [[NSUserDefaults standardUserDefaults]
-      setBool:base::FeatureList::IsEnabled(kEnableFeedBackgroundRefresh)
-       forKey:kEnableFeedBackgroundRefreshForNextColdStart];
+      setBool:enabled
+       forKey:kEnableFeedBackgroundRefreshCapabilityForNextColdStart];
 }
 
 void SetFeedRefreshTimestamp(NSDate* timestamp, NSString* NSUserDefaultsKey) {
@@ -137,7 +163,7 @@ bool IsFeedBackgroundRefreshCompletedNotificationEnabled() {
   if (GetChannel() == version_info::Channel::STABLE) {
     return false;
   }
-  return IsFeedBackgroundRefreshEnabled() &&
+  return IsFeedBackgroundRefreshCapabilityEnabled() &&
          [[NSUserDefaults standardUserDefaults]
              boolForKey:@"FeedBackgroundRefreshNotificationEnabled"];
 }
@@ -198,26 +224,58 @@ double GetBackgroundRefreshMaxAgeInSeconds() {
       /*default=*/0);
 }
 
-bool IsFeedRefreshPostFeedSessionEnabled() {
+bool IsFeedInvisibleForegroundRefreshEnabled() {
+  return base::FeatureList::IsEnabled(kEnableFeedInvisibleForegroundRefresh);
+}
+
+bool IsFeedSessionCloseForegroundRefreshEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      kEnableFeedForegroundRefresh, kEnableFeedRefreshPostFeedSession,
+      kEnableFeedInvisibleForegroundRefresh,
+      kEnableFeedSessionCloseForegroundRefresh,
       /*default=*/false);
 }
 
-bool IsFeedRefreshOnAppBackgroundingEnabled() {
+bool IsFeedAppCloseForegroundRefreshEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      kEnableFeedForegroundRefresh, kEnableFeedRefreshOnAppBackgrounding,
+      kEnableFeedInvisibleForegroundRefresh,
+      kEnableFeedAppCloseForegroundRefresh,
       /*default=*/false);
 }
 
-double GetFeedSessionEndTimerTimeoutInSeconds() {
+bool IsFeedAppCloseBackgroundRefreshEnabled() {
+  return IsFeedBackgroundRefreshCapabilityEnabled() &&
+         IsFeedAppCloseBackgroundRefreshEnabledOnly();
+}
+
+FeedRefreshEngagementCriteriaType GetFeedRefreshEngagementCriteriaType() {
+  return (FeedRefreshEngagementCriteriaType)
+      base::GetFieldTrialParamByFeatureAsInt(
+          kEnableFeedInvisibleForegroundRefresh,
+          kFeedRefreshEngagementCriteriaType,
+          /*default_value=*/
+          (int)FeedRefreshEngagementCriteriaType::kSimpleEngagement);
+}
+
+double GetAppCloseBackgroundRefreshIntervalInSeconds() {
   double override_value = [[NSUserDefaults standardUserDefaults]
-      doubleForKey:@"FeedSessionEndTimerTimeoutInSeconds"];
+      doubleForKey:@"AppCloseBackgroundRefreshIntervalInSeconds"];
   if (override_value > 0.0) {
     return override_value;
   }
   return base::GetFieldTrialParamByFeatureAsDouble(
-      kEnableFeedForegroundRefresh, kFeedSessionEndTimerTimeoutInSeconds,
+      kEnableFeedInvisibleForegroundRefresh,
+      kAppCloseBackgroundRefreshIntervalInSeconds,
+      /*default=*/base::Minutes(5).InSecondsF());
+}
+
+double GetFeedRefreshTimerTimeoutInSeconds() {
+  double override_value = [[NSUserDefaults standardUserDefaults]
+      doubleForKey:@"FeedRefreshTimerTimeoutInSeconds"];
+  if (override_value > 0.0) {
+    return override_value;
+  }
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      kEnableFeedInvisibleForegroundRefresh, kFeedRefreshTimerTimeoutInSeconds,
       /*default=*/base::Minutes(5).InSecondsF());
 }
 
@@ -228,7 +286,7 @@ double GetFeedSeenRefreshThresholdInSeconds() {
     return override_value;
   }
   return base::GetFieldTrialParamByFeatureAsDouble(
-      kEnableFeedForegroundRefresh, kFeedSeenRefreshThresholdInSeconds,
+      kEnableFeedInvisibleForegroundRefresh, kFeedSeenRefreshThresholdInSeconds,
       /*default=*/base::Hours(1).InSecondsF());
 }
 
@@ -239,7 +297,8 @@ double GetFeedUnseenRefreshThresholdInSeconds() {
     return override_value;
   }
   return base::GetFieldTrialParamByFeatureAsDouble(
-      kEnableFeedForegroundRefresh, kFeedUnseenRefreshThresholdInSeconds,
+      kEnableFeedInvisibleForegroundRefresh,
+      kFeedUnseenRefreshThresholdInSeconds,
       /*default=*/base::Hours(6).InSecondsF());
 }
 
@@ -257,4 +316,8 @@ bool IsFeedAblationEnabled() {
 
 bool IsFeedExperimentTaggingEnabled() {
   return base::FeatureList::IsEnabled(kEnableFeedExperimentTagging);
+}
+
+bool IsIOSSetUpListEnabled() {
+  return base::FeatureList::IsEnabled(kIOSSetUpList);
 }

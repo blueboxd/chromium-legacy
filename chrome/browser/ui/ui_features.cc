@@ -72,6 +72,13 @@ BASE_FEATURE(kEvDetailsInPageInfo,
              "EvDetailsInPageInfo",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if !defined(ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Enables showing the "Get the most out of Chrome" section in settings.
+BASE_FEATURE(kGetTheMostOutOfChrome,
+             "GetTheMostOutOfChrome",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Controls whether we use a different UX for simple extensions overriding
 // settings.
@@ -120,9 +127,6 @@ BASE_FEATURE(kSidePanelJourneysQueryless,
              "SidePanelJourneysQueryless",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSidePanelSearchCompanion,
-             "SidePanelSearchCompanion",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #if !defined(ANDROID)
 // This differs from the search companion by providing a separate WebUI that
 // contains untrusted content in an iframe.

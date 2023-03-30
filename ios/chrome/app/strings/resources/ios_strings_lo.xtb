@@ -8,14 +8,11 @@
 <translation id="1044891598689252897">ເວັບໄຊຈະເຮັດວຽກໄດ້ປົກກະຕິ</translation>
 <translation id="1049743911850919806">ບໍ່​ເຜີຍ​ຕົວຕົນ</translation>
 <translation id="105093091697134113">ບັນຊີຕໍ່ໄປນີ້ໃຊ້ລະຫັດຜ່ານທີ່ຮົ່ວໄຫຼໃນການລະເມີດຂໍ້ມູນຂອງພາກສ່ວນທີສາມ ຫຼື ປ້ອນໃສ່ເວັບໄຊຫຼອກລວງ. ປ່ຽນລະຫັດຜ່ານເຫຼົ່ານີ້ໃນທັນທີເພື່ອຮັກສາໃຫ້ບັນຊີຂອງທ່ານປອດໄພ.</translation>
-<translation id="105214722824962652">ທ່ານຈະບໍ່ຖືກພາອອກຈາກລະບົບບັນຊີ Google ຂອງທ່ານ. <ph name="BEGIN_LINK" />ການເຄື່ອນໄຫວຮູບແບບອື່ນ<ph name="END_LINK" /> ອາດຖືກບັນທຶກໄວ້ໃນບັນຊີ Google ຂອງທ່ານເມື່ອທ່ານເຂົ້າສູ່ລະບົບ. ທ່ານສາມາດລຶບພວກມັນຕອນໃດກໍໄດ້.
-
-        
-ໂປຣແກຣມຊອກຫາຂອງທ່ານແມ່ນ <ph name="DSE_NAME" />. ກະລຸນາອ່ານຄຳແນະນຳສຳລັບການລຶບປະຫວັດການຊອກຫາ, ຖ້າມີ.</translation>
 <translation id="1054045277222934172">ທ່ານສາມາດປ່ຽນມຸມມອງເວັບໄຊເລີ່ມຕົ້ນໄປເປັນເດັສທັອບໄດ້ໃນການຕັ້ງຄ່າ ຈາກນັ້ນເລືອກການຕັ້ງຄ່າເນື້ອຫາ</translation>
 <translation id="1054745118061919935">ໂດຍການສືບຕໍ່, ແມ່ນຖືວ່າທ່ານຍອມຮັບ <ph name="BEGIN_LINK" />ຂໍ້ກຳນົດບໍລິການ<ph name="END_LINK" />.</translation>
 <translation id="1063454504051558093">ໃຊ້ລະຫັດຜ່ານອື່ນ...</translation>
 <translation id="1066060668811609597">ຈັດການການຊິ້ງຂໍ້ມູນ</translation>
+<translation id="1069154182096085577">ລະຫັດຜ່ານມີຢູ່ກ່ອນແລ້ວ</translation>
 <translation id="1076421457278169141">ສະແກນລະຫັດແລ້ວ</translation>
 <translation id="1076785341346483463">ຊິ້ງໂດຍບັນຊີທີ່ມີການຈັດການ</translation>
 <translation id="1084365883616172403">ການ​ໂພ​ສ​ທ໌ Facebook ສຳ​ເລັດ.</translation>
@@ -32,6 +29,7 @@
 <translation id="1154984953698510061">ເບິ່ງແຖບອື່ນ</translation>
 <translation id="1161340988127985692">ຖາມເພື່ອເປີດລິ້ງຈາກແອັບອື່ນໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="1164064664035028907">ໃຊ້ລະຫັດຜ່ານຍາກ:</translation>
+<translation id="1164891049599601209">ມີການປ້ອນໃນເວັບໄຊຫຼອກລວງ</translation>
 <translation id="1165039591588034296">ຜິດພາດ</translation>
 <translation id="1172898394251786223">ຫ້ອງ​ໃສ່​ຂໍ້​ມູນ​ຕໍ່​ໄປ</translation>
 <translation id="1176932207622159128">ບໍ່​ສາ​ມາດ​ບັນ​ທຶກ​ຮູບ​ໄດ້</translation>
@@ -57,6 +55,7 @@
 <translation id="1283524564873030414">24 ຊົ່ວໂມງຜ່ານມາ</translation>
 <translation id="1285320974508926690">ຢ່າແປເວັບ​ໄຊ​ທ໌ນີ້</translation>
 <translation id="1291506870746876680">ການອະນຸຍາດ <ph name="BEGIN_BOLD" />"<ph name="SITE_NAME" />"<ph name="END_BOLD" /> ຈະຖືກຣີເຊັດໄປເປັນປິດເມື່ອທ່ານອອກຈາກເວັບໄຊນີ້.</translation>
+<translation id="1305822519689023679">ເພື່ອກວດສອບໃຫ້ແນ່ໃຈວ່າທ່ານສາມາດໃຊ້ລະຫັດຜ່ານໃນບັນຊີ Google ຂອງທ່ານໄດ້ສະເໝີ, ກະລຸນາຢັ້ງຢືນວ່າແມ່ນທ່ານ.</translation>
 <translation id="1312721752506309252">ການປົກປ້ອງທີ່ປັບປຸງດີຂຶ້ນເປີດຢູ່</translation>
 <translation id="1321993286294231467">ຜິດພາດໃນການບັນທຶກຮູບພາບ.</translation>
 <translation id="1322735045095424339">ອົງການຂອງທ່ານກຳນົດໃຫ້ໃຊ້ໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
@@ -106,6 +105,7 @@
 <translation id="1626771852476987600"><ph name="COUNT" /> ລະຫັດຜ່ານທີ່ໃຊ້ຊ້ຳ</translation>
 <translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1644574205037202324">ປະຫວັດ</translation>
+<translation id="165008673352427892">ຄຸນສົມບັດໃໝ່</translation>
 <translation id="1650222530560417226">ແຕະປຸ່ມ "ເລີ່ມບັນທຶກ" ເພື່ອເກັບກຳບັນທຶກ ແລະ ຂໍ້ຜິດພາດໃນອະນາຄົດຂອງຄອນໂຊນ JavaScript ຈາກແຖບທັງໝົດ. ບັນທຶກຈະຖືກເກັບກຳ (ແລະ ເກັບໄວ້ໃນໜ່ວຍຄວາມຈຳເທົ່ານັ້ນ) ຈົນກວ່າວ່າຈະປິດໜ້ານີ້ ຫຼື ມີການແຕະປຸ່ມ "ຢຸດບັນທຶກ".</translation>
 <translation id="1653432787084483144">{count,plural, =1{ລະຫັດຜ່ານທີ່ບັນທຶກໄວ້ {count} ລາຍການຈະສາມາດໃຊ້ໄດ້ຢູ່ທາງເທິງແປ້ນພິມຂອງທ່ານ.}other{ລະຫັດຜ່ານທີ່ບັນທຶກໄວ້ {count} ລາຍການຈະສາມາດໃຊ້ໄດ້ຢູ່ທາງເທິງແປ້ນພິມຂອງທ່ານ.}}</translation>
 <translation id="1657011748321897393">ການ​ແບ່ງ​ປັນ​ຂອງ​ທ່ານ​ບໍ່​ສຳ​ເລັດ ເພາະ​ວ່າ​ທ່ານ​ບໍ່​ໄດ້​ເຊື່ອມ​ຕໍ່​ກັບ​ເຄືອ​ຂ່າຍ.</translation>
@@ -119,8 +119,10 @@
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ຖືກ​ເລືອກ​ແລ້ວ</translation>
 <translation id="1715515772563243997">ຫາກທ່ານເຊື່ອຖື <ph name="SITE" />, ທ່ານສາມາດໃຊ້ລະຫັດຜ່ານທີ່ບັນທຶກໄວ້ເພື່ອເຂົ້າສູ່ລະບົບໄດ້.</translation>
 <translation id="1740468249224277719">ແຕະສອງຄັ້ງເພື່ອຕິດຕັ້ງ.</translation>
+<translation id="1750238553597293878">ໃຊ້ລະຫັດຜ່ານໃນບັນຊີ Google ຂອງທ່ານຕໍ່ໄປ</translation>
 <translation id="1752547299766512813">ບັນທຶກລະ​ຫັດ​ຜ່ານ</translation>
 <translation id="1753905327828125965">ເຂົ້າເບິ່ງ​ຫຼາຍ​ທີ່​ສຸດ</translation>
+<translation id="1767766085187034454">Google ແປພາສາ</translation>
 <translation id="1789803444939621101">ຍິນດີຕ້ອນຮັບກັບມາ, <ph name="USER_NAME" /></translation>
 <translation id="1803264062614276815">ຊື່ຜູ້ຖືບັດ</translation>
 <translation id="1809939268435598390">ລຶບ​ໂຟລເດີ</translation>
@@ -143,6 +145,7 @@
 <translation id="1965935827552890526">ສຳເລັດສິ່ງທີ່ທ່ານກຳລັງເຮັດໃນໜ້າຈໍອື່ນຂອງ Chrome ທີ່ີເປີດຢູ່.</translation>
 <translation id="1973912524893600642">ຮັກສາຂໍ້ມູນໄວ້</translation>
 <translation id="1974060860693918893">ຂັ້ນສູງ</translation>
+<translation id="1980417445547898121">{count,plural, =1{ຮັບເອົາ {count} ແຖບການເຄື່ອນໄຫວຫຼ້າສຸດຂອງທ່ານຈາກອຸປະກອນອື່ນຂອງທ່ານຢູ່ iPhone ນີ້}other{ຮັບເອົາ {count} ແຖບການເຄື່ອນໄຫວຫຼ້າສຸດຂອງທ່ານຈາກອຸປະກອນອື່ນຂອງທ່ານຢູ່ iPhone ນີ້}}</translation>
 <translation id="1981118202195772574">ມືຖື</translation>
 <translation id="1989112275319619282">ເປີດ​ເບິ່ງ</translation>
 <translation id="1990820278544963435">ຊອກຫາ</translation>
@@ -152,6 +155,7 @@
 <translation id="2021670401941426298">ກະລຸນາອ່ານຄຳແນະນຳຂອງໂປຣແກຣມຊອກຫາຂອງທ່ານສຳລັບວິທີການລຶບປະຫວັດການຊອກຫາ, ຖ້າມີ.</translation>
 <translation id="202292859882676807">ອະນຸຍາດສິດເຂົ້າເຖິງໄມໂຄຣໂຟນແລ້ວ</translation>
 <translation id="20485545164632846">ລາຍການໃໝ່</translation>
+<translation id="2049727122989709386">ມີ <ph name="COUNT" /> ບັນຊີໃຊ້ລະຫັດຜ່ານດຽວກັນ</translation>
 <translation id="2050196510205866090">{count,plural, =1{ວິທີການຈ່າຍເງິນທີ່ບັນທຶກໄວ້ {count} ລາຍການຈະສາມາດໃຊ້ໄດ້ຢູ່ທາງເທິງແປ້ນພິມຂອງທ່ານ.}other{ວິທີການຈ່າຍເງິນທີ່ບັນທຶກໄວ້ {count} ລາຍການຈະສາມາດໃຊ້ໄດ້ຢູ່ທາງເທິງແປ້ນພິມຂອງທ່ານ.}}</translation>
 <translation id="2073572773299281212">ນຳໃຊ້ເມື່ອ <ph name="DAYS" /> ກ່ອນ</translation>
 <translation id="2074131957428911366">ທ່ານສາມາດເລືອກສິ່ງທີ່ຈະຊິ້ງຂໍ້ມູນໄດ້ໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ<ph name="END_LINK" />.</translation>
@@ -215,6 +219,7 @@
 <translation id="2523363575747517183">ເວັບໄຊກຳລັງພະຍາຍາມເປີດແອັບພລິເຄຊັນອື່ນຊໍ້າໄປມາຫຼາຍເທື່ອ.</translation>
 <translation id="2529021024822217800">ເປີດທັງຫມົດ</translation>
 <translation id="2547458583188611426">ຊິ້ງບໍ່ເຮັດວຽກ. ເພື່ອເລີ່ມຊິ້ງຂໍ້ມູນ, ໃຫ້ໃສ່ລະຫັດຜ່ານຂອງທ່ານ.</translation>
+<translation id="2551153019974022505">ບັນຊີຜິດພາດ</translation>
 <translation id="2556092377360758201">ບໍ່ມີການປົກປ້ອງ (ບໍ່ແນະນຳ)</translation>
 <translation id="2562041823070056534">ກຳລັງສົ່ງໃຫ້ <ph name="DEVICE_NAME" />...</translation>
 <translation id="2576499762020411840">ນຳໃຊ້ ແລະ ບັນທຶກລະຫັດຜ່ານໃນບັນຊີ Google ຂອງທ່ານ</translation>
@@ -234,6 +239,10 @@
 <translation id="26915454213703967">ຊອກຫາຮູບພາຍໃນດ້ວຍ Google</translation>
 <translation id="2691653761409724435">ບໍ່ສາມາດໃຊ້ໄດ້ແບບອອບລາຍ</translation>
 <translation id="2695507686909505111">ແປໜ້າແລ້ວ</translation>
+<translation id="2696180352517415858">ທ່ານຈະບໍ່ອອກຈາກລະບົບບັນຊີ Google ຂອງທ່ານ. <ph name="BEGIN_LINK" />ການເຄື່ອນໄຫວຮູບແບບອື່ນ<ph name="END_LINK" /> ອາດຖືກບັນທຶກໄວ້ໃນບັນຊີ Google ຂອງທ່ານເມື່ອທ່ານເຂົ້າສູ່ລະບົບ. ທ່ານສາມາດລຶບຂໍ້ມູນນີ້ຕອນໃດກໍໄດ້.
+
+
+ໂປຣແກຣມຊອກຫາຂອງທ່ານແມ່ນ <ph name="DSE_NAME" />. ກະລຸນາເບິ່ງຄຳແນະນຳໃນການລຶບປະຫວັດການຊອກຫາຂອງທ່ານ (ຫາກມີ).</translation>
 <translation id="2697526135132990015">ອອກຈາກລະບົບ ແລະ ລຶບລ້າງຂໍ້ມູນ</translation>
 <translation id="2700241355396984822">ຕົວເລືອກເພື່ອຕັ້ງການອະນຸຍາດ</translation>
 <translation id="2702801445560668637">ລາຍການທີ່ຈະອ່ານ</translation>
@@ -246,6 +255,7 @@
 <translation id="2747003861858887689">ຫ້ອງ​ໃສ່​ຂໍ້​ມູນ​ຜ່ານ​ມາ</translation>
 <translation id="2749231692441336879">ກຳລັງຕິດຕາມ <ph name="CHANNEL_NAME" /></translation>
 <translation id="2764831210418622012">ຕອນນີ້</translation>
+<translation id="2772667768515195373">ທ່ານສາມາດໃຊ້ທີ່ຢູ່ທີ່ບັນທຶກໄວ້ໃນຜະລິດຕະພັນຕ່າງໆຂອງ Google ໄດ້. ໂດຍທີ່ຢູ່ນີ້ຈະຖືກບັນທຶກໄວ້ໃນບັນຊີ Google ຂອງທ່ານທີ່ຊື່ວ່າ, <ph name="USER_EMAIL" />.</translation>
 <translation id="2773292004659987824">ການຊອກຫາແບບບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="277771892408211951">ເລືອກພາສາ</translation>
 <translation id="2780046210906776326">ບໍ່​ມີ​ບັນ​ຊີ​ອີ​ເມວ</translation>
@@ -262,6 +272,7 @@
 <translation id="2834399722155632105">3. ແຕະຕົວເລືອກລະຫັດຜ່ານ</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">ຕັ້ງຄ່າການຕັ້ງຄ່າການແປຄືນໃໝ່</translation>
+<translation id="284581348330507117">ສ້າງລະຫັດຜ່ານທີ່ບໍ່ຊໍ້າກັນ</translation>
 <translation id="2848086008667475748">ຕັ້ງເປັນຄ່າເລີ່ມຕົ້ນໃນການຕັ້ງຄ່າ…</translation>
 <translation id="2858204748079866344">ເພື່ອປົກປ້ອງຄວາມເປັນສ່ວນຕົວຂອງທ່ານ, Chrome ຈະບໍ່ຕື່ມຂໍ້ມູນລະຫັດຜ່ານຂອງທ່ານໃສ່ຊ່ອງຂໍ້ມູນນີ້ໂດຍອັດຕະໂນມັດ.</translation>
 <translation id="285960592395650245">ລອງດາວໂຫຼດໃໝ່</translation>
@@ -321,6 +332,7 @@
 <translation id="3214379938835224220">ທ່ານອອກຈາກລະບົບເປັນສ່ວນໜຶ່ງຂອງການຣີເຊັດ iPad ທ່ານແລ້ວ. ແຕະສືບຕໍ່ທາງລຸ່ມເພື່ອເຂົ້າສູ່ລະບົບ.</translation>
 <translation id="3224641773458703735">ເພື່ອສົ່ງອອກລະຫັດຜ່ານ, ທ່ານຕ້ອງຕັ້ງລະຫັດຜ່ານໃນອຸປະກອນຂອງທ່ານກ່ອນ.</translation>
 <translation id="3227137524299004712">ໄມໂຄຣໂຟນ</translation>
+<translation id="3235063766008841141">ປ້ອນໃນເວັບໄຊຫຼອກລວງແລະ ພົບເຫັນໃນການລະເມີດຂໍ້ມູນ</translation>
 <translation id="3240426699337459095">ອັດ​ສຳ​ເນົາ​ລິ້ງ​ແລ້ວ</translation>
 <translation id="3244271242291266297">ດດ</translation>
 <translation id="3245744387817103524">ບໍ່ສາມາດບັນທຶກການປ່ຽນແປງຂອງທ່ານໄດ້.</translation>
@@ -360,6 +372,7 @@
 <translation id="3494788280727468875">ຢືນຢັນລຶບລ້າງຂໍ້ມູນການທ່ອງເວັບ</translation>
 <translation id="35083190962747987">ເປີດ ${url}</translation>
 <translation id="3519193562722059437">ເປີດ​ແຖບ​ເພື່ອ​ທ່ອງ​ເວັບ.</translation>
+<translation id="3519905498307021260">{count,plural, =1{ເປີດແຖບ}other{ເປີດ {count} ແຖບ}}</translation>
 <translation id="3527085408025491307">ໂຟລເດີ</translation>
 <translation id="3529024052484145543">ບໍ່ປອດໄພ</translation>
 <translation id="3530206579861815432">ຊອກຫາແຖບທີ່ເປີດ ແລະ ປິດຫຼ້າສຸດໃນອຸປະກອນທີ່ຊິ້ງຂໍ້ມູນໄວ້ຂອງທ່ານ.</translation>
@@ -374,6 +387,7 @@
 <translation id="3595252146048399851">ທ່ານສາມາດເລືອກສິ່ງທີ່ຈະຊິ້ງຂໍ້ມູນໄດ້ໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ<ph name="END_LINK" />. Google ອາດປັບແຕ່ງການຊອກຫາ ແລະ ບໍລິການອື່ນໆຂອງ Google ໃຫ້ເປັນແບບສ່ວນຕົວໂດຍອ້າງອີງໃສ່ປະຫວັດຂອງທ່ານ.</translation>
 <translation id="3603009562372709545">ອັດ​ສຳ​ເນົາ URL ຂອງ​ລິ້ງ</translation>
 <translation id="3607167657931203000">ຕື່ມຂໍ້ມູນອັດຕະໂນມັດ</translation>
+<translation id="3608008480985212611">ເຂົ້າສູ່ລະບົບເພື່ອຈັດການການຕັ້ງຄ່າຂອງທ່ານ.</translation>
 <translation id="3609785682760573515">ກໍາລັງຊິງຄ໌...</translation>
 <translation id="3631443864840848029">ກະລຸນາກວດສອບວ່າທ່ານກຳລັງບັນທຶກລະຫັດຜ່ານປັດຈຸບັນຂອງທ່ານສຳລັບເວັບໄຊນີ້.</translation>
 <translation id="3638472932233958418">ໜ້າເວັບໂຫຼດມາກ່ອນ</translation>
@@ -393,10 +407,10 @@
 <translation id="3789841737615482174">​ຕິດ​ຕັ້ງ</translation>
 <translation id="380329542618494757">ຊື່</translation>
 <translation id="3803696231112616155">ສະເໜີແປເວັບໄຊນີ້</translation>
-<translation id="3803967590068704619">ທີ່ຢູ່ນີ້ຖືກບັນທຶກໄວ້ໃນບັນຊີ Google ຂອງທ່ານ (<ph name="USER_EMAIL" />) ແລ້ວ. ທ່ານສາມາດໃຊ້ທີ່ຢູ່ນີ້ທົ່ວຜະລິດຕະພັນຕ່າງໆຂອງ Google ຢູ່ອຸປະກອນໃດກໍໄດ້.</translation>
 <translation id="3810973564298564668">ຈັດການ</translation>
 <translation id="3818293389945649617">ຊອກຫາຕໍ່ໄປ</translation>
 <translation id="3819183753496523827">ທ່ານອອບລາຍຢູ່. ກະລຸນາກວດສອບການເຊື່ອມຕໍ່ອິນເຕີເນັດຂອງທ່ານແລ້ວລອງໃໝ່.</translation>
+<translation id="3832419617903252251">ບັນທຶກລະຫັດຜ່ານໄວ້ໃນອຸປະກອນນີ້ເທົ່ານັ້ນ</translation>
 <translation id="3835964409414434850">ໄປຫາແຖບຕໍ່ໄປ</translation>
 <translation id="3838691874161539578">ກວດລະຫັດຜ່ານທີ່ບັນທຶກໄວ້ຂອງທ່ານເພື່ອເພີ່ມທະວີຄວາມປອດໄພຂອງທ່ານ ແລະ ອອນລາຍຢ່າງປອດໄພຍິ່ງຂຶ້ນ</translation>
 <translation id="385051799172605136">ກັບ​ຄືນ​</translation>
@@ -406,6 +420,7 @@
 <translation id="3863769054730344136">ສົ່ງຫາອຸປະກອນຂອງທ່ານ</translation>
 <translation id="387280738075653372">ດາວໂຫຼດ Chrome ຢູ່ບ່ອນນີ້.</translation>
 <translation id="3888863481921783344">ຂໍ້ມູນນີ້ຈະໃຊ້ເພື່ອສະແດງໃຫ້ທ່ານເຫັນວ່າມີຜູ້ໄດ້ຮັບເຊີນເຂົ້າຮ່ວມນັດໝາຍຂອງທ່ານ.</translation>
+<translation id="3891414008432200754">ລາຄາ</translation>
 <translation id="3892144330757387737">ທ່ານຈະເຫັນປະຫວັດຂອງທ່ານຢູ່ບ່ອນນີ້</translation>
 <translation id="3897092660631435901">ເມ​ນູ</translation>
 <translation id="3904829425754749514">ອົງການຂອງທ່ານປິດການຊິ້ງຂໍ້ມູນແລ້ວ. ທ່ານຍັງຄົງສາມາດເບິ່ງເຫັນບຸກມາກ, ປະຫວັດ, ລະຫັດຜ່ານ ແລະ ການຕັ້ງຄ່າອື່ນໆຂອງທ່ານຢູ່ອຸປະກອນນີ້ໄດ້. ຫາກທ່ານປ່ຽນແປງ, ພວກມັນຈະບໍ່ຊິ້ງຂໍ້ມູນໄປໃສ່ບັນຊີຂອງທ່ານ.</translation>
@@ -415,6 +430,7 @@
 <translation id="3928666092801078803">ລວມຂໍ້ມູນຂອງຂ້ອຍເຂົ້າກັນ</translation>
 <translation id="3929457972718048006">ທີ່ຢູ່</translation>
 <translation id="3943492037546055397">ລະຫັດຜ່ານ</translation>
+<translation id="3951717558054674026">{count,plural, =1{{count} ລະຫັດຜ່ານງ່າຍ}other{{count} ລະຫັດຜ່ານງ່າຍ}}</translation>
 <translation id="3959736869653157332">ເມນູ → ແຖບ​ບໍ່ເປີດເຜີຍຕົວຕົນໃໝ່</translation>
 <translation id="3967822245660637423">ດາວ​ໂຫຼດ​ສຳ​ເລັດ</translation>
 <translation id="3968505803272650567">ຈັດການຄວາມສົນໃຈ</translation>
@@ -452,6 +468,7 @@
 <translation id="4237377247299956313">ແຕະໃສ່ <ph name="BEGIN_BOLD" />ແອັບໂປຣແກຣມທ່ອງເວັບເລີ່ມຕົ້ນ<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">ປ້ອນວະລີຜ່ານ</translation>
 <translation id="4249955472157341256">ຈັດຮຽງຕາມຫຼ້າສຸດ</translation>
+<translation id="4250432749243022864">{count,plural, =0{ເປີດ {count} ແຖບ}=1{ເປີດ {count} ແຖບ}other{ເປີດ {count} ແຖບ}}</translation>
 <translation id="4253168017788158739">ບັນທຶກ</translation>
 <translation id="4263576668337963058">ສະແດງຄຳສັ່ງໃນໜ້າທີ່ໃຊ້ໄດ້</translation>
 <translation id="4267586310863245665">{COUNT,plural, =1{ທ່ານໄດ້ປິດ {COUNT} ຄຳເຕືອນໄວ້ແລ້ວ}other{ທ່ານໄດ້ປິດ {COUNT} ຄຳເຕືອນໄວ້ແລ້ວ}}</translation>
@@ -466,8 +483,10 @@
 <translation id="4334428914252001502">ມີ 1 ບົດຄວາມທີ່ຍັງບໍ່ໄດ້ອ່ານ.</translation>
 <translation id="4338650699862464074">ສົ່ງ URL ຂອງໜ້າຕ່າງໆທີ່ທ່ານເຂົ້າເບິ່ງໃຫ້ Google.</translation>
 <translation id="4342054591427973606">{count,plural, =1{ທີ່ຢູ່ນີ້ຈະຖືກລຶບອອກຈາກອຸປະກອນນີ້ ແລະ ອຸປະກອນອື່ນໆທີ່ເຂົ້າສູ່ລະບົບແລ້ວຂອງທ່ານ.}other{ທີ່ຢູ່ເຫຼົ່ານີ້ຈະຖືກລຶບອອກຈາກອຸປະກອນນີ້ ແລະ ອຸປະກອນອື່ນໆທີ່ເຂົ້າສູ່ລະບົບແລ້ວຂອງທ່ານ.}}</translation>
+<translation id="4342946437867096381">ທ່ານໄດ້ບັນທຶກລະຫັດຜ່ານສຳລັບເວັບໄຊນີ້ໄວ້ແລ້ວໃນບັນຊີ Google ຂອງທ່ານ. Google ສາມາດເລືອກລະຫັດຜ່ານຫຼ້າສຸດໃຫ້ທ່ານໄດ້.</translation>
 <translation id="4343046787186034850">ອະນຸຍາດສິດເຂົ້າເຖິງກ້ອງຖ່າຍຮູບ ແລະ ໄມໂຄຣໂຟນແລ້ວ</translation>
 <translation id="4359125752503270327">ໜ້ານີ້ຈະເປີດໃນແອັບພລິເຄຊັນອື່ນ.</translation>
+<translation id="4371526908359194219">ການແຈ້ງເຕືອນອີເມວ</translation>
 <translation id="4375040482473363939">ການຊອກຫາລະຫັດ QR</translation>
 <translation id="4378154925671717803">ໂທລະ​ສັບ</translation>
 <translation id="4389019817280890563">ແຕະເພື່ອປ່ຽນພາສາ.</translation>
@@ -476,10 +495,13 @@
 <translation id="4454246407045105932">ເພີ່ມພາສາ</translation>
 <translation id="4461286950227634995">ສະເໜີໃຫ້ບັນທຶກລະຫັດຜ່ານ</translation>
 <translation id="4462491365653392320">ຕິດຕາມລາຄາຢູ່ແຖບຕ່າງໆ</translation>
+<translation id="4469324811108161144">ບັນທຶກສາມາດຈັດເກັບໄດ້ສູງສຸດ <ph name="CHARACTER_LIMIT" /> ຕົວອັກສອນ.</translation>
 <translation id="4469418912670346607">ສືບຕໍ່ການຕັ້ງຄ່າ</translation>
 <translation id="4474494258097106883">ສ້າງມາສຳລັບ iPhone ຂອງທ່ານ</translation>
 <translation id="4476574785019001431">ການຕັ້ງຄ່າ</translation>
 <translation id="448433063499977729">ປິດການຊິ້ງຂໍ້ມູນແລ້ວ</translation>
+<translation id="4488754974567924717">ຫາກລະຫັດຜ່ານຂອງທ່ານຖືກລະເມີດ, ພວກເຮົາຈະແຈ້ງໃຫ້ທ່ານຮູ້</translation>
+<translation id="4489536976005181779">{count,plural, =1{ເພີ່ມໜ້າໃສ່ລາຍຊື່ການອ່ານຂອງທ່ານໃນບັນຊີຂອງທ່ານແລ້ວ, {email}}other{ເພີ່ມໜ້າໃສ່ລາຍຊື່ການອ່ານຂອງທ່ານໃນບັນຊີຂອງທ່ານແລ້ວ, {email}}}</translation>
 <translation id="4496373720959965247">ເພີ່ມແຖບ ແລະ ປ່ຽນໄປມາລະຫວ່າງໜ້າຕ່າງໆ</translation>
 <translation id="4502566650163919158">ກວດເບິ່ງດຽວນີ້</translation>
 <translation id="4505980578794259603">ກວດສອບຫຼ້າສຸດເມື່ອ <ph name="TIME" />.</translation>
@@ -489,6 +511,7 @@
 <translation id="452750746583162491">ກວດເບິ່ງຂໍ້ມູນທີ່ຊິ້ງຂອງທ່ານ</translation>
 <translation id="4536418791685807335">ລອງເຂົ້າສູ່ລະບົບອີກຄັ້ງ.</translation>
 <translation id="4540780316273593836">ມີບາງຢ່າງຜິດພາດເກີດຂຶ້ນ</translation>
+<translation id="457292989631956153">{COUNT,plural, =1{ປິດ {COUNT} ແຖບທີ່ບໍ່ໄດ້ນຳໃຊ້ບໍ?}other{ປິດ {COUNT} ແຖບທີ່ບໍ່ໄດ້ນຳໃຊ້ບໍ?}}</translation>
 <translation id="457386861538956877">ເພີ່ມເຕີມ...</translation>
 <translation id="4587235830039045480">ບັນທຶກລະຫັດຜ່ານໄວ້ໃນບັນຊີ Google ຂອງທ່ານ</translation>
 <translation id="4587589328781138893">ເວັບໄຊ</translation>
@@ -518,6 +541,7 @@
 <translation id="470966556546083668">ຢ່າເປີດໃຊ້ການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="4737560986434232178">ຊອກຫາແຖບຫຼ້າສຸດ</translation>
 <translation id="473775607612524610">ອັບເດດ</translation>
+<translation id="4746926359847517643">ທ່ານສາມາດເອົາພວກມັນຄືນມາໄດ້ຕະຫຼອດເວລາໃນປະຫວັດ.</translation>
 <translation id="4747097190499141774">ການເຂົ້າລະຫັດໂດຍໃຊ້ລະຫັດຜ່ານບໍ່ຮວມເອົາວິທີການຈ່າຍເງິນ ແລະ ທີ່ຢູ່ຈາກ Google Pay. ມີແຕ່ຜູ້ທີ່ມີລະຫັດຜ່ານຂອງທ່ານເທົ່ານັ້ນທີ່ສາມາດອ່ານຂໍ້ມູນທີ່ເຂົ້າລະຫັດຂອງທ່ານໄດ້. ລະຫັດຜ່ານຈະບໍ່ຖືກສົ່ງຫາ ຫຼື ຮັກສາໄວ້ໂດຍ Google. ຖ້າທ່ານລືມລະຫັດຜ່ານຂອງທ່ານ ຫຼື ຕ້ອງການປ່ຽນການຕັ້ງຄ່ານີ້, ທ່ານຈະຈຳເປັນຕ້ອງຣີເຊັດການຊິ້ງຂໍ້ມູນກ່ອນ. <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
 <translation id="4751162929052964260"><ph name="TITLE" />, <ph name="STATE" />, ສະເພາະຢູ່ອຸປະກອນນີ້, <ph name="URL" /></translation>
 <translation id="4751645464639803239">ແຖບທີ່ບໍ່ເຜີຍຕົວຕົນໃໝ່</translation>
@@ -541,6 +565,7 @@
 <translation id="48274138579728272">ໝາຍວ່າອ່ານແລ້ວ</translation>
 <translation id="4833686396768033263">ແຖບຫຼ້າສຸດບໍ່ພ້ອມນຳໃຊ້</translation>
 <translation id="4833786495304741580">ສົ່ງສະຖິຕິການໃຊ້ ແລະ ລາຍງານການຂັດຂ້ອງໃຫ້ Google ໂດຍອັດຕະໂນມັດ.</translation>
+<translation id="4834499902900503484">ເມື່ອທ່ານເຂົ້າສູ່ລະບົບຫາ Chrome, ລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ຈະຢູ່ໃນບັນຊີ Google ຂອງທ່ານ. ເພື່ອປິດຄຸນສົມບັດນີ້ໄວ້, ກະລຸນາ <ph name="BEGIN_LINK" />ເຂົ້າໄປການຕັ້ງຄ່າ<ph name="END_LINK" />.</translation>
 <translation id="4840495572919996524">ບຸກມາກ, ປະຫວັດ, ລະຫັດຜ່ານຂອງທ່ານ ແລະ ອື່ນໆຈະບໍ່ຊິ້ງຂໍ້ມູນກັບບັນຊີ Google ຂອງທ່ານອີກຕໍ່ໄປ.</translation>
 <translation id="4844899002472726590">ເບິ່ງ ແລະ ແກ້ໄຂຫົວຂໍ້ທີ່ທ່ານສົນໃຈ</translation>
 <translation id="4848999860252535517">ລຶບລະຫັດຜ່ານສຳລັບ <ph name="WEBSITE" /> ບໍ?</translation>
@@ -565,6 +590,7 @@
 <translation id="4986678885919050584">ລຶບອອກຈາກອຸປະກອນນີ້</translation>
 <translation id="498985224078955265">ເພື່ອສົ່ງແຖບນີ້ໄປຫາອຸປະກອນອື່ນ, ໃຫ້ເຂົ້າສູ່ລະບົບຫາ Chrome ຢູ່ທັງສອງອຸປະກອນ.</translation>
 <translation id="5005498671520578047">ອັດ​ສຳ​ເນົາ​ລະ​ຫັດ​ຜ່ານ</translation>
+<translation id="5016420433031926653">ສົ່ງໄປຫາ <ph name="USER_EMAIL" /></translation>
 <translation id="5017828934289857214">ແຈ້ງເຕືອນຂ້ອຍພາຍຫຼັງ</translation>
 <translation id="5037676449506322593">ເລືອກ​ທັງ​ຫມົດ</translation>
 <translation id="5039804452771397117">ອະ​ນຸ​ຍາດ​</translation>
@@ -584,6 +610,8 @@
 <translation id="5150492518600715772">ສົ່ງຫາອຸປະກອນຂອງທ່ານ</translation>
 <translation id="5168414296986405587">ສ້າງມາສຳລັບ iPadOS</translation>
 <translation id="5173088371991956744">ການຊິ້ງຂໍ້ມູນຕ້ອງການຢັ້ງຢືນວ່າແມ່ນທ່ານແທ້</translation>
+<translation id="5176312250994681348">ຮັກສາລະຫັດຜ່ານຫຼ້າສຸດໄວ້</translation>
+<translation id="51802232683641391">{count,plural, =1{ເອົາແຖບທີ່ທ່ານຄ້າງໄວ້ຈາກ Android ບໍ່?}other{ເອົາແຖບທີ່ທ່ານຄ້າງໄວ້ຈາກ Android ບໍ່?}}</translation>
 <translation id="5181140330217080051">ກໍາລັງດາວ​ໂຫຼດ</translation>
 <translation id="5184329579814168207">ເປີດ​ຢູ່ໃນ Chrome</translation>
 <translation id="5186185447130319458">ສ່ວນຕົວ</translation>
@@ -618,6 +646,7 @@
 <translation id="54401264925851789">ຂໍ້ມູນຄວາມປອດໄພໜ້າ</translation>
 <translation id="5443952882982198570">ບັດເຄຣດິດ</translation>
 <translation id="5444892875087332195">ບຸກມາກ</translation>
+<translation id="5453250766792920795">{count,plural, =1{ບັນທຶກບຸກມາກໄວ້ໃນບັນຊີຂອງທ່ານ, {email} ແລ້ວ}other{ບັນທຶກບຸກມາກໄວ້ໃນບັນຊີຂອງທ່ານ, {email} ແລ້ວ}}</translation>
 <translation id="5457226814769348910">ເປີດເວີຊັນອອບລາຍ</translation>
 <translation id="5489208564673669003">ເພື່ອຈັດການຄຸກກີ້ສຳລັບເວັບໄຊທັງໝົດ, ກະລຸນາເບິ່ງ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າຄຸກກີ້<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">ບລັອກຄຸກກີ້ທັງໝົດ (ບໍ່ແນະນຳ)</translation>
@@ -644,11 +673,13 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="5669528293118408608">www</translation>
 <translation id="5669617676038747374">ສ້າງລະຫັດ QR</translation>
 <translation id="567881659373499783">ລຸ້ນ <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5683499062697987550">ເພື່ອໃຊ້ ແລະ ບັນທຶກລະຫັດຜ່ານໃນບັນຊີ Google ຂອງທ່ານ, ກະລຸນາຢັ້ງຢືນວ່າແມ່ນທ່ານ.</translation>
 <translation id="5690398455483874150">{count,plural, =1{ດຽວນີ້ກຳລັງສະແດງໜ້າຈໍ Chrome 1 ລາຍການ}other{ດຽວນີ້ກຳລັງສະແດງໜ້າຈໍ Chrome {count} ລາຍການ}}</translation>
 <translation id="5701270923492462699">ອະນຸຍາດສິດເຂົ້າເຖິງກ້ອງຖ່າຍຮູບແລ້ວ</translation>
 <translation id="5704908597376970822">ບໍ່ສາມາດເຂົ້າສູ່ລະບົບໄດ້.</translation>
 <translation id="5706552126692816153">ນຳໃຊ້ເມື່ອ 1 ມື້ກ່ອນ</translation>
 <translation id="5711039611392265845">ສຳລັບການຕັ້ງຄ່າເພີ່ມເຕີມທີ່ກ່ຽວຂ້ອງກັບຄວາມເປັນສ່ວນຕົວ, ຄວາມປອດໄພ ແລະ ການເກັບກຳຂໍ້ມູນ, ກະລຸນາເບິ່ງ <ph name="BEGIN_LINK" />ການຊິ້ງຂໍ້ມູນ ແລະ ການບໍລິການຂອງ Google<ph name="END_LINK" />.</translation>
+<translation id="5718049162805123412">ທ່ານຄວນປ່ຽນລະຫັດເຫຼົ່ານີ້ດຽວນີ້</translation>
 <translation id="5724941645893276623">ເພື່ອທ່ອງເວັບແບບເປັນສ່ວນຕົວ, ກະລຸນາເພີ່ມແຖບໃໝ່</translation>
 <translation id="5728700505257787410">ຂໍ​ອະ​ໄພ​, ມີ​ບັນ​ຫາ​ການເຂົ້າ​ສູ່​ບັນ​ຊີ​ລະ​ບົບ​ຂອງ​ທ່ານ.</translation>
 <translation id="5733084997078800044">ເຄັດລັບ Chrome</translation>
@@ -684,6 +715,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="5899314093904173337">ອະນຸຍາດໃຫ້ເຂົາເຈົ້າສະແກນລະຫັດ QR ນີ້ດ້ວຍແອັບກ້ອງຖ່າຍຮູບ ຫຼື ເຄື່ອງສະແກນ QR ຂອງເຂົາເຈົ້າເພື່ອແບ່ງປັນກັບຄົນທີ່ຢູ່ໃກ້ຄຽງ</translation>
 <translation id="5911030830365207728">Google ແປພາສາ</translation>
 <translation id="5913600720976431809">ຕົວເລືອກໃນການແປໜ້າ</translation>
+<translation id="5922999516621365983">ລາກແຖບມາບ່ອນນີ້ເພື່ອປັກໝຸດ.</translation>
 <translation id="5938160824633642847">ອຸປະກອນຂອງທ່ານເກືອບເຕັມແລ້ວ. ກະລຸນາຂະຫຍາຍພື້ນທີ່ຫວ່າງ ແລະ ລອງອີກຄັ້ງ.</translation>
 <translation id="5948291296578561264">ນີ້ອະນຸຍາດໃຫ້ທ່ານບັນທຶກຮູບຖ່າຍໄວ້ໃນຫ້ອງສະໝຸດຮູບ.</translation>
 <translation id="5951816930277761335">ແບ່ງປັນລິ້ງ</translation>
@@ -692,6 +724,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="5963939892571022323">ສ້າງລິ້ງໄປຍັງໄຮໄລ້ບໍ່ໄດ້.</translation>
 <translation id="5965679971710331625">ທ່ານເຂົ້າສູ່ລະບົບແລ້ວ</translation>
 <translation id="5979837087407522202">ຊອກຫາລະຫັດຜ່ານ</translation>
+<translation id="5981230843984570095">ປິດແຖບທີ່ບໍ່ໄດ້ນຳໃຊ້ທັງໝົດ</translation>
 <translation id="5982717868370722439">ເພີ່ມຂໍ້ມູນທີ່ມີຢູ່ໃສ່ <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">ເຂົ້າເບິ່ງບໍ່​ດົນ​ມາ​ນີ້</translation>
 <translation id="5988097621740394599">ເບິ່ງການຫຼຸດລາຄາຢູ່ແຖບຂອງທ່ານ.</translation>
@@ -735,11 +768,13 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="6219550825416862075">ຍິນດີຕ້ອນຮັບກັບມາ</translation>
 <translation id="6219688215832490856">ຢ່າແປ</translation>
 <translation id="6223816392543092032">ໃຊ້ບຸກມາກ, ປະຫວັດ, ລະຫັດຜ່ານ ແລະ ການຕັ້ງຄ່າອື່ນຂອງທ່ານຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ.</translation>
+<translation id="6224759905509595045">ຢັ້ງຢືນວ່າແມ່ນທ່ານ…</translation>
 <translation id="6229318421047648685">ຮ້ອງຂໍເວັບໄຊເດັສທັອບ</translation>
 <translation id="6231782223312638214">ແນະ​ນໍາແລ້ວ</translation>
 <translation id="6232329973559504466">ການຊອກຫາແບບບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="6247557882553405851">ຕົວຈັດການລະຫັດຜ່ານ Google</translation>
 <translation id="6254066287920239840">ເປີດລິ້ງຕ່າງໆໃນແອັບແທນໂປຣແກຣມທ່ອງເວັບ.</translation>
+<translation id="625491139841322297">{count,plural, =1{ກວດສອບແຖບ}other{ກວດສອບແຖບທັງໝົດ}}</translation>
 <translation id="6255097610484507482">ແກ້ໄຂບັດເຄຣດິດ</translation>
 <translation id="6277426346321820595">ບໍ່ມີການປົກປ້ອງ</translation>
 <translation id="6284652193729350524">ສະເໜີແປ <ph name="LANGUAGE" /></translation>
@@ -774,6 +809,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 
 ຂໍ້ມູນຂອງທ່ານຖືກເຂົ້າລະຫັດໄວ້ດ້ວຍວະລີຜ່ານການຊິ້ງຂອງທ່ານໃນວັນທີ <ph name="TIME" />. ໃຫ້ປ້ອນມັນເພື່ອເລີ່ມການຊິ້ງຂໍ້ມູນ.</translation>
 <translation id="6418346271604475326">ກຳລັງກະກຽມ PDF</translation>
+<translation id="6421095165635308">{count,plural, =1{ບັນທຶກບຸກມາກໃສ່ {title} ໃນບັນຊີຂອງທ່ານ, {email} ແລ້ວ}other{ບັນທຶກບຸກມາກໃສ່ {title} ໃນບັນຊີຂອງທ່ານ, {email} ແລ້ວ}}</translation>
 <translation id="6429213933892582367">ເປີດຕົວເລືອກລະຫັດຜ່ານ</translation>
 <translation id="6434591244308415567">ເກີດຄວາມຜິດພາດຂຶ້ນ. ກະລຸນາລອງໃໝ່ໃນພາຍຫຼັງ.</translation>
 <translation id="6435236283694032571">ເພີ່ມໃສ່ລາຍການທີ່ຈະອ່ານ</translation>
@@ -798,6 +834,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="650279896687777322">ສຶກສາເພີ່ມເຕີມ...</translation>
 <translation id="6510072653668207258">ແຈ້ງເຕືອນຂ້ອຍພາຍຫຼັງ</translation>
 <translation id="651505212789431520">ຍົກເລີກການຊິ້ງຂໍ້ມູນບໍ? ທ່ານສາມາດເປີດການຊິ້ງຂໍ້ມູນໄດ້ທຸກເວລາໃນການຕັ້ງຄ່າ.</translation>
+<translation id="6518133107902771759">ກວດສອບ</translation>
 <translation id="6524918542306337007">ໂໝດບໍ່ເປີດເຜີຍຕົວຕົນບໍ່ສາມາດໃຊ້ໄດ້</translation>
 <translation id="6530992499366869131">ເຕືອນບອກທ່ານຖ້າລະຫັດຜ່ານຮົ່ວໄຫຼໃນການລະເມີດຂໍ້ມູນ</translation>
 <translation id="6537746030088321027">example.com</translation>
@@ -827,6 +864,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="6672241253012342409">ເວັບໄຊສາມາດໃຊ້ຄຸກກີ້ເພື່ອປັບປຸງປະສົບການການທ່ອງເວັບຂອງທ່ານໄດ້, ຕົວຢ່າງ: ເພື່ອໃຫ້ທ່ານສືບຕໍ່ຢູ່ໃນລະບົບ ຫຼື ຈື່ລາຍການຕ່າງໆໃນກະຕ່າຊື້ເຄື່ອງຂອງທ່ານ.
 
 ເມື່ອຢູ່ໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ, ເວັບໄຊຈະບໍ່ສາມາດໃຊ້ຄຸກກີ້ເພື່ອເບິ່ງການເຄື່ອນໄຫວການທ່ອງເວັບຂອງທ່ານໃນເວັບໄຊຕ່າງໆໄດ້, ຕົວຢ່າງ: ເພື່ອປັບແຕ່ງໂຄສະນາໃຫ້ເປັນແບບສ່ວນຕົວ.</translation>
+<translation id="6672697278890207089">ໃສ່ລະຫັດຜ່ານຂອງທ່ານ</translation>
 <translation id="6674571176963658787">ເພື່ອເລີ່ມຊິ້ງຂໍ້ມູນ, ໃຫ້ໃສ່ລະຫັດຜ່ານຂອງທ່ານ</translation>
 <translation id="667999046851023355">ເອ​ກະ​ສານ</translation>
 <translation id="6684906340059221832">ກຳລັງຕິດຕາມລາຄາ</translation>
@@ -860,6 +898,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="6888009575607455378">ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການຍົກເລີກການປ່ຽນແປງຂອງທ່ານ?</translation>
 <translation id="6896758677409633944">ກັອບປີ້</translation>
 <translation id="6897187120838603299">ລະຫັດຜ່ານຂອງທ່ານຈະຖືກບັນທຶກໄປໃສ່ອຸປະກອນທ່ານ.</translation>
+<translation id="6906448540340261898">ກວດສອບໃຫ້ແນ່ໃຈວ່າທ່ານສາມາດໃຊ້ລະຫັດຜ່ານໃນບັນຊີ Google ຂອງທ່ານໄດ້ສະເໝີ</translation>
 <translation id="6913136913033237761"><ph name="FOLDER_NAME" />. ສະເພາະຢູ່ອຸປະກອນນີ້.</translation>
 <translation id="6914583639806229067">ຊອກຫາຮູບພາບທີ່ທ່ານສຳເນົາໄວ້</translation>
 <translation id="6914783257214138813">ລະຫັດຜ່ານຂອງທ່ານຈະເບິ່ງເຫັນໄດ້ຕໍ່ກັບທຸກຄົນທີ່ສາມາດເຫັນໄຟລ໌ທີ່ສົ່ງອອກ.</translation>
@@ -891,6 +930,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7108762695052995889">ເຂົ້າເບິ່ງເວັບໄຊ</translation>
 <translation id="7133798577887235672">ຊື່​ເຕັມ</translation>
 <translation id="7136892417564438900">ກ້ອງຖ່າຍຮູບບໍ່ສາມາດໃຊ້ໄດ້</translation>
+<translation id="7161230316646448869">ຊິ້ງບຸກມາກ, ປະຫວັດ ແລະ ອື່ນໆຂອງທ່ານຢູ່ທຸກໆອຸປະກອນ</translation>
 <translation id="7162168282402939716">ປົດລັອກແຖບບໍ່ເປີດເຜີຍຕົວຕົນດ້ວຍ <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /></translation>
 <translation id="7172852049901402487">ຮັກສາລະຫັດຜ່ານຂອງທ່ານໃຫ້ປອດໄພຈາກບັນຫາຄວາມປອດໄພ</translation>
 <translation id="7173114856073700355">ເປີດການຕັ້ງຄ່າ</translation>
@@ -946,6 +986,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7607521702806708809">ລຶບລະຫັດຜ່ານ</translation>
 <translation id="7611459119367035420">ທ່ານສາມາດຊອກເບິ່ງແຖບທີ່ປັກໝຸດແລ້ວຂອງທ່ານໄດ້ຢູ່ບ່ອນນີ້.</translation>
 <translation id="7638584964844754484">ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ</translation>
+<translation id="7640669552036055091">ແຖບຈາກ Android</translation>
 <translation id="7646263789464975852">ເມນູ → ການຕັ້ງຄ່າ → ການກວດສອບຄວາມປອດໄພ</translation>
 <translation id="7646772052135772216">ການຊິ້ງຂໍ້ມູນລະຫັດຜ່ານບໍ່ເຮັດວຽກ</translation>
 <translation id="764827086632467055">ແຕະແອັບໂປຣແກຣມທ່ອງເວັບເລີ່ມຕົ້ນ</translation>
@@ -955,11 +996,13 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7679915578945954324">ສຳເນົາທີ່ຢູ່ເວັບໄຊແລ້ວ</translation>
 <translation id="7687508192620387263">ມີໄຟລ໌ປະຕິທິນທີ່ສາມາດໃຊ້ໄດ້</translation>
 <translation id="7701040980221191251">ບໍ່​ມີ​</translation>
+<translation id="7711440461521638739">ທ່ານບໍ່ໄດ້ໃຊ້ລະຫັດຜ່ານໃດໆຊ້ຳກັນ</translation>
 <translation id="7720410380936703141">ລອງໃໝ່</translation>
 <translation id="7726702057919861819">ເມນູ → ປະຫວັດ → ລຶບລ້າງຂໍ້ມູນການນຳໃຊ້</translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. ສະເພາະຢູ່ອຸປະກອນນີ້.</translation>
 <translation id="7738120385185846461">ລາຍງານບັນຫາ...</translation>
 <translation id="7741325291586284254">ໜ້າແຖບບໍ່ເປີດເຜີຍຕົວຕົນໃໝ່</translation>
+<translation id="7744192722284567281">ພົບເຫັນໃນການລະເມີດຂໍ້ມູນ</translation>
 <translation id="7744394900930577716">ລະຫັດຜ່ານໃນແອັບອື່ນໆ</translation>
 <translation id="7749790401023484470">ທ່ານຍັງບໍ່ໄດ້ເລືອກຂໍ້ຄວາມໃດເທື່ອ.</translation>
 <translation id="7756478488453921771">ເມນູ → ການຕັ້ງຄ່າ → ວິທີການຈ່າຍເງິນ</translation>
@@ -1031,6 +1074,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8136856065410661948">ຂໍ້ມູນນີ້ຈະໃຊ້ເພື່ອສ້າງນັດໝາຍໃນປະຕິທິນ Apple ຂອງທ່ານຈາກ Chrome ແລະ Google Lens.</translation>
 <translation id="8156478151976189188">ການຊິ້ງຂໍ້ມູນລະຫັດຜ່ານບໍ່ເຮັດວຽກ</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> ບັນ​ຊີ</translation>
+<translation id="8179976553408161302">ປ້ອນເຂົ້າ</translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />ອຸປະກອນຂອງທ່ານ<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8197543752516192074">ແປໜ້າ</translation>
 <translation id="8205564605687841303">ຍົກເລີກ</translation>
@@ -1058,6 +1102,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8393889347136007944">ແຖບທີ່ບໍ່ໄດ້ນຳໃຊ້ເປັນເວລາ <ph name="THRESHOLD" /> ມື້</translation>
 <translation id="8407669440184693619">ບໍ່ເຫັນລະຫັດຜ່ານສຳລັບເວັບໄຊນີ້</translation>
 <translation id="842017693807136194">ເຂົ້າສູ່ລະບົບດ້ວຍ</translation>
+<translation id="8425693829365242963">ລະຫັດຜ່ານຂອງທ່ານບໍ່ຊໍ້າກັນ</translation>
 <translation id="8428045167754449968">ເມືອງ</translation>
 <translation id="8428213095426709021">ການ​ຕັ້ງຄ່າ</translation>
 <translation id="8428634594422941299">ເຂົ້າໃຈແລ້ວ</translation>
@@ -1078,8 +1123,8 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8533670235862049797">Safe Browsing ເປີດຢູ່</translation>
 <translation id="8534481786647257214">ການ​ໂພ​ສ​ທ໌ Google+ ສຳ​ເລັດ.</translation>
 <translation id="8548878600947630424">ຊອກ​ຫາ​ຢູ່​ໃນ​ຫນ້າ​...</translation>
+<translation id="8556590991644167667">{count,plural, =1{ທ່ານໄດ້ປິດ {count} ຄຳເຕືອນໄວ້ແລ້ວ}other{ທ່ານໄດ້ປິດ {count} ຄຳເຕືອນໄວ້ແລ້ວ}}</translation>
 <translation id="8558480467877843976">ຕອນນີ້ທ່ານສາມາດໃຊ້ Chrome ຕອນໃດກໍໄດ້ທີ່ທ່ານເລືອກເບິ່ງ ຫຼື ແຕະລິ້ງໃນຂໍ້ຄວາມ, ເອກະສານ ແລະ ແອັບອື່ນໆ.</translation>
-<translation id="8585679456315406468">Notes ສາມາດບັນທຶກໄດ້ສູງສຸດ 1000 ຕົວອັກສອນ.</translation>
 <translation id="8588404856427128947">ປິດ</translation>
 <translation id="8591976964826315682">ບລັອກຄຸກກີ້ພາກສ່ວນທີສາມໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="8605219856220328675">ປິດແຖບ.</translation>
@@ -1087,9 +1132,11 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8626393685701737946">ທ່ານສາມາດປ່ຽນມຸມມອງເວັບໄຊເລີ່ມຕົ້ນໄປເປັນເດັສທັອບໄດ້ໃນການຕັ້ງຄ່າ &gt; ການຕັ້ງຄ່າເນື້ອຫາ</translation>
 <translation id="8636825310635137004">ເພື່ອໂຫຼດແຖບຂອງທ່ານຈາກອຸປະກອນອື່ນ, ໃຫ້ເປີດການຊິ້ງຂໍ້ມູນກ່ອນ.</translation>
 <translation id="8654802032646794042">ຍົກເລີກ</translation>
+<translation id="8663764600409216912">ທ່ານກຳລັງໃຊ້ລະຫັດຜ່ານທີ່ຄາດເດົາໄດ້ຍາກ</translation>
 <translation id="8668210798914567634">ໜ້ານີ້ໄດ້ຖືກບັນທຶກໃສ່ລາຍການທີ່ຈະອ່ານຂອງທ່ານແລ້ວ.</translation>
 <translation id="8680787084697685621">ລາຍ​ລະ​ອຽດ​ການລົງຊື່ເຂົ້າໃຊ້ບັນຊີລ້າສະໄໝແລ້ວ.</translation>
 <translation id="8693663554456874301">{count,plural, =1{ປິດແຖບ}other{ປິດແຖບ}}</translation>
+<translation id="8703536910991780768">ລະຫັດຜ່ານຂອງທ່ານຄາດເດົາໄດ້ຍາກ</translation>
 <translation id="8706588385081740091">ລະຫັດຜ່ານ</translation>
 <translation id="8717864919010420084">ສຳເນົາລິ້ງ</translation>
 <translation id="8721297211384281569">ເມ​ນູ​ເຄື່ອງ​ມື</translation>
@@ -1105,6 +1152,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8764015330924122850">ເຊົາຕິດຕາມ <ph name="DOMAIN_NAME" /></translation>
 <translation id="8766790350274092814">ລະຫັດຜ່ານສຳລັບ <ph name="WEBSITE" /> ແລະ <ph name="SECOND_WEBSITE" /> ຈະບໍ່ຖືກລຶບ. ບັນຊີຂອງທ່ານຈະບໍ່ຖືກລຶບ.</translation>
 <translation id="8775144690796719618">URL ໃຊ້ບໍ່ໄດ້</translation>
+<translation id="8780076847684176174">{count,plural, =1{ກວດສອບແຖບ...}other{ກວດສອບແຖບທັງໝົດ...}}</translation>
 <translation id="8787968206789828143">ຊອກຫາຢູ່ເວັບ</translation>
 <translation id="8792626944327216835">ໄມໂຄຣໂຟນ</translation>
 <translation id="8803639129939845298">ປອດໄພ</translation>
@@ -1130,14 +1178,18 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="891658175948553296">ໄຮໄລ້ຂໍ້ຄວາມຢູ່ເວັບໄຊ</translation>
 <translation id="8917490105272468696">ແມ່ນ, ຂ້ອຍເຂົ້າຮ່ວມ</translation>
 <translation id="8928133177108699615">ເດັສທັອບ</translation>
+<translation id="894191600409472540">ສ້າງລະຫັດຜ່ານຍາກ</translation>
 <translation id="8952559610785099500">ເພີ່ມ​ລະ​ຫັດ​ຜ່ານ</translation>
 <translation id="8953046091948372197">ທ່ານຈະເຫັນລະຫັດຜ່ານຂອງທ່ານຢູ່ບ່ອນນີ້</translation>
 <translation id="895541991026785598">ລາຍ​ງານ​ບັນ​ຫາ</translation>
+<translation id="8971545611707025079">ກວດເບິ່ງອີກ</translation>
 <translation id="8974714402877957201">1. ເປີດການຕັ້ງຄ່າ iPad</translation>
 <translation id="8976382372951310360">ຊ່ວຍເຫຼືອ</translation>
 <translation id="8976414606286374109">ບັດຕ່າງໆແມ່ນຖືກບັນທຶກໄປໃສ່ບັນຊີ Google ຂອງທ່ານ.</translation>
+<translation id="8978059030508051916">{count,plural, =0{ບໍ່ມີລະຫັດຜ່ານທີ່ຖືກລະເມີດ}=1{{count} ລະຫັດຜ່ານທີ່ຖືກລະເມີດ}other{{count} ລະຫັດຜ່ານທີ່ຖືກລະເມີດ}}</translation>
 <translation id="8981454092730389528">ການຄວບຄຸມກິດຈະກຳ Google</translation>
 <translation id="8985320356172329008">ເຂົ້າສູ່ລະບົບ Google ເປັນ</translation>
+<translation id="8998289560386111590">ບໍ່ມີໃຫ້ໃນອຸປະກອນຂອງທ່ານ</translation>
 <translation id="9000089900434778519">ໂປຣແກຣມຊອກຫາຂອງທ່ານແມ່ນ <ph name="DSE_NAME" />. ກະລຸນາອ່ານຄຳແນະນຳສຳລັບການລຶບປະຫວັດການຊອກຫາ, ຖ້າມີ.</translation>
 <translation id="9008201768610948239">ບໍ່ສົນໃຈ</translation>
 <translation id="9034759925968272072">ທ່ານຈະບໍ່ຖືກນຳອອກຈາກລະບົບບັນຊີ Google ຂອງທ່ານ. ບັນຊີ Google ຂອງທ່ານອາດຈະມີປະຫວັດການທ່ອງເວັບຮູບແບບອື່ນຢູ່ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -1165,6 +1217,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="9162432979321511934">ເປີດການຕື່ມລະຫັດຜ່ານອັດຕະໂນມັດ</translation>
 <translation id="9165320910061267720">ເພື່ອຮັບການແຈ້ງເຕືອນການຫຼຸດລາຄາ, ທ່ານຈະຕ້ອງເປີດການແຈ້ງເຕືອນໃນການຕັ້ງຄ່າ iOS ຂອງທ່ານ.</translation>
 <translation id="9177438225260810839">ເປີດແຖບທີ່ເປີດໄວ້</translation>
+<translation id="9187853111759024059">ປິດ 99+ ແຖບທີ່ບໍ່ໄດ້ນຳໃຊ້ບໍ?</translation>
 <translation id="9188680907066685419">ອອກຈາກລະບົບບັນຊີທີ່ຖືກຈັດການ</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> ມ ກ່ອນ</translation>
 <translation id="9203116392574189331">Handoff</translation>

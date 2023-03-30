@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
+#import "ios/chrome/browser/ui/browser_view/safe_area_provider.h"
 #import "ios/chrome/browser/ui/browser_view/tab_consumer.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_consumer.h"
@@ -26,12 +27,14 @@
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_container_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_ntp_delegate.h"
 #import "ios/chrome/browser/web/web_state_container_view_provider.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/public/provider/chrome/browser/voice_search/voice_search_controller.h"
 
 @protocol ApplicationCommands;
 class Browser;
@@ -55,6 +58,7 @@ class FullscreenController;
 @protocol PopupMenuUIUpdating;
 class PrerenderService;
 @class PrimaryToolbarCoordinator;
+@class SafeAreaProvider;
 @class SecondaryToolbarCoordinator;
 @class SideSwipeController;
 @protocol SnackbarCommands;
@@ -64,12 +68,14 @@ class TabUsageRecorderBrowserAgent;
 @protocol TextZoomCommands;
 @class ToolbarAccessoryPresenter;
 @protocol ToolbarCommands;
+@class ToolbarContainerCoordinator;
 @protocol IncognitoReauthCommands;
 @class LayoutGuideCenter;
 @protocol LoadQueryCommands;
 class ReadingListModel;
 class UrlLoadingBrowserAgent;
 class UrlLoadingNotifierBrowserAgent;
+@protocol VoiceSearchController;
 class WebNavigationBrowserAgent;
 
 namespace signin {
@@ -100,16 +106,19 @@ typedef struct {
   id<FindInPageCommands> findInPageCommandsHandler;
   id<ToolbarCommands> toolbarCommandsHandler;
   id<LoadQueryCommands> loadQueryCommandsHandler;
+  LayoutGuideCenter* layoutGuideCenter;
   id<OmniboxCommands> omniboxCommandsHandler;
   BOOL isOffTheRecord;
   ReadingListModel* readingModel;
   signin::IdentityManager* identityManager;
   UrlLoadingBrowserAgent* urlLoadingBrowserAgent;
   UrlLoadingNotifierBrowserAgent* urlLoadingNotifierBrowserAgent;
+  id<VoiceSearchController> voiceSearchController;
   TabUsageRecorderBrowserAgent* tabUsageRecorderBrowserAgent;
   WebNavigationBrowserAgent* webNavigationBrowserAgent;
-  LayoutGuideCenter* layoutGuideCenter;
   base::WeakPtr<WebStateList> webStateList;
+  ToolbarContainerCoordinator* secondaryToolbarContainerCoordinator;
+  SafeAreaProvider* safeAreaProvider;
 } BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers
@@ -146,11 +155,6 @@ typedef struct {
 
 // Handler for reauth commands.
 @property(nonatomic, weak) id<IncognitoReauthCommands> reauthHandler;
-
-// TODO(crbug.com/1329104): Move voice search controller/coordinator to
-// BrowserCoordinator, remove this as a public property. Returns whether or not
-// text to speech is playing.
-@property(nonatomic, assign, readonly, getter=isPlayingTTS) BOOL playingTTS;
 
 // Whether web usage is enabled for the WebStates in `self.browser`.
 @property(nonatomic) BOOL webUsageEnabled;

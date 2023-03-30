@@ -6,6 +6,7 @@
 #define DEVICE_VR_ANDROID_XR_JAVA_COORDINATOR_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/display/display.h"
@@ -18,6 +19,8 @@ class WindowAndroid;
 }  // namespace ui
 
 namespace device {
+
+class CompositorDelegateProvider;
 
 // Immersive AR sessions use callbacks in the following sequence:
 //
@@ -57,9 +60,16 @@ class XrJavaCoordinator {
       int render_frame_id,
       bool use_overlay,
       bool can_render_dom_content,
+      const CompositorDelegateProvider& compositor_delegate_provider,
       SurfaceReadyCallback ready_callback,
       SurfaceTouchCallback touch_callback,
       SurfaceDestroyedCallback destroyed_callback) = 0;
+  virtual void RequestVrSession(
+      int render_process_id,
+      int render_frame_id,
+      device::SurfaceReadyCallback ready_callback,
+      device::SurfaceTouchCallback touch_callback,
+      device::SurfaceDestroyedCallback destroyed_callback) = 0;
   virtual void EndSession() = 0;
 };
 

@@ -6,15 +6,18 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_coordinator.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_site_permissions_page_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view_controller.h"
+#include "chrome/browser/ui/views/extensions/extensions_request_access_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_unittest.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/controls/button/toggle_button.h"
 
 class ExtensionsSitePermissionsPageViewUnitTest
     : public ExtensionsToolbarUnitTest {
@@ -26,7 +29,9 @@ class ExtensionsSitePermissionsPageViewUnitTest
   ExtensionsSitePermissionsPageViewUnitTest& operator=(
       const ExtensionsSitePermissionsPageViewUnitTest&) = delete;
 
-  // Opens menu and navigates to site permissions page for `extension_id`.
+  // Opens menu and navigates to site permissions page for `extension_id`. This
+  // will CHECK if extension cannot have a site permissions page (e.g
+  // restricted site).
   void ShowSitePermissionsPage(extensions::ExtensionId extension_id);
 
   // Returns whether me menu has the main page opened.
@@ -35,6 +40,13 @@ class ExtensionsSitePermissionsPageViewUnitTest
   // Returns whether the menu has the `extension_id` site permissions page
   // opened.
   bool IsSitePermissionsPageOpened(extensions::ExtensionId extension_id);
+
+  // Returns the extensions that are showing site access requests in the
+  // toolbar.
+  std::vector<extensions::ExtensionId> GetExtensionsShowingRequests();
+
+  // Navigates to `string_url`.
+  void NavigateAndCommit(const std::string& string_url);
 
   // Since this is a unittest, the extensions menu widget sometimes needs a
   // nudge to re-layout the views.
@@ -75,6 +87,21 @@ bool ExtensionsSitePermissionsPageViewUnitTest::IsSitePermissionsPageOpened(
   return page && page->extension_id() == extension_id;
 }
 
+std::vector<extensions::ExtensionId>
+ExtensionsSitePermissionsPageViewUnitTest::GetExtensionsShowingRequests() {
+  return extensions_container()
+      ->GetExtensionsToolbarControls()
+      ->request_access_button_for_testing()
+      ->GetExtensionIdsForTesting();
+}
+
+void ExtensionsSitePermissionsPageViewUnitTest::NavigateAndCommit(
+    const std::string& string_url) {
+  const GURL url(string_url);
+  web_contents_tester_->NavigateAndCommit(url);
+  WaitForAnimation();
+}
+
 void ExtensionsSitePermissionsPageViewUnitTest::LayoutMenuIfNecessary() {
   menu_coordinator()->GetExtensionsMenuWidget()->LayoutRootViewIfNecessary();
 }
@@ -104,8 +131,10 @@ void ExtensionsSitePermissionsPageViewUnitTest::SetUp() {
 
 TEST_F(ExtensionsSitePermissionsPageViewUnitTest,
        AddAndRemoveExtensionWhenSitePermissionsPageIsOpen) {
-  auto extensionA = InstallExtension("A Extension");
+  auto extensionA =
+      InstallExtensionWithHostPermissions("A Extension", {"<all_urls>"});
 
+  NavigateAndCommit("http://www.url.com");
   ShowSitePermissionsPage(extensionA->id());
 
   // Verify site permissions page is open for extension A.
@@ -113,7 +142,8 @@ TEST_F(ExtensionsSitePermissionsPageViewUnitTest,
 
   // Adding a new extension doesn't affect the opened site permissions page for
   // extension A.
-  auto extensionB = InstallExtension("B Extension");
+  auto extensionB =
+      InstallExtensionWithHostPermissions("B Extension", {"<all_urls>"});
   EXPECT_TRUE(IsSitePermissionsPageOpened(extensionA->id()));
 
   // Removing extension B doesn't affect the opened site permissions page for
@@ -131,8 +161,10 @@ TEST_F(ExtensionsSitePermissionsPageViewUnitTest,
 // Tests that menu navigates back to the main page when an extension, whose site
 // permissions page is open, is disabled.
 TEST_F(ExtensionsSitePermissionsPageViewUnitTest, DisableAndEnableExtension) {
-  auto extension = InstallExtension("Test Extension");
+  auto extension =
+      InstallExtensionWithHostPermissions("Test Extension", {"<all_urls>"});
 
+  NavigateAndCommit("http://www.url.com");
   ShowSitePermissionsPage(extension->id());
   EXPECT_TRUE(IsSitePermissionsPageOpened(extension->id()));
 
@@ -152,13 +184,17 @@ TEST_F(ExtensionsSitePermissionsPageViewUnitTest, ReloadExtension) {
   constexpr char kManifest[] = R"({
         "name": "Test Extension",
         "version": "1",
-        "manifest_version": 3
+        "manifest_version": 3,
+        "host_permissions": [
+          "<all_urls>"
+        ]
       })";
   extension_directory.WriteManifest(kManifest);
   extensions::ChromeTestExtensionLoader loader(profile());
   scoped_refptr<const extensions::Extension> extension =
       loader.LoadExtension(extension_directory.UnpackedPath());
 
+  NavigateAndCommit("http://www.url.com");
   ShowSitePermissionsPage(extension->id());
   EXPECT_TRUE(IsSitePermissionsPageOpened(extension->id()));
 
@@ -172,3 +208,129 @@ TEST_F(ExtensionsSitePermissionsPageViewUnitTest, ReloadExtension) {
   EXPECT_FALSE(IsSitePermissionsPageOpened(extension->id()));
   EXPECT_TRUE(IsMainPageOpened());
 }
+
+// Tests that toggling the show requests button changes whether an extension can
+// show site access requests in the toolbar, and the UI is properly updated.
+TEST_F(ExtensionsSitePermissionsPageViewUnitTest, ShowRequestsTogglePressed) {
+  auto extensionA =
+      InstallExtensionWithHostPermissions("Extension A", {"<all_urls>"});
+  auto extensionB =
+      InstallExtensionWithHostPermissions("Extension B", {"<all_urls>"});
+  WithholdHostPermissions(extensionA.get());
+  WithholdHostPermissions(extensionB.get());
+
+  NavigateAndCommit("http://www.url.com");
+  ShowSitePermissionsPage(extensionA->id());
+  EXPECT_TRUE(IsSitePermissionsPageOpened(extensionA->id()));
+
+  // By default, extensions are allowed to show request access in the toolbar.
+  EXPECT_TRUE(
+      site_permissions_page()->GetShowRequestsToggleForTesting()->GetIsOn());
+  EXPECT_THAT(GetExtensionsShowingRequests(),
+              testing::ElementsAre(extensionA->id(), extensionB->id()));
+
+  // Toggle off the show requests button for extension A and verify it is not
+  // requesting access in the toolbar.
+  ClickButton(site_permissions_page()->GetShowRequestsToggleForTesting());
+  WaitForAnimation();
+  EXPECT_THAT(GetExtensionsShowingRequests(),
+              testing::ElementsAre(extensionB->id()));
+
+  // Toggle on the shows requests button for extension A and verify it is
+  // requesting access in the toolbar.
+  ClickButton(site_permissions_page()->GetShowRequestsToggleForTesting());
+  WaitForAnimation();
+  EXPECT_THAT(GetExtensionsShowingRequests(),
+              testing::ElementsAre(extensionA->id(), extensionB->id()));
+}
+
+// Tests that the UI is properly updated when an extension pref for showing site
+// access requests in the toolbar changes while the menu is open.
+TEST_F(ExtensionsSitePermissionsPageViewUnitTest,
+       ShowRequestsPrefChangedWithMenuOpen) {
+  auto extension =
+      InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
+  WithholdHostPermissions(extension.get());
+
+  NavigateAndCommit("http://www.url.com");
+  ShowSitePermissionsPage(extension->id());
+  EXPECT_TRUE(IsSitePermissionsPageOpened(extension->id()));
+
+  // By default, extensions are allowed to show request access in the toolbar.
+  EXPECT_TRUE(
+      site_permissions_page()->GetShowRequestsToggleForTesting()->GetIsOn());
+  EXPECT_THAT(GetExtensionsShowingRequests(),
+              testing::ElementsAre(extension->id()));
+
+  // Directly change the show access requests pref for extension, since it can
+  // be changed when menu is open, and verify toggle is updated and extension is
+  // not requesting access in the toolbar.
+  extensions::SitePermissionsHelper(browser()->profile())
+      .SetShowAccessRequestsInToolbar(extension->id(), false);
+  EXPECT_FALSE(
+      site_permissions_page()->GetShowRequestsToggleForTesting()->GetIsOn());
+  EXPECT_THAT(GetExtensionsShowingRequests(), testing::IsEmpty());
+}
+
+// Test that navigating to a new site where the user doesn't have runtime host
+// permissions controls (e.g restricted site) closes the site permissions page.
+TEST_F(ExtensionsSitePermissionsPageViewUnitTest,
+       PageNavigationWithMenuOpen_UserLosesRuntimeHostPermissionsControls) {
+  content::WebContentsTester* web_contents_tester =
+      AddWebContentsAndGetTester();
+
+  auto extension =
+      InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
+
+  const GURL url("http://www.non-restricted.com");
+  web_contents_tester->NavigateAndCommit(url);
+  WaitForAnimation();
+
+  ShowSitePermissionsPage(extension->id());
+  EXPECT_FALSE(IsMainPageOpened());
+  EXPECT_TRUE(IsSitePermissionsPageOpened(extension->id()));
+
+  // While the menu is open, navigate to an url where extension should not have
+  // a site permissions page.
+  const GURL restricted_url("chrome://extensions");
+  web_contents_tester->NavigateAndCommit(restricted_url);
+  WaitForAnimation();
+
+  // Menu should navigate back to main page since site permissions page should
+  // not be visible for the new url.
+  EXPECT_TRUE(IsMainPageOpened());
+  EXPECT_FALSE(IsSitePermissionsPageOpened(extension->id()));
+}
+
+// Test that navigating to a new site where the user still has runtime host
+// permissions controls updates the page contents.
+TEST_F(ExtensionsSitePermissionsPageViewUnitTest,
+       PageNavigationWithMenuOpen_UserMaintainsRuntimeHostPermissionsControls) {
+  content::WebContentsTester* web_contents_tester =
+      AddWebContentsAndGetTester();
+
+  auto extension =
+      InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
+
+  const GURL url_a("http://www.a.com");
+  web_contents_tester->NavigateAndCommit(url_a);
+  WaitForAnimation();
+
+  ShowSitePermissionsPage(extension->id());
+  EXPECT_FALSE(IsMainPageOpened());
+  EXPECT_TRUE(IsSitePermissionsPageOpened(extension->id()));
+
+  // While the menu is open, navigate to an url where extension also should have
+  // a site permissions page.
+  const GURL url_b("http://www.b.com");
+  web_contents_tester->NavigateAndCommit(url_b);
+  WaitForAnimation();
+
+  // Menu should stay open in site permissions page for `extension`.
+  EXPECT_FALSE(IsMainPageOpened());
+  EXPECT_TRUE(IsSitePermissionsPageOpened(extension->id()));
+}
+
+// TODO(crbug.com/1390952): Verify page content changes when extension is
+// updated. This will be easier to do once we have the site access radio
+// buttons, as we can change to the correct site access.

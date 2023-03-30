@@ -13,6 +13,7 @@
 #import "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #import "ios/chrome/app/spotlight/reading_list_spotlight_manager.mm"
+#import "ios/chrome/app/spotlight/spotlight_interface.h"
 #import "ios/chrome/app/spotlight/spotlight_logger.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -47,14 +48,17 @@
       initWithLargeIconService:IOSChromeLargeIconServiceFactory::
                                    GetForBrowserState(browserState)
               readingListModel:ReadingListModelFactory::GetInstance()
-                                   ->GetForBrowserState(browserState)];
+                                   ->GetForBrowserState(browserState)
+            spotlightInterface:[SpotlightInterface defaultInterface]];
 }
 
-- (instancetype)initWithLargeIconService:
-                    (favicon::LargeIconService*)largeIconService
-                        readingListModel:(ReadingListModel*)model {
+- (instancetype)
+    initWithLargeIconService:(favicon::LargeIconService*)largeIconService
+            readingListModel:(ReadingListModel*)model
+          spotlightInterface:(SpotlightInterface*)spotlightInterface {
   self = [super initWithLargeIconService:largeIconService
-                                  domain:spotlight::DOMAIN_READING_LIST];
+                                  domain:spotlight::DOMAIN_READING_LIST
+                      spotlightInterface:spotlightInterface];
   if (self) {
     _model = model;
     _modelBridge.reset(new ReadingListModelBridge(self, model));
@@ -189,11 +193,9 @@
   }
 
   if (entriesToRemove.count > 0) {
-    spotlight::DeleteItemsWithIdentifiers(entriesToRemove, ^(NSError* error) {
-      if (error) {
-        [SpotlightLogger logSpotlightError:error];
-      }
-    });
+    [self.spotlightInterface
+        deleteSearchableItemsWithIdentifiers:entriesToRemove
+                           completionHandler:nil];
   }
 
   _batch_update_log.clear();
@@ -235,11 +237,8 @@
   NSString* spotlightID =
       [self spotlightIDForURL:url
                         title:base::SysUTF8ToNSString(entry->Title())];
-  spotlight::DeleteItemsWithIdentifiers(@[ spotlightID ], ^(NSError* error) {
-    if (error) {
-      [SpotlightLogger logSpotlightError:error];
-    }
-  });
+  [self.spotlightInterface deleteSearchableItemsWithIdentifiers:@[ spotlightID ]
+                                              completionHandler:nil];
 }
 
 @end

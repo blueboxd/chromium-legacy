@@ -458,6 +458,22 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromCreatorFeedFollow"));
       break;
+    case AccessPoint::ACCESS_POINT_READING_LIST:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromReadingList"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_REAUTH_INFO_BAR:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromReauthInfoBar"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_ACCOUNT_CONSISTENCY_SERVICE:
+      base::RecordAction(base::UserMetricsAction(
+          "Signin_Signin_FromAccountConsistencyService"));
+      break;
+    case AccessPoint::ACCESS_POINT_SEARCH_COMPANION:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromSearchCompanion"));
+      break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
       break;
@@ -564,6 +580,18 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(base::UserMetricsAction(
           "Signin_Impression_FromNTPFeedBottomSigninPromo"));
       break;
+    case AccessPoint::ACCESS_POINT_CREATOR_FEED_FOLLOW:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromCreatorFeedFollow"));
+      break;
+    case AccessPoint::ACCESS_POINT_READING_LIST:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromReadingList"));
+      break;
+    case AccessPoint::ACCESS_POINT_SEARCH_COMPANION:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromSearchCompanion"));
+      break;
     case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case AccessPoint::ACCESS_POINT_CONTENT_AREA:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
@@ -581,16 +609,12 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON:
     case AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER:
     case AccessPoint::ACCESS_POINT_FOR_YOU_FRE:
+    case signin_metrics::AccessPoint::ACCESS_POINT_REAUTH_INFO_BAR:
+    case signin_metrics::AccessPoint::ACCESS_POINT_ACCOUNT_CONSISTENCY_SERVICE:
+    case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Signin_Impression_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point);
-      break;
-    case AccessPoint::ACCESS_POINT_CREATOR_FEED_FOLLOW:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromCreatorFeedFollow"));
-      break;
-    case AccessPoint::ACCESS_POINT_MAX:
-      NOTREACHED();
       break;
   }
 }

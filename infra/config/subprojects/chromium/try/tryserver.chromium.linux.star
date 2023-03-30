@@ -64,6 +64,12 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux-afl-asan-rel",
+    branch_selector = branches.selector.LINUX_BRANCHES,
+    executable = "recipe:chromium/fuzz",
+)
+
+try_.builder(
     name = "linux-annotator-rel",
     mirrors = ["ci/linux-annotator-rel"],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
@@ -74,7 +80,6 @@ try_.builder(
     mirrors = [
         "ci/Cast Linux ARM64",
     ],
-    os = os.LINUX_BIONIC,
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -99,6 +104,12 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux-centipede-asan-rel",
+    branch_selector = branches.selector.LINUX_BRANCHES,
+    executable = "recipe:chromium/fuzz",
+)
+
+try_.builder(
     name = "linux-dcheck-off-rel",
     mirrors = builder_config.copy_from("linux-rel"),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
@@ -117,6 +128,7 @@ try_.builder(
     mirrors = [
         "ci/linux-gcc-rel",
     ],
+    # Focal is needed for better C++20 support. See crbug.com/1284275.
     os = os.LINUX_FOCAL,
 )
 
@@ -289,6 +301,8 @@ try_.builder(
     mirrors = [
         "ci/WebKit Linux MSAN",
     ],
+    # At this time, MSan is only compatibly with Focal. See
+    # //docs/linux/instrumented_libraries.md.
     os = os.LINUX_FOCAL,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
@@ -430,6 +444,8 @@ try_.builder(
         "ci/Linux ChromiumOS MSan Tests",
     ],
     cores = 16,
+    # At this time, MSan is only compatibly with Focal. See
+    # //docs/linux/instrumented_libraries.md.
     os = os.LINUX_FOCAL,
     ssd = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -514,6 +530,8 @@ try_.builder(
         "ci/Linux MSan Builder",
         "ci/Linux MSan Tests",
     ],
+    # At this time, MSan is only compatibly with Focal. See
+    # //docs/linux/instrumented_libraries.md.
     os = os.LINUX_FOCAL,
     execution_timeout = 6 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,

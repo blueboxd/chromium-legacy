@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Kliknij, by wrócić na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2079545284768500474">Cofnij</translation>
 <translation id="2091887806945687916">Dźwięk</translation>
+<translation id="2117655453726830283">Następny slajd</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
 <translation id="216989819110952009">Chociaż oczy ich osłaniały zielone okulary, Dorotę i jej przyjaciół po prostu oślepił przepych</translation>
 <translation id="2176704795966505152">Pokaż opcję powiększenia w menu głównym</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">Rozwinięty – kliknij, by zwinąć.</translation>
 <translation id="2586657967955657006">Schowek</translation>
 <translation id="2597457036804169544">Nie stosuj ciemnego motywu witryn</translation>
+<translation id="2606760465469169465">Automatyczna weryfikacja</translation>
 <translation id="2621115761605608342">Zezwól na użycie JavaScriptu w określonej witrynie.</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">Zresetuj uprawnienia</translation>
 <translation id="301521992641321250">Automatycznie zablokowane</translation>
 <translation id="3069226013421428034">Zezwalanie na logowanie przez usługę zewnętrzną w określonej witrynie.</translation>
+<translation id="310297983047869047">Poprzedni slajd</translation>
 <translation id="3109724472072898302">Zwinięty</translation>
 <translation id="3114012059975132928">Odtwarzacz</translation>
 <translation id="3115898365077584848">Pokaż informacje</translation>
@@ -219,11 +222,11 @@
 <translation id="509133520954049755">Żądaj wersji na komputery</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="5123685120097942451">Karta incognito</translation>
-<translation id="5134599672855298214">Żądaj wersji na urządzenia mobilne (zalecane)</translation>
 <translation id="5186036860380548585">Opcja dostępna u góry ekranu</translation>
 <translation id="5197729504361054390">Wybrane kontakty zostaną udostępnione witrynie <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Ostatnio używana dzisiaj</translation>
 <translation id="5225463052809312700">Włącz kamerę</translation>
+<translation id="5229337741799419985">To ustawienie działa bez ujawniania Twojej tożsamości i udzielania witrynom dostępu do Twojej historii przeglądania.</translation>
 <translation id="5234764350956374838">Zamknij</translation>
 <translation id="5264323282659631142">Usuń: „<ph name="CHIP_LABEL" />”</translation>
 <translation id="528192093759286357">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
@@ -310,6 +313,7 @@
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6689172468748959065">Zdjęcia profilowe</translation>
 <translation id="6697925417670533197">W trakcie pobierania</translation>
+<translation id="6701547804986694515">Strona, którą odwiedzasz, może zapisywać w Chrome informacje potwierdzające, że nie jesteś botem. Witryny, które przeglądasz, mogą sprawdzać te informacje w Chrome i uzyskiwać potwierdzenie z wcześniej odwiedzonej witryny, że prawdopodobnie jesteś prawdziwą osobą.</translation>
 <translation id="6722828510648505498">Blokuj prośby o zalogowanie się pochodzące od usług tożsamości.</translation>
 <translation id="6746124502594467657">W dół</translation>
 <translation id="6749077623962119521">Zresetować uprawnienia?</translation>
@@ -427,6 +431,7 @@
 <translation id="8751914237388039244">Wybierz obraz</translation>
 <translation id="8801436777607969138">Zablokuj JavaScript w określonej witrynie.</translation>
 <translation id="8803526663383843427">Kiedy funkcja jest włączona</translation>
+<translation id="8805385115381080995">Przeglądanie działa szybciej, bo witryny rzadziej proszą o potwierdzenie, że jesteś prawdziwą osobą.</translation>
 <translation id="8816026460808729765">Blokuj stronom dostęp do czujników</translation>
 <translation id="8823559166155093873">Blokuj pliki cookie</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -450,5 +455,6 @@
 <translation id="9162462602695099906">Ten pakiet jest niebezpieczny</translation>
 <translation id="9201023452444595544">Wszystkie dane offline zostaną wyczyszczone</translation>
 <translation id="930525582205581608">Zapomnieć tę stronę?</translation>
+<translation id="947156494302904893">Witryny, które odwiedzasz, mogą sprawdzać, czy jesteś prawdziwą osobą, a nie botem</translation>
 <translation id="967624055006145463">Zapisane dane</translation>
 </translationbundle>

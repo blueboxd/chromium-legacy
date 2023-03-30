@@ -25,18 +25,18 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
-import android.support.test.runner.lifecycle.Stage;
 import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.Stage;
 import androidx.test.uiautomator.UiDevice;
 
 import org.hamcrest.Matcher;
@@ -453,7 +453,7 @@ public class StartSurfaceTestUtils {
      * @param position The position of the tab which is clicked.
      */
     public static void clickTabInCarousel(int position) {
-        onViewWaiting(allOf(withParent(withId(R.id.carousel_tab_switcher_container)),
+        onViewWaiting(allOf(withParent(withId(R.id.tab_switcher_module_container)),
                               withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(position, click()));
     }
@@ -553,7 +553,7 @@ public class StartSurfaceTestUtils {
      * Gets the "tab_list_view" from the carousel tab switcher module on Start surface.
      */
     static View getCarouselTabSwitcherTabListView(ChromeTabbedActivity cta) {
-        return cta.findViewById(R.id.carousel_tab_switcher_container)
+        return cta.findViewById(R.id.tab_switcher_module_container)
                 .findViewById(org.chromium.chrome.test.R.id.tab_list_view);
     }
 

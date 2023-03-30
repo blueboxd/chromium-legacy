@@ -17,6 +17,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
+#include "ui/views/view_tracker.h"
 
 namespace gfx {
 class ImageSkia;
@@ -33,16 +34,6 @@ namespace ash {
 
 class SearchBoxImageButton;
 class SearchIconImageView;
-
-// These are used in histograms, do not remove/renumber entries. If you're
-// adding to this enum with the intention that it will be logged, update the
-// SearchBoxActivationSource enum listing in tools/metrics/histograms/enums.xml.
-enum class ActivationSource {
-  kMousePress = 0,
-  kKeyPress = 1,
-  kGestureTap = 2,
-  kMaxValue = kGestureTap,
-};
 
 // SearchBoxViewBase consists of icons and a Textfield. The Textfiled is for
 // inputting queries and triggering callbacks. The icons include a search icon,
@@ -84,6 +75,10 @@ class SearchBoxViewBase : public views::View,
   views::ImageButton* close_button();
   views::ImageView* search_icon();
   views::Textfield* search_box() { return search_box_; }
+
+  void SetIphView(std::unique_ptr<views::View> iph_view);
+  void DeleteIphView();
+  raw_ptr<views::View> iph_view() { return iph_view_tracker_.view(); }
 
   // Called when the query in the search box textfield changes. The search box
   // implementation is expected to handle the new query.
@@ -211,13 +206,11 @@ class SearchBoxViewBase : public views::View,
   // Update search box border based on whether the search box is activated.
   virtual void UpdateSearchBoxBorder() {}
 
-  // Records in histograms the activation of the searchbox.
-  virtual void RecordSearchBoxActivationHistogram(ui::EventType event_type) {}
-
  private:
   void OnEnabledChanged();
 
   // Owned by views hierarchy.
+  raw_ptr<views::View> iph_holder_;
   views::BoxLayoutView* content_container_;
   SearchIconImageView* search_icon_ = nullptr;
   SearchBoxImageButton* assistant_button_ = nullptr;
@@ -232,6 +225,8 @@ class SearchBoxViewBase : public views::View,
   views::Label* category_ghost_text_ = nullptr;
 
   views::View* search_box_button_container_ = nullptr;
+
+  views::ViewTracker iph_view_tracker_;
 
   // Whether the search box is active.
   bool is_search_box_active_ = false;

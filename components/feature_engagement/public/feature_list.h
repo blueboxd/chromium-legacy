@@ -52,6 +52,12 @@ DEFINE_VARIATION_PARAM(kIPHAdaptiveButtonInTopToolbarCustomizationShareFeature,
 DEFINE_VARIATION_PARAM(
     kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature,
     "IPH_AdaptiveButtonInTopToolbarCustomization_VoiceSearch");
+DEFINE_VARIATION_PARAM(
+    kIPHAdaptiveButtonInTopToolbarCustomizationTranslateFeature,
+    "IPH_AdaptiveButtonInTopToolbarCustomization_Translate");
+DEFINE_VARIATION_PARAM(
+    kIPHAdaptiveButtonInTopToolbarCustomizationAddToBookmarksFeature,
+    "IPH_AdaptiveButtonInTopToolbarCustomization_AddToBookmarks");
 DEFINE_VARIATION_PARAM(kIPHAddToHomescreenMessageFeature,
                        "IPH_AddToHomescreenMessage");
 DEFINE_VARIATION_PARAM(kIPHAutoDarkOptOutFeature, "IPH_AutoDarkOptOut");
@@ -244,6 +250,8 @@ DEFINE_VARIATION_PARAM(kIPHDesktopCustomizeChromeFeature,
                        "IPH_DesktopCustomizeChrome");
 DEFINE_VARIATION_PARAM(kIPHDesktopTabGroupsNewGroupFeature,
                        "IPH_DesktopTabGroupsNewGroup");
+DEFINE_VARIATION_PARAM(kIPHDownloadToolbarButtonFeature,
+                       "IPH_DownloadToolbarButton");
 DEFINE_VARIATION_PARAM(kIPHExtensionsMenuFeature, "IPH_ExtensionsMenu");
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
@@ -258,6 +266,8 @@ DEFINE_VARIATION_PARAM(kIPHPasswordsManagementBubbleAfterSaveFeature,
                        "IPH_PasswordsManagementBubbleAfterSave");
 DEFINE_VARIATION_PARAM(kIPHPasswordsManagementBubbleDuringSigninFeature,
                        "IPH_PasswordsManagementBubbleDuringSignin");
+DEFINE_VARIATION_PARAM(kIPHPasswordsWebAppProfileSwitchFeature,
+                       "IPH_PasswordsWebAppProfileSwitch");
 DEFINE_VARIATION_PARAM(kIPHPerformanceNewBadgeFeature,
                        "IPH_PerformanceNewBadge");
 DEFINE_VARIATION_PARAM(kIPHPowerBookmarksSidePanelFeature,
@@ -302,6 +312,8 @@ DEFINE_VARIATION_PARAM(kIPHAutofillVirtualCardSuggestionFeature,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 DEFINE_VARIATION_PARAM(kIPHGoogleOneOfferNotificationFeature,
                        "IPH_GoogleOneOfferNotification");
+DEFINE_VARIATION_PARAM(kIPHLauncherSearchHelpUiFeature,
+                       "IPH_LauncherSearchHelpUi");
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
@@ -318,6 +330,10 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
             kIPHAdaptiveButtonInTopToolbarCustomizationShareFeature),
         VARIATION_ENTRY(
             kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature),
+        VARIATION_ENTRY(
+            kIPHAdaptiveButtonInTopToolbarCustomizationTranslateFeature),
+        VARIATION_ENTRY(
+            kIPHAdaptiveButtonInTopToolbarCustomizationAddToBookmarksFeature),
         VARIATION_ENTRY(kIPHAddToHomescreenMessageFeature),
         VARIATION_ENTRY(kIPHAutoDarkOptOutFeature),
         VARIATION_ENTRY(kIPHAutoDarkUserEducationMessageFeature),
@@ -418,6 +434,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHBatterySaverModeFeature),
         VARIATION_ENTRY(kIPHDesktopCustomizeChromeFeature),
         VARIATION_ENTRY(kIPHDesktopTabGroupsNewGroupFeature),
+        VARIATION_ENTRY(kIPHDownloadToolbarButtonFeature),
         VARIATION_ENTRY(kIPHExtensionsMenuFeature),
         VARIATION_ENTRY(kIPHFocusModeFeature),
         VARIATION_ENTRY(kIPHGlobalMediaControls),
@@ -428,6 +445,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHPasswordsAccountStorageFeature),
         VARIATION_ENTRY(kIPHPasswordsManagementBubbleAfterSaveFeature),
         VARIATION_ENTRY(kIPHPasswordsManagementBubbleDuringSigninFeature),
+        VARIATION_ENTRY(kIPHPasswordsWebAppProfileSwitchFeature),
         VARIATION_ENTRY(kIPHPerformanceNewBadgeFeature),
         VARIATION_ENTRY(kIPHPowerBookmarksSidePanelFeature),
         VARIATION_ENTRY(kIPHPriceTrackingPageActionIconLabelFeature),
@@ -459,6 +477,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
         VARIATION_ENTRY(kIPHGoogleOneOfferNotificationFeature),
+        VARIATION_ENTRY(kIPHLauncherSearchHelpUiFeature),
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 

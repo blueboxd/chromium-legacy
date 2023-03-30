@@ -319,7 +319,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PerformanceMonitor.ResourceCoalition.Availability"
-    enum="CoalitionIDAvailability" expires_after="2023-06-18">
+    enum="CoalitionIDAvailability" expires_after="2023-09-17">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -633,7 +633,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.AdaptiveChargingMinutes.{ReportType}" units="minutes"
-    expires_after="2023-03-19">
+    expires_after="2024-03-23">
   <owner>dbasehore@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -830,7 +830,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryChargeHealth" units="%"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1032,7 +1032,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRateWhileSuspended" units="mW"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1955,7 +1955,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.KernelResumeTimeOnAC" units="ms"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1993,7 +1993,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.KeyboardBacklightLevel" units="%"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>tbroch@chromium.org</owner>
   <summary>
     The level of the keyboard backlight as a percentage. Sampled every 30
@@ -2294,7 +2294,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.ShutdownReason" enum="ShutdownReason"
-    expires_after="M85">
+    expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <summary>
     The reason for the Chrome OS power manager shutting down or rebooting the
@@ -2310,7 +2310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttempt" enum="SuspendAttempt"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2335,7 +2335,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeSuccess" units="units"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2347,8 +2347,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Power.SuspendDelay" units="seconds" expires_after="2023-12-31">
+  <owner>niwa@chromium.org</owner>
+  <owner>puthik@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    The amount of time powerd waited until all clients (e.g. Bluetooth Manager)
+    to be ready to suspend after receiving a suspend request. The maximum
+    recorded value is 60 seconds.
+  </summary>
+</histogram>
+
 <histogram name="Power.SuspendResult" enum="SuspendResult"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2358,7 +2369,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.TimeInSuspendAtBoot" units="minutes"
-    expires_after="2021-03-15">
+    expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <summary>
     Chrome OS time in minutes spent in suspend-to-RAM mode sampled at boot
@@ -2367,7 +2378,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.TimeInSuspendAtResume" units="minutes"
-    expires_after="2021-04-04">
+    expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <summary>
     Chrome OS time in minutes spent in suspend-to-RAM mode sampled at resume.
@@ -2375,7 +2386,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.UserBrightnessAdjustmentsPerSessionOnAC" units="units"
-    expires_after="2022-05-01">
+    expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -2386,7 +2397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.UserBrightnessAdjustmentsPerSessionOnBattery"
-    units="units" expires_after="2021-10-25">
+    units="units" expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>

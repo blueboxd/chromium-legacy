@@ -1180,6 +1180,17 @@ void CopySharedImageINTERNAL(GLint xoffset,
                              GLboolean unpack_flip_y,
                              const GLbyte* mailboxes) override;
 
+void CopySharedImageToTextureINTERNAL(GLuint texture,
+                                      GLenum target,
+                                      GLuint internal_format,
+                                      GLenum type,
+                                      GLint src_x,
+                                      GLint src_y,
+                                      GLsizei width,
+                                      GLsizei height,
+                                      GLboolean flip_y,
+                                      const GLbyte* src_mailbox) override;
+
 void ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
                                      const void* dst_color_space,
                                      GLuint dst_color_space_size,
@@ -1245,6 +1256,10 @@ void BeginPixelLocalStorageANGLE(GLsizei count, const GLenum* loadops) override;
 void EndPixelLocalStorageANGLE(GLsizei count, const GLenum* storeops) override;
 
 void PixelLocalStorageBarrierANGLE() override;
+
+void FramebufferPixelLocalStorageInterruptANGLE() override;
+
+void FramebufferPixelLocalStorageRestoreANGLE() override;
 
 void GetFramebufferPixelLocalStorageParameterfvANGLE(GLint plane,
                                                      GLenum pname,

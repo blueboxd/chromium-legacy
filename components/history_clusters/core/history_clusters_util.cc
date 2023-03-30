@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/visitsegment_database.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_types.h"
@@ -167,11 +166,6 @@ GURL ComputeURLForDeduping(const GURL& url) {
   return url_for_deduping;
 }
 
-std::string ComputeURLKeywordForLookup(const GURL& url) {
-  return history::VisitSegmentDatabase::ComputeSegmentName(
-      ComputeURLForDeduping(url));
-}
-
 std::u16string ComputeURLForDisplay(const GURL& url, bool trim_after_host) {
   // Use URL formatting options similar to the omnibox popup. The url_formatter
   // component does IDN hostname conversion as well.
@@ -304,13 +298,15 @@ void HideAndCullLowScoringVisits(std::vector<history::Cluster>& clusters,
 void CoalesceRelatedSearches(std::vector<history::Cluster>& clusters) {
   constexpr size_t kMaxRelatedSearches = 5;
 
-  for (auto& cluster : clusters) {
+  base::ranges::for_each(clusters, [](auto& cluster) {
     for (const auto& visit : cluster.visits) {
       // Coalesce the unique related searches of this visit into the cluster
       // until the cap is reached.
       for (const auto& search_query :
            visit.annotated_visit.content_annotations.related_searches) {
         if (cluster.related_searches.size() >= kMaxRelatedSearches) {
+          // This return is safe to use because this it's within a lambda.
+          // Don't refactor it to use an outer loop. See crbug.com/1426657.
           return;
         }
 
@@ -319,7 +315,7 @@ void CoalesceRelatedSearches(std::vector<history::Cluster>& clusters) {
         }
       }
     }
-  }
+  });
 }
 
 void SortClusters(std::vector<history::Cluster>* clusters) {

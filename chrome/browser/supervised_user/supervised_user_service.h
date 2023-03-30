@@ -19,9 +19,9 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/net/file_downloader.h"
-#include "chrome/browser/supervised_user/web_approvals_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/supervised_user/core/browser/remote_web_approvals_manager.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #include "components/supervised_user/core/common/supervised_user_denylist.h"
 #include "components/supervised_user/core/common/supervised_users.h"
@@ -134,8 +134,8 @@ class SupervisedUserService
 
   static base::FilePath GetDenylistPathForTesting();
 
-  WebApprovalsManager& web_approvals_manager() {
-    return web_approvals_manager_;
+  supervised_user::RemoteWebApprovalsManager& remote_web_approvals_manager() {
+    return remote_web_approvals_manager_;
   }
 
   // Initializes this object.
@@ -228,9 +228,6 @@ class SupervisedUserService
 
   bool GetSupervisedUserExtensionsMayRequestPermissionsPref() const;
 
-  void SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
-      bool enabled);
-
   bool CanInstallExtensions() const;
 
   bool IsExtensionAllowed(const extensions::Extension& extension) const;
@@ -259,6 +256,7 @@ class SupervisedUserService
   SupervisedUserService(
       Profile* profile,
       signin::IdentityManager* identity_manager,
+      KidsChromeManagementClient* kids_chrome_management_client,
       PrefService& user_prefs,
       supervised_user::SupervisedUserSettingsService& settings_service,
       syncer::SyncService& sync_service,
@@ -392,19 +390,21 @@ class SupervisedUserService
 
   raw_ptr<signin::IdentityManager> identity_manager_;
 
-  bool active_;
+  raw_ptr<KidsChromeManagementClient> kids_chrome_management_client_;
+
+  bool active_ = false;
 
   raw_ptr<Delegate> delegate_;
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  bool is_profile_active_;
+  bool is_profile_active_ = false;
 
   // True only when |Init()| method has been called.
-  bool did_init_;
+  bool did_init_ = false;
 
   // True only when |Shutdown()| method has been called.
-  bool did_shutdown_;
+  bool did_shutdown_ = false;
 
   supervised_user::SupervisedUserURLFilter url_filter_;
 
@@ -421,8 +421,8 @@ class SupervisedUserService
   supervised_user::SupervisedUserDenylist denylist_;
   std::unique_ptr<FileDownloader> denylist_downloader_;
 
-  // Manages local and remote web approvals.
-  WebApprovalsManager web_approvals_manager_;
+  // Manages remote web approvals.
+  supervised_user::RemoteWebApprovalsManager remote_web_approvals_manager_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   base::ScopedObservation<extensions::ExtensionRegistry,

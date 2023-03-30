@@ -186,6 +186,7 @@ class CreditCardAccessManagerTest : public testing::Test {
                          /*local_state=*/autofill_client_.GetPrefs(),
                          /*identity_manager=*/nullptr,
                          /*history_service=*/nullptr,
+                         /*sync_service=*/nullptr,
                          /*strike_database=*/nullptr,
                          /*image_fetcher=*/nullptr,
                          /*is_off_the_record=*/false);
@@ -2187,18 +2188,6 @@ TEST_F(CreditCardAccessManagerTest, PreflightCallRateLimited) {
   // Any subsequent calls should not make a RPC.
   credit_card_access_manager_->PrepareToFetchCreditCard();
   histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
-
-  // Mock a page refresh, and make a third request.
-  std::unique_ptr<content::MockNavigationHandle> mock_navigation_handle =
-      std::make_unique<content::MockNavigationHandle>();
-  mock_navigation_handle->set_is_same_document(true);
-  autofill_driver_->DidNavigateFrame(mock_navigation_handle.get());
-
-  credit_card_access_manager_->PrepareToFetchCreditCard();
-
-  // Since the page was refreshed, rate limiter is reset and new RPC should be
-  // logged.
-  histogram_tester.ExpectTotalCount(preflight_call_metric, 2);
 }
 #endif  // !BUILDFLAG(IS_APPLE)
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)

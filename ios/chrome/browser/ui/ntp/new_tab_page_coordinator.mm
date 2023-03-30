@@ -4,13 +4,17 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #import "base/feature_list.h"
 #import "base/metrics/field_trial_params.h"
 #import "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/time/time.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
+#import "components/policy/policy_constants.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
@@ -37,6 +41,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -55,7 +60,6 @@
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -461,7 +465,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 }
 
 - (void)focusFakebox {
-  [self.NTPViewController focusFakebox];
+  [self.NTPViewController focusOmnibox];
 }
 
 - (void)reload {
@@ -653,8 +657,8 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.headerController.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
-                     FakeboxFocuser, LensCommands>>(
+      static_cast<id<ApplicationCommands, BrowserCoordinatorCommands,
+                     OmniboxCommands, FakeboxFocuser, LensCommands>>(
           self.browser->GetCommandDispatcher());
   self.headerController.commandHandler = self;
   self.headerController.delegate = self.NTPViewController;
@@ -662,15 +666,10 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
       LayoutGuideCenterForBrowser(self.browser);
   self.headerController.toolbarDelegate = self.toolbarDelegate;
   self.headerController.baseViewController = self.baseViewController;
-  if (NewTabPageTabHelper::FromWebState(self.webState)
-          ->ShouldShowStartSurface()) {
-    self.headerController.isStartShowing = YES;
-  }
 }
 
 // Configures `self.contentSuggestionsCoordiantor`.
 - (void)configureContentSuggestionsCoordinator {
-  DCHECK(self.contentSuggestionsCoordinator);
   self.contentSuggestionsCoordinator.webState = self.webState;
   self.contentSuggestionsCoordinator.ntpDelegate = self;
   self.contentSuggestionsCoordinator.feedDelegate = self;
@@ -681,7 +680,6 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 - (void)configureNTPMediator {
   NewTabPageMediator* NTPMediator = self.NTPMediator;
   DCHECK(NTPMediator);
-  DCHECK(self.contentSuggestionsCoordinator.contentSuggestionsMediator);
   NTPMediator.browser = self.browser;
   NTPMediator.feedControlDelegate = self;
   NTPMediator.contentSuggestionsHeaderConsumer = self.headerController;
@@ -776,6 +774,18 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
 - (void)updateForHeaderSizeChange {
   [self.NTPViewController updateHeightAboveFeedAndScrollToTopIfNeeded];
+}
+
+- (void)fakeboxTapped {
+  if (NewTabPageTabHelper::FromWebState(self.webState)
+          ->ShouldShowStartSurface()) {
+    UMA_HISTOGRAM_ENUMERATION("IOS.ContentSuggestions.ActionOnStartSurface",
+                              IOSContentSuggestionsActionType::kFakebox);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("IOS.ContentSuggestions.ActionOnNTP",
+                              IOSContentSuggestionsActionType::kFakebox);
+  }
+  [self focusFakebox];
 }
 
 - (void)identityDiscWasTapped {
@@ -1016,15 +1026,60 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 #pragma mark - FeedSignInPromoDelegate
 
 - (void)showSignInPromoUI {
-  // Show a sign-in promo half sheet.
-  self.feedSignInPromoCoordinator = [[FeedSignInPromoCoordinator alloc]
-      initWithBaseViewController:self.NTPViewController
-                         browser:self.browser];
-  [self.feedSignInPromoCoordinator start];
+  ChromeAccountManagerService* accountManagerService =
+      ChromeAccountManagerServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+
+  BOOL hasUserIdentities = accountManagerService->HasIdentities();
+
+  if ([self isSignInAllowed] &&
+      (IsConsistencyNewAccountInterfaceEnabled() || hasUserIdentities)) {
+    // Show Sign-In only flow, since Sync is not needed for this feature.
+    // TODO(crbug.com/1382615): Currently we show sign-in only UI when it's
+    // enabled, or when the user has one or more device-level user identities,
+    // and when sign-in is allowed. Remove the user identity check when sign-in
+    // only flow is fully launched.
+    const signin_metrics::AccessPoint access_point =
+        signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO;
+    id<ApplicationCommands> handler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), ApplicationCommands);
+    ShowSigninCommand* command = [[ShowSigninCommand alloc]
+        initWithOperation:AuthenticationOperationSigninOnly
+              accessPoint:access_point];
+    signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
+    [handler showSignin:command baseViewController:self.NTPViewController];
+    [self.feedMetricsRecorder
+        recordShowSignInOnlyUIWithUserId:hasUserIdentities];
+  } else if ([self isSignInAllowed] && [self isSyncAllowed]) {
+    // Show a sign-in promo half sheet for feed BoC sign-in promo when the
+    // condition of showing sign-in only flow is not fulfilled. This UI will
+    // lead to sync flow,
+    // TODO(crbug.com/1382615): remove this else if block and
+    // FeedSignInPromoCoordinator class when sign-in only flow is fully
+    // launched.
+    self.feedSignInPromoCoordinator = [[FeedSignInPromoCoordinator alloc]
+        initWithBaseViewController:self.NTPViewController
+                           browser:self.browser];
+    [self.feedSignInPromoCoordinator start];
+  } else {
+    // Show a snackbar message if sign-in or sync is disabled and the above UI
+    // shouldn't be shown.
+    // TODO(crbug.com/1382615): remove when able to hide the personalization
+    // control when sign-in or sync is disabled.
+    [self showSignInDisableMessage];
+  }
 }
 
 - (void)showSignInUI {
-  // Show sign-in and sync page.
+  // Show a snackbar message if sign-in or sync is disabled.
+  // TODO(crbug.com/1382615): remove when able to hide the  personalization
+  // control when sign-in or sync is disabled.
+  if (![self isSignInAllowed] || ![self isSyncAllowed]) {
+    [self showSignInDisableMessage];
+    return;
+  }
+
+  // Show sign-in and sync page for feed bottom sync promo.
   const signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO;
   id<ApplicationCommands> handler = HandlerForProtocol(
@@ -1110,7 +1165,14 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 }
 
 - (BOOL)isStartSurface {
-  DCHECK(self.webState);
+  // TODO(crbug.com/1425382): This condition should be removed once the issue of
+  // having this coordinator started with no valid webstate (e.g. visible NTP in
+  // non-active tab) is resolved. At that point, we should just leave the
+  // `self.webState` DCHECK.
+  if (!self.webState) {
+    DCHECK(NO);
+    return NO;
+  }
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(self.webState);
   return NTPHelper && NTPHelper->ShouldShowStartSurface();
@@ -1156,29 +1218,21 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
 #pragma mark - OverscrollActionsControllerDelegate
 
-- (void)overscrollActionsController:(OverscrollActionsController*)controller
-                   didTriggerAction:(OverscrollAction)action {
+- (void)overscrollActionNewTab:(OverscrollActionsController*)controller {
   id<ApplicationCommands> applicationCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
+  [applicationCommandsHandler openURLInNewTab:[OpenNewTabCommand command]];
+}
+
+- (void)overscrollActionCloseTab:(OverscrollActionsController*)controller {
   id<BrowserCoordinatorCommands> browserCoordinatorCommandsHandler =
       HandlerForProtocol(self.browser->GetCommandDispatcher(),
                          BrowserCoordinatorCommands);
+  [browserCoordinatorCommandsHandler closeCurrentTab];
+}
 
-  switch (action) {
-    case OverscrollAction::NEW_TAB: {
-      [applicationCommandsHandler openURLInNewTab:[OpenNewTabCommand command]];
-    } break;
-    case OverscrollAction::CLOSE_TAB: {
-      [browserCoordinatorCommandsHandler closeCurrentTab];
-      base::RecordAction(base::UserMetricsAction("OverscrollActionCloseTab"));
-    } break;
-    case OverscrollAction::REFRESH:
-      [self reload];
-      break;
-    case OverscrollAction::NONE:
-      NOTREACHED();
-      break;
-  }
+- (void)overscrollActionRefresh:(OverscrollActionsController*)controller {
+  [self reload];
 }
 
 - (BOOL)shouldAllowOverscrollActionsForOverscrollActionsController:
@@ -1344,12 +1398,8 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 }
 
 - (void)updateStartForVisibilityChange:(BOOL)visible {
-  if (visible && self.started &&
-      NewTabPageTabHelper::FromWebState(self.webState)
-          ->ShouldShowStartSurface()) {
-    // Start is being shown on an existing NTP, so configure it
-    // appropriately.
-    self.headerController.isStartShowing = YES;
+  if (visible && NewTabPageTabHelper::FromWebState(self.webState)
+                     ->ShouldShowStartSurface()) {
     [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
   }
   if (!visible && NewTabPageTabHelper::FromWebState(self.webState)
@@ -1358,7 +1408,6 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
     // since it should not show Start after disappearing.
     NewTabPageTabHelper::FromWebState(self.webState)
         ->SetShowStartSurface(false);
-    self.headerController.isStartShowing = NO;
   }
 }
 
@@ -1645,15 +1694,50 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
     // Check if feed is visible before reporting NTP visibility as the feed
     // needs to be visible in order to use for metrics.
     // TODO(crbug.com/1373650) Move isFeedVisible check to the metrics recorder
-    if (IsGoodVisitsMetricEnabled()) {
-      if ([self isFeedVisible]) {
-        [self.feedMetricsRecorder recordNTPDidChangeVisibility:visible];
-      }
+    if ([self isFeedVisible]) {
+      [self.feedMetricsRecorder recordNTPDidChangeVisibility:visible];
     }
   }
 
   self.viewPresented = visible;
   [self updateVisible];
+}
+
+- (BOOL)isSignInAllowed {
+  AuthenticationService::ServiceStatus statusService =
+      self.authService->GetServiceStatus();
+  switch (statusService) {
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser: {
+      return NO;
+    }
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed: {
+      break;
+    }
+  }
+  return YES;
+}
+
+- (BOOL)isSyncAllowed {
+  if (self.prefService->FindPreference(policy::key::kSyncDisabled) &&
+      self.prefService->GetBoolean(policy::key::kSyncDisabled)) {
+    return NO;
+  }
+
+  return YES;
+}
+
+- (void)showSignInDisableMessage {
+  id<SnackbarCommands> handler =
+      static_cast<id<SnackbarCommands>>(self.browser->GetCommandDispatcher());
+  MDCSnackbarMessage* message = [MDCSnackbarMessage
+      messageWithText:
+          l10n_util::GetNSString(
+              IDS_IOS_NTP_FEED_SIGNIN_PROMO_DISABLE_SNACKBAR_MESSAGE)];
+
+  [handler showSnackbarMessage:message];
 }
 
 #pragma mark - Getters

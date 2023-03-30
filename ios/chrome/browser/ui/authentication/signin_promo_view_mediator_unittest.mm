@@ -16,6 +16,7 @@
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
@@ -77,6 +78,8 @@ class SigninPromoViewMediatorTest : public PlatformTest {
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = builder.Build();
+    // Set up the test browser and attach the browser agents.
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         chrome_browser_state_.get(),
         std::make_unique<FakeAuthenticationServiceDelegate>());
@@ -105,13 +108,15 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   void CreateMediator(signin_metrics::AccessPoint access_point) {
     consumer_ = OCMStrictProtocolMock(@protocol(SigninPromoViewConsumer));
     mediator_ = [[SigninPromoViewMediator alloc]
-        initWithAccountManagerService:ChromeAccountManagerServiceFactory::
-                                          GetForBrowserState(
-                                              chrome_browser_state_.get())
-                          authService:GetAuthenticationService()
-                          prefService:chrome_browser_state_.get()->GetPrefs()
-                          accessPoint:access_point
-                            presenter:nil];
+              initWithBrowser:browser_.get()
+        accountManagerService:ChromeAccountManagerServiceFactory::
+                                  GetForBrowserState(
+                                      chrome_browser_state_.get())
+                  authService:GetAuthenticationService()
+                  prefService:chrome_browser_state_.get()->GetPrefs()
+                  accessPoint:access_point
+                    presenter:nil
+           baseViewController:nil];
     mediator_.consumer = consumer_;
 
     signin_promo_view_ = OCMStrictClassMock([SigninPromoView class]);
@@ -330,10 +335,9 @@ class SigninPromoViewMediatorTest : public PlatformTest {
 
   // Task environment.
   WebTaskEnvironment task_environment_;
-
   IOSChromeScopedTestingLocalState scoped_testing_local_state_;
-
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<TestBrowser> browser_;
 
   // Mediator used for the tests.
   SigninPromoViewMediator* mediator_;
@@ -471,6 +475,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
                            signin_metrics::PromoAction::
                                PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT
                         completion:completion_arg]);
+  ExpectConfiguratorNotification(NO /* identity changed */);
   [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
   EXPECT_TRUE(mediator_.signinInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
@@ -478,6 +483,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
   EXPECT_NE(nil, (id)completion);
   // Stop sign-in.
   OCMExpect([consumer_ signinDidFinish]);
+  ExpectConfiguratorNotification(NO /* identity changed */);
   completion(YES);
   EXPECT_FALSE(mediator_.signinInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
@@ -503,6 +509,7 @@ TEST_F(SigninPromoViewMediatorTest,
                            signin_metrics::PromoAction::
                                PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT
                         completion:completion_arg]);
+  ExpectConfiguratorNotification(NO /* identity changed */);
   // Starts sign-in without identity.
   [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
   // Adds an identity while doing sign-in.
@@ -511,6 +518,7 @@ TEST_F(SigninPromoViewMediatorTest,
   fake_system_identity_manager()->WaitForServiceCallbacksToComplete();
   // Finishs the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
+  ExpectConfiguratorNotification(NO /* identity changed */);
   completion(YES);
 }
 
@@ -532,6 +540,7 @@ TEST_F(SigninPromoViewMediatorTest,
                                    promoAction:signin_metrics::PromoAction::
                                                    PROMO_ACTION_WITH_DEFAULT
                                     completion:completion_arg]);
+  ExpectConfiguratorNotification(NO /* identity changed */);
   // Starts sign-in with an identity.
   [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
   EXPECT_TRUE([mediator_
@@ -544,6 +553,7 @@ TEST_F(SigninPromoViewMediatorTest,
   fake_system_identity_manager()->WaitForServiceCallbacksToComplete();
   // Finishs the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
+  ExpectConfiguratorNotification(NO /* identity changed */);
   completion(YES);
 }
 
@@ -603,6 +613,7 @@ TEST_F(SigninPromoViewMediatorTest,
                                    promoAction:signin_metrics::PromoAction::
                                                    PROMO_ACTION_WITH_DEFAULT
                                     completion:completion_arg]);
+  ExpectConfiguratorNotification(NO /* identity changed */);
   // Start sign-in with an identity.
   [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
   // Remove the sign-in promo.
@@ -634,6 +645,7 @@ TEST_F(SigninPromoViewMediatorTest, RemoveSigninPromoWhileSignedIn) {
                                    promoAction:signin_metrics::PromoAction::
                                                    PROMO_ACTION_WITH_DEFAULT
                                     completion:completion_arg]);
+  ExpectConfiguratorNotification(NO /* identity changed */);
   // Start sign-in with an identity.
   [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
   // Remove the sign-in promo.

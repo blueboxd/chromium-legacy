@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Нажмите, чтобы вернуться на страницу <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2091887806945687916">Звук</translation>
+<translation id="2117655453726830283">Следующий слайд</translation>
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="216989819110952009">Даже в защитных очках Дороти и ее друзья были ослеплены блеском</translation>
 <translation id="2176704795966505152">Показывать параметр изменения масштаба в главном меню</translation>
@@ -97,7 +98,7 @@
 <translation id="2621115761605608342">Разрешить JavaScript для конкретного сайта</translation>
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2677748264148917807">Закрыть</translation>
-<translation id="2687403674020088961">Заблокировать все файлы cookie (не рекомендуется)</translation>
+<translation id="2687403674020088961">Блокировать все файлы cookie (не рекомендуется)</translation>
 <translation id="2713106313042589954">Выключить камеру</translation>
 <translation id="2717722538473713889">Адреса электронной почты</translation>
 <translation id="2750481671343847896">Сайты могут показывать предложения войти в аккаунт от сервисов подтверждения личности.</translation>
@@ -114,6 +115,7 @@
 <translation id="3008272652534848354">Сбросить все разрешения</translation>
 <translation id="301521992641321250">Заблокировано автоматически</translation>
 <translation id="3069226013421428034">Разрешить вход через сторонние сервисы для определенного сайта.</translation>
+<translation id="310297983047869047">Предыдущий слайд</translation>
 <translation id="3109724472072898302">Свернуто</translation>
 <translation id="3114012059975132928">Видеопроигрыватель</translation>
 <translation id="3115898365077584848">Показать информацию</translation>
@@ -220,7 +222,6 @@
 <translation id="509133520954049755">Запрашивать версию для ПК</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
 <translation id="5123685120097942451">Вкладка инкогнито</translation>
-<translation id="5134599672855298214">Запрашивать мобильную версию (рекомендуется)</translation>
 <translation id="5186036860380548585">Действие доступно вверху экрана</translation>
 <translation id="5197729504361054390">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> получит доступ к выбранным контактам.</translation>
 <translation id="5216942107514965959">Последнее посещение: сегодня</translation>
@@ -257,7 +258,7 @@
 <translation id="5690795753582697420">Камера выключена в настройках Android.</translation>
 <translation id="5706552988683188916">Будут удалены файлы cookie и другие данные сайта <ph name="WEBSITE" />.</translation>
 <translation id="5719847187258001597">Будут удалены все данные и файлы cookie, которые сохранены сайтом <ph name="ORIGIN" /> или его приложением, добавленным на главный экран.</translation>
-<translation id="5723967018671998714">Сторонние файлы cookie заблокированы в режиме инкогнито.</translation>
+<translation id="5723967018671998714">Сторонние файлы cookie заблокированы в режиме инкогнито</translation>
 <translation id="5740126560802162366">Сайты могут сохранять данные на вашем устройстве</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" />: заблокировано</translation>
 <translation id="5804241973901381774">Разрешения</translation>
@@ -422,7 +423,7 @@
 <translation id="8676374126336081632">Очистить</translation>
 <translation id="8681886425883659911">Объявления блокируются на сайтах, где есть навязчивая или вводящая в заблуждение реклама</translation>
 <translation id="868929229000858085">Поиск контактов</translation>
-<translation id="8712637175834984815">Готово</translation>
+<translation id="8712637175834984815">OK</translation>
 <translation id="8719283222052720129">Предоставьте приложению "<ph name="APP_NAME" />" разрешение в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8730621377337864115">Готово</translation>

@@ -23,6 +23,7 @@
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_manager.h"
+#include "ui/color/color_recipe.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -436,6 +437,75 @@ TEST_F(WidgetWithCustomParamsTest, SkottieColorsTest) {
   EXPECT_EQ(contents2->history[2u], contents4->history[1u]);
 }
 #endif
+
+class WidgetColorModeTest : public WidgetTest {
+ public:
+  static constexpr SkColor kLightColor = SK_ColorWHITE;
+  static constexpr SkColor kDarkColor = SK_ColorBLACK;
+
+  WidgetColorModeTest() = default;
+  ~WidgetColorModeTest() override = default;
+
+  void SetUp() override {
+    WidgetTest::SetUp();
+
+    // Setup color provider for the ui::kColorSysPrimary color.
+    ui::ColorProviderManager& manager =
+        ui::ColorProviderManager::GetForTesting();
+    manager.AppendColorProviderInitializer(base::BindRepeating(&AddColor));
+  }
+
+  void TearDown() override {
+    ui::ColorProviderManager::ResetForTesting();
+    WidgetTest::TearDown();
+  }
+
+ private:
+  static void AddColor(ui::ColorProvider* provider,
+                       const ui::ColorProviderManager::Key& key) {
+    ui::ColorMixer& mixer = provider->AddMixer();
+    mixer[ui::kColorSysPrimary] = {
+        key.color_mode == ui::ColorProviderManager::ColorMode::kDark
+            ? kDarkColor
+            : kLightColor};
+  }
+};
+
+TEST_F(WidgetColorModeTest, ColorModeOverride_NoOverride) {
+  ui::TestNativeTheme test_theme;
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  test_theme.SetDarkMode(true);
+  widget->SetNativeThemeForTest(&test_theme);
+
+  widget->SetColorModeOverride({});
+  // Verify that we resolve the dark color when we don't override color mode.
+  EXPECT_EQ(kDarkColor,
+            widget->GetColorProvider()->GetColor(ui::kColorSysPrimary));
+}
+
+TEST_F(WidgetColorModeTest, ColorModeOverride_DarkOverride) {
+  ui::TestNativeTheme test_theme;
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  test_theme.SetDarkMode(false);
+  widget->SetNativeThemeForTest(&test_theme);
+
+  widget->SetColorModeOverride(ui::ColorProviderManager::ColorMode::kDark);
+  // Verify that we resolve the light color even though the theme is dark.
+  EXPECT_EQ(kDarkColor,
+            widget->GetColorProvider()->GetColor(ui::kColorSysPrimary));
+}
+
+TEST_F(WidgetColorModeTest, ColorModeOverride_LightOverride) {
+  ui::TestNativeTheme test_theme;
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  test_theme.SetDarkMode(true);
+  widget->SetNativeThemeForTest(&test_theme);
+
+  widget->SetColorModeOverride(ui::ColorProviderManager::ColorMode::kLight);
+  // Verify that we resolve the light color even though the theme is dark.
+  EXPECT_EQ(kLightColor,
+            widget->GetColorProvider()->GetColor(ui::kColorSysPrimary));
+}
 
 TEST_F(WidgetTest, NativeWindowProperty) {
   const char* key = "foo";
@@ -5430,11 +5500,14 @@ TEST_F(DesktopWidgetTest, StackAboveTest) {
   grandchild_two->ShowInactive();
 
   // Creates the following where Z-Order is from Left to Right.
-  //            Root_one                    Root_two
+  //            root_one                    root_two
   //             /    \                         /
-  //       child_one  child_one_b           child_two
-  //          /                               /
-  // grandchild_one                     grandchild_two
+  //       child_one_b  child_one           child_two
+  //                       /                  /
+  //                 grandchild_one    grandchild_two
+  //
+  // Note: child_one and grandchild_one were brought to front
+  //       when grandchild_one was shown.
 
   // Child elements are stacked above parent.
   EXPECT_TRUE(child_one->IsStackedAbove(root_one->GetNativeView()));
@@ -5443,8 +5516,8 @@ TEST_F(DesktopWidgetTest, StackAboveTest) {
   EXPECT_TRUE(grandchild_two->IsStackedAbove(root_two->GetNativeView()));
 
   // Siblings with higher z-order are stacked correctly.
-  EXPECT_TRUE(child_one_b->IsStackedAbove(child_one->GetNativeView()));
-  EXPECT_TRUE(child_one_b->IsStackedAbove(grandchild_one->GetNativeView()));
+  EXPECT_TRUE(child_one->IsStackedAbove(child_one_b->GetNativeView()));
+  EXPECT_TRUE(grandchild_one->IsStackedAbove(child_one_b->GetNativeView()));
 
   // Root elements are stacked above child of a root with lower z-order.
   EXPECT_TRUE(root_two->IsStackedAbove(root_one->GetNativeView()));
@@ -5464,7 +5537,7 @@ TEST_F(DesktopWidgetTest, StackAboveTest) {
   EXPECT_FALSE(child_one_b->IsStackedAbove(child_two->GetNativeView()));
   EXPECT_FALSE(grandchild_one->IsStackedAbove(grandchild_two->GetNativeView()));
   EXPECT_FALSE(grandchild_one->IsStackedAbove(root_two->GetNativeView()));
-  EXPECT_FALSE(grandchild_one->IsStackedAbove(child_one_b->GetNativeView()));
+  EXPECT_FALSE(child_one_b->IsStackedAbove(grandchild_one->GetNativeView()));
 }
 
 #endif  // BUILDFLAG(IS_WIN)

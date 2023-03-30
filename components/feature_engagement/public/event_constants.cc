@@ -19,6 +19,7 @@ const char kClosedTabWithEightOrMore[] = "closed_tab_with_eight_or_more";
 const char kReadingListItemAdded[] = "reading_list_item_added";
 const char kReadingListMenuOpened[] = "reading_list_menu_opened";
 const char kBookmarkStarMenuOpened[] = "bookmark_star_menu_opened";
+const char kCustomizeChromeOpened[] = "customize_chrome_opened";
 
 const char kReopenTabConditionsMet[] = "reopen_tab_conditions_met";
 const char kTabReopened[] = "tab_reopened";
@@ -86,6 +87,8 @@ const char kBlueDotPromoOverflowMenuDismissed[] =
     "blue_dot_promo_overflow_menu_dismissed";
 const char kBlueDotPromoSettingsDismissed[] =
     "blue_dot_promo_settings_dismissed";
+const char kCredentialProviderExtensionPromoSnoozed[] =
+    "credential_provider_extension_promo_snoozed";
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_ANDROID)

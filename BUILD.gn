@@ -199,6 +199,7 @@ group("gn_all") {
       "//third_party/blink/renderer/platform/wtf:wtf_unittests",
       "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
       "//tools/imagediff",
+      "//tools/memory:all",
       "//ui/display:display_unittests",
       "//ui/gl:gl_unittests",
       "//ui/latency:latency_unittests",
@@ -434,10 +435,6 @@ group("gn_all") {
       "//third_party/breakpad:minidump-2-core",
       "//tools/dump_process_memory:dump_process",
     ]
-  }
-
-  if (is_linux || is_chromeos || is_android || is_mac) {
-    deps += [ "//tools/memory/partition_allocator:all" ]
   }
 
   if (is_chromeos_ash) {
@@ -855,23 +852,28 @@ group("all_rust") {
   deps = [ ":rust_build_tests" ]
 
   if (toolchain_has_rust) {
-    deps += [
-      "//mojo/public/rust",
-      "//mojo/public/rust:mojo_rust_tests",
-
-      # TODO(crbug.com/1291994): Determine whether it makes sense to build/run
-      # this even on Android. If not, remove this and figure out how to run it
-      # only on desktop testers.
-      "//tools/crates/gnrt:gnrt_unittests",
-      "//tools/crates/gnrt($host_toolchain)",
-    ]
+    if (enable_rust_mojo) {
+      deps += [
+        "//mojo/public/rust",
+        "//mojo/public/rust:mojo_rust_tests",
+      ]
+    }
+    if (enable_rust_gnrt) {
+      deps += [
+        # TODO(crbug.com/1291994): Determine whether it makes sense to build/run
+        # this even on Android. If not, remove this and figure out how to run it
+        # only on desktop testers.
+        "//tools/crates/gnrt:gnrt_unittests",
+        "//tools/crates/gnrt($host_toolchain)",
+      ]
+    }
   }
-  if (enable_rust) {
+  if (enable_rust_gtest_interop) {
     deps += [ "//testing/rust_gtest_interop:rust_gtest_interop_unittests" ]
   }
 }
 
-# This group and the following exist to give targets for the waterfall to refer to.
+# This group exists to give targets for the waterfall to refer to.
 group("rust_build_tests") {
   testonly = true
   deps = [ "//build/rust/tests" ]
@@ -1026,10 +1028,10 @@ if (is_chromeos_ash) {
     if (use_v4l2_codec || use_vaapi) {
       data_deps += [
         "//components/chromeos_camera:jpeg_encode_accelerator_unittest",
-        "//media/gpu:video_decode_accelerator_perf_tests",
-        "//media/gpu:video_decode_accelerator_tests",
-        "//media/gpu:video_encode_accelerator_perf_tests",
-        "//media/gpu:video_encode_accelerator_tests",
+        "//media/gpu/test/:video_decode_accelerator_perf_tests",
+        "//media/gpu/test/:video_decode_accelerator_tests",
+        "//media/gpu/test/:video_encode_accelerator_perf_tests",
+        "//media/gpu/test/:video_encode_accelerator_tests",
         "//media/gpu/chromeos:image_processor_test",
       ]
       if (use_vaapi) {
@@ -1557,7 +1559,7 @@ if (!is_ios) {
       "--ignore-default-expectations",
       "--additional-expectations",
       "@WrappedPath(../../third_party/blink/web_tests/WebGPUExpectations)",
-      "--isolated-script-test-filter=wpt_internal/webgpu/web_platform/reftests/*",
+      "--isolated-script-test-filter=wpt_internal/webgpu/*",
     ]
 
     data_deps = [

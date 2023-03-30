@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -48,12 +49,41 @@ constexpr ShapeModifier kNoLowerLeftArc = 0x01;
 // Exclude the lower right arc.
 constexpr ShapeModifier kNoLowerRightArc = 0x02;
 
+void DrawHighlight(gfx::Canvas* canvas,
+                   const SkPoint& p,
+                   SkScalar radius,
+                   SkColor color) {
+  // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
+  const SkColor4f colors[2] = {
+      SkColor4f::FromColor(color),
+      SkColor4f::FromColor(SkColorSetA(color, SK_AlphaTRANSPARENT))};
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setShader(cc::PaintShader::MakeRadialGradient(
+      p, radius, colors, nullptr, 2, SkTileMode::kClamp));
+  canvas->sk_canvas()->drawRect(
+      SkRect::MakeXYWH(p.x() - radius, p.y() - radius, radius * 2, radius * 2),
+      flags);
+}
+
+// Updates a target value, returning true if it changed.
+template <class T>
+bool UpdateValue(T* dest, const T& src) {
+  if (*dest == src) {
+    return false;
+  }
+  *dest = src;
+  return true;
+}
+
 // Tab style implementation for the GM2 refresh (Chrome 69).
 class GM2TabStyle : public TabStyleViews {
  public:
   explicit GM2TabStyle(Tab* tab);
   GM2TabStyle(const GM2TabStyle&) = delete;
   GM2TabStyle& operator=(const GM2TabStyle&) = delete;
+
+  const Tab* tab() const { return tab_; }
 
  protected:
   // TabStyle:
@@ -71,6 +101,15 @@ class GM2TabStyle : public TabStyleViews {
   void SetHoverLocation(const gfx::Point& location) override;
   void ShowHover(ShowHoverStyle style) override;
   void HideHover(HideHoverStyle style) override;
+
+  // Painting helper functions:
+  virtual SkColor GetTabBackgroundColor(TabActive active) const;
+
+  // Returns the thickness of the stroke drawn around the top and sides of the
+  // tab. Only active tabs may have a stroke, and not in all cases. If there
+  // is no stroke, returns 0. If |should_paint_as_active| is true, the tab is
+  // treated as an active tab regardless of its true current state.
+  virtual int GetStrokeThickness(bool should_paint_as_active = false) const;
 
  private:
   // Gets the bounds for the leading and trailing separators for a tab.
@@ -109,16 +148,8 @@ class GM2TabStyle : public TabStyleViews {
   // Gets the throb value. A value of 0 indicates no throbbing.
   float GetThrobValue() const;
 
-  // Returns the thickness of the stroke drawn around the top and sides of the
-  // tab. Only active tabs may have a stroke, and not in all cases. If there
-  // is no stroke, returns 0. If |should_paint_as_active| is true, the tab is
-  // treated as an active tab regardless of its true current state.
-  int GetStrokeThickness(bool should_paint_as_active = false) const;
-
   bool ShouldPaintTabBackgroundColor(TabActive active,
                                      bool has_custom_background) const;
-
-  SkColor GetTabBackgroundColor(TabActive active) const;
 
   // When selected, non-active, non-hovered tabs are adjacent to each other,
   // there are anti-aliasing artifacts in the overlapped lower arc region. This
@@ -155,32 +186,6 @@ class GM2TabStyle : public TabStyleViews {
 
   std::unique_ptr<GlowHoverController> hover_controller_;
 };
-
-void DrawHighlight(gfx::Canvas* canvas,
-                   const SkPoint& p,
-                   SkScalar radius,
-                   SkColor color) {
-  // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
-  const SkColor4f colors[2] = {
-      SkColor4f::FromColor(color),
-      SkColor4f::FromColor(SkColorSetA(color, SK_AlphaTRANSPARENT))};
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setShader(cc::PaintShader::MakeRadialGradient(
-      p, radius, colors, nullptr, 2, SkTileMode::kClamp));
-  canvas->sk_canvas()->drawRect(
-      SkRect::MakeXYWH(p.x() - radius, p.y() - radius, radius * 2, radius * 2),
-      flags);
-}
-
-// Updates a target value, returning true if it changed.
-template <class T>
-bool UpdateValue(T* dest, const T& src) {
-  if (*dest == src)
-    return false;
-  *dest = src;
-  return true;
-}
 
 // GM2TabStyle -----------------------------------------------------------------
 
@@ -448,7 +453,7 @@ float GM2TabStyle::GetActiveOpacity() const {
   if (tab_->IsActive())
     return 1.0f;
   if (tab_->IsSelected())
-    return kSelectedTabOpacity;
+    return GetSelectedTabOpacity();
   if (tab_->mouse_hovered())
     return GetHoverOpacity();
   return 0.0f;
@@ -715,10 +720,10 @@ float GM2TabStyle::GetHoverOpacity() const {
 
 float GM2TabStyle::GetThrobValue() const {
   const bool is_selected = tab_->IsSelected();
-  double val = is_selected ? kSelectedTabOpacity : 0;
+  double val = is_selected ? GetSelectedTabOpacity() : 0;
 
   if (IsHoverActive()) {
-    constexpr float kSelectedTabThrobScale = 0.95f - kSelectedTabOpacity;
+    const float kSelectedTabThrobScale = 0.95f - GetSelectedTabOpacity();
     const float opacity = GetHoverOpacity();
     const float offset =
         is_selected ? (kSelectedTabThrobScale * opacity) : opacity;
@@ -947,6 +952,40 @@ gfx::RectF GM2TabStyle::ScaleAndAlignBounds(const gfx::Rect& bounds,
   return aligned_bounds;
 }
 
+class GM3TabStyle : public GM2TabStyle {
+ public:
+  explicit GM3TabStyle(Tab* tab);
+  SkColor GetTabBackgroundColor(TabActive active) const override;
+  int GetStrokeThickness(bool should_paint_as_active = false) const override;
+};
+
+GM3TabStyle::GM3TabStyle(Tab* tab) : GM2TabStyle(tab) {}
+
+SkColor GM3TabStyle::GetTabBackgroundColor(TabActive active) const {
+  const auto* cp = tab()->GetWidget()->GetColorProvider();
+  DCHECK(cp);
+  if (!cp) {
+    return gfx::kPlaceholderColor;
+  }
+
+  constexpr ChromeColorIds kColorIds[2][2] = {
+      {kColorTabBackgroundInactiveFrameInactive,
+       kColorTabBackgroundInactiveFrameActive},
+      {kColorTabBackgroundActiveFrameInactive,
+       kColorTabBackgroundActiveFrameActive}};
+
+  return cp->GetColor(kColorIds[int(active == TabActive::kActive)][int(
+      tab()->controller()->ShouldPaintAsActiveFrame())]);
+}
+
+int GM3TabStyle::GetStrokeThickness(bool should_paint_as_active) const {
+  if (tab()->group().has_value() && tab()->IsActive()) {
+    return TabGroupUnderline::kStrokeThickness;
+  }
+
+  return 0;
+}
+
 }  // namespace
 
 // static
@@ -997,6 +1036,10 @@ TabStyleViews::~TabStyleViews() = default;
 
 // static
 std::unique_ptr<TabStyleViews> TabStyleViews::CreateForTab(Tab* tab) {
+  // If refresh is turned on use GM3 styling.
+  if (features::IsChromeRefresh2023()) {
+    return std::make_unique<GM3TabStyle>(tab);
+  }
   return std::make_unique<GM2TabStyle>(tab);
 }
 

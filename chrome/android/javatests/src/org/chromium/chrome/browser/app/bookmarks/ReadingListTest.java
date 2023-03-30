@@ -18,15 +18,15 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.Stage;
 import android.view.MenuItem;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
+import androidx.test.runner.lifecycle.Stage;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -224,8 +224,8 @@ public class ReadingListTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> delegate.openFolder(mBookmarkModel.getMobileFolderId()));
         Assert.assertEquals("Mobile bookmarks", toolbar.getTitle());
-        Assert.assertEquals(SelectableListToolbar.NAVIGATION_BUTTON_BACK,
-                toolbar.getNavigationButtonForTests());
+        Assert.assertEquals(
+                SelectableListToolbar.NavigationButton.BACK, toolbar.getNavigationButtonForTests());
         Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         // Close bookmarks.

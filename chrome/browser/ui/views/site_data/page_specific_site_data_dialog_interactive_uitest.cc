@@ -8,25 +8,33 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_run_loop_timeout.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
+#include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/page_info/page_info_cookies_content_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_main_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/site_data/page_specific_site_data_dialog.h"
 #include "chrome/browser/ui/views/site_data/page_specific_site_data_dialog_controller.h"
 #include "chrome/browser/ui/views/site_data/site_data_row_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
+#include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/page_info/core/features.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
@@ -48,11 +56,45 @@
 
 namespace {
 DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kWebContentsElementId);
+DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kCookieAccessedEvent);
 const char kFirstPartyAllowedRow[] = "FirstPartyAllowedRow";
 const char kThirdPartyBlockedRow[] = "ThirdPartyBlockedRow";
 const char kOnlyPartitionedRow[] = "OnlyPartitionedRow";
 const char kMixedPartitionedRow[] = "MixedPartitionedRow";
 const char kCookiesDialogHistogramName[] = "Privacy.CookiesInUseDialog.Action";
+
+class CookieChangeObserver : public content::WebContentsObserver {
+ public:
+  CookieChangeObserver(content::WebContents* web_contents,
+                       int num_expected_calls)
+      : content::WebContentsObserver(web_contents),
+        num_expected_calls_(num_expected_calls) {}
+  ~CookieChangeObserver() override = default;
+
+ private:
+  void OnCookiesAccessed(content::RenderFrameHost* render_frame_host,
+                         const content::CookieAccessDetails& details) override {
+    OnCookieAccessed();
+  }
+  void OnCookiesAccessed(content::NavigationHandle* navigation,
+                         const content::CookieAccessDetails& details) override {
+    OnCookieAccessed();
+  }
+
+  void OnCookieAccessed() {
+    if (++num_seen_ == num_expected_calls_) {
+      auto* const el =
+          ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
+              kBrowserViewElementId);
+      ui::ElementTracker::GetFrameworkDelegate()->NotifyCustomEvent(
+          el, kCookieAccessedEvent);
+    }
+  }
+
+  int num_seen_ = 0;
+  const int num_expected_calls_;
+};
+
 }  // namespace
 
 class PageSpecificSiteDataDialogInteractiveUiTest
@@ -106,12 +148,17 @@ class PageSpecificSiteDataDialogInteractiveUiTest
   }
 
   // Returns a common sequence of setup steps for all tests.
-  MultiStep NavigateAndOpenDialog(ui::ElementIdentifier section_id) {
+  MultiStep NavigateAndOpenDialog(
+      ui::ElementIdentifier section_id,
+      CookieChangeObserver* cookie_observer = nullptr) {
     const GURL third_party_cookie_page_url =
         https_server()->GetURL("a.test", GetTestPageRelativeURL());
     return Steps(
         InstrumentTab(kWebContentsElementId),
         NavigateWebContents(kWebContentsElementId, third_party_cookie_page_url),
+        cookie_observer
+            ? Steps(WaitForEvent(kBrowserViewElementId, kCookieAccessedEvent))
+            : MultiStep(),
         PressButton(kLocationIconElementId),
         PressButton(PageInfoMainView::kCookieButtonElementId),
         PressButton(PageInfoCookiesContentView::kCookieDialogButton),
@@ -181,9 +228,12 @@ class PageSpecificSiteDataDialogInteractiveUiTest
 
 IN_PROC_BROWSER_TEST_F(PageSpecificSiteDataDialogInteractiveUiTest,
                        FirstPartyAllowed) {
+  CookieChangeObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 6);
   RunTestSequenceInContext(
       context(),
-      NavigateAndOpenDialog(kPageSpecificSiteDataDialogFirstPartySection),
+      NavigateAndOpenDialog(kPageSpecificSiteDataDialogFirstPartySection,
+                            &observer),
       // Name the first row in the first-party section.
       InAnyContext(NameChildView(kPageSpecificSiteDataDialogFirstPartySection,
                                  kFirstPartyAllowedRow, 0)),
@@ -217,9 +267,12 @@ IN_PROC_BROWSER_TEST_F(PageSpecificSiteDataDialogInteractiveUiTest,
 
 IN_PROC_BROWSER_TEST_F(PageSpecificSiteDataDialogInteractiveUiTest,
                        ThirdPartyBlocked) {
+  CookieChangeObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 6);
   RunTestSequenceInContext(
       context(),
-      NavigateAndOpenDialog(kPageSpecificSiteDataDialogThirdPartySection),
+      NavigateAndOpenDialog(kPageSpecificSiteDataDialogThirdPartySection,
+                            &observer),
       // Name the third-party cookies row.
       InAnyContext(NameChildView(kPageSpecificSiteDataDialogThirdPartySection,
                                  kThirdPartyBlockedRow, 2)),
@@ -252,9 +305,12 @@ IN_PROC_BROWSER_TEST_F(PageSpecificSiteDataDialogInteractiveUiTest,
 
 IN_PROC_BROWSER_TEST_F(PageSpecificSiteDataDialogInteractiveUiTest,
                        OnlyPartitionedBlockedThirdPartyCookies) {
+  CookieChangeObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 6);
   RunTestSequenceInContext(
       context(),
-      NavigateAndOpenDialog(kPageSpecificSiteDataDialogThirdPartySection),
+      NavigateAndOpenDialog(kPageSpecificSiteDataDialogThirdPartySection,
+                            &observer),
       // Find the third party section and name the row with partitioned only
       // access (b.test).
       InAnyContext(NameChildView(kPageSpecificSiteDataDialogThirdPartySection,
@@ -282,9 +338,12 @@ IN_PROC_BROWSER_TEST_F(PageSpecificSiteDataDialogInteractiveUiTest,
 
 IN_PROC_BROWSER_TEST_F(PageSpecificSiteDataDialogInteractiveUiTest,
                        MixedPartitionedBlockedThirdPartyCookies) {
+  CookieChangeObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 6);
   RunTestSequenceInContext(
       context(),
-      NavigateAndOpenDialog(kPageSpecificSiteDataDialogThirdPartySection),
+      NavigateAndOpenDialog(kPageSpecificSiteDataDialogThirdPartySection,
+                            &observer),
       // Find the third party section and name the row with mixed storage
       // access (c.test).
       InAnyContext(NameChildView(kPageSpecificSiteDataDialogThirdPartySection,
@@ -314,6 +373,85 @@ IN_PROC_BROWSER_TEST_F(PageSpecificSiteDataDialogInteractiveUiTest,
       CheckRowLabel(kMixedPartitionedRow,
                     IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_ALLOWED_STATE_SUBTITLE),
       Do(ExpectActionCount(PageSpecificSiteDataDialogAction::kSiteAllowed, 1)));
+}
+
+class PageSpecificSiteDataDialogIsolatedWebAppInteractiveUiTest
+    : public PageSpecificSiteDataDialogInteractiveUiTest {
+ public:
+  PageSpecificSiteDataDialogIsolatedWebAppInteractiveUiTest() = default;
+  ~PageSpecificSiteDataDialogIsolatedWebAppInteractiveUiTest() override =
+      default;
+
+ protected:
+  void SetUpFeatureList() override {
+    feature_list_.InitWithFeatures(
+        {page_info::kPageSpecificSiteDataDialog,
+         page_info::kPageInfoCookiesSubpage, features::kIsolatedWebApps,
+         features::kIsolatedWebAppDevMode},
+        {});
+  }
+
+  Browser* InstallAndLaunchIsolatedWebApp() {
+    Profile* profile = browser()->profile();
+    auto iwa_dev_server = web_app::CreateAndStartDevServer(
+        FILE_PATH_LITERAL("web_apps/simple_isolated_app"));
+    auto iwa_url_info = web_app::InstallDevModeProxyIsolatedWebApp(
+        profile, iwa_dev_server->GetOrigin());
+    content::RenderFrameHost* iwa_frame =
+        web_app::OpenIsolatedWebApp(profile, iwa_url_info.app_id());
+
+    CHECK(content::ExecJs(iwa_frame, "localStorage.setItem('key', 'value')"));
+
+    return chrome::FindBrowserWithWebContents(
+        content::WebContents::FromRenderFrameHost(iwa_frame));
+  }
+
+  // Installs and launches an IWA, then opens the PageSpecificSiteData dialog.
+  MultiStep NavigateAndOpenDialog(Browser* iwa_browser,
+                                  ui::ElementIdentifier section_id) {
+    return Steps(
+        InstrumentTab(kWebContentsElementId,
+                      /*tab_index=*/absl::nullopt, iwa_browser),
+        PressButton(kAppMenuButtonElementId),
+        WithView(
+            kAppMenuButtonElementId, base::BindOnce([](AppMenuButton* button) {
+              CHECK(button->IsMenuShowing());
+              button->app_menu()->ExecuteCommand(IDC_WEB_APP_MENU_APP_INFO, 0);
+            })),
+        PressButton(PageInfoMainView::kCookieButtonElementId),
+        PressButton(PageInfoCookiesContentView::kCookieDialogButton),
+        InAnyContext(AfterShow(
+            section_id,
+            ExpectActionCount(PageSpecificSiteDataDialogAction::kDialogOpened,
+                              1))));
+  }
+
+  // Returns a test step that verifies that the hostname for `row` is equal to
+  // `string`.
+  auto CheckHostnameLabel(ElementSpecifier row, const std::u16string& string) {
+    return CheckView(row, base::BindOnce([](SiteDataRowView* row) {
+                       return row->hostname_label_for_testing()->GetText();
+                     }),
+                     string);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    PageSpecificSiteDataDialogIsolatedWebAppInteractiveUiTest,
+    AppNameIsDisplayedInsteadOfHostname) {
+  Browser* iwa_browser = InstallAndLaunchIsolatedWebApp();
+  RunTestSequenceInContext(
+      iwa_browser->window()->GetElementContext(),
+      NavigateAndOpenDialog(iwa_browser,
+                            kPageSpecificSiteDataDialogFirstPartySection),
+      // Name the first row in the first-party section.
+      InAnyContext(NameChildView(kPageSpecificSiteDataDialogFirstPartySection,
+                                 kFirstPartyAllowedRow, 0)),
+      // Verify no empty state label is present.
+      EnsureNotPresent(kPageSpecificSiteDataDialogEmptyStateLabel,
+                       /* in_any_context =*/true),
+      // Verify the hostname label.
+      CheckHostnameLabel(kFirstPartyAllowedRow, u"Simple Isolated App"));
 }
 
 class PageSpecificSiteDataDialogPrivacySandboxInteractiveUiTest

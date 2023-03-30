@@ -405,7 +405,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Arc.App.LowMemoryKills{ArcAppKillDailyBackgroundVms}{ArcAppKillDailyType}"
-    units="Apps" expires_after="2023-04-24">
+    units="Apps" expires_after="2023-09-29">
   <owner>cwd@google.com</owner>
   <owner>cros-vm-technology@google.com</owner>
   <summary>
@@ -471,6 +471,30 @@ chromium-metrics-reviews@google.com.
     <variant name="UnknownApp"
         summary="[Deprecated in M104] ARC app whose type is unknown to Ash."/>
   </token>
+</histogram>
+
+<histogram name="Arc.AppInstall.Manual.InitialSession.NumAppsIncomplete"
+    units="ms" expires_after="2023-09-15">
+  <owner>batoon@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Record the number of manual installs that did not complete after the very
+    first login on a device. This metric is recorded when the ARC session is
+    stopped IFF it is the first session after opting in during the sync consent
+    screen.
+  </summary>
+</histogram>
+
+<histogram name="Arc.AppInstall.Manual.InitialSession.TimeDelta" units="ms"
+    expires_after="2023-09-15">
+  <owner>batoon@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Record the length of time it took to complete a manual install after the
+    very first login on a device. This metric is recorded when a manual install
+    succeeds IFF it is the first session after opting in during the sync consent
+    screen.
+  </summary>
 </histogram>
 
 <histogram name="Arc.AppInstall.PolicySuccessRate" units="%"
@@ -545,7 +569,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AppSync.InitialSession.InstalledAppSize" units="MB"
-    expires_after="2023-07-20">
+    expires_after="2023-09-24">
   <owner>batoon@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1501,8 +1525,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.NearbyShare.ArcBridgeFailure"
-    enum="NearbyShareArcBridgeFailResult" expires_after="2023-03-24">
-  <owner>ttefera@google.com</owner>
+    enum="NearbyShareArcBridgeFailResult" expires_after="2023-09-27">
+  <owner>alanding@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>
     Records any ARC Bridge connection / communication failures using
@@ -1511,8 +1535,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.NearbyShare.DataHandlingFailure"
-    enum="ArcNearbyShareDataHandlingResult" expires_after="2023-08-27">
-  <owner>ttefera@google.com</owner>
+    enum="ArcNearbyShareDataHandlingResult" expires_after="2023-09-27">
+  <owner>alanding@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>
     Records any data handling errors with sharing text or files using
@@ -1521,7 +1545,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.NearbyShare.FileStreamComplete.TimeDelta" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-09-27">
   <owner>alanding@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>
@@ -1532,8 +1556,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.NearbyShare.FileStreamFailure" enum="PlatformFileError"
-    expires_after="2023-08-27">
-  <owner>ttefera@google.com</owner>
+    expires_after="2023-09-27">
+  <owner>alanding@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>
     Records the reason for failing to stream a file using NearbyShare. ARC
@@ -1543,15 +1567,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.NearbyShare.IOFailure" enum="ArcNearbyShareIOErrorResult"
-    expires_after="2023-08-27">
-  <owner>ttefera@google.com</owner>
+    expires_after="2023-09-27">
+  <owner>alanding@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>Records any IO errors while using NearbyShare.</summary>
 </histogram>
 
 <histogram name="Arc.NearbyShare.WindowFound" units="units"
-    expires_after="2023-03-24">
-  <owner>ttefera@google.com</owner>
+    expires_after="2023-09-27">
+  <owner>alanding@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>
     Records the success or failure of attempts to find NearbyShare window. ARC
@@ -1679,7 +1703,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.OptInResult" enum="ArcOptInResult"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>mhasank@google.com</owner>
   <owner>khmel@google.com</owner>
   <owner>arc-core@google.com</owner>
@@ -1856,7 +1880,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Policy.InstallTypesOnDevice" enum="AppInstallType"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>batoon@google.com</owner>
   <owner>arc-commercial@google.com</owner>
   <summary>
@@ -1880,7 +1904,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PrintPreview.PreviewEvent" enum="PrintPreviewHelperEvents"
-    expires_after="2023-04-04">
+    expires_after="2023-10-04">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -2285,6 +2309,37 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Arc.VmDataMigration.AutoResumeCount" units="count"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The number of times ARCVM /data migration has been automatically resumed.
+    This is reported when an auto-resume is triggered, or the maximum number of
+    auto-resumes has been hit for the first time. The value 0 means that no
+    auto-resume has been attempted, and the first auto-resume will be triggered
+    right after the event. Samples in the overflow bucket means that the maximum
+    number of auto-resumes has been reached but the migration is not finished
+    yet, in which case auto-resume is disabled and the user needs to manually
+    resume the migration. Each value should be recorded at most once per user.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.BatteryConsumption" units="%"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The amount of decrease in battery level during ARCVM /data migration,
+    defined by the battery level at the beginning of the migration minus the
+    lowest battery level observed during the migration. Reported at the end of
+    successful migrations. 0 is reported if the battery level has always been
+    higher than that at the beginning of the migration.
+  </summary>
+</histogram>
+
 <histogram name="Arc.VmDataMigration.DesiredDiskImageSizeInGB.{SatisfiedOrNot}"
     units="GB" expires_after="2024-01-01">
   <owner>momohatt@google.com</owner>
@@ -2360,6 +2415,17 @@ chromium-metrics-reviews@google.com.
     migration thread encounters a file operation error. This can be reported
     multiple times for a migration when multiple threads fail at around the same
     time.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.InitialBatteryLevel" units="%"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The battery level when the user enters the UX flow of ARCVM /data migration.
+    This is reported for both new migrations and resumed migrations.
   </summary>
 </histogram>
 
@@ -2477,6 +2543,20 @@ chromium-metrics-reviews@google.com.
     <variant name="Satisfied" summary="satisfied"/>
     <variant name="Unsatisfied" summary="not satisfied"/>
   </token>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.ResumeNotificationShown"
+    enum="BooleanEnabled" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    Counts how many times the notification for resuming ARCVM /data migration is
+    shown while the migration is in progress. The notification is shown (and
+    thus the event is reported) only when auto-resume is disabled after the
+    maximum number of auto-resumes has been reached but the migration has not
+    finished yet.
+  </summary>
 </histogram>
 
 <histogram name="Arc.VmDataMigration.ScreenEvent.On{ArcVmDataMigrationType}"
@@ -2604,7 +2684,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.WindowPredictorLaunch" enum="WindowPredictorLaunchType"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>sstan@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
@@ -15,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -35,6 +37,8 @@ constexpr char kChromeOSSystemExtensionId[] =
     "gogonhoemckpdpadfnjnpgbjpbjnodgc";
 const std::u16string kDiagnosticsPermissionMessage =
     u"Run ChromeOS diagnostic tests";
+const std::u16string kTelemetryEventsPermissionMessage =
+    u"Subscribe to ChromeOS system events";
 const std::u16string kTelemetryPermissionMessage =
     u"Read ChromeOS device information and device data";
 const std::u16string kTelemetrySerialNumberPermissionMessage =
@@ -197,6 +201,51 @@ TEST_F(ChromeOSPermissionMessageUnittest, OsTelemetryNetworkInformation) {
   ASSERT_EQ(1U, active_permissions().size());
   EXPECT_EQ(kTelemetryNetworkInformationPermissionMessage,
             active_permissions()[0]);
+}
+
+TEST_F(ChromeOSPermissionMessageUnittest, OsTelemetryEvents_ErrorFeatureFlag) {
+  CreateAndInstallExtensionWithPermissions(
+      base::Value::List(),
+      extensions::ListBuilder().Append("os.events").Build());
+
+  EXPECT_EQ(0U, optional_permissions().size());
+  EXPECT_EQ(0U, GetInactiveOptionalPermissionMessages().size());
+
+  EXPECT_EQ(0U, required_permissions().size());
+  EXPECT_EQ(0U, active_permissions().size());
+}
+
+class ChromeOSPermissionMessageUnittestWithPendingApprovalPermission
+    : public ChromeOSPermissionMessageUnittest {
+ public:
+  ChromeOSPermissionMessageUnittestWithPendingApprovalPermission() {
+    feature_list_.InitAndEnableFeature(
+        extensions_features::kTelemetryExtensionPendingApprovalApi);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ChromeOSPermissionMessageUnittestWithPendingApprovalPermission,
+       OsTelemetryEventsMessage) {
+  CreateAndInstallExtensionWithPermissions(
+      base::Value::List(),
+      extensions::ListBuilder().Append("os.events").Build());
+
+  ASSERT_EQ(1U, optional_permissions().size());
+  EXPECT_EQ(kTelemetryEventsPermissionMessage, optional_permissions()[0]);
+  ASSERT_EQ(1U, GetInactiveOptionalPermissionMessages().size());
+  EXPECT_EQ(kTelemetryEventsPermissionMessage,
+            GetInactiveOptionalPermissionMessages()[0]);
+  EXPECT_EQ(0U, required_permissions().size());
+  EXPECT_EQ(0U, active_permissions().size());
+
+  GrantOptionalPermissions();
+
+  EXPECT_EQ(0U, GetInactiveOptionalPermissionMessages().size());
+  ASSERT_EQ(1U, active_permissions().size());
+  EXPECT_EQ(kTelemetryEventsPermissionMessage, active_permissions()[0]);
 }
 
 }  // namespace chromeos

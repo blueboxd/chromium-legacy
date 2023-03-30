@@ -10,14 +10,13 @@
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/layout_button.h"
-#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_data.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_item_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_line.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_button.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_baseline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -993,7 +992,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems(
         /* is_parallel_context */ !is_column_, is_last_baseline,
         /* is_flipped */ is_wrap_reverse);
     algorithm_
-        .emplace_back(nullptr, child.Style(), flex_base_content_size,
+        .emplace_back(child.Style(), flex_base_content_size,
                       min_max_sizes_in_main_axis_direction,
                       min_max_sizes_in_cross_axis_direction,
                       main_axis_border_padding, cross_axis_border_padding,
@@ -2098,9 +2097,11 @@ void NGFlexLayoutAlgorithm::AdjustButtonBaseline(
   // We also have a difference in empty buttons. See crbug.com/304848.
 
   const LayoutObject* parent = Node().GetLayoutBox()->Parent();
-  if (!LayoutButton::ShouldCountWrongBaseline(
-          *Node().GetLayoutBox(), Style(), parent ? parent->Style() : nullptr))
+  if (!LayoutNGButton::ShouldCountWrongBaseline(
+          *Node().GetLayoutBox(), Style(),
+          parent ? parent->Style() : nullptr)) {
     return;
+  }
 
   // The button should have at most one child.
   const NGContainerFragmentBuilder::ChildrenVector& children =

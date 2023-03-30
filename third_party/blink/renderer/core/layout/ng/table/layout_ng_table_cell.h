@@ -14,12 +14,16 @@
 namespace blink {
 
 class LayoutNGTable;
+class LayoutNGTableRow;
+class LayoutNGTableSection;
 
 class CORE_EXPORT LayoutNGTableCell
     : public LayoutNGBlockFlowMixin<LayoutBlockFlow>,
       public LayoutNGTableCellInterface {
  public:
   explicit LayoutNGTableCell(Element*);
+
+  static LayoutNGTableCell* CreateAnonymousWithParent(const LayoutObject&);
 
   // NOTE: Rowspan might overflow section boundaries.
   unsigned ComputedRowSpan() const {
@@ -60,6 +64,10 @@ class CORE_EXPORT LayoutNGTableCell
 
   LayoutRectOutsets BorderBoxOutsets() const override;
 
+  LayoutNGTableCell* NextCell() const;
+  LayoutNGTableCell* PreviousCell() const;
+  LayoutNGTableRow* Row() const;
+  LayoutNGTableSection* Section() const;
   LayoutNGTable* Table() const;
 
   // LayoutBlockFlow methods start.
@@ -164,7 +172,7 @@ class CORE_EXPORT LayoutNGTableCell
 template <>
 struct DowncastTraits<LayoutNGTableCell> {
   static bool AllowFrom(const LayoutObject& object) {
-    return object.IsTableCell() && !object.IsTableCellLegacy();
+    return object.IsTableCell();
   }
 };
 

@@ -35,7 +35,7 @@
 #include "components/webxr/android/arcore_install_helper.h"
 #endif  // BUILDFLAG(ENABLE_ARCORE)
 #if BUILDFLAG(ENABLE_CARDBOARD)
-#include "device/vr/android/cardboard/cardboard_device_provider.h"
+#include "components/webxr/android/cardboard_device_provider.h"
 #endif
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -98,14 +98,14 @@ std::unique_ptr<content::XrInstallHelper>
 ChromeXrIntegrationClient::GetInstallHelper(
     device::mojom::XRDeviceId device_id) {
   switch (device_id) {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_GVR_SERVICES)
     case device::mojom::XRDeviceId::GVR_DEVICE_ID:
       return std::make_unique<GvrInstallHelper>();
+#endif  // BUILDFLAG(ENABLE_GVR_SERVICES)
 #if BUILDFLAG(ENABLE_ARCORE)
     case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
       return std::make_unique<webxr::ArCoreInstallHelper>();
 #endif  // BUILDFLAG(ENABLE_ARCORE)
-#endif  // BUILDFLAG(IS_ANDROID)
     default:
       return nullptr;
   }
@@ -120,7 +120,7 @@ content::XRProviderList ChromeXrIntegrationClient::GetAdditionalProviders() {
   // If the cardboard runtime is enabled we want to use it rather than the GVR
   // runtime.
   if (base::FeatureList::IsEnabled(device::features::kEnableCardboard)) {
-    providers.emplace_back(std::make_unique<device::CardboardDeviceProvider>());
+    providers.emplace_back(std::make_unique<webxr::CardboardDeviceProvider>());
     add_gvr_device_provider = false;
   }
 #endif  // ENABLE_CARDBOARD
@@ -133,7 +133,7 @@ content::XRProviderList ChromeXrIntegrationClient::GetAdditionalProviders() {
           base::android::AttachCurrentThread());
 
   providers.push_back(std::make_unique<webxr::ArCoreDeviceProvider>(
-      webxr::ArCompositorDelegateProvider(
+      std::make_unique<webxr::ArCompositorDelegateProvider>(
           std::move(j_ar_compositor_delegate_provider))));
 #endif  // BUILDFLAG(ENABLE_ARCORE)
 #endif  // BUILDFLAG(IS_ANDROID)

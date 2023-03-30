@@ -5,6 +5,8 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_node_applescript.h"
 
 #include "base/check.h"
+#include "base/check_op.h"
+#include "base/guid.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -15,31 +17,49 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #import "components/bookmarks/common/bookmark_metrics.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-@interface BookmarkNodeAppleScript()
+@interface BookmarkNodeAppleScript ()
+
+// Contains the temporary title when a user creates a new item with the title
+// specified like:
+//
+//   make new bookmark folder with properties {title:"foo"}
 @property (nonatomic, copy) NSString* tempTitle;
+
 @end
 
-@implementation BookmarkNodeAppleScript
+@implementation BookmarkNodeAppleScript {
+  base::GUID _bookmarkGUID;
+}
 
 @synthesize tempTitle = _tempTitle;
 
 - (instancetype)init {
   if ((self = [super init])) {
-    BookmarkModel* model = [self bookmarkModel];
-    if (!model) {
-      [self release];
-      return nil;
-    }
+    _bookmarkGUID = base::GUID::GenerateRandomV4();
+    self.uniqueID = [NSString
+        stringWithFormat:@"%s", _bookmarkGUID.AsLowercaseString().c_str()];
+    self.tempTitle = @"";
+  }
+  return self;
+}
 
-    base::scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc] initWithLongLong:model->next_node_id()]);
-    [self setUniqueID:numID];
-    [self setTempTitle:@""];
+- (instancetype)initWithBookmarkNode:(const BookmarkNode*)bookmarkNode {
+  if (!bookmarkNode) {
+    [self release];
+    return nil;
+  }
+
+  if ((self = [super init])) {
+    _bookmarkGUID = bookmarkNode->guid();
+    self.uniqueID = [NSString
+        stringWithFormat:@"%s", _bookmarkGUID.AsLowercaseString().c_str()];
   }
   return self;
 }
@@ -49,68 +69,63 @@ using bookmarks::BookmarkNode;
   [super dealloc];
 }
 
-- (instancetype)initWithBookmarkNode:(const BookmarkNode*)aBookmarkNode {
-  if (!aBookmarkNode) {
-    [self release];
-    return nil;
-  }
-
-  if ((self = [super init])) {
-    // It is safe to be weak, if a bookmark item/folder goes away
-    // (eg user deleting a folder) the applescript runtime calls
-    // bookmarkFolders/bookmarkItems in BookmarkFolderAppleScript
-    // and this particular bookmark item/folder is never returned.
-    _bookmarkNode = aBookmarkNode;
-
-    base::scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc] initWithLongLong:aBookmarkNode->id()]);
-    [self setUniqueID:numID];
-  }
-  return self;
+- (base::GUID)bookmarkGUID {
+  return _bookmarkGUID;
 }
 
-- (void)setBookmarkNode:(const BookmarkNode*)aBookmarkNode {
-  DCHECK(aBookmarkNode);
-  // It is safe to be weak, if a bookmark item/folder goes away
-  // (eg user deleting a folder) the applescript runtime calls
-  // bookmarkFolders/bookmarkItems in BookmarkFolderAppleScript
-  // and this particular bookmark item/folder is never returned.
-  _bookmarkNode = aBookmarkNode;
+- (void)didCreateBookmarkNode:(const bookmarks::BookmarkNode*)bookmarkNode {
+  CHECK(bookmarkNode);
+  CHECK_EQ(bookmarkNode->guid(), _bookmarkGUID);
 
-  base::scoped_nsobject<NSNumber> numID(
-      [[NSNumber alloc] initWithLongLong:aBookmarkNode->id()]);
-  [self setUniqueID:numID];
+  self.title = self.tempTitle;
+}
 
-  [self setTitle:[self tempTitle]];
+- (const bookmarks::BookmarkNode*)bookmarkNode {
+  return bookmarks::GetBookmarkNodeByGUID(self.bookmarkModel, _bookmarkGUID);
 }
 
 - (NSString*)title {
-  if (!_bookmarkNode)
-    return _tempTitle;
+  const BookmarkNode* bookmarkNode = self.bookmarkNode;
+  if (!bookmarkNode) {
+    return self.tempTitle;
+  }
 
-  return base::SysUTF16ToNSString(_bookmarkNode->GetTitle());
+  return base::SysUTF16ToNSString(bookmarkNode->GetTitle());
 }
 
-- (void)setTitle:(NSString*)aTitle {
-  // If the scripter enters |make new bookmarks folder with properties
-  // {title:"foo"}|, the node has not yet been created so title is stored in the
-  // temp title.
-  if (!_bookmarkNode) {
-    [self setTempTitle:aTitle];
+- (void)setTitle:(NSString*)title {
+  // If the scripter enters:
+  //
+  //   make new bookmarks folder with properties {title:"foo"}
+  //
+  // the node has not yet been created so title is stored in the temp title.
+  const BookmarkNode* bookmarkNode = self.bookmarkNode;
+  if (!bookmarkNode) {
+    self.tempTitle = title;
     return;
   }
 
-  BookmarkModel* model = [self bookmarkModel];
-  if (!model)
+  BookmarkModel* model = self.bookmarkModel;
+  if (!model) {
     return;
+  }
 
-  model->SetTitle(_bookmarkNode, base::SysNSStringToUTF16(aTitle),
+  model->SetTitle(bookmarkNode, base::SysNSStringToUTF16(title),
                   bookmarks::metrics::BookmarkEditSource::kOther);
 }
 
 - (NSNumber*)index {
-  const BookmarkNode* parent = _bookmarkNode->parent();
-  size_t index = parent->GetIndexOf(_bookmarkNode).value();
+  const BookmarkNode* bookmarkNode = self.bookmarkNode;
+  if (!bookmarkNode) {
+    return nil;
+  }
+
+  const BookmarkNode* parent = bookmarkNode->parent();
+  if (!parent) {
+    return nil;
+  }
+
+  size_t index = parent->GetIndexOf(bookmarkNode).value();
   // NOTE: AppleScript is 1-Based.
   return @(index + 1);
 }
@@ -119,17 +134,17 @@ using bookmarks::BookmarkNode;
   AppController* appDelegate =
       base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
 
-  Profile* lastProfile = [appDelegate lastProfile];
+  Profile* lastProfile = appDelegate.lastProfile;
   if (!lastProfile) {
-    AppleScript::SetError(AppleScript::errGetProfile);
-    return NULL;
+    AppleScript::SetError(AppleScript::Error::kGetProfile);
+    return nullptr;
   }
 
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(lastProfile);
   if (!model->loaded()) {
-    AppleScript::SetError(AppleScript::errBookmarkModelLoad);
-    return NULL;
+    AppleScript::SetError(AppleScript::Error::kBookmarkModelLoad);
+    return nullptr;
   }
 
   return model;

@@ -27,7 +27,7 @@
 
 - (instancetype)initWithActionHandler:
     (id<PasswordsAccountStorageNoticeActionHandler>)actionHandler {
-  self = [super initWithNibName:nil bundle:nil];
+  self = [super init];
   if (!self) {
     return nil;
   }
@@ -37,12 +37,13 @@
   if (@available(iOS 15, *)) {
     self.modalPresentationStyle = UIModalPresentationPageSheet;
     self.sheetPresentationController.preferredCornerRadius = 20;
-    // Both prefersEdgeAttachedInCompactHeight and mediumDetent serve to keep
-    // the sheet at half-height.
-    self.sheetPresentationController.prefersEdgeAttachedInCompactHeight = YES;
     self.sheetPresentationController.detents = @[
       UISheetPresentationControllerDetent.mediumDetent,
+      UISheetPresentationControllerDetent.largeDetent,
     ];
+    // prefersEdgeAttachedInCompactHeight just controls attaching to the bottom,
+    // not the sheet height.
+    self.sheetPresentationController.prefersEdgeAttachedInCompactHeight = YES;
   } else {
     self.modalPresentationStyle = UIModalPresentationFormSheet;
   }

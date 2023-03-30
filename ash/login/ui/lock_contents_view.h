@@ -236,8 +236,6 @@ class ASH_EXPORT LockContentsView
   bool AreMediaControlsEnabled() const;
 
  private:
-  class AutoLoginUserActivityHandler;
-
   using DisplayLayoutAction = base::RepeatingCallback<void(bool landscape)>;
 
   // Focus the next/previous widget.
@@ -343,8 +341,6 @@ class ASH_EXPORT LockContentsView
 
   // Called when the easy unlock icon is hovered.
   void OnEasyUnlockIconHovered();
-  // Called when the easy unlock icon is tapped.
-  void OnEasyUnlockIconTapped();
 
   // Called when LoginAuthFactorsView enters/exits a state where an auth
   // factor wants to hide the password and pin fields.
@@ -537,11 +533,6 @@ class ASH_EXPORT LockContentsView
 
   // Accelerators handled by login screen.
   std::map<ui::Accelerator, LoginAcceleratorAction> accel_map_;
-
-  // Notifies Chrome when user activity is detected on the login screen so that
-  // the auto-login timer can be reset.
-  std::unique_ptr<AutoLoginUserActivityHandler>
-      auto_login_user_activity_handler_;
 
   BottomIndicatorState bottom_status_indicator_state_ =
       BottomIndicatorState::kNone;

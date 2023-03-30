@@ -164,7 +164,6 @@
 #include "chrome/browser/ui/webui/side_panel/history_clusters/history_clusters_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
-#include "chrome/browser/ui/webui/side_panel/search_companion/search_companion_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/browser/ui/webui/support_tool/support_tool_ui.h"
@@ -217,7 +216,6 @@
 #include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/print_management/url_constants.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"  // nogncheck
-#include "ash/webui/projector_app/trusted_projector_annotator_ui.h"
 #include "ash/webui/projector_app/trusted_projector_ui.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/scanning/url_constants.h"
@@ -291,6 +289,7 @@
 #include "chrome/browser/ui/webui/ash/notification_tester/notification_tester_ui.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
 #include "chrome/browser/ui/webui/ash/power_ui.h"
+#include "chrome/browser/ui/webui/ash/remote_maintenance_curtain_ui.h"
 #include "chrome/browser/ui/webui/ash/set_time_ui.h"
 #include "chrome/browser/ui/webui/ash/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/ash/slow_ui.h"
@@ -501,13 +500,6 @@ WebUIController* NewWebUI<ash::TrustedProjectorUI>(WebUI* web_ui,
                                      Profile::FromWebUI(web_ui)->GetPrefs());
 }
 
-template <>
-WebUIController* NewWebUI<ash::TrustedProjectorAnnotatorUI>(WebUI* web_ui,
-                                                            const GURL& url) {
-  return new ash::TrustedProjectorAnnotatorUI(
-      web_ui, url, Profile::FromWebUI(web_ui)->GetPrefs());
-}
-
 void BindPrintManagement(
     Profile* profile,
     mojo::PendingReceiver<
@@ -581,7 +573,7 @@ void BindEcheStreamOrientationObserver(
   }
 }
 
-void BindEcheConnectionStatusObserver(
+void BindEcheConnectionStatusHandler(
     ash::eche_app::EcheAppManager* manager,
     mojo::PendingReceiver<ash::eche_app::mojom::ConnectionStatusObserver>
         receiver) {
@@ -603,7 +595,7 @@ WebUIController* NewWebUI<ash::eche_app::EcheAppUI>(WebUI* web_ui,
       base::BindRepeating(&BindEcheNotificationGenerator, manager),
       base::BindRepeating(&BindEcheDisplayStreamHandler, manager),
       base::BindRepeating(&BindEcheStreamOrientationObserver, manager),
-      base::BindRepeating(&BindEcheConnectionStatusObserver, manager));
+      base::BindRepeating(&BindEcheConnectionStatusHandler, manager));
 }
 
 template <>
@@ -927,9 +919,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ReadingListUI>;
   if (url.host_piece() == chrome::kChromeUIBookmarksSidePanelHost)
     return &NewWebUI<BookmarksSidePanelUI>;
-  if (url.host_piece() == chrome::kChromeUISearchCompanionSidePanelHost) {
-    return &NewWebUI<SearchCompanionSidePanelUI>;
-  }
   if (url.host_piece() == chrome::kChromeUICustomizeChromeSidePanelHost &&
       customize_chrome::IsSidePanelEnabled()) {
     return &NewWebUI<CustomizeChromeUI>;
@@ -1016,6 +1005,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     }
     return nullptr;
   }
+  if (url.host_piece() == chrome::kChromeUIRemoteManagementCurtainHost) {
+    return &NewWebUI<ash::RemoteMaintenanceCurtainUI>;
+  }
   if (url.host_piece() == ash::kChromeUIDiagnosticsAppHost) {
     return &NewWebUI<ash::DiagnosticsDialogUI>;
   }
@@ -1036,10 +1028,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == ash::kChromeUIProjectorAppHost &&
       IsProjectorAppEnabled(profile)) {
     return &NewWebUI<ash::TrustedProjectorUI>;
-  }
-  if (url.host_piece() == ash::kChromeUIProjectorAnnotatorHost &&
-      IsProjectorAppEnabled(profile)) {
-    return &NewWebUI<ash::TrustedProjectorAnnotatorUI>;
   }
   if (url.host_piece() == ash::eche_app::kChromeUIEcheAppHost &&
       base::FeatureList::IsEnabled(ash::features::kEcheSWA)) {

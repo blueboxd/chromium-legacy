@@ -26,6 +26,7 @@
 #import "components/translate/ios/browser/translate_java_script_feature.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/autofill/bottom_sheet/bottom_sheet_java_script_feature.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/follow/follow_java_script_feature.h"
@@ -43,8 +44,8 @@
 #import "ios/chrome/browser/search_engines/search_engine_java_script_feature.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper_factory.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/elements/windowed_container_view.h"
 #import "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
-#import "ios/chrome/browser/ui/elements/windowed_container_view.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/web/browser_about_rewriter.h"
@@ -302,6 +303,7 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(autofill::FormHandlersJavaScriptFeature::GetInstance());
   features.push_back(
       autofill::SuggestionControllerJavaScriptFeature::GetInstance());
+  features.push_back(BottomSheetJavaScriptFeature::GetInstance());
   features.push_back(FontSizeJavaScriptFeature::GetInstance());
   features.push_back(ImageFetchJavaScriptFeature::GetInstance());
   features.push_back(

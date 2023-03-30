@@ -51,13 +51,6 @@ gpu::raster::RasterInterface* GetSharedGpuRasterInterface() {
   return nullptr;
 }
 
-// Controls how asyc VideoFrame.copyTo() works
-// Enabled - RI::ReadbackARGBPixelsAsync()
-// Disabled - simply call sync readback on a separate thread.
-BASE_FEATURE(kTrullyAsyncRgbVideoFrameCopyTo,
-             "TrullyAsyncRgbVideoFrameCopyTo",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 }  // namespace
 
 namespace WTF {
@@ -148,8 +141,7 @@ void BackgroundReadback::ReadbackTextureBackedFrameToBuffer(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(txt_frame);
 
-  if (base::FeatureList::IsEnabled(kTrullyAsyncRgbVideoFrameCopyTo) &&
-      CanUseRgbReadback(*txt_frame)) {
+  if (CanUseRgbReadback(*txt_frame)) {
     ReadbackRGBTextureBackedFrameToBuffer(txt_frame, src_rect, dest_layout,
                                           dest_buffer, std::move(done_cb));
     return;
@@ -376,8 +368,9 @@ scoped_refptr<media::VideoFrame> SyncReadbackThread::ReadbackToFrame(
 
   auto* ri = context_provider_->RasterInterface();
   auto* gr_context = context_provider_->GetGrContext();
-  return media::ReadbackTextureBackedFrameToMemorySync(*frame, ri, gr_context,
-                                                       &result_frame_pool_);
+  return media::ReadbackTextureBackedFrameToMemorySync(
+      *frame, ri, gr_context, context_provider_->GetCapabilities(),
+      &result_frame_pool_);
 }
 
 bool SyncReadbackThread::ReadbackToBuffer(
@@ -408,7 +401,7 @@ bool SyncReadbackThread::ReadbackToBuffer(
     uint8_t* dest_pixels = dest_buffer.data() + dest_layout.Offset(i);
     if (!media::ReadbackTexturePlaneToMemorySync(
             *frame, i, plane_src_rect, dest_pixels, dest_layout.Stride(i), ri,
-            gr_context)) {
+            gr_context, context_provider_->GetCapabilities())) {
       // It's possible to fail after copying some but not all planes, leaving
       // the output buffer in a corrupt state D:
       return false;

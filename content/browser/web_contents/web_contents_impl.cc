@@ -2933,6 +2933,10 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   int min_width = size.width() < size.height() ? size.width() : size.height();
   prefs.device_scale_adjustment = GetDeviceScaleAdjustment(
       static_cast<int>(min_width / display.device_scale_factor()));
+
+  if (base::FeatureList::IsEnabled(features::kForceOffTextAutosizing)) {
+    prefs.text_autosizing_enabled = false;
+  }
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // GuestViews in the same StoragePartition need to find each other's frames.
@@ -3075,6 +3079,30 @@ void WebContentsImpl::OnCookiesAccessed(RenderFrameHostImpl* rfh,
   void (WebContentsObserver::*func)(RenderFrameHost*,
                                     const CookieAccessDetails&) =
       &WebContentsObserver::OnCookiesAccessed;
+  observers_.NotifyObservers(func, rfh, details);
+}
+
+void WebContentsImpl::OnTrustTokensAccessed(
+    NavigationHandle* navigation,
+    const TrustTokenAccessDetails& details) {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnTrustTokensAccessed",
+                        "navigation_handle", navigation);
+  // Use a variable to select between overloads.
+  void (WebContentsObserver::*func)(NavigationHandle*,
+                                    const TrustTokenAccessDetails&) =
+      &WebContentsObserver::OnTrustTokensAccessed;
+  observers_.NotifyObservers(func, navigation, details);
+}
+
+void WebContentsImpl::OnTrustTokensAccessed(
+    RenderFrameHostImpl* rfh,
+    const TrustTokenAccessDetails& details) {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnTrustTokensAccessed",
+                        "render_frame_host", rfh);
+  // Use a variable to select between overloads.
+  void (WebContentsObserver::*func)(RenderFrameHost*,
+                                    const TrustTokenAccessDetails&) =
+      &WebContentsObserver::OnTrustTokensAccessed;
   observers_.NotifyObservers(func, rfh, details);
 }
 
@@ -4050,14 +4078,10 @@ FrameTree* WebContentsImpl::CreateNewWindow(
   scoped_refptr<SiteInstance> site_instance;
   if (params.opener_suppressed) {
     if (is_guest) {
-      // For site-isolated guests, noopener windows can be created in a new
-      // BrowsingInstance as long as they preserve the guest's StoragePartition.
-      // For non-isolated guests, we preserve the legacy behavior of keeping the
-      // new window in the old SiteInstance and BrowsingInstance.
-      site_instance = SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled()
-                          ? SiteInstance::CreateForGuest(GetBrowserContext(),
-                                                         partition_config)
-                          : source_site_instance;
+      // For guests, noopener windows can be created in a new BrowsingInstance
+      // as long as they preserve the guest's StoragePartition.
+      site_instance =
+          SiteInstance::CreateForGuest(GetBrowserContext(), partition_config);
     } else {
       site_instance = SiteInstance::Create(GetBrowserContext());
     }

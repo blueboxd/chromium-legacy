@@ -12,6 +12,7 @@
 #include "base/barrier_callback.h"
 #include "base/feature_list.h"
 #include "base/functional/callback.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/bad_message.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -58,29 +59,21 @@ const std::vector<FormData>& WithNewVersion(
 ContentAutofillDriver::ContentAutofillDriver(
     content::RenderFrameHost* render_frame_host,
     ContentAutofillRouter* autofill_router)
-    : render_frame_host_(render_frame_host), autofill_router_(autofill_router) {
-  if (render_frame_host_) {  // Can be nullptr only in tests.
-    suppress_showing_ime_callback_ = base::BindRepeating(
-        [](const ContentAutofillDriver* driver) {
-          return driver->should_suppress_keyboard_;
-        },
-        base::Unretained(this));
-    render_frame_host_->GetRenderWidgetHost()->AddSuppressShowingImeCallback(
-        suppress_showing_ime_callback_);
-  }
+    : render_frame_host_(render_frame_host),
+      autofill_router_(autofill_router),
+      suppress_showing_ime_callback_(base::BindRepeating(
+          [](const ContentAutofillDriver* driver) {
+            return driver->should_suppress_keyboard_;
+          },
+          base::Unretained(this))) {
+  render_frame_host_->GetRenderWidgetHost()->AddSuppressShowingImeCallback(
+      suppress_showing_ime_callback_);
 }
 
 ContentAutofillDriver::~ContentAutofillDriver() {
-  if (autofill_router_)  // Can be nullptr only in tests.
-    autofill_router_->UnregisterDriver(this);
-
-  // DONOTSUBMIT: Need to check whether RWH can be nullptr. I can't find the
-  // test right now where this happened, so I want to run the bots again. I had
-  // a hypothesis why that happened in that test.
-  if (render_frame_host_) {  // Can be nullptr only in tests.
-    render_frame_host_->GetRenderWidgetHost()->RemoveSuppressShowingImeCallback(
-        suppress_showing_ime_callback_);
-  }
+  autofill_router_->UnregisterDriver(this);
+  render_frame_host_->GetRenderWidgetHost()->RemoveSuppressShowingImeCallback(
+      suppress_showing_ime_callback_);
 }
 
 void ContentAutofillDriver::TriggerReparse() {
@@ -158,7 +151,7 @@ bool ContentAutofillDriver::RendererIsAvailable() {
 void ContentAutofillDriver::PopupHidden() {
   // If the unmask prompt is shown, keep showing the preview. The preview
   // will be cleared when the prompt closes.
-  if (autofill_manager_ && autofill_manager_->ShouldClearPreviewedForm()) {
+  if (autofill_manager_->ShouldClearPreviewedForm()) {
     RendererShouldClearPreviewedForm();
   }
 }
@@ -315,8 +308,9 @@ void ContentAutofillDriver::SetFormToBeProbablySubmitted(
       form ? absl::make_optional<FormData>(
                  GetFormWithFrameAndFormMetaData(*form))
            : absl::nullopt,
-      [](ContentAutofillDriver* target, const absl::optional<FormData>& form) {
-        target->potentially_submitted_form_ = form;
+      [](ContentAutofillDriver* target, const FormData* optional_form) {
+        target->potentially_submitted_form_ =
+            base::OptionalFromPtr(optional_form);
       });
 }
 
@@ -336,7 +330,7 @@ void ContentAutofillDriver::FormsSeen(
     removed_forms.push_back({frame_token, form_id});
 
   autofill_router().FormsSeen(
-      this, updated_forms, removed_forms,
+      this, std::move(updated_forms), removed_forms,
       [](ContentAutofillDriver* target,
          const std::vector<FormData>& updated_forms,
          const std::vector<FormGlobalId>& removed_forms) {
@@ -381,7 +375,7 @@ void ContentAutofillDriver::TextFieldDidChange(const FormData& raw_form,
   FormFieldData field = raw_field;
   SetFrameAndFormMetaData(form, &field);
   autofill_router().TextFieldDidChange(
-      this, form, field,
+      this, std::move(form), field,
       TransformBoundingBoxToViewportCoordinates(bounding_box), timestamp,
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const gfx::RectF& bounding_box,
@@ -400,7 +394,7 @@ void ContentAutofillDriver::TextFieldDidScroll(const FormData& raw_form,
   FormFieldData field = raw_field;
   SetFrameAndFormMetaData(form, &field);
   autofill_router().TextFieldDidScroll(
-      this, form, field,
+      this, std::move(form), field,
       TransformBoundingBoxToViewportCoordinates(bounding_box),
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const gfx::RectF& bounding_box) {
@@ -419,7 +413,7 @@ void ContentAutofillDriver::SelectControlDidChange(
   FormFieldData field = raw_field;
   SetFrameAndFormMetaData(form, &field);
   autofill_router().SelectControlDidChange(
-      this, form, field,
+      this, std::move(form), field,
       TransformBoundingBoxToViewportCoordinates(bounding_box),
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const gfx::RectF& bounding_box) {
@@ -440,7 +434,7 @@ void ContentAutofillDriver::AskForValuesToFill(
   FormFieldData field = raw_field;
   SetFrameAndFormMetaData(form, &field);
   autofill_router().AskForValuesToFill(
-      this, form, field,
+      this, std::move(form), field,
       TransformBoundingBoxToViewportCoordinates(bounding_box),
       autoselect_first_suggestion, form_element_was_clicked,
       [](ContentAutofillDriver* target, const FormData& form,
@@ -487,7 +481,7 @@ void ContentAutofillDriver::FocusOnFormField(const FormData& raw_form,
   FormFieldData field = raw_field;
   SetFrameAndFormMetaData(form, &field);
   autofill_router().FocusOnFormField(
-      this, form, field,
+      this, std::move(form), field,
       TransformBoundingBoxToViewportCoordinates(bounding_box),
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const gfx::RectF& bounding_box) {
@@ -549,7 +543,7 @@ void ContentAutofillDriver::JavaScriptChangedAutofilledValue(
   FormFieldData field = raw_field;
   SetFrameAndFormMetaData(form, &field);
   autofill_router().JavaScriptChangedAutofilledValue(
-      this, form, field, old_value,
+      this, std::move(form), field, old_value,
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const std::u16string& old_value) {
         target->autofill_manager_->OnJavaScriptChangedAutofilledValue(
@@ -575,40 +569,11 @@ void ContentAutofillDriver::OnContextMenuShownInField(
       });
 }
 
-void ContentAutofillDriver::DidNavigateFrame(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument()) {
-    // On page refresh, reset the rate limiter for fetching authentication
-    // details for credit card unmasking.
-    if (autofill_manager_ && autofill_manager_->GetCreditCardAccessManager()) {
-      autofill_manager_->GetCreditCardAccessManager()
-          ->SignalCanFetchUnmaskDetails();
-    }
-    return;
-  }
-
-  // If the navigation happened in the main frame and the BrowserAutofillManager
-  // exists (not in Android Webview), and the AutofillOfferManager exists (not
-  // in Incognito windows), notifies the navigation event.
-  if (navigation_handle->IsInPrimaryMainFrame() && autofill_manager_ &&
-      autofill_manager_->GetOfferManager()) {
-    autofill_manager_->GetOfferManager()->OnDidNavigateFrame(
-        autofill_manager_->client());
-  }
-
-  // When IsServedFromBackForwardCache or IsPrerendererdPageActivation, the form
-  // data is not parsed again. So, we should keep and use the autofill manager's
-  // form_structures from BFCache or prerendering page for form submit.
-  if (navigation_handle->IsServedFromBackForwardCache() ||
-      navigation_handle->IsPrerenderedPageActivation()) {
-    return;
-  }
-
+void ContentAutofillDriver::Reset() {
   // The driver's RenderFrameHost may be used for the page we're navigating to.
   // Therefore, we need to forget all forms of the page we're navigating from.
   submitted_forms_.clear();
-  if (autofill_router_)  // Can be nullptr only in tests.
-    autofill_router_->UnregisterDriver(this);
+  autofill_router_->UnregisterDriver(this);
   autofill_manager_->Reset();
 }
 

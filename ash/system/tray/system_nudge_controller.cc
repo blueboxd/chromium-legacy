@@ -109,7 +109,9 @@ void SystemNudgeController::RecordNudgeAction(NudgeCatalogName catalog_name) {
 
 void SystemNudgeController::ShowNudge() {
   if (nudge_ && !nudge_->widget()->IsClosed()) {
-    hide_nudge_timer_->AbandonAndStop();
+    if (hide_nudge_timer_) {
+      hide_nudge_timer_->AbandonAndStop();
+    }
     nudge_->Close();
   }
 

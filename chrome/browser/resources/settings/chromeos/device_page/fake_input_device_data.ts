@@ -2,14 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TimeDelta} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
-
 import {Keyboard, MetaKey, ModifierKey, Mouse, PointingStick, Touchpad} from './input_device_settings_types.js';
-
-
-export function mojoTimeDelta(timeDelta: number): TimeDelta {
-  return {microseconds: BigInt(Math.floor(timeDelta * 1000))};
-}
 
 export const fakeKeyboards: Keyboard[] = [
   {
@@ -33,9 +26,6 @@ export const fakeKeyboards: Keyboard[] = [
       },
       topRowAreFkeys: false,
       suppressMetaFkeyRewrites: false,
-      autoRepeatEnabled: false,
-      autoRepeatDelay: mojoTimeDelta(2000),
-      autoRepeatInterval: mojoTimeDelta(2000),
     },
   },
   {
@@ -56,9 +46,6 @@ export const fakeKeyboards: Keyboard[] = [
       modifierRemappings: {},
       topRowAreFkeys: true,
       suppressMetaFkeyRewrites: true,
-      autoRepeatEnabled: true,
-      autoRepeatDelay: mojoTimeDelta(150),
-      autoRepeatInterval: mojoTimeDelta(20),
     },
   },
   {
@@ -79,9 +66,52 @@ export const fakeKeyboards: Keyboard[] = [
       modifierRemappings: {[ModifierKey.kAlt]: ModifierKey.kAssistant},
       topRowAreFkeys: true,
       suppressMetaFkeyRewrites: false,
-      autoRepeatEnabled: true,
-      autoRepeatDelay: mojoTimeDelta(500),
-      autoRepeatInterval: mojoTimeDelta(100),
+    },
+  },
+];
+
+export const fakeKeyboards2: Keyboard[] = [
+  {
+    id: 9,
+    deviceKey: 'test:key',
+    name: 'Fake ERGO K860',
+    isExternal: true,
+    metaKey: MetaKey.kCommand,
+    modifierKeys: [
+      ModifierKey.kAlt,
+      ModifierKey.kBackspace,
+      ModifierKey.kCapsLock,
+      ModifierKey.kControl,
+      ModifierKey.kEscape,
+      ModifierKey.kMeta,
+    ],
+    settings: {
+      modifierRemappings: {
+        [ModifierKey.kControl]: ModifierKey.kCapsLock,
+        [ModifierKey.kCapsLock]: ModifierKey.kAssistant,
+      },
+      topRowAreFkeys: false,
+      suppressMetaFkeyRewrites: false,
+    },
+  },
+  {
+    id: 10,
+    deviceKey: 'test:key',
+    name: 'Fake AT Translated Set 2 ',
+    isExternal: false,
+    metaKey: MetaKey.kSearch,
+    modifierKeys: [
+      ModifierKey.kAlt,
+      ModifierKey.kAssistant,
+      ModifierKey.kBackspace,
+      ModifierKey.kControl,
+      ModifierKey.kEscape,
+      ModifierKey.kMeta,
+    ],
+    settings: {
+      modifierRemappings: {},
+      topRowAreFkeys: true,
+      suppressMetaFkeyRewrites: true,
     },
   },
 ];
@@ -127,6 +157,28 @@ export const fakeTouchpads: Touchpad[] = [
   },
 ];
 
+export const fakeTouchpads2: Touchpad[] = [
+  {
+    id: 11,
+    deviceKey: 'test:key',
+    name: 'Fake Default Touchpad',
+    isExternal: false,
+    isHaptic: true,
+    settings: {
+      sensitivity: 1,
+      reverseScrolling: false,
+      accelerationEnabled: false,
+      tapToClickEnabled: false,
+      threeFingerClickEnabled: false,
+      tapDraggingEnabled: false,
+      scrollSensitivity: 1,
+      scrollAcceleration: false,
+      hapticSensitivity: 1,
+      hapticEnabled: false,
+    },
+  },
+];
+
 export const fakeMice: Mouse[] = [
   {
     id: 4,
@@ -158,6 +210,23 @@ export const fakeMice: Mouse[] = [
   },
 ];
 
+export const fakeMice2: Mouse[] = [
+  {
+    id: 13,
+    deviceKey: 'test:key',
+    name: 'Fake Razer Basilisk V3',
+    isExternal: true,
+    settings: {
+      swapRight: true,
+      sensitivity: 5,
+      reverseScrolling: true,
+      accelerationEnabled: true,
+      scrollSensitivity: 5,
+      scrollAcceleration: true,
+    },
+  },
+];
+
 export const fakePointingSticks: PointingStick[] = [
   {
     id: 6,
@@ -174,6 +243,20 @@ export const fakePointingSticks: PointingStick[] = [
     id: 7,
     deviceKey: 'test:key',
     name: 'Lexmark-Unicomp FSR',
+    isExternal: true,
+    settings: {
+      swapRight: true,
+      sensitivity: 5,
+      accelerationEnabled: true,
+    },
+  },
+];
+
+export const fakePointingSticks2: PointingStick[] = [
+  {
+    id: 12,
+    deviceKey: 'test:key',
+    name: 'Fake Lexmark-Unicomp FSR',
     isExternal: true,
     settings: {
       swapRight: true,

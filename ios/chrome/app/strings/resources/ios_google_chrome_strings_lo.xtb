@@ -40,6 +40,7 @@
 <translation id="3167189358072330585">ບັນຊີຂອງທ່ານໃຊ້ບໍ່ໄດ້ຢູ່ໃນ Google Chrome. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງໂດເມນຂອງທ່ານ ຫຼືໃຊ້ບັນຊີ Google ປົກກະຕິ ເພື່ອເຂົ້າສູ່ລະບົບ.</translation>
 <translation id="3173834708294760622">ໜ້າ Google Chrome</translation>
 <translation id="3196546062792660320">Chrome ຊ່ວຍທ່ານປະຢັດເວລາໂດຍການນຳເອົາບັນຊີຂອງທ່ານມາສູ່ເວັບ. ທ່ານສາມາດເພີ່ມ ຫຼື ລຶບບັນຊີອອກໄດ້ໃນການຕັ້ງຄ່າ.</translation>
+<translation id="322254490661677575">ເພື່ອໃຊ້ ແລະ ບັນທຶກຂໍ້ມູນ Chrome ໃນບັນຊີ Google ຂອງທ່ານ, ກະລຸນາໃສ່ລະຫັດຜ່ານຂອງທ່ານ.</translation>
 <translation id="3282568296779691940">ລົງຊື່ເຂົ້າ​ໃຊ້ Chrome</translation>
 <translation id="3345341804167540816">ໃຊ້ Chrome ຢູ່​ທຸກ​ບ່ອນ</translation>
 <translation id="3503014945441706099">ຮັບSafe Browsing ທີ່ປັບປຸງດີຂຶ້ນສຳລັບໂປຣໄຟລ໌ Chrome ນີ້ນຳ</translation>
@@ -52,6 +53,7 @@
 <translation id="3980220367029651214">ທ່ານກຳລັງປ່ຽນບັນຊີຊິ້ງຂໍ້ມູນຈາກ <ph name="USER_EMAIL1" /> ເປັນ <ph name="USER_EMAIL2" />. ຂໍ້ມູນ Chrome ທີ່ມີຢູ່ຖືກຈັດການໂດຍ <ph name="DOMAIN" />. ນີ້ຈະລຶບຂໍ້ມູນຂອງທ່ານອອກຈາກອຸປະກອນນີ້, ແຕ່ຂໍ້ມູນຂອງທ່ານຈະຍັງຄົງຢູ່ໃນ <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">ອົງການຂອງທ່ານກຳນົດໃຫ້ທ່ານສືບຕໍ່ອອກຈາກລະບົບ Chrome.</translation>
 <translation id="3988789688219830639">Google Chrome ບໍ່​ມີ​ການ​ເຂົ້າເຖິງຮູບຖ່າຍ ຫຼື ​ວິ​ດີ​ໂອ​ຂອງ​ທ່ານ. ເປີດ​ໃຊ້​ການ​ເຂົ້າ​ເຖິງ​ຢູ່​ໃນ​ການ​ຕັ້ງ​ຄ່າ iOS &gt; Privacy &gt; Photos.</translation>
+<translation id="4064699917955374540">ເພື່ອໃຊ້ ແລະ ບັນທຶກຂໍ້ມູນ Chrome ໃນບັນຊີ Google ຂອງທ່ານ, ກະລຸນາຢັ້ງຢືນວ່າແມ່ນທ່ານ.</translation>
 <translation id="417201473131094001">ບໍ່ຮອງຮັບໃນ Chrome Canary</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> ກຳລັງໃຊ້ Chrome ຢູ່ ແລະ ເປີດບຸກມາກ, ລະຫັດຜ່ານ ແລະ ການຕັ້ງຄ່າອື່ນໆປະໄວ້ຢູ່ອຸປະກອນນີ້.</translation>
 <translation id="424864128008805179">ອອກຈາກລະບົບ Chrome ບໍ?</translation>
@@ -68,6 +70,7 @@
 <translation id="5119391094379141756">ເລືອກ Chrome</translation>
 <translation id="5162467219239570114">Chrome ເກົ່າແລ້ວ. ຖ້າບໍ່ມີການອັບເດດໃນ <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, ມັນເປັນໄປໄດ້ວ່າອຸປະກອນຂອງທ່ານບໍ່ຮອງຮັບ Chrome ເວີຊັນໃໝ່ອີກຕໍ່ໄປ.</translation>
 <translation id="5389212809648216794">Google Chrome ບໍ່ສາມາດໃຊ້ກ້ອງຖ່າຍຮູບຂອງທ່ານໄດ້ ເພາະວ່າກ້ອງຖືກໃຊ້ໂດຍແອັບພລິເຄຊັນອື່ນ</translation>
+<translation id="5395376160638294582">ກວດສອບໃຫ້ແນ່ໃຈວ່າທ່ານສາມາດໃຊ້ຂໍ້ມູນ Chrome ໃນບັນຊີ Google ຂອງທ່ານໄດ້ສະເໝີ</translation>
 <translation id="5460571915754665838">4. ເລືອກ Chrome</translation>
 <translation id="5492504007368565877">ຕົວຈັດການລະຫັດຜ່ານ Google ບໍ່ສາມາດກວດສອບລະຫັດຜ່ານຂອງທ່ານໄດ້.</translation>
 <translation id="5552137475244467770">Chrome ກວດລະຫັດຜ່ານຂອງທ່ານເປັນໄລຍະໂດຍທຽບກັບລາຍການທີ່ມີການເຜີຍແຜ່ທາງອອນລາຍ. ໃນເວລາເຮັດສິ່ງນີ້, ພວກເຮົາເຂົ້າລະຫັດຊື່ຜູ້ໃຊ້ ແລະ ລະຫັດຜ່ານຂອງທ່ານໄວ້ ເພື່ອບໍ່ໃຫ້ຜູ້ໃດ ຮວມທັງ Google ສາມາດອ່ານພວກມັນໄດ້.</translation>
@@ -122,6 +125,7 @@
 <translation id="8370517070665726704">ລິຂະສິດ <ph name="YEAR" /> Google LLC. ສະຫງວນສິດທັງໝົດ.</translation>
 <translation id="840168496893712993">ການ​ເພີ່ມ​ໃສ່​ບາງ​ອັນ​ເຮັດ​ໃຫ້ Chrome ເກີດ​ຂັດ​ຂ້ອງ. ກະ​ລຸ​ນາ​ລອງຖອນ​ຕິດ​ຕັ້ງ​ພວກ​ມັນ.</translation>
 <translation id="8414886616817913619">ອົງການຂອງທ່ານຕ້ອງການໃຫ້ທ່ານເຂົ້າສູ່ລະບົບເພື່ອໃຊ້ Chrome. <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
+<translation id="84594714173170813">ໃຊ້ຂໍ້ມູນ Chrome ໃນບັນຊີ Google ຂອງທ່ານຕໍ່ໄປ</translation>
 <translation id="8459495907675268833">ຂໍ້ມູນທີ່ເລືອກໄດ້ຖືກລຶບອອກຈາກ Chrome ແລະ ອຸປະກອນທີ່ຊິ້ງແລ້ວ. ບັນຊີ Google ຂອງທ່ານອາດຈະມີປະຫວັດການທ່ອງເວັບຮູບແບບອື່ນ ເຊັ່ນວ່າ ການຄົ້ນຫາ ແລະ ກິດຈະກຳຈາກການບໍລິການອື່ນຂອງ Google ຢູ່ history.google.com.</translation>
 <translation id="850555388806794946">ເພື່ອເຮັດໃຫ້ Chrome ເປັນໂປຣແກຣມເລີ່ມຕົ້ນຂອງທ່ານ:
   1. ເປີດການຕັ້ງຄ່າ

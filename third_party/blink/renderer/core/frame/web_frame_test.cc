@@ -129,6 +129,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
@@ -229,6 +230,7 @@ using blink::url_test_helpers::ToKURL;
 using testing::_;
 using testing::ElementsAre;
 using testing::Mock;
+using testing::Return;
 
 namespace blink {
 
@@ -298,12 +300,6 @@ void ExecuteScriptInMainWorld(
   ExecuteScriptsInMainWorld(frame, base::make_span(&script_string, 1u),
                             std::move(callback), wait_for_promise,
                             user_gesture);
-}
-
-const char* ViewBackgroundLayerName() {
-  return RuntimeEnabledFeatures::LayoutNGPrintingEnabled()
-             ? "Scrolling background of LayoutNGView #document"
-             : "Scrolling background of LayoutView #document";
 }
 
 }  // namespace
@@ -3150,11 +3146,11 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOne) {
                   .height(),
               1.0f);
 
-    EXPECT_NEAR(0.25f, web_view_helper.GetWebView()->PageScaleFactor(), 0.01f);
-    auto* frame =
-        To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
-    DCHECK(frame);
-    EXPECT_EQ(device_scale_factor, frame->DevicePixelRatio());
+  EXPECT_NEAR(0.25f, web_view_helper.GetWebView()->PageScaleFactor(), 0.01f);
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  DCHECK(frame);
+  EXPECT_EQ(device_scale_factor, frame->DevicePixelRatio());
 }
 
 TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth) {
@@ -3197,12 +3193,12 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth) {
                   .height(),
               4.0f);
 
-    EXPECT_NEAR(kPageZoom, web_view_helper.GetWebView()->PageScaleFactor(),
-                0.01f);
-    auto* frame =
-        To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
-    DCHECK(frame);
-    EXPECT_EQ(device_scale_factor, frame->DevicePixelRatio());
+  EXPECT_NEAR(kPageZoom, web_view_helper.GetWebView()->PageScaleFactor(),
+              0.01f);
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  DCHECK(frame);
+  EXPECT_EQ(device_scale_factor, frame->DevicePixelRatio());
 }
 
 TEST_F(WebFrameTest, NoWideViewportAndNoViewportWithInitialPageScaleOverride) {
@@ -3314,11 +3310,11 @@ TEST_F(WebFrameTest,
                   .height(),
               1.0f);
 
-    EXPECT_NEAR(2.0f, web_view_helper.GetWebView()->PageScaleFactor(), 0.01f);
-    auto* frame =
-        To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
-    DCHECK(frame);
-    EXPECT_EQ(device_scale_factor, frame->DevicePixelRatio());
+  EXPECT_NEAR(2.0f, web_view_helper.GetWebView()->PageScaleFactor(), 0.01f);
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  DCHECK(frame);
+  EXPECT_EQ(device_scale_factor, frame->DevicePixelRatio());
 }
 
 TEST_F(WebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForWideViewport) {
@@ -6792,7 +6788,8 @@ class CompositedSelectionBoundsTest
   static int LayerIdFromNode(const cc::Layer* root_layer, blink::Node* node) {
     Vector<const cc::Layer*> layers;
     if (node->IsDocumentNode()) {
-      layers = CcLayersByName(root_layer, ViewBackgroundLayerName());
+      layers = CcLayersByName(root_layer,
+                              "Scrolling background of LayoutNGView #document");
     } else {
       DCHECK(node->IsElementNode());
       layers = CcLayersByDOMElementId(root_layer,
@@ -7650,7 +7647,8 @@ class TestNewWindowWebFrameClient
       const SessionStorageNamespaceId&,
       bool& consumed_user_gesture,
       const absl::optional<Impression>&,
-      const absl::optional<WebPictureInPictureWindowOptions>&) override {
+      const absl::optional<WebPictureInPictureWindowOptions>&,
+      const WebURL&) override {
     EXPECT_TRUE(false);
     return nullptr;
   }
@@ -8866,7 +8864,9 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   EXPECT_TRUE(document->IsXrOverlay());
 
   const cc::Layer* root_layer = layer_tree_host->root_layer();
-  EXPECT_EQ(1u, CcLayersByName(root_layer, ViewBackgroundLayerName()).size());
+  EXPECT_EQ(1u, CcLayersByName(root_layer,
+                               "Scrolling background of LayoutNGView #document")
+                    .size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "other").size());
   // The overlay is not composited when it's not in full screen.
   EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "overlay").size());
@@ -8878,7 +8878,9 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   EXPECT_TRUE(!layer_tree_host->background_color().isOpaque());
 
   root_layer = layer_tree_host->root_layer();
-  EXPECT_EQ(0u, CcLayersByName(root_layer, ViewBackgroundLayerName()).size());
+  EXPECT_EQ(0u, CcLayersByName(root_layer,
+                               "Scrolling background of LayoutNGView #document")
+                    .size());
   EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "other").size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "overlay").size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "inner").size());
@@ -8890,7 +8892,9 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   document->SetIsXrOverlay(false, overlay);
 
   root_layer = layer_tree_host->root_layer();
-  EXPECT_EQ(1u, CcLayersByName(root_layer, ViewBackgroundLayerName()).size());
+  EXPECT_EQ(1u, CcLayersByName(root_layer,
+                               "Scrolling background of LayoutNGView #document")
+                    .size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "other").size());
   // The overlay is not composited when it's not in full screen.
   EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "overlay").size());
@@ -10529,15 +10533,7 @@ TEST_F(WebFrameTest, SendBeaconFromChildWithRemoteMainFrame) {
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(local_frame);
 }
 
-#if BUILDFLAG(IS_IOS)
-// TODO(crbug.com/1141478)
-#define MAYBE_SiteForCookiesFromChildWithRemoteMainFrame \
-  DISABLED_SiteForCookiesFromChildWithRemoteMainFrame
-#else
-#define MAYBE_SiteForCookiesFromChildWithRemoteMainFrame \
-  SiteForCookiesFromChildWithRemoteMainFrame
-#endif  // BUILDFLAG(IS_IOS)
-TEST_F(WebFrameTest, MAYBE_SiteForCookiesFromChildWithRemoteMainFrame) {
+TEST_F(WebFrameTest, SiteForCookiesFromChildWithRemoteMainFrame) {
   frame_test_helpers::WebViewHelper helper;
   helper.InitializeRemote(SecurityOrigin::Create(ToKURL(not_base_url_)));
 
@@ -11336,6 +11332,63 @@ TEST_F(WebFrameTest, CopyTextInImageDocument) {
   // Clear clipboard data
   system_clipboard->WritePlainText("");
   system_clipboard->CommitWrite();
+}
+
+class SelectionMockWebFrameClient
+    : public frame_test_helpers::TestWebFrameClient {
+ public:
+  MOCK_METHOD(void, DidChangeSelection, (bool, blink::SyncCondition));
+};
+
+TEST_F(WebFrameTest, ImeSelectionCommitDoesNotChangeClipboard) {
+  using blink::ImeTextSpan;
+  using ui::mojom::ImeTextSpanThickness;
+  using ui::mojom::ImeTextSpanUnderlineStyle;
+
+  RegisterMockedHttpURLLoad("foo.html");
+  SelectionMockWebFrameClient web_frame_client;
+
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebLocalFrameImpl* web_frame =
+      web_view_helper
+          .InitializeAndLoad(base_url_ + "foo.html", &web_frame_client)
+          ->MainFrameImpl();
+  WebViewImpl* web_view = web_view_helper.GetWebView();
+  WebFrameWidget* widget = web_view->MainFrameImpl()->FrameWidgetImpl();
+  EXPECT_CALL(web_frame_client, DidChangeSelection(true, _))
+      .WillRepeatedly(Return());  // Happens due to edit change.
+  EXPECT_CALL(web_frame_client, DidChangeSelection(false, _))
+      .WillRepeatedly(testing::Invoke(
+          [widget] { EXPECT_FALSE(widget->HandlingInputEvent()); }));
+
+  Document* document = web_frame->GetFrame()->GetDocument();
+
+  document->write("<div id='sample' contenteditable>hello world</div>");
+  document->getElementById("sample")->Focus();
+
+  Vector<ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid,
+      Color::kTransparent, Color::kTransparent));
+  InputMethodController& controller =
+      web_frame->GetFrame()->GetInputMethodController();
+  controller.SetCompositionFromExistingText(ime_text_spans, 0, 5);
+
+  // Even though the commit came as part of a user interaction,
+  // the internal selection to replace the composition (done as
+  // part of the commit) should _not_ be marked as such, or it would
+  // change the X11 clipboard (crbug.com/1213325).
+  // The actual test for this is in the EXPECT_CALL above.
+  //
+  // Since the selection-to-clipboard logic isn't hooked up in
+  // TestWebFrameClient, we cannot check that the actual clipboard
+  // values don't change, but must be slightly more indirect
+  // in our testing, and thus, we check for HandlingInputEvent()
+  // instead (which, in the actual code, suppresses the clipboard logic).
+  widget->SetHandlingInputEvent(true);
+  controller.CommitText(String("replaced"), ime_text_spans, 0);
+  widget->SetHandlingInputEvent(false);
 }
 
 class TestRemoteFrameHostForVisibility : public FakeRemoteFrameHost {

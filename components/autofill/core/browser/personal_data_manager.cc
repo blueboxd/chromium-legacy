@@ -286,6 +286,7 @@ void PersonalDataManager::Init(
     PrefService* local_state,
     signin::IdentityManager* identity_manager,
     history::HistoryService* history_service,
+    syncer::SyncService* sync_service,
     StrikeDatabaseBase* strike_database,
     AutofillImageFetcher* image_fetcher,
     bool is_off_the_record) {
@@ -310,6 +311,8 @@ void PersonalDataManager::Init(
   identity_manager_ = identity_manager;
   if (identity_manager_)
     identity_manager_->AddObserver(this);
+
+  SetSyncService(sync_service);
 
   image_fetcher_ = image_fetcher;
 
@@ -375,32 +378,6 @@ void PersonalDataManager::Shutdown() {
   if (identity_manager_)
     identity_manager_->RemoveObserver(this);
   identity_manager_ = nullptr;
-}
-
-void PersonalDataManager::OnSyncServiceInitialized(
-    syncer::SyncService* sync_service) {
-  // Before the sync service pointer gets changed, remove the observer.
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
-  sync_service_ = sync_service;
-  if (sync_service_)
-    sync_service_->AddObserver(this);
-
-  // Re-mask all server cards if the upload state is not active.
-  const bool is_upload_not_active =
-      syncer::GetUploadToGoogleState(sync_service_,
-                                     syncer::ModelType::AUTOFILL_WALLET_DATA) ==
-      syncer::UploadState::NOT_ACTIVE;
-  if (is_upload_not_active)
-    ResetFullServerCards();
-
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableAccountWalletStorage)) {
-    // Use the ephemeral account storage when the user didn't enable the sync
-    // feature explicitly.
-    database_helper_->SetUseAccountStorageForServerData(
-        sync_service && !sync_service_->IsSyncFeatureEnabled());
-  }
 }
 
 void PersonalDataManager::OnURLsDeleted(
@@ -561,7 +538,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   if (!database_helper_->GetServerDatabase()) {
     DLOG(WARNING) << "There are no pending queries but the server database "
                      "wasn't set yet, so some data might be missing. Maybe "
-                     "OnSyncServiceInitialized() wasn't called yet.";
+                     "SetSyncService() wasn't called yet.";
     return;
   }
 
@@ -594,12 +571,20 @@ void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
 }
 
 void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
+  DCHECK_EQ(sync_service_, sync_service);
+
+  for (PersonalDataManagerObserver& observer : observers_) {
+    observer.OnPersonalDataSyncStateChanged();
+  }
+
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableAccountWalletStorage)) {
     // Use the ephemeral account storage when the user didn't enable the sync
-    // feature explicitly.
+    // feature explicitly. `sync_service` is nullptr-checked because this
+    // method can also be used (apart from the Sync service observer's calls) in
+    // SetSyncService() where setting a nullptr is possible.
     database_helper_->SetUseAccountStorageForServerData(
-        !sync_service->IsSyncFeatureEnabled());
+        sync_service && !sync_service->IsSyncFeatureEnabled());
   }
 }
 
@@ -811,6 +796,21 @@ AutofillProfile* PersonalDataManager::GetProfileByGUID(
   std::vector<AutofillProfile*> profiles = GetProfiles();
   auto iter = FindElementByGUID(profiles, guid);
   return iter != profiles.end() ? *iter : nullptr;
+}
+
+bool PersonalDataManager::IsEligibleForAddressAccountStorage() const {
+  if (base::FeatureList::IsEnabled(
+          autofill::features::test::
+              kAutofillCreateAccountProfilesFromSettings)) {
+    return true;
+  }
+  // The CONTACT_INFO data type is only running for eligible users. See
+  // ContactInfoModelTypeController.
+  return sync_service_ &&
+         sync_service_->GetActiveDataTypes().Has(syncer::CONTACT_INFO) &&
+         base::FeatureList::IsEnabled(
+             features::kAutofillAccountProfilesUnionView) &&
+         base::FeatureList::IsEnabled(features::kAutofillAccountProfileStorage);
 }
 
 void PersonalDataManager::MigrateProfileToAccount(
@@ -1092,6 +1092,16 @@ void PersonalDataManager::AddOfferDataForTest(
   autofill_offer_data_.push_back(std::move(offer_data));
 }
 
+void PersonalDataManager::SetSyncServiceForTest(
+    syncer::SyncService* sync_service) {
+  // Before the sync service pointer gets changed, remove the observer.
+  if (sync_service_) {
+    sync_service_->RemoveObserver(this);
+    sync_service_ = nullptr;
+  }
+  SetSyncService(sync_service);
+}
+
 void PersonalDataManager::
     RemoveAutofillProfileByGUIDAndBlankCreditCardReference(
         const std::string& guid) {
@@ -1152,8 +1162,9 @@ CreditCard* PersonalDataManager::GetCreditCardByNumber(
   numbered_card.SetNumber(base::ASCIIToUTF16(number));
   for (CreditCard* credit_card : GetCreditCards()) {
     DCHECK(credit_card);
-    if (credit_card->HasSameNumberAs(numbered_card))
+    if (credit_card->MatchingCardDetails(numbered_card)) {
       return credit_card;
+    }
   }
   return nullptr;
 }
@@ -2065,13 +2076,17 @@ std::string PersonalDataManager::SaveImportedProfile(
   if (is_off_the_record_)
     return std::string();
 
-  DCHECK_EQ(imported_profile.source(),
-            AutofillProfile::Source::kLocalOrSyncable);
   std::vector<AutofillProfile> profiles;
-  // TODO(crbug.com/1348294): Merge into `account_profiles_` once `kAccount`
-  // imports are supported.
   std::string guid = AutofillProfileComparator::MergeProfile(
-      imported_profile, synced_local_profiles_, app_locale_, &profiles);
+      imported_profile, GetProfileStorage(imported_profile.source()),
+      app_locale_, &profiles);
+  // Keep profiles from other sources. `SetProfilesForSource()` cannot be used,
+  // since it doesn't notify observers.
+  for (AutofillProfile* profile : GetProfiles()) {
+    if (profile->source() != imported_profile.source()) {
+      profiles.push_back(*profile);
+    }
+  }
   SetProfilesForAllSources(&profiles);
   return guid;
 }
@@ -2091,6 +2106,26 @@ std::string PersonalDataManager::OnAcceptedLocalIBANSave(IBAN& imported_iban) {
     return std::string();
 
   return SaveImportedIBAN(imported_iban);
+}
+
+void PersonalDataManager::SetSyncService(syncer::SyncService* sync_service) {
+  CHECK(!sync_service_);
+
+  sync_service_ = sync_service;
+  if (sync_service_) {
+    sync_service_->AddObserver(this);
+  }
+
+  // Re-mask all server cards if the upload state is not active.
+  const bool is_upload_not_active =
+      syncer::GetUploadToGoogleState(sync_service_,
+                                     syncer::ModelType::AUTOFILL_WALLET_DATA) ==
+      syncer::UploadState::NOT_ACTIVE;
+  if (is_upload_not_active) {
+    ResetFullServerCards();
+  }
+
+  OnStateChanged(sync_service_);
 }
 
 std::string PersonalDataManager::SaveImportedCreditCard(
@@ -2236,8 +2271,9 @@ bool PersonalDataManager::IsServerCard(const CreditCard* credit_card) const {
   std::vector<CreditCard*> server_credit_cards = GetServerCreditCards();
   // Check whether the current card is already uploaded.
   for (const CreditCard* server_card : server_credit_cards) {
-    if (credit_card->HasSameNumberAs(*server_card))
+    if (credit_card->MatchingCardDetails(*server_card)) {
       return true;
+    }
   }
   return false;
 }

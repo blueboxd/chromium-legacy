@@ -88,6 +88,9 @@ const nodeNameContainedInStaticTextChildren = function(node) {
     if (child.role !== Role.STATIC_TEXT) {
       return false;
     }
+    if (child.name === undefined) {
+      return false;
+    }
     if (name.substring(nameIndex, nameIndex + child.name.length) !==
         child.name) {
       return false;
@@ -432,6 +435,11 @@ export class AutomationPredicate {
     // in the name being read out twice.
     if (node.state[State.FOCUSABLE] &&
         nodeNameContainedInStaticTextChildren(node)) {
+      return false;
+    }
+    // Do not consider containers that are clickable containers, unless they
+    // also contain actionable nodes.
+    if (node.clickable && !hasActionableDescendant(node)) {
       return false;
     }
 

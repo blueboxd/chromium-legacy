@@ -930,7 +930,6 @@ void LoginDisplayHostWebUI::OnLoginPromptVisible() {
 
 void LoginDisplayHostWebUI::CreateExistingUserController() {
   existing_user_controller_ = std::make_unique<ExistingUserController>();
-  login_display_->set_delegate(existing_user_controller_.get());
 }
 
 void LoginDisplayHostWebUI::ShowGaiaDialog(const AccountId& prefilled_account) {
@@ -1008,11 +1007,6 @@ void LoginDisplayHostWebUI::AddObserver(LoginDisplayHost::Observer* observer) {
 void LoginDisplayHostWebUI::RemoveObserver(
     LoginDisplayHost::Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void LoginDisplayHostWebUI::OnNetworkErrorScreenShown() {
-  VLOG(1) << "Login WebUI >> WEBUI_VISIBLE(ERROR_SCREEN)";
-  ShowWebUI();
 }
 
 void LoginDisplayHostWebUI::OnLoginOrLockScreenVisible() {
@@ -1130,8 +1124,7 @@ void ShowLoginWizard(OobeScreenId first_screen) {
   }
 
   if (StartupUtils::IsEulaAccepted()) {
-    DelayNetworkCall(base::Milliseconds(kDefaultNetworkRetryDelayMS),
-                     ServicesCustomizationDocument::GetInstance()
+    DelayNetworkCall(ServicesCustomizationDocument::GetInstance()
                          ->EnsureCustomizationAppliedClosure());
 
     g_browser_process->platform_part()

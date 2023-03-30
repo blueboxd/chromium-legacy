@@ -169,9 +169,11 @@ chromium-metrics-reviews@google.com.
     <variant name="BookmarkEntry" summary="Bookmark entry"/>
     <variant name="BookmarkFolder" summary="Bookmark folder"/>
     <variant name="HistoryEntry" summary="History entry"/>
+    <variant name="InactiveTabsEntry" summary="Inactive Tabs entry"/>
     <variant name="MostVisitedEntry" summary="Most Visited entry"/>
     <variant name="OmniboxMostVisitedEntry"
         summary="Omnibox Most Visited entry"/>
+    <variant name="PinnedTabsEntry" summary="Pinned Tabs entry"/>
     <variant name="ReadingListEntry" summary="Reading List entry"/>
     <variant name="RecentTabsEntry" summary="Recent Tabs entry"/>
     <variant name="RecentTabsHeader" summary="Recent Tabs header/device"/>
@@ -179,6 +181,7 @@ chromium-metrics-reviews@google.com.
     <variant name="TabGridAddTo" summary="Tab Grid Add To"/>
     <variant name="TabGridEdit" summary="Tab Grid Edit"/>
     <variant name="TabGridSearchResult" summary="Tab Grid Search Result"/>
+    <variant name="TabStrip" summary="Tab Strip tab"/>
     <variant name="Toolbar" summary="Menu from a toolbar button"/>
     <variant name="WebImage" summary="Image on a Web page"/>
     <variant name="WebImageLink" summary="Image-Link on a Web page"/>
@@ -224,6 +227,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Android: The number of system installed browsers. Logged when a new session
     is started.
+  </summary>
+</histogram>
+
+<histogram name="Mobile.Keyboard.LensSupportStatus" enum="IOSLensSupportStatus"
+    expires_after="2023-08-26">
+  <owner>hujasonx@google.com</owner>
+  <owner>lens-in-bling-team@google.com</owner>
+  <summary>
+    Whether or not Lens is supported in the Omnibox keyboard accessory view
+    (shown above the number keys upon focusing the omnibox for edit), and if
+    not, the reason why. Recorded each time the Omnibox keyboard is opened.
   </summary>
 </histogram>
 
@@ -376,6 +390,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the context when an iOS user initiates a Translate Modal
     presentation.
+  </summary>
+</histogram>
+
+<histogram name="Mobile.NewTabPage.LensSupportStatus"
+    enum="IOSLensSupportStatus" expires_after="2023-08-26">
+  <owner>hujasonx@google.com</owner>
+  <owner>lens-in-bling-team@google.com</owner>
+  <summary>
+    Whether or not Lens is supported in the new tab page, and if not, the reason
+    why. Recorded when a new tab is created. Subsequent navigations to an
+    existing new tab page will not log the event.
   </summary>
 </histogram>
 
@@ -1077,7 +1102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss"
-    units="impressions" expires_after="2023-08-13">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1087,7 +1112,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.BookmarkManager.ImpressionsTilSigninButtons"
-    units="impressions" expires_after="2023-08-13">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1099,7 +1124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.BookmarkManager.ImpressionsTilXButton"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1147,7 +1172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.NTPFeedTop.ImpressionsTilXButton"
-    units="impressions" expires_after="2023-06-01">
+    units="impressions" expires_after="2023-09-24">
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1157,8 +1182,45 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="MobileSignInPromo.ReadingList.ImpressionsTilDismiss"
+    units="impressions" expires_after="2024-04-01">
+  <owner>myuu@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Counts how many times the signin promo is implicitly dismissed (by closing
+    the reading list) per impression. Recorded when the sign-in promo is removed
+    from the reading list view without being used. If the promo is removed by
+    user authentication (eg. sign-in from another view), the histogram is not
+    recorded.
+  </summary>
+</histogram>
+
+<histogram name="MobileSignInPromo.ReadingList.ImpressionsTilSigninButtons"
+    units="impressions" expires_after="2024-04-01">
+  <owner>myuu@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Counts how many times one of the &quot;sign in&quot; buttons (any of the
+    signed-out &quot;Sign in to Chrome&quot; button, the &quot;Continue as
+    |name|&quot; button, or the &quot;Not |email|?&quot; button) is clicked per
+    impression in the reading list. Recorded when one of those buttons from the
+    reading list sign-in promo is clicked.
+  </summary>
+</histogram>
+
+<histogram name="MobileSignInPromo.ReadingList.ImpressionsTilXButton"
+    units="impressions" expires_after="2024-04-01">
+  <owner>myuu@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Counts how many times the explicit &quot;X&quot;-to-close button is clicked
+    per impression in the reading list. Recorded when the &quot;X&quot;-to-close
+    button from the reading list sign-in promo is clicked.
+  </summary>
+</histogram>
+
 <histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilDismiss"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1168,7 +1230,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilSigninButtons"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1180,7 +1242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilXButton"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>

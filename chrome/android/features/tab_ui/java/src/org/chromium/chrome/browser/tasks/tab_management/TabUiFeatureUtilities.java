@@ -67,12 +67,6 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                     SHOW_OPEN_IN_TAB_GROUP_MENU_ITEM_FIRST_PARAM, false);
 
-    // Field trial parameter for defining tab width for tab strip improvements.
-    private static final String TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM = "min_tab_width";
-    public static final DoubleCachedFieldTrialParameter TAB_STRIP_TAB_WIDTH =
-            new DoubleCachedFieldTrialParameter(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS,
-                    TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM, 108.f);
-
     // Field trial parameter for controlling share tabs in TabSelectionEditorV2.
     private static final String TAB_SELECTION_EDITOR_V2_SHARE_PARAM = "enable_share";
     public static final BooleanCachedFieldTrialParameter ENABLE_TAB_SELECTION_EDITOR_V2_SHARE =
@@ -148,21 +142,11 @@ public class TabUiFeatureUtilities {
     }
 
     /**
-     * @return Whether the tab strip improvements are enabled.
-     * @param context The activity context.
-     */
-    public static boolean isTabStripImprovementsEnabled(Context context) {
-        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                && ChromeFeatureList.sTabStripImprovements.isEnabled();
-    }
-
-    /**
      * @return Whether tab groups are enabled for tablet.
      * @param context The activity context.
      */
     public static boolean isTabletTabGroupsEnabled(Context context) {
         return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                && ChromeFeatureList.sTabStripImprovements.isEnabled()
                 && ChromeFeatureList.sTabGroupsForTablets.isEnabled()
                 && !DeviceClassManager.enableAccessibilityLayout(context);
     }
@@ -210,10 +194,11 @@ public class TabUiFeatureUtilities {
     /**
      * @return Whether the Tab-to-Grid (and Grid-to-Tab) transition animation is enabled.
      */
-    public static boolean isTabToGtsAnimationEnabled() {
+    public static boolean isTabToGtsAnimationEnabled(Context context) {
         Log.d(TAG, "GTS.MinMemoryMB = " + ZOOMING_MIN_MEMORY.getValue());
         return ChromeFeatureList.sTabToGTSAnimation.isEnabled()
-                && SysUtils.amountOfPhysicalMemoryKB() / 1024 >= ZOOMING_MIN_MEMORY.getValue();
+                && SysUtils.amountOfPhysicalMemoryKB() / 1024 >= ZOOMING_MIN_MEMORY.getValue()
+                && !shouldUseListMode(context);
     }
 
     /**
@@ -225,25 +210,7 @@ public class TabUiFeatureUtilities {
                 && !SysUtils.isLowEndDevice();
     }
 
-    private static Float sTabMinWidthForTesting;
-
-    /**
-     * Set the min tab width for testing.
-     */
-    public static void setTabMinWidthForTesting(@Nullable Float minWidth) {
-        sTabMinWidthForTesting = minWidth;
-    }
-
-    /**
-     * @return The min tab width.
-     */
-    public static float getTabMinWidth() {
-        if (sTabMinWidthForTesting != null) {
-            return sTabMinWidthForTesting;
-        }
-
-        return (float) TAB_STRIP_TAB_WIDTH.getValue();
-    }
+    public static Float sTabMinWidthForTesting;
 
     /**
      * @return Whether the "Open in new tab in group" context menu item should show before the

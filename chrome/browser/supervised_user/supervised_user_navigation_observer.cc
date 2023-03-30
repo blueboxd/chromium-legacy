@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -11,6 +12,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_browser_utils.h"
@@ -19,17 +21,48 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "components/favicon/core/large_icon_service.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
+#include "components/supervised_user/core/browser/web_content_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/supervised_user/android/web_content_handler_impl.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/supervised_user/chromeos/web_content_handler_impl.h"
+#endif
+
+namespace {
+
+std::unique_ptr<supervised_user::WebContentHandler> CreateWebContentHandler(
+    content::WebContents* web_contents,
+    GURL url,
+    Profile* profile) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return std::make_unique<WebContentHandlerImpl>(
+      web_contents, url,
+      *LargeIconServiceFactory::GetForBrowserContext(profile));
+#elif BUILDFLAG(IS_ANDROID)
+  return std::make_unique<WebContentHandlerImpl>(web_contents);
+#else
+  return nullptr;
+#endif
+}
+
+}  // namespace
 
 using content::NavigationEntry;
 
@@ -275,9 +308,12 @@ void SupervisedUserNavigationObserver::MaybeShowInterstitial(
     int64_t navigation_id,
     int frame_id,
     const OnInterstitialResultCallback& callback) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   std::unique_ptr<SupervisedUserInterstitial> interstitial =
-      SupervisedUserInterstitial::Create(web_contents(), url, reason, frame_id,
-                                         navigation_id);
+      SupervisedUserInterstitial::Create(
+          web_contents(), CreateWebContentHandler(web_contents(), url, profile),
+          *supervised_user_service_, url, reason, frame_id, navigation_id);
 
   supervised_user_interstitials_[frame_id] = std::move(interstitial);
 

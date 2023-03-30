@@ -4034,13 +4034,7 @@ TEST_F(StyleEngineTest, CSSViewportUnits4RuntimeFlag) {
   }
 }
 
-#if BUILDFLAG(IS_IOS)
-// TODO(crbug.com/1141478)
-#define MAYBE_VideoControlsReject DISABLED_VideoControlsReject
-#else
-#define MAYBE_VideoControlsReject VideoControlsReject
-#endif  // BUILDFLAG(IS_IOS)
-TEST_F(StyleEngineTest, MAYBE_VideoControlsReject) {
+TEST_F(StyleEngineTest, VideoControlsReject) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <video controls></video>
     <div id="target"></div>
@@ -5986,7 +5980,7 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     const CSSPropertyValueSet* set =
         css_test_helpers::ParseDeclarationBlock(css);
     ASSERT_TRUE(set);
-    EXPECT_EQ(9u, set->PropertyCount());
+    EXPECT_EQ(11u, set->PropertyCount());
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDuration));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimingFunction));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelay));
@@ -5996,6 +5990,8 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationPlayState));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationName));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimeline));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeStart));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeEnd));
   }
   {
     ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
@@ -6003,7 +5999,7 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     const CSSPropertyValueSet* set =
         css_test_helpers::ParseDeclarationBlock(css);
     ASSERT_TRUE(set);
-    EXPECT_EQ(10u, set->PropertyCount());
+    EXPECT_EQ(12u, set->PropertyCount());
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDuration));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimingFunction));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayStart));
@@ -6014,6 +6010,8 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationPlayState));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationName));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimeline));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeStart));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeEnd));
   }
   // Note that the combination CSSScrollTimeline=false and
   // CSSAnimationDelayStartEnd=true is not supported, via 'depends_on'

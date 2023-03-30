@@ -298,6 +298,7 @@ class DesksController::RemovedDeskData {
                                  .enabled()),
         source_(source),
         desk_close_type_(type) {
+    full_restore::SaveRemovingDeskGuid(desk_->uuid());
     desk_->set_is_desk_being_removed(true);
   }
 
@@ -312,6 +313,7 @@ class DesksController::RemovedDeskData {
       toast_manager->Cancel(toast_id_);
       DesksController::Get()->FinalizeDeskRemoval(this);
     }
+    full_restore::ResetRemovingDeskGuid();
   }
 
   const std::string& toast_id() const { return toast_id_; }
@@ -612,6 +614,10 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
     UMA_HISTOGRAM_ENUMERATION(kNewDeskHistogramName, source);
     ReportDesksCountHistogram();
   }
+}
+
+bool DesksController::HasDesk(const Desk* desk) const {
+  return base::Contains(desks_, desk, &std::unique_ptr<Desk>::get);
 }
 
 void DesksController::RemoveDesk(const Desk* desk,
@@ -1577,10 +1583,6 @@ void DesksController::OnAnimationFinished(DeskAnimationBase* animation) {
   animation_.reset();
 }
 
-bool DesksController::HasDesk(const Desk* desk) const {
-  return base::Contains(desks_, desk, &std::unique_ptr<Desk>::get);
-}
-
 bool DesksController::HasDeskWithName(const std::u16string& desk_name) const {
   return base::Contains(desks_, desk_name, &Desk::name);
 }
@@ -1698,6 +1700,10 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   }
 
   // Keep the removed desk's data alive until at least the end of this function.
+  // `MaybeCommitPendingDeskRemoval` at this point should have cleared
+  // `temporary_removed_desk_`. Otherwise, we may be resetting the wrong
+  // removing desk GUID in restore data.
+  CHECK(!temporary_removed_desk_);
   auto temporary_removed_desk = std::make_unique<RemovedDeskData>(
       std::move(*iter), removed_desk_index, source, close_type);
   auto* temporary_removed_desk_ptr = temporary_removed_desk.get();

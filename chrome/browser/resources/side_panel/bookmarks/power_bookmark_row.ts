@@ -7,10 +7,12 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_url_list_item/cr_url_list_item.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {CrUrlListItemSize} from 'chrome://resources/cr_elements/cr_url_list_item/cr_url_list_item.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './power_bookmark_row.html.js';
@@ -93,6 +95,10 @@ export class PowerBookmarkRowElement extends PolymerElement {
     return this.compact ? CrUrlListItemSize.COMPACT : CrUrlListItemSize.LARGE;
   }
 
+  private isBookmarksBar_(): boolean {
+    return this.bookmark.id === loadTimeData.getString('bookmarksBarId');
+  }
+
   private onInputDisplayChange_() {
     const input = this.shadowRoot!.querySelector('#input');
     if (input) {
@@ -104,16 +110,20 @@ export class PowerBookmarkRowElement extends PolymerElement {
    * Dispatches a custom click event when the user clicks anywhere on the row.
    */
   private onRowClicked_(event: MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.dispatchEvent(new CustomEvent('row-clicked', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        bookmark: this.bookmark,
-        event: event,
-      },
-    }));
+    // Ignore clicks on the row when it has an input, to ensure the row doesn't
+    // eat input clicks.
+    if (!this.hasInput) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.dispatchEvent(new CustomEvent('row-clicked', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          bookmark: this.bookmark,
+          event: event,
+        },
+      }));
+    }
   }
 
   /**

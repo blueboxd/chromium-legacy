@@ -876,6 +876,16 @@ virtual void CopySharedImageINTERNAL(GLint xoffset,
                                      GLsizei height,
                                      GLboolean unpack_flip_y,
                                      const GLbyte* mailboxes) = 0;
+virtual void CopySharedImageToTextureINTERNAL(GLuint texture,
+                                              GLenum target,
+                                              GLuint internal_format,
+                                              GLenum type,
+                                              GLint src_x,
+                                              GLint src_y,
+                                              GLsizei width,
+                                              GLsizei height,
+                                              GLboolean flip_y,
+                                              const GLbyte* src_mailbox) = 0;
 virtual void ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
                                              const void* dst_color_space,
                                              GLuint dst_color_space_size,
@@ -926,6 +936,8 @@ virtual void BeginPixelLocalStorageANGLE(GLsizei count,
 virtual void EndPixelLocalStorageANGLE(GLsizei count,
                                        const GLenum* storeops) = 0;
 virtual void PixelLocalStorageBarrierANGLE() = 0;
+virtual void FramebufferPixelLocalStorageInterruptANGLE() = 0;
+virtual void FramebufferPixelLocalStorageRestoreANGLE() = 0;
 virtual void GetFramebufferPixelLocalStorageParameterfvANGLE(
     GLint plane,
     GLenum pname,

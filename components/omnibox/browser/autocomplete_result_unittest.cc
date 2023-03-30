@@ -1086,7 +1086,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
     std::map<std::string, std::string> params;
     params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
         "1:50,7:100,2:0";  // 3 == HOME_PAGE
-    ASSERT_TRUE(variations::AssociateVariationParams(
+    ASSERT_TRUE(base::AssociateFieldTrialParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
   base::FieldTrialList::CreateFieldTrial(
@@ -1248,7 +1248,7 @@ TEST_F(AutocompleteResultTest, DemoteByType) {
   {
     std::map<std::string, std::string> params;
     params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":*:*"] = "2:50";
-    ASSERT_TRUE(variations::AssociateVariationParams(
+    ASSERT_TRUE(base::AssociateFieldTrialParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
   base::FieldTrialList::CreateFieldTrial(
@@ -2391,7 +2391,8 @@ TEST_F(AutocompleteResultTest, AttachesPedals) {
   FakeAutocompleteProviderClient client;
   std::unordered_map<OmniboxPedalId, scoped_refptr<OmniboxPedal>> pedals;
   const auto add = [&](OmniboxPedal* pedal) {
-    pedals.insert(std::make_pair(pedal->id(), base::WrapRefCounted(pedal)));
+    pedals.insert(
+        std::make_pair(pedal->PedalId(), base::WrapRefCounted(pedal)));
   };
   add(new TestOmniboxPedalClearBrowsingData());
   client.set_pedal_provider(
@@ -2455,8 +2456,8 @@ TEST_F(AutocompleteResultTest, AttachesPedals) {
               return true;
             }));
   ASSERT_NE(nullptr, result.begin()->GetActionWhere([](const auto& action) {
-    return action->GetID() ==
-           static_cast<int32_t>(OmniboxPedalId::CLEAR_BROWSING_DATA);
+    const auto* pedal = OmniboxPedal::FromAction(action.get());
+    return pedal && pedal->PedalId() == OmniboxPedalId::CLEAR_BROWSING_DATA;
   }));
 }
 

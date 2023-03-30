@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/views/launcher_search_iph_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view_delegate.h"
 #include "ash/app_list/views/search_result_base_view.h"
@@ -28,6 +30,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -52,6 +55,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
@@ -100,6 +104,20 @@ constexpr SearchBoxView::PlaceholderTextType kGamingPlaceholders[4] = {
     SearchBoxView::PlaceholderTextType::kTabs,
     SearchBoxView::PlaceholderTextType::kSettings,
     SearchBoxView::PlaceholderTextType::kGames,
+};
+
+constexpr views::Radii kAssistantButtonBackgroundRadiiLTR = {
+    .top_left = 18.0f,
+    .top_right = 18.0f,
+    .bottom_right = 4.0f,
+    .bottom_left = 18.0f,
+};
+
+constexpr views::Radii kAssistantButtonBackgroundRadiiRTL = {
+    .top_left = 18.0f,
+    .top_right = 18.0f,
+    .bottom_right = 18.0f,
+    .bottom_left = 4.0f,
 };
 
 bool IsTrimmedQueryEmpty(const std::u16string& query) {
@@ -233,6 +251,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   assistant_button->SetAccessibleName(assistant_button_label);
   assistant_button->SetTooltipText(assistant_button_label);
   SetShowAssistantButton(search_box_model->show_assistant_button());
+
+  UpdateIphViewVisibility();
 }
 
 SearchBoxView::~SearchBoxView() {
@@ -293,6 +313,11 @@ void SearchBoxView::OnActiveAppListModelsChanged(AppListModel* model,
   ResetForShow();
   UpdateSearchIcon();
   ShowAssistantChanged();
+
+  // `UpdateIphViewVisibility` expect that `AppListModelProvider` returns the
+  // new model.
+  CHECK(search_model == AppListModelProvider::Get()->search_model());
+  UpdateIphViewVisibility();
 }
 
 void SearchBoxView::UpdateKeyboardVisibility() {
@@ -429,7 +454,10 @@ void SearchBoxView::OnPaintBorder(gfx::Canvas* canvas) {
     views::HighlightBorder::PaintBorderToCanvas(
         canvas, *this, GetContentsBounds(),
         gfx::RoundedCornersF(corner_radius_),
-        views::HighlightBorder::Type::kHighlightBorder1, false);
+        chromeos::features::IsJellyrollEnabled()
+            ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+            : views::HighlightBorder::Type::kHighlightBorder1,
+        false);
   }
 }
 
@@ -482,37 +510,17 @@ void SearchBoxView::AddedToWidget() {
   }
 }
 
+void SearchBoxView::RunLauncherSearchQuery(const std::u16string& query) {
+  UpdateQuery(query);
+}
+
+void SearchBoxView::OpenAssistantPage() {
+  delegate_->AssistantButtonPressed();
+}
+
 // static
 int SearchBoxView::GetFocusRingSpacing() {
   return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
-}
-
-void SearchBoxView::RecordSearchBoxActivationHistogram(
-    ui::EventType event_type) {
-  ActivationSource activation_type;
-  switch (event_type) {
-    case ui::ET_GESTURE_TAP:
-      activation_type = ActivationSource::kGestureTap;
-      break;
-    case ui::ET_MOUSE_PRESSED:
-      activation_type = ActivationSource::kMousePress;
-      break;
-    case ui::ET_KEY_PRESSED:
-      activation_type = ActivationSource::kKeyPress;
-      break;
-    default:
-      return;
-  }
-
-  base::UmaHistogramEnumeration("Apps.AppListSearchBoxActivated",
-                                activation_type);
-  if (is_app_list_bubble_) {
-    base::UmaHistogramEnumeration(
-        "Apps.AppListSearchBoxActivated.ClamshellMode", activation_type);
-  } else {
-    base::UmaHistogramEnumeration("Apps.AppListSearchBoxActivated.TabletMode",
-                                  activation_type);
-  }
 }
 
 void SearchBoxView::OnSearchBoxActiveChanged(bool active) {
@@ -788,6 +796,16 @@ int SearchBoxView::GetSearchBoxIconSize() {
 
 int SearchBoxView::GetSearchBoxButtonSize() {
   return kBubbleLauncherSearchBoxButtonSizeDip;
+}
+
+void SearchBoxView::SetIsIphAllowed(bool iph_allowed) {
+  if (is_iph_allowed_ == iph_allowed) {
+    return;
+  }
+
+  is_iph_allowed_ = iph_allowed;
+
+  UpdateIphViewVisibility();
 }
 
 void SearchBoxView::CloseButtonPressed() {
@@ -1193,6 +1211,53 @@ void SearchBoxView::ShowAssistantChanged() {
                              ->search_model()
                              ->search_box()
                              ->show_assistant_button());
+
+  // `LauncherSearchIphView` and an Assistant button have synchronized
+  // backgrounds. The IPH UI is integrated with the Assistant button. We don't
+  // show an IPH if Assistant is disabled. Both `LauncherSearchIphView` and the
+  // Assistant button are hosted by `SearchBoxViewBase`.
+  UpdateIphViewVisibility();
+}
+
+void SearchBoxView::UpdateIphViewVisibility() {
+  const bool show_assistant_button = AppListModelProvider::Get()
+                                         ->search_model()
+                                         ->search_box()
+                                         ->show_assistant_button();
+  const bool would_trigger_iph =
+      AppListModelProvider::Get()->search_model()->would_trigger_iph();
+  const bool is_iph_showing = iph_view() != nullptr;
+
+  const bool should_show_iph = show_assistant_button && is_iph_allowed_ &&
+                               (would_trigger_iph || is_iph_showing);
+
+  if (should_show_iph == is_iph_showing) {
+    return;
+  }
+
+  if (should_show_iph) {
+    std::unique_ptr<ScopedIphSession> scoped_iph_session =
+        view_delegate_->CreateLauncherSearchIphSession();
+    if (!scoped_iph_session) {
+      return;
+    }
+
+    SetIphView(std::make_unique<LauncherSearchIphView>(
+        std::move(scoped_iph_session), /*delegate=*/this));
+
+    assistant_button()->SetBackground(views::CreateThemedRoundedRectBackground(
+        kColorAshControlBackgroundColorInactive,
+        base::i18n::IsRTL() ? kAssistantButtonBackgroundRadiiRTL
+                            : kAssistantButtonBackgroundRadiiLTR,
+        /*for_border_thickness=*/0));
+  } else {
+    DeleteIphView();
+    assistant_button()->SetBackground(nullptr);
+  }
+}
+
+void SearchBoxView::OnWouldTriggerIphChanged() {
+  UpdateIphViewVisibility();
 }
 
 bool SearchBoxView::ShouldProcessAutocomplete() {

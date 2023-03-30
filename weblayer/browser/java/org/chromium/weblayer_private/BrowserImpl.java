@@ -24,8 +24,8 @@ import org.chromium.weblayer_private.interfaces.BrowserFragmentArgs;
 import org.chromium.weblayer_private.interfaces.DarkModeStrategy;
 import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IBrowserClient;
-import org.chromium.weblayer_private.interfaces.IBrowserFragment;
 import org.chromium.weblayer_private.interfaces.IMediaRouteDialogFragment;
+import org.chromium.weblayer_private.interfaces.IRemoteFragment;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 import org.chromium.weblayer_private.media.MediaRouteDialogFragmentImpl;
@@ -46,6 +46,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     private long mNativeBrowser;
     private final ProfileImpl mProfile;
+    private final boolean mIsExternalIntentsEnabled;
     private Context mServiceContext;
 
     private IBrowserClient mClient;
@@ -97,6 +98,9 @@ public class BrowserImpl extends IBrowser.Stub {
 
         mProfile.checkNotDestroyed(); // TODO(swestphal): or mProfile != null
 
+        mIsExternalIntentsEnabled =
+                fragmentArgs.getBoolean(BrowserFragmentArgs.IS_EXTERNAL_INTENTS_ENABLED);
+
         if (!isIncognito && !TextUtils.isEmpty(persistenceId)) {
             mFullPersistenceInfo = new FullPersistenceInfo();
             mFullPersistenceInfo.mPersistenceId = persistenceId;
@@ -106,15 +110,14 @@ public class BrowserImpl extends IBrowser.Stub {
                 mProfile.getNativeProfile(), serviceContext.getPackageName(), this);
         mPasswordEchoEnabled = null;
 
-        mBrowserFragmentImpl = new BrowserFragmentImpl(this, serviceContext);
-
-        notifyFragmentInit();
+        notifyFragmentInit(); // TODO(swestphal): Perhaps move to createBrowserFragmentImpl()?
     }
 
     @Override
-    public IBrowserFragment getBrowserFragmentImpl() {
+    public IRemoteFragment createBrowserFragmentImpl() {
         StrictModeWorkaround.apply();
-        return mBrowserFragmentImpl.asIBrowserFragment();
+        mBrowserFragmentImpl = new BrowserFragmentImpl(this, mServiceContext);
+        return mBrowserFragmentImpl;
     }
 
     @Override
@@ -290,6 +293,10 @@ public class BrowserImpl extends IBrowser.Stub {
 
     void notifyFragmentPause() {
         BrowserImplJni.get().onFragmentPause(mNativeBrowser);
+    }
+
+    boolean isExternalIntentsEnabled() {
+        return mIsExternalIntentsEnabled;
     }
 
     public boolean isWindowOnSmallDevice() {

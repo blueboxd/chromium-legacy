@@ -22,6 +22,7 @@
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/accessibility_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/pdf_ocr_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/ash/select_to_speak_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/switch_access_handler.h"
@@ -598,6 +599,12 @@ void AccessibilitySection::AddLoadTimeData(
       {"chromeVoxTtsSettingsLink", IDS_SETTINGS_CHROMEVOX_TTS_SETTINGS_LINK},
       {"chromeVoxTtsSettingsDescription",
        IDS_SETTINGS_CHROMEVOX_TTS_SETTINGS_DESCRIPTION},
+      {"chromeVoxBrailleWordWrap", IDS_SETTINGS_CHROMEVOX_BRAILLE_WORD_WRAP},
+      {"chromeVoxMenuBrailleCommands",
+       IDS_SETTINGS_CHROMEVOX_MENU_BRAILLE_COMMANDS},
+      {"chromeVoxEventLogLink", IDS_SETTINGS_CHROMEVOX_EVENT_LOG_LINK},
+      {"chromeVoxEventLogDescription",
+       IDS_SETTINGS_CHROMEVOX_EVENT_LOG_DESCRIPTION},
       {"chromeVoxEnableSpeechLogging",
        IDS_SETTINGS_CHROMEVOX_MENU_ENABLE_SPEECH_LOGGING},
       {"chromeVoxEnableEarconLogging",
@@ -739,6 +746,10 @@ void AccessibilitySection::AddLoadTimeData(
       {"onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL},
       {"optionsInMenuDescription", IDS_SETTINGS_OPTIONS_IN_MENU_DESCRIPTION},
       {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
+      {"pdfOcrDownloadCompleteLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_COMPLETE},
+      {"pdfOcrDownloadErrorLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_ERROR},
+      {"pdfOcrDownloadProgressLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_PROGRESS},
+      {"pdfOcrDownloadingLabel", IDS_SETTINGS_PDF_OCR_DOWNLOADING},
       {"pdfOcrSubtitle", IDS_SETTINGS_PDF_OCR_SUBTITLE},
       {"pdfOcrTitle", IDS_SETTINGS_PDF_OCR_TITLE},
       {"percentage", IDS_SETTINGS_PERCENTAGE},
@@ -1044,6 +1055,9 @@ void AccessibilitySection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::FontHandler>(profile()));
   web_ui->AddMessageHandler(
       std::make_unique<::settings::CaptionsHandler>(profile()->GetPrefs()));
+  if (base::FeatureList::IsEnabled(::features::kPdfOcr)) {
+    web_ui->AddMessageHandler(std::make_unique<::settings::PdfOcrHandler>());
+  }
 }
 
 int AccessibilitySection::GetSectionNameMessageId() const {

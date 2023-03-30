@@ -668,7 +668,6 @@ crbug.com/874695 [ Debug Linux ] media/controls/video-enter-exit-fullscreen-whil
 crbug.com/874695 [ Debug Mac12 ] media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Slow ]
 crbug.com/874695 [ Release ] media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Slow ]
 crbug.com/874695 media/encrypted-media/encrypted-media-onencrypted.html [ Slow ]
-crbug.com/874695 [ Debug Mac12 ] media/encrypted-media/encrypted-media-setmediakeys-at-same-time.html [ Slow ]
 crbug.com/874695 [ Release ] media/encrypted-media/encrypted-media-setmediakeys-at-same-time.html [ Slow ]
 crbug.com/874695 [ Linux Release ] media/media-controls-tap-show-controls-without-activating.html [ Slow ]
 crbug.com/874695 [ Debug Mac12 ] media/media-controls-tap-show-controls-without-activating.html [ Slow ]
@@ -1446,6 +1445,9 @@ crbug.com/1376679 [ Mac12 Release ] virtual/threaded/external/wpt/scroll-animati
 
 crbug.com/1366717 http/tests/inspector-protocol/storage/indexed-db-storage-key-track-untrack.js [ Slow ]
 crbug.com/1366717 http/tests/inspector-protocol/storage/indexed-db-set-items-by-storage-key.js [ Slow ]
+
+crbug.com/1412278 http/tests/inspector-protocol/issues/third-party-cookie-blocking-first-party-set-enabled.js [ Slow ]
+crbug.com/1412278 http/tests/inspector-protocol/issues/third-party-cookie-blocking-first-party-set-disabled.js [ Slow ]
 
 crbug.com/1404951 external/wpt/credential-management/fedcm-network-requests.https.html [ Slow ]
 crbug.com/1404951 external/wpt/credential-management/fedcm-iframe.https.html [ Slow ]

@@ -53,7 +53,7 @@ namespace content {
 
 TestRenderFrameHostCreationObserver::TestRenderFrameHostCreationObserver(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents), last_created_frame_(nullptr) {}
+    : WebContentsObserver(web_contents) {}
 
 TestRenderFrameHostCreationObserver::~TestRenderFrameHostCreationObserver() =
     default;
@@ -61,6 +61,13 @@ TestRenderFrameHostCreationObserver::~TestRenderFrameHostCreationObserver() =
 void TestRenderFrameHostCreationObserver::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   last_created_frame_ = render_frame_host;
+}
+
+void TestRenderFrameHostCreationObserver::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  if (last_created_frame_ == render_frame_host) {
+    last_created_frame_ = nullptr;
+  }
 }
 
 TestRenderFrameHost::TestRenderFrameHost(
@@ -116,6 +123,11 @@ TestPage& TestRenderFrameHost::GetPage() {
 
 MockRenderProcessHost* TestRenderFrameHost::GetProcess() const {
   return static_cast<MockRenderProcessHost*>(RenderFrameHostImpl::GetProcess());
+}
+
+MockAgentSchedulingGroupHost& TestRenderFrameHost::GetAgentSchedulingGroup() {
+  return static_cast<MockAgentSchedulingGroupHost&>(
+      RenderFrameHostImpl::GetAgentSchedulingGroup());
 }
 
 TestRenderWidgetHost* TestRenderFrameHost::GetRenderWidgetHost() {
@@ -291,10 +303,9 @@ void TestRenderFrameHost::SimulateManifestURLUpdate(const GURL& manifest_url) {
   GetPage().UpdateManifestUrl(manifest_url);
 }
 
-TestRenderFrameHost* TestRenderFrameHost::AppendFencedFrame(
-    blink::mojom::FencedFrameMode mode) {
+TestRenderFrameHost* TestRenderFrameHost::AppendFencedFrame() {
   fenced_frames_.push_back(std::make_unique<FencedFrame>(
-      weak_ptr_factory_.GetSafeRef(), mode, /* was_discarded= */ false));
+      weak_ptr_factory_.GetSafeRef(), /* was_discarded= */ false));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
   // Create stub RemoteFrameInterfaces.
   auto remote_frame_interfaces =
@@ -415,7 +426,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           absl::nullopt /* web_bundle_token */,
           blink::mojom::NavigationInitiatorActivationAndAdStatus::
               kDidNotStartWithTransientActivation,
-          false /* is_container_initiated */);
+          false /* is_container_initiated */,
+          false /* is_fullscreen_requested */, false /* has_storage_access */);
   auto common_params = blink::CreateCommonNavigationParams();
   common_params->url = url;
   common_params->initiator_origin = GetLastCommittedOrigin();
@@ -607,6 +619,8 @@ void TestRenderFrameHost::SendCommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> topics_loader_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        keep_alive_loader_factory,
     const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
     const blink::DocumentToken& document_token,

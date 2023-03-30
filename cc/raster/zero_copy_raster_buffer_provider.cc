@@ -75,7 +75,7 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
         gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
         shutdown_event_(shutdown_event),
         resource_size_(in_use_resource.size()),
-        format_(viz::SharedImageFormat::SinglePlane(in_use_resource.format())),
+        format_(in_use_resource.format()),
         resource_color_space_(in_use_resource.color_space()),
         gpu_memory_buffer_(std::move(backing_->gpu_memory_buffer)) {}
   ZeroCopyRasterBufferImpl(const ZeroCopyRasterBufferImpl&) = delete;
@@ -171,7 +171,7 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
 ZeroCopyRasterBufferProvider::ZeroCopyRasterBufferProvider(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     viz::ContextProvider* compositor_context_provider,
-    viz::ResourceFormat tile_format)
+    viz::SharedImageFormat tile_format)
     : gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       compositor_context_provider_(compositor_context_provider),
       tile_format_(tile_format) {}
@@ -191,7 +191,7 @@ ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
     const gpu::Capabilities& caps =
         compositor_context_provider_->ContextCapabilities();
     backing->texture_target = gpu::GetBufferTextureTarget(
-        kBufferUsage, BufferFormat(resource.format()), caps);
+        kBufferUsage, BufferFormat(resource.format().resource_format()), caps);
     backing->overlay_candidate = true;
     // This RasterBufferProvider will modify the resource outside of the
     // GL command stream. So resources should not become available for reuse
@@ -211,7 +211,7 @@ ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
 
 void ZeroCopyRasterBufferProvider::Flush() {}
 
-viz::ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat() const {
+viz::SharedImageFormat ZeroCopyRasterBufferProvider::GetFormat() const {
   return tile_format_;
 }
 

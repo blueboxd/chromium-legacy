@@ -8,7 +8,9 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -51,6 +53,20 @@ constexpr int kMaxLinesVisibleFromPasswordNote = 7;
 void WriteToClipboard(const std::u16string& text) {
   ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
   scw.WriteText(text);
+}
+
+// Computes the margins of each row. This adjusts the left margin equal to the
+// dialog left margin + the back button insets to make sure all icons are
+// vertically aligned with the back button.
+gfx::Insets ComputeRowMargins() {
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  gfx::Insets margins = layout_provider->GetInsetsMetric(views::INSETS_DIALOG);
+  margins.set_top_bottom(0, 0);
+  margins.set_left(
+      margins.left() +
+      layout_provider->GetInsetsMetric(views::INSETS_VECTOR_IMAGE_BUTTON)
+          .left());
+  return margins;
 }
 
 std::unique_ptr<views::View> CreateIconView(
@@ -118,6 +134,7 @@ std::unique_ptr<views::FlexLayoutView> CreateDetailsRow(
     std::unique_ptr<views::View> detail_view) {
   auto row = std::make_unique<views::FlexLayoutView>();
   row->SetCollapseMargins(true);
+  row->SetInteriorMargin(ComputeRowMargins());
   row->SetDefault(
       views::kMarginsKey,
       gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -209,12 +226,11 @@ std::unique_ptr<views::View> CreateNoteLabel(
                    : note;
 
   auto note_label = std::make_unique<views::Label>(
-      std::move(note_to_display), views::style::CONTEXT_DIALOG_BODY_TEXT,
+      note_to_display, views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_SECONDARY);
   note_label->SetMultiLine(true);
-  // TODO(crbug.com/1382017): Review string with UX and use internationalized
-  // string.
-  note_label->SetAccessibleName(u"Password Note");
+  note_label->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_MANAGE_PASSWORDS_NOTE_ACCESSIBLE_NAME, note_to_display));
   note_label->SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_TOP);
   note_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   note_label->SetSelectable(true);
@@ -246,6 +262,7 @@ std::unique_ptr<views::View> CreateEditUsernameRow(
   DCHECK(form.username_value.empty());
   auto row = std::make_unique<views::FlexLayoutView>();
   row->SetCollapseMargins(true);
+  row->SetInteriorMargin(ComputeRowMargins());
   row->SetDefault(
       views::kMarginsKey,
       gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -262,13 +279,16 @@ std::unique_ptr<views::View> CreateEditUsernameRow(
                                views::MaximumFlexSizeRule::kUnbounded));
   *textfield = username_with_error_label_view->AddChildView(
       std::make_unique<views::Textfield>());
-  // TODO(crbug.com/1382017): use internationalized string.
-  (*textfield)->SetAccessibleName(u"Username");
+  (*textfield)
+      ->SetAccessibleName(
+          l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_USERNAME_TEXTFIELD));
   (*textfield)
       ->SetID(static_cast<int>(ManagePasswordsViewIDs::kUsernameTextField));
-  // TODO(crbug.com/1382017): use internationalized string.
-  *error_label = username_with_error_label_view->AddChildView(CreateErrorLabel(
-      u"You already saved a password with this username for this site"));
+  *error_label = username_with_error_label_view->AddChildView(
+      CreateErrorLabel(l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PASSWORD_USERNAME_ALREADY_USED,
+          base::UTF8ToUTF16(password_manager::GetShownOrigin(
+              url::Origin::Create(form.url))))));
   return row;
 }
 
@@ -278,6 +298,7 @@ std::unique_ptr<views::View> CreateEditNoteRow(
     raw_ptr<views::Label>* error_label) {
   auto row = std::make_unique<views::FlexLayoutView>();
   row->SetCollapseMargins(true);
+  row->SetInteriorMargin(ComputeRowMargins());
   row->SetDefault(
       views::kMarginsKey,
       gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -297,8 +318,8 @@ std::unique_ptr<views::View> CreateEditNoteRow(
   *textarea = note_with_error_label_view->AddChildView(
       std::make_unique<views::Textarea>());
   (*textarea)->SetText(form.GetNoteWithEmptyUniqueDisplayName());
-  // TODO(crbug.com/1382017): use internationalized string.
-  (*textarea)->SetAccessibleName(u"Password Note");
+  (*textarea)->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NOTE_TEXTFIELD));
   int line_height = views::style::GetLineHeight(views::style::CONTEXT_TEXTFIELD,
                                                 views::style::STYLE_PRIMARY);
   (*textarea)->SetPreferredSize(
@@ -307,9 +328,11 @@ std::unique_ptr<views::View> CreateEditNoteRow(
                                views::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING)));
 
   (*textarea)->SetID(static_cast<int>(ManagePasswordsViewIDs::kNoteTextarea));
-  // TODO(crbug.com/1382017): use internationalized string.
   *error_label = note_with_error_label_view->AddChildView(
-      CreateErrorLabel(u"Notes can save up to 1000 characters."));
+      CreateErrorLabel(l10n_util::GetStringFUTF16(
+          IDS_PASSWORD_MANAGER_UI_NOTE_CHARACTER_COUNT_WARNING,
+          base::NumberToString16(
+              password_manager::constants::kMaxPasswordNoteLength))));
   return row;
 }
 
@@ -356,6 +379,9 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
       CreateUsernameLabel(password_form);
   username_label->SetID(
       static_cast<int>(ManagePasswordsViewIDs::kUsernameLabel));
+  username_label->SetAccessibleName(
+      l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_USERNAME_ACCESSIBLE_NAME,
+                                 username_label->GetText()));
   if (!password_form.username_value.empty()) {
     auto copy_username_button_callback =
         base::BindRepeating(&WriteToClipboard, password_form.username_value)
@@ -366,8 +392,7 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
                 PasswordManagementBubbleInteractions::
                     kUsernameCopyButtonClicked));
     AddChildView(CreateDetailsRowWithActionButton(
-        kAccountCircleIcon, std::move(username_label),
-        vector_icons::kContentCopyIcon,
+        kAccountCircleIcon, std::move(username_label), kCopyIcon,
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UI_COPY_USERNAME),
         std::move(copy_username_button_callback),
         ManagePasswordsViewIDs::kCopyUsernameButton));
@@ -409,7 +434,7 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
       kKeyIcon,
       CreatePasswordLabelWithEyeIconView(std::move(password_label),
                                          on_activity_callback_),
-      vector_icons::kContentCopyIcon,
+      kCopyIcon,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UI_COPY_PASSWORD),
       std::move(copy_password_button_callback),
       ManagePasswordsViewIDs::kCopyPasswordButton));
@@ -466,10 +491,6 @@ void ManagePasswordsDetailsView::SwitchToEditUsernameMode() {
   on_activity_callback_.Run();
   LogUserInteractionsInPasswordManagementBubble(
       PasswordManagementBubbleInteractions::kUsernameEditButtonClicked);
-  // Invoke OnUserInputChanged() to validate the current input. Relevant only
-  // for empty username to make sure the bubble is opened showing the username
-  // as invalid.
-  OnUserInputChanged();
 }
 
 void ManagePasswordsDetailsView::SwitchToEditNoteMode() {
@@ -488,13 +509,10 @@ void ManagePasswordsDetailsView::OnUserInputChanged() {
   on_activity_callback_.Run();
   bool is_username_invalid = false;
   if (username_textfield_ && username_textfield_->IsDrawn()) {
-    bool username_empty = username_textfield_->GetText().empty();
-    bool username_exists =
-        username_empty
-            ? false
-            : username_exists_callback_.Run(username_textfield_->GetText());
-    username_error_label_->SetVisible(username_exists);
-    is_username_invalid = username_empty || username_exists;
+    is_username_invalid =
+        !username_textfield_->GetText().empty() &&
+        username_exists_callback_.Run(username_textfield_->GetText());
+    username_error_label_->SetVisible(is_username_invalid);
     username_textfield_->SetInvalid(is_username_invalid);
   }
 

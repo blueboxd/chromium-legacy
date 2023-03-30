@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Dotaknite se, če se želite vrniti na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="2091887806945687916">Zvok</translation>
+<translation id="2117655453726830283">Naslednji diapozitiv</translation>
 <translation id="2148716181193084225">Danes</translation>
 <translation id="216989819110952009">Kljub zelenim očalom za zaščito oči je Dorothy in njene prijatelje sprva zaslepilo</translation>
 <translation id="2176704795966505152">Prikaz možnosti povečave/pomanjšave v glavnem meniju</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">Razširjeno – kliknite, če želite strniti.</translation>
 <translation id="2586657967955657006">Odložišče</translation>
 <translation id="2597457036804169544">Brez uporabe temne teme na spletnih mestih.</translation>
+<translation id="2606760465469169465">Samodejno preverjanje</translation>
 <translation id="2621115761605608342">Dovoli JavaScript za določeno spletno mesto.</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2677748264148917807">Zapusti</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">Ponastavi dovoljenja</translation>
 <translation id="301521992641321250">Samodejno blokirano</translation>
 <translation id="3069226013421428034">Omogočanje prijave prek zunanjih ponudnikov za določeno spletno mesto.</translation>
+<translation id="310297983047869047">Prejšnji diapozitiv</translation>
 <translation id="3109724472072898302">Strnjeno</translation>
 <translation id="3114012059975132928">Videopredvajalnik</translation>
 <translation id="3115898365077584848">Pokaži informacije</translation>
@@ -219,11 +222,11 @@
 <translation id="509133520954049755">Zahtevaj pogled za namizni računalnik</translation>
 <translation id="5100237604440890931">Strnjeno – kliknite, če želite razširiti.</translation>
 <translation id="5123685120097942451">Anonimni zavihek</translation>
-<translation id="5134599672855298214">Zahtevaj pogled za mobilno napravo (priporočeno)</translation>
 <translation id="5186036860380548585">Možnosti so na voljo blizu vrha zaslona</translation>
 <translation id="5197729504361054390">Izbrani stiki bodo v skupni rabi s spletnim mestom <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Nazadnje obiskano danes</translation>
 <translation id="5225463052809312700">Vklopi kamero</translation>
+<translation id="5229337741799419985">Ta nastavitev deluje, ne da bi prišlo do vaše osebne prepoznave ali da bi bil spletnim mestom omogočen ogled vaše zgodovine brskanja.</translation>
 <translation id="5234764350956374838">Opusti</translation>
 <translation id="5264323282659631142">Odstranitev vnosa »<ph name="CHIP_LABEL" />«</translation>
 <translation id="528192093759286357">Povlecite z vrha in se dotaknite gumba za nazaj, če želite zapreti celozaslonski način.</translation>
@@ -310,6 +313,7 @@
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6689172468748959065">Profilne fotografije</translation>
 <translation id="6697925417670533197">Aktivni prenosi</translation>
+<translation id="6701547804986694515">Spletno mesto, ki ga obiščete, lahko v Chromu shrani podatke, ki potrjujejo, da niste bot. Med brskanjem se lahko spletna mesta obrnejo na Chrome in pri prejšnjem spletnem mestu, ki ste ga obiskali, potrdijo, da ste verjetno resnična oseba.</translation>
 <translation id="6722828510648505498">Blokiranje poskusov prijav storitev za identiteto.</translation>
 <translation id="6746124502594467657">Premakni dol</translation>
 <translation id="6749077623962119521">Želite ponastaviti dovoljenja?</translation>
@@ -427,6 +431,7 @@
 <translation id="8751914237388039244">Izberite sliko</translation>
 <translation id="8801436777607969138">Preprečevanje JavaScripta za določeno spletno mesto.</translation>
 <translation id="8803526663383843427">Če je to vklopljeno</translation>
+<translation id="8805385115381080995">Brskanje je hitrejše, ker je manj verjetno, da vas bo spletno mesto pozvalo, da potrdite, da ste resnična oseba.</translation>
 <translation id="8816026460808729765">Preprečevanje spletnim mestom dostopa do tipal</translation>
 <translation id="8823559166155093873">Blokiraj piškotke</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -450,5 +455,6 @@
 <translation id="9162462602695099906">Ta stran je nevarna.</translation>
 <translation id="9201023452444595544">Morebitni podatki brez povezave bodo izbrisani</translation>
 <translation id="930525582205581608">Želite, da se to spletno mesto pozabi?</translation>
+<translation id="947156494302904893">Spletna mesta, ki jih obiščete, lahko preverijo, ali ste resnična oseba in ne bot</translation>
 <translation id="967624055006145463">Shranjeni podatki</translation>
 </translationbundle>

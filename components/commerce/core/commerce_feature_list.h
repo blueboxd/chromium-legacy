@@ -70,6 +70,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
 
 BASE_DECLARE_FEATURE(kCommerceAllowLocalImages);
 BASE_DECLARE_FEATURE(kCommerceAllowOnDemandBookmarkUpdates);
+BASE_DECLARE_FEATURE(kCommerceAllowOnDemandBookmarkBatchUpdates);
 BASE_DECLARE_FEATURE(kCommerceAllowServerImages);
 BASE_DECLARE_FEATURE(kCommerceCoupons);
 BASE_DECLARE_FEATURE(kCommerceMerchantViewer);
@@ -106,22 +107,18 @@ constexpr base::FeatureParam<base::TimeDelta>
         "shopping-list-bookmark-update-interval",
         base::Hours(6));
 
+// The maximum number of products to update per update cycle for the shopping
+// list.
+constexpr base::FeatureParam<int> kShoppingListBookmarkpdateBatchMaxParam(
+    &kCommerceAllowOnDemandBookmarkBatchUpdates,
+    "shopping-list-bookmark-update-batch-max",
+    150);
+
 // Shopping list revert page action icon on failure.
 extern const char kRevertIconOnFailureParam[];
 extern const base::FeatureParam<bool> kRevertIconOnFailure;
 
 // Feature parameters for ChromeCart on Desktop.
-
-// Whether to use OptimizationGuide to optimize renderer signal collection.
-constexpr base::FeatureParam<bool> kOptimizeRendererSignal(
-#if !BUILDFLAG(IS_ANDROID)
-    &ntp_features::kNtpChromeCartModule,
-#else
-    &kCommerceHintAndroid,
-#endif
-    "optimize-renderer-signal",
-    true);
-
 constexpr base::FeatureParam<base::TimeDelta> kDiscountFetchDelayParam(
     &ntp_features::kNtpChromeCartModule,
     "discount-fetch-delay",

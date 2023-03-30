@@ -40,6 +40,7 @@
 <translation id="3167189358072330585">Tilisi ei toimi Google Chromen kanssa. Ota yhteyttä verkkotunnuksesi järjestelmänvalvojaan tai kirjaudu sisään tavallisella Google-tilillä.</translation>
 <translation id="3173834708294760622">Google Chrome ‑sivu</translation>
 <translation id="3196546062792660320">Chrome säästää aikaasi tuomalla tilisi verkkoon. Voit lisätä tai poistaa tilejä asetuksissa.</translation>
+<translation id="322254490661677575">Chrome-datan käyttö ja tallennus Google-tilillä edellyttää, että lisäät tunnuslauseesi.</translation>
 <translation id="3282568296779691940">Kirjaudu Chromeen</translation>
 <translation id="3345341804167540816">Käytä Chromea missä tahansa</translation>
 <translation id="3503014945441706099">Lisää Parannettu selaussuoja myös tälle Chrome-profiilille</translation>
@@ -52,6 +53,7 @@
 <translation id="3980220367029651214">Muutoksen jälkeen synkronointi käyttää tilin <ph name="USER_EMAIL1" /> sijaan tiliä <ph name="USER_EMAIL2" />. Nykyisiä Chrome-tietojasi hallinnoi <ph name="DOMAIN" />. Tietosi poistetaan tältä laitteelta, mutta ne jäävät tilille <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Organisaatiosi edellyttää, että et kirjaudu sisään Chromeen.</translation>
 <translation id="3988789688219830639">Google Chrome ei voi käyttää kuviasi tai videoitasi. Anna käyttöoikeus kohdassa iOS-asetukset &gt; Tietosuoja &gt; Kuvat.</translation>
+<translation id="4064699917955374540">Chrome-datan käyttö ja tallennus Google-tilillä edellyttää, että vahvistat henkilöllisyytesi.</translation>
 <translation id="417201473131094001">Ei tueta Chrome Canaryssa</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> käytti Chromea, ja hänen käyttämiä kirjanmerkkejä, salasanoja ja muita asetuksia jäi laitteelle.</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
@@ -68,6 +70,7 @@
 <translation id="5119391094379141756">Valitse Chrome</translation>
 <translation id="5162467219239570114">Chrome on vanhentunut. Jos päivitystä ei ole saatavilla <ph name="BEGIN_LINK" />sovelluskaupasta<ph name="END_LINK" />, laitteesi ei välttämättä enää tue Chromen uusia versioita.</translation>
 <translation id="5389212809648216794">Google Chrome ei voi käyttää kameraa, koska se on toisen sovelluksen käytössä.</translation>
+<translation id="5395376160638294582">Varmista, että voit aina käyttää Chrome-dataa Google-tilillä</translation>
 <translation id="5460571915754665838">4. Valitse Chrome</translation>
 <translation id="5492504007368565877">Google Salasanat ei voi tarkistaa salasanojasi.</translation>
 <translation id="5552137475244467770">Chrome vertaa salasanojasi säännöllisesti listoihin salasanoista, jotka on julkaistu verkossa. Tätä varten salasanat ja käyttäjänimet salataan, joten kukaan (myöskään Google) ei voi lukea niitä.</translation>
@@ -122,6 +125,7 @@
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Kaikki oikeudet pidätetään.</translation>
 <translation id="840168496893712993">Jokin laajennus kaataa Chromen. Kokeile poistaa laajennuksia.</translation>
 <translation id="8414886616817913619">Organisaatiosi edellyttää sisäänkirjautumista, jotta voit käyttää Chromea. <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>
+<translation id="84594714173170813">Jatka Chrome-datan käyttöä Google-tilillä</translation>
 <translation id="8459495907675268833">Valitut tiedot on poistettu Chromesta ja synkronoiduilta laitteilta. Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toimintaa muista Google-palveluista, osoitteessa history.google.com.</translation>
 <translation id="850555388806794946">Näin teet Chromesta oletusselaimesi:
   1. Avaa Asetukset

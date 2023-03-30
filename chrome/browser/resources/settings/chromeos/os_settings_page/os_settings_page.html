@@ -93,12 +93,17 @@
   iron-icon {
     margin-inline-start: 16px;
   }
+
+  eol-offer-section {
+    margin-top: 20px;
+  }
 </style>
 <template is="dom-if" if="[[showBasicPage_(
     currentRoute_, hasExpandedSection_)]]">
   <div id="basicPage">
     <template is="dom-if" if="[[computeShowUpdateRequiredEolBanner_(
-        hasExpandedSection_, showUpdateRequiredEolBanner_)]]">
+        hasExpandedSection_, showUpdateRequiredEolBanner_,
+        showEOLIncentive_)]]">
       <div id="updateRequiredEolBanner"
           class="settings-box two-line banner">
         <div class="eol-warning-icon">
@@ -112,6 +117,11 @@
             aria-describedby="bannerText">
         </cr-icon-button>
       </div>
+    </template>
+    <template is="dom-if" if="[[computeShowEolIncentive_(hasExpandedSection_,
+        showEolIncentive_)]]">
+      <eol-offer-section should-show-offer-text="[[shouldShowOfferText_]]">
+      </eol-offer-section>
     </template>
     <div id="secondaryUserBanner" class="settings-box two-line banner"
         hidden="[[!showSecondaryUserBanner_]]">
@@ -199,7 +209,9 @@
     <cr-button id="advancedToggle" on-click="advancedToggleClicked_"
         aria-expanded$="[[boolToString_(advancedToggleExpanded)]]">
       <span>$i18n{advancedPageTitle}</span>
-      <iron-icon icon="[[getArrowIcon_(advancedToggleExpanded)]]">
+      <iron-icon
+        icon="[[getArrowIcon_(advancedToggleExpanded)]]"
+        slot="suffix-icon">
       </iron-icon>
     </cr-button>
   </h2>

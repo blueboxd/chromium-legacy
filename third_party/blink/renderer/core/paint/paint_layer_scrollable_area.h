@@ -353,7 +353,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   int PageStep(ScrollbarOrientation) const override;
   mojom::blink::ScrollBehavior ScrollBehaviorStyle() const override;
-  mojom::blink::ColorScheme UsedColorScheme() const override;
+  mojom::blink::ColorScheme UsedColorSchemeScrollbars() const override;
   cc::AnimationHost* GetCompositorAnimationHost() const override;
   cc::AnimationTimeline* GetCompositorAnimationTimeline() const override;
   bool HasTickmarks() const override;
@@ -445,9 +445,12 @@ class CORE_EXPORT PaintLayerScrollableArea final
       const PhysicalRect&,
       const mojom::blink::ScrollIntoViewParamsPtr&) override;
 
-  // Returns true if the scrollable area is user-scrollable, visible to hit
-  // testing, and it does in fact overflow. This means this method will return
-  // false for 'overflow: hidden' and 'pointer-events: none'.
+  // Returns true if the scrollable area is user-scrollable and it does
+  // in fact overflow. This means this method will return false for
+  // 'overflow: hidden' (which is programmatically scrollable but not
+  // user-scrollable).  Note that being user-scrollable may mean being
+  // scrollable with the keyboard but not (due to pointer-events:none)
+  // with the mouse or touch.
   bool ScrollsOverflow() const { return scrolls_overflow_; }
 
   // Rectangle encompassing the scroll corner and resizer rect.
@@ -458,6 +461,10 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // properties which are updated based on the latter.
   bool UsesCompositedScrolling() const override;
 
+  // In CompositeScrollAfterPaint, NeedsCompositedScrolling() is false if
+  // composited scrolling will be determined after paint.
+  // TODO(crbug.com/1414885): We may need to redefine these functions for
+  // CompositeScrollAfterPaint.
   void UpdateNeedsCompositedScrolling(
       bool force_prefer_compositing_to_lcd_text);
   bool NeedsCompositedScrolling() const { return needs_composited_scrolling_; }
@@ -630,6 +637,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // background paint location.
   bool ComputeNeedsCompositedScrolling(
       bool force_prefer_compositing_to_lcd_text);
+  bool NeedsHypotheticalScrollbarThickness(ScrollbarOrientation) const;
   int ComputeHypotheticalScrollbarThickness(
       ScrollbarOrientation,
       bool should_include_overlay_thickness) const;

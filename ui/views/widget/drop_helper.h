@@ -9,7 +9,9 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -35,16 +37,10 @@ class VIEWS_EXPORT DropHelper {
  public:
   // This is expected to match the signature of
   // aura::client::DragDropDelegate::DropCallback.
-  using DropCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::OSExchangeData> data,
-                              ui::mojom::DragOperation& output_drag_op)>;
-
-  // This is expected to match the signature of
-  // aura::client::DragDropDelegate::DropCallbackWithAnimation.
-  using DropCallbackWithAnimation = base::OnceCallback<void(
+  using DropCallback = base::OnceCallback<void(
       std::unique_ptr<ui::OSExchangeData> data,
       ui::mojom::DragOperation& output_drag_op,
-      std::unique_ptr<ui::LayerTreeOwner> old_layer_owner)>;
+      std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner)>;
 
   explicit DropHelper(View* root_view);
 
@@ -93,15 +89,9 @@ class VIEWS_EXPORT DropHelper {
   // Invoked when the user drops data on the root view during a drag and drop
   // operation, but the drop is held because of DataTransferPolicController.
   // To fetch the correct callback, callers should invoke
-  // GetDropCallbackWithAnimation before GetDropCallback to potentially avoid
-  // clearing the |target_view_| in case GetDropCallback should need it.
   DropCallback GetDropCallback(const OSExchangeData& data,
                                const gfx::Point& root_view_location,
                                int drag_operation);
-  DropCallbackWithAnimation GetDropCallbackWithAnimation(
-      const OSExchangeData& data,
-      const gfx::Point& root_view_location,
-      int drag_operation);
 
   bool WillAnimateDragImageForDrop();
 
@@ -139,7 +129,9 @@ class VIEWS_EXPORT DropHelper {
   raw_ptr<View, DanglingUntriaged> target_view_;
 
   // The deepest view under the current drop coordinate.
-  View* deepest_view_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION View* deepest_view_ = nullptr;
 };
 
 }  // namespace views

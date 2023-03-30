@@ -284,6 +284,9 @@ after discussions on the right group.
       <annotation id="android_feedback_connectivity_checker"/>
       <annotation id="printer_config_fetch"/>
       <annotation id="projector_xhr_loader_allow_cookie"/>
+      <annotation id="chrome_support_tool_file_upload"/>
+      <annotation id="service_worker_race_network_request"/>
+      <annotation id="glanceables_tasks_integration"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -337,6 +340,7 @@ after discussions on the right group.
       <annotation id="safe_browsing_extension_telemetry"/>
       <annotation id="safe_browsing_feedback"/>
       <annotation id="safe_browsing_incident"/>
+      <annotation id="safe_browsing_ohttp_key_fetch"/>
       <annotation id="safe_browsing_v4_get_hash"/>
       <annotation id="safe_browsing_v4_update"/>
       <annotation id="safe_browsing_binary_upload_app"/>
@@ -458,9 +462,7 @@ after discussions on the right group.
       <annotation id="contextual_search_thumbnail"/>
     </sender>
     <sender name="Prefetch">
-      <annotation id="navigation_predictor_srp_prefetch"/>
       <annotation id="predictive_prefetch"/>
-      <annotation id="prefetch_proxy_probe"/>
       <annotation id="speculation_rules_prefetch"/>
       <annotation id="speculation_rules_prefetch_probe"/>
     </sender>

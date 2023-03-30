@@ -455,6 +455,28 @@ void OneStorageKeySizeReported(
                                     storage_key, size, last_modified)));
 }
 
+// Match a bucket for deletion if its storage key matches any of the given
+// storage keys.
+//
+// This function considers a bucket to match a storage key if either the
+// bucket's key's origin matches the storage key's origin or the bucket's key is
+// third-party and its top-level site matches the origin.
+bool BucketMatchesOriginsForDeletion(
+    const storage::BucketLocator& bucket_locator,
+    const std::set<url::Origin>& origins) {
+  auto& bucket_key = bucket_locator.storage_key;
+
+  for (auto& requested_origin : origins) {
+    if (bucket_key.origin() == requested_origin ||
+        (bucket_key.IsThirdPartyContext() &&
+         bucket_key.top_level_site() == net::SchemefulSite(requested_origin))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -805,8 +827,8 @@ void CacheStorageManager::GetStorageKeys(
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
-void CacheStorageManager::DeleteStorageKeysDataGotAllBucketInfo(
-    const std::set<blink::StorageKey>& storage_keys,
+void CacheStorageManager::DeleteOriginsDataGotAllBucketInfo(
+    const std::set<url::Origin>& origins,
     storage::mojom::CacheStorageOwner owner,
     base::OnceCallback<void(std::vector<blink::mojom::QuotaStatusCode>)>
         callback,
@@ -826,8 +848,7 @@ void CacheStorageManager::DeleteStorageKeysDataGotAllBucketInfo(
                         storage::mojom::StorageUsageInfoPtr>& usage_tuple :
        usage_tuples) {
     const storage::BucketLocator bucket_locator = std::get<0>(usage_tuple);
-    if (!bucket_locator.is_default ||
-        !storage_keys.contains(bucket_locator.storage_key)) {
+    if (!BucketMatchesOriginsForDeletion(bucket_locator, origins)) {
       continue;
     }
     instance_count += 1;
@@ -841,8 +862,7 @@ void CacheStorageManager::DeleteStorageKeysDataGotAllBucketInfo(
                         storage::mojom::StorageUsageInfoPtr>& usage_tuple :
        usage_tuples) {
     const storage::BucketLocator bucket_locator = std::get<0>(usage_tuple);
-    if (!bucket_locator.is_default ||
-        !storage_keys.contains(bucket_locator.storage_key)) {
+    if (!BucketMatchesOriginsForDeletion(bucket_locator, origins)) {
       continue;
     }
     if (!bucket_locator.is_null()) {
@@ -864,35 +884,52 @@ void CacheStorageManager::DeleteStorageKeysDataGotAllBucketInfo(
 
 void CacheStorageManager::DeleteStorageKeyData(
     const blink::StorageKey& storage_key,
-    storage::mojom::CacheStorageOwner owner,
-    storage::mojom::QuotaClient::DeleteBucketDataCallback callback) {
+    storage::mojom::CacheStorageOwner owner) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::set<blink::StorageKey> storage_key_set{storage_key};
-  DeleteStorageKeyData(storage_key_set, owner, std::move(callback));
+  DeleteStorageKeyData(storage_key, owner, base::DoNothing());
 }
 
 void CacheStorageManager::DeleteStorageKeyData(
-    const std::set<blink::StorageKey>& storage_keys,
+    const blink::StorageKey& storage_key,
     storage::mojom::CacheStorageOwner owner,
     storage::mojom::QuotaClient::DeleteBucketDataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(https://crbug.com/1376071#c12): This function isn't
+  // actually deleting data for a single key, but rather for
+  // the origin of the key.
+
+  std::set<url::Origin> origin_set{storage_key.origin()};
+  DeleteOriginData(origin_set, owner, std::move(callback));
+}
+
+void CacheStorageManager::DeleteOriginData(
+    const std::set<url::Origin>& origins,
+    storage::mojom::CacheStorageOwner owner,
+    storage::mojom::QuotaClient::DeleteBucketDataCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (origins.empty()) {
+    scheduler_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::mojom::QuotaStatusCode::kOk));
+    return;
+  }
 
   if (IsMemoryBacked()) {
     std::vector<
         std::tuple<storage::BucketLocator, storage::mojom::StorageUsageInfoPtr>>
         to_delete;
-    to_delete.reserve(storage_keys.size());
+    to_delete.reserve(origins.size());
 
     // Note: since the number of CacheStorage instances is usually small, just
-    // search for the corresponding `storage::BucketLocator` key given a
+    // search for the corresponding `storage::BucketLocator` keys, given a
     // `blink::StorageKey`.
     for (const auto& key_value : cache_storage_map_) {
       if (key_value.first.second != owner)
         continue;
       const storage::BucketLocator& bucket_locator = key_value.first.first;
-      if (!bucket_locator.is_default ||
-          !storage_keys.contains(bucket_locator.storage_key)) {
+      if (!BucketMatchesOriginsForDeletion(bucket_locator, origins)) {
         continue;
       }
       to_delete.emplace_back(bucket_locator,
@@ -900,8 +937,8 @@ void CacheStorageManager::DeleteStorageKeyData(
                                  bucket_locator.storage_key, 0, base::Time()));
     }
 
-    DeleteStorageKeysDataGotAllBucketInfo(
-        storage_keys, owner,
+    DeleteOriginsDataGotAllBucketInfo(
+        origins, owner,
         base::BindOnce(&DeleteStorageKeyDidDeleteAllData, std::move(callback)),
         std::move(to_delete));
     return;
@@ -922,8 +959,8 @@ void CacheStorageManager::DeleteStorageKeyData(
           base::WrapRefCounted(scheduler_task_runner_.get()),
           std::move(usage_tuples), profile_path_, owner,
           base::BindOnce(
-              &CacheStorageManager::DeleteStorageKeysDataGotAllBucketInfo,
-              weak_ptr_factory_.GetWeakPtr(), storage_keys, owner,
+              &CacheStorageManager::DeleteOriginsDataGotAllBucketInfo,
+              weak_ptr_factory_.GetWeakPtr(), origins, owner,
               base::BindOnce(&DeleteStorageKeyDidDeleteAllData,
                              std::move(callback)))));
 }
@@ -994,15 +1031,6 @@ void CacheStorageManager::DeleteBucketDataDidGetExists(
       base::BindOnce(&CacheStorageManager::DeleteBucketDidClose,
                      weak_ptr_factory_.GetWeakPtr(), bucket_locator, owner,
                      std::move(callback), base::WrapUnique(cache_storage)));
-}
-
-// Note: This only deletes data associated with the default bucket for a given
-// `blink::StorageKey`.
-void CacheStorageManager::DeleteStorageKeyData(
-    const blink::StorageKey& storage_key,
-    storage::mojom::CacheStorageOwner owner) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DeleteStorageKeyData(storage_key, owner, base::DoNothing());
 }
 
 void CacheStorageManager::AddObserver(

@@ -30,7 +30,6 @@ extern NSString* const kTranslateSymbol;
 extern NSString* const kCameraSymbol;
 extern NSString* const kCameraFillSymbol;
 extern NSString* const kPasswordManagerSymbol;
-extern NSString* const kPlusCircleFillSymbol;
 extern NSString* const kPopupBadgeMinusSymbol;
 extern NSString* const kPhotoBadgePlusSymbol;
 extern NSString* const kPhotoBadgeMagnifyingglassSymbol;
@@ -50,11 +49,13 @@ extern NSString* const kCloudSlashSymbol;
 extern NSString* const kCloudAndArrowUpSymbol;
 extern NSString* const kDinoSymbol;
 extern NSString* const kChromeProductSymbol;
+extern NSString* const kTunerSymbol;
 
 // Custom symbol names which can be configured with a color palette. iOS 15+
 // only.
 extern NSString* const kIncognitoCircleFillSymbol;
-extern NSString* const kNewTabSymbol;
+extern NSString* const kPlusCircleFillSymbol;
+extern NSString* const kLegacyPlusCircleFillSymbol;
 
 // Custom symbol to replace "palette" symbols on iOS 14. Cannot be used with a
 // palette.
@@ -144,6 +145,7 @@ extern NSString* const kBookClosedSymbol;
 extern NSString* const kSunFillSymbol;
 extern NSString* const kCalendarSymbol;
 extern NSString* const kTabsSymbol;
+extern NSString* const kHighlighterSymbol;
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

@@ -80,7 +80,7 @@ UIColor* TextBackgroudColor() {
 // bullet unicode character.
 NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   listString = [listString
-      stringByReplacingOccurrencesOfString:@"\n +<ul>"
+      stringByReplacingOccurrencesOfString:@"\n *<ul>"
                                 withString:@""
                                    options:NSRegularExpressionSearch
                                      range:NSMakeRange(0, [listString length])];
@@ -90,7 +90,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   // Use a regular expression to find and remove all leading whitespace from the
   // lines which contain the "<li>" tag.  This un-indents the bulleted lines.
   listString = [listString
-      stringByReplacingOccurrencesOfString:@"\n +<li>"
+      stringByReplacingOccurrencesOfString:@"\n *<li>"
                                 withString:@"\n\u2022  "
                                    options:NSRegularExpressionSearch
                                      range:NSMakeRange(0, [listString length])];
@@ -201,24 +201,18 @@ NSAttributedString* FormatHTMLForLearnMoreSection() {
     if (showTopIncognitoImageAndTitle) {
       // Incognito icon.
       UIImage* incognitoImage;
-      if (UseSymbols()) {
-        UIImageSymbolConfiguration* configuration = [UIImageSymbolConfiguration
-            configurationWithPointSize:kIncognitoSymbolImagePointSize
-                                weight:UIImageSymbolWeightLight
-                                 scale:UIImageSymbolScaleMedium];
-        if (@available(iOS 15, *)) {
-          incognitoImage =
-              SymbolWithPalette(CustomSymbolWithConfiguration(
-                                    kIncognitoCircleFillSymbol, configuration),
-                                LargeIncognitoPalette());
-        } else {
-          incognitoImage = [CustomSymbolWithConfiguration(
-              kIncognitoCircleFilliOS14Symbol, configuration)
-              imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        }
+      UIImageSymbolConfiguration* configuration = [UIImageSymbolConfiguration
+          configurationWithPointSize:kIncognitoSymbolImagePointSize
+                              weight:UIImageSymbolWeightLight
+                               scale:UIImageSymbolScaleMedium];
+      if (@available(iOS 15, *)) {
+        incognitoImage =
+            SymbolWithPalette(CustomSymbolWithConfiguration(
+                                  kIncognitoCircleFillSymbol, configuration),
+                              LargeIncognitoPalette());
       } else {
-        incognitoImage = [[UIImage imageNamed:@"incognito_icon"]
-            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        incognitoImage = CustomSymbolWithConfiguration(
+            kIncognitoCircleFilliOS14Symbol, configuration);
       }
 
       UIImageView* incognitoImageView =

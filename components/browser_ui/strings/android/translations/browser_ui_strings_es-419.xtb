@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Presiona para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2091887806945687916">Sonido</translation>
+<translation id="2117655453726830283">Siguiente diapositiva</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="216989819110952009">Incluso con los ojos protegidos por las gafas verdes, Dorothy y sus amigos quedaron deslumbrados cuando vieron</translation>
 <translation id="2176704795966505152">Mostrar la opción de zoom en el menú principal</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">Expandido; haz clic para contraer.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2597457036804169544">No aplicar el Tema oscuro para los sitios</translation>
+<translation id="2606760465469169465">Verificación automática</translation>
 <translation id="2621115761605608342">Permitir la ejecución de JavaScript para un sitio específico</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Abandonar</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">Restablecer permisos</translation>
 <translation id="301521992641321250">Bloqueado de forma automática</translation>
 <translation id="3069226013421428034">Permite el acceso de terceros a un sitio específico.</translation>
+<translation id="310297983047869047">Diapositiva anterior</translation>
 <translation id="3109724472072898302">Contraído</translation>
 <translation id="3114012059975132928">Reproductor de video</translation>
 <translation id="3115898365077584848">Mostrar información</translation>
@@ -188,6 +191,7 @@
 <translation id="4440642537584213025">Expandir <ph name="TARGET_DESCRIPTION" /></translation>
 <translation id="4468959413250150279">Silenciar un sitio específico.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# cookie}other{# cookies}}</translation>
+<translation id="4478158430052450698">Facilitar la personalización del zoom para diferentes sitios</translation>
 <translation id="4479647676395637221">Preguntar primero antes de permitir que los sitios usen tu cámara (recomendado)</translation>
 <translation id="4505788138578415521">URL expandida</translation>
 <translation id="4534723447064627427">Para permitir que <ph name="APP_NAME" /> acceda a tu micrófono, actívalo también en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
@@ -218,11 +222,11 @@
 <translation id="509133520954049755">Solicitar vista para computadoras de escritorio</translation>
 <translation id="5100237604440890931">Contraído; haz clic para expandir.</translation>
 <translation id="5123685120097942451">Pestaña de incógnito</translation>
-<translation id="5134599672855298214">Solicitar vista para dispositivos móviles (recomendado)</translation>
 <translation id="5186036860380548585">Esta opción está disponible cerca de la parte superior de la pantalla.</translation>
 <translation id="5197729504361054390">Los contactos que selecciones se compartirán con <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Última visita: hoy</translation>
 <translation id="5225463052809312700">Activar la cámara</translation>
+<translation id="5229337741799419985">Esta configuración funciona sin identificarte ni permitir que los sitios vean tu historial de navegación.</translation>
 <translation id="5234764350956374838">Descartar</translation>
 <translation id="5264323282659631142">Quitar "<ph name="CHIP_LABEL" />"</translation>
 <translation id="528192093759286357">Arrastra el dedo desde la parte superior y toca el botón Atrás para salir de la pantalla completa.</translation>
@@ -309,6 +313,7 @@
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6689172468748959065">Fotos de perfil</translation>
 <translation id="6697925417670533197">Descargas activas</translation>
+<translation id="6701547804986694515">Un sitio que visitas puede guardar información en Chrome para confirmar que no eres un bot. A medida que continúas navegando, los sitios pueden consultar con Chrome y verificar con otro sitio que hayas visitado que eres una persona real.</translation>
 <translation id="6722828510648505498">Bloquea los mensajes de acceso de servicios de identidad.</translation>
 <translation id="6746124502594467657">Mover hacia abajo</translation>
 <translation id="6749077623962119521">¿Deseas restablecer los permisos?</translation>
@@ -426,6 +431,7 @@
 <translation id="8751914237388039244">Seleccionar una imagen</translation>
 <translation id="8801436777607969138">Bloquea JavaScript para un sitio específico.</translation>
 <translation id="8803526663383843427">Cuando está activada</translation>
+<translation id="8805385115381080995">La navegación es más rápida porque el sitio tiene menos probabilidades de pedirte que verifiques si eres una persona real.</translation>
 <translation id="8816026460808729765">Impedir que los sitios accedan a los sensores</translation>
 <translation id="8823559166155093873">Bloquear cookies</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -449,5 +455,6 @@
 <translation id="9162462602695099906">Esta página es peligrosa</translation>
 <translation id="9201023452444595544">Se borrarán los datos sin conexión.</translation>
 <translation id="930525582205581608">¿Deseas olvidar este sitio?</translation>
+<translation id="947156494302904893">Los sitios que visitas pueden verificar que eres una persona real y no un bot</translation>
 <translation id="967624055006145463">Datos almacenados</translation>
 </translationbundle>

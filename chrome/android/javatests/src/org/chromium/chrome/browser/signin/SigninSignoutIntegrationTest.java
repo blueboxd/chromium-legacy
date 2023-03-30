@@ -19,8 +19,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 
 import org.junit.After;
@@ -135,7 +134,7 @@ public class SigninSignoutIntegrationTest {
                 });
         assertSignedOut();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { syncConsentActivity.findViewById(R.id.positive_button).performClick(); });
+                () -> { syncConsentActivity.findViewById(R.id.button_primary).performClick(); });
         CriteriaHelper.pollUiThread(
                 () -> mSigninManager.getIdentityManager().hasPrimaryAccount(ConsentLevel.SYNC));
         verify(mSignInStateObserverMock).onSignedIn();
@@ -169,7 +168,7 @@ public class SigninSignoutIntegrationTest {
 
         assertNotSyncing();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { syncConsentActivity.findViewById(R.id.positive_button).performClick(); });
+                () -> { syncConsentActivity.findViewById(R.id.button_primary).performClick(); });
         CriteriaHelper.pollUiThread(
                 () -> mSigninManager.getIdentityManager().hasPrimaryAccount(ConsentLevel.SYNC));
         // Enabling Sync will invoke SignInStateObserverMock.onSignedIn() a second time.
@@ -280,7 +279,7 @@ public class SigninSignoutIntegrationTest {
 
         assertNotSyncing();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { syncConsentActivity.findViewById(R.id.positive_button).performClick(); });
+                () -> { syncConsentActivity.findViewById(R.id.button_primary).performClick(); });
 
         CriteriaHelper.pollUiThread(
                 () -> mSigninManager.getIdentityManager().hasPrimaryAccount(ConsentLevel.SYNC));

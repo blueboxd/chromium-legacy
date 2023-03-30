@@ -7,17 +7,19 @@
 
 #include <bitset>
 #include <memory>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ash/app_list/search/search_provider.h"
 #include "chrome/browser/ash/app_list/search/system_info/battery_health.h"
 #include "chrome/browser/ash/app_list/search/system_info/cpu_data.h"
 #include "chrome/browser/ash/app_list/search/system_info/cpu_usage_data.h"
+#include "chrome/browser/ash/app_list/search/system_info/system_info_keyword_input.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/ash/calculator/size_calculator.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -31,9 +33,27 @@ relevant pages within the Settings and Diagnostics apps.*/
 // TODO(b/263994165): Complete the System Info Card Provider to return results.
 // This provider is a work in progress.
 class SystemInfoCardProvider : public SearchProvider,
-                               public chromeos::PowerManagerClient::Observer,
                                public ash::settings::SizeCalculator::Observer {
  public:
+  using UpdateCpuResultCallback = base::RepeatingCallback<void(bool)>;
+  using UpdateMemoryResultCallback = base::RepeatingCallback<void(bool)>;
+
+  // Implemented by clients that wish to be updated periodically about the
+  // cpu usage of the device.
+  class CpuDataObserver : public base::CheckedObserver {
+   public:
+    virtual void OnCpuDataUpdated(const std::u16string& title,
+                                  const std::u16string& description) = 0;
+  };
+
+  // Implemented by clients that wish to be updated periodically about the
+  // cpu usage of the device.
+  class MemoryObserver : public base::CheckedObserver {
+   public:
+    virtual void OnMemoryUpdated(const double memory_usage_percentage,
+                                 const std::u16string& description) = 0;
+  };
+
   explicit SystemInfoCardProvider(Profile* profile);
   ~SystemInfoCardProvider() override;
 
@@ -50,29 +70,35 @@ class SystemInfoCardProvider : public SearchProvider,
       const ash::settings::SizeCalculator::CalculationType& calculation_type,
       int64_t total_bytes) override;
 
+  // Adds and removes the Cpu Data observer.
+  virtual void AddCpuDataObserver(CpuDataObserver* observer);
+  virtual void RemoveCpuDataObserver(CpuDataObserver* observer);
+
+  // Adds and removes the Memory observer.
+  virtual void AddMemoryObserver(MemoryObserver* observer);
+  virtual void RemoveMemoryObserver(MemoryObserver* observer);
+
+  void SetCpuUsageTimerForTesting(std::unique_ptr<base::RepeatingTimer> timer);
+  void SetMemoryTimerForTesting(std::unique_ptr<base::RepeatingTimer> timer);
+
  private:
   void BindCrosHealthdProbeServiceIfNecessary();
   void OnProbeServiceDisconnect();
   double CalculateRelevance(const std::u16string& query,
                             const std::u16string& title);
 
-  void UpdateMemoryUsage();
+  void UpdateMemoryUsage(bool create_result);
   void OnMemoryUsageUpdated(
+      bool create_result,
       ash::cros_healthd::mojom::TelemetryInfoPtr info_ptr);
 
-  void UpdateCpuUsage();
-  void OnCpuUsageUpdated(ash::cros_healthd::mojom::TelemetryInfoPtr info_ptr);
+  void UpdateCpuUsage(bool create_result);
+  void OnCpuUsageUpdated(bool create_result,
+                         ash::cros_healthd::mojom::TelemetryInfoPtr info_ptr);
 
-  void UpdateBatteryInfo(absl::optional<power_manager::PowerSupplyProperties>
-                             power_supply_properties);
+  void UpdateBatteryInfo();
   void OnBatteryInfoUpdated(
-      absl::optional<power_manager::PowerSupplyProperties>
-          power_supply_properties,
       ash::cros_healthd::mojom::TelemetryInfoPtr info_ptr);
-
-  // chromeos::PowerManagerClient::Observer:
-  void PowerChanged(const power_manager::PowerSupplyProperties&
-                        power_supply_properties) override;
 
   void UpdateChromeOsVersion();
 
@@ -80,6 +106,7 @@ class SystemInfoCardProvider : public SearchProvider,
   void StartObservingCalculators();
   void OnStorageInfoUpdated();
   void StopObservingCalculators();
+  void CreateStorageAnswerCard();
 
   // Instances calculating the size of each storage items.
   ::ash::settings::TotalDiskSpaceCalculator total_disk_space_calculator_;
@@ -110,10 +137,14 @@ class SystemInfoCardProvider : public SearchProvider,
   std::string chromeOS_version_{""};
   CpuUsageData previous_cpu_usage_data_{CpuUsageData()};
   ash::cros_healthd::mojom::MemoryInfo* memory_info_{nullptr};
-  std::unique_ptr<CpuData> cpu_usage_{nullptr};
   std::unique_ptr<BatteryHealth> battery_health_{nullptr};
   gfx::ImageSkia os_settings_icon_;
   gfx::ImageSkia diagnostics_icon_;
+  std::vector<SystemInfoKeywordInput> keywords_;
+  std::unique_ptr<base::RepeatingTimer> cpu_usage_timer_;
+  std::unique_ptr<base::RepeatingTimer> memory_timer_;
+  base::ObserverList<SystemInfoCardProvider::CpuDataObserver> cpu_observers_;
+  base::ObserverList<SystemInfoCardProvider::MemoryObserver> memory_observers_;
 
   base::WeakPtrFactory<SystemInfoCardProvider> weak_factory_{this};
 };

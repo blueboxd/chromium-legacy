@@ -19,9 +19,9 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_test_base.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_test_config.h"
-#include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -30,11 +30,8 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
+#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "ui/gl/buildflags.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_utils.h"
-#include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(USE_DAWN)
 #include <dawn/dawn_proc.h>
@@ -45,77 +42,17 @@
 namespace gpu {
 namespace {
 
-class ExternalVkImageBackingFactoryTest : public testing::Test {
+class ExternalVkImageBackingFactoryTest : public SharedImageTestBase {
  protected:
-  bool use_passthrough() const {
-    return gles2::UsePassthroughCommandDecoder(
-               base::CommandLine::ForCurrentProcess()) &&
-           gles2::PassthroughCommandDecoderSupported();
-  }
-
-  GrDirectContext* gr_context() { return context_state_->gr_context(); }
-
   void SetUp() override {
 #if BUILDFLAG(IS_CHROMEOS)
     GTEST_SKIP() << "Chrome OS Vulkan initialization fails";
 #else
-    // Set up the Vulkan implementation and context provider.
-    vulkan_implementation_ = gpu::CreateVulkanImplementation();
-    ASSERT_TRUE(vulkan_implementation_);
-
-    auto initialize_vulkan = vulkan_implementation_->InitializeVulkanInstance();
-    ASSERT_TRUE(initialize_vulkan);
-
-    vulkan_context_provider_ = viz::VulkanInProcessContextProvider::Create(
-        vulkan_implementation_.get());
-    ASSERT_TRUE(vulkan_context_provider_);
-
-    // Set up a GL context. We don't actually need it, but we can't make
-    // a SharedContextState without one.
-    gl_surface_ = gl::init::CreateOffscreenGLSurface(gl::GetDefaultDisplayEGL(),
-                                                     gfx::Size());
-    ASSERT_TRUE(gl_surface_);
-    gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
-                                            gl::GLContextAttribs());
-    ASSERT_TRUE(gl_context_);
-    bool make_current_result = gl_context_->MakeCurrent(gl_surface_.get());
-    ASSERT_TRUE(make_current_result);
-
-    scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
-    context_state_ = base::MakeRefCounted<SharedContextState>(
-        std::move(share_group), gl_surface_, gl_context_,
-        /*use_virtualized_gl_contexts=*/false, base::DoNothing(),
-        GrContextType::kVulkan, vulkan_context_provider_.get());
-
-    context_state_->InitializeGL(
-        GpuPreferences(), base::MakeRefCounted<gles2::FeatureInfo>(
-                              GpuDriverBugWorkarounds(), GpuFeatureInfo()));
-
-    GpuPreferences gpu_preferences = {};
-    GpuDriverBugWorkarounds workarounds = {};
-    context_state_->InitializeGrContext(gpu_preferences, workarounds, nullptr);
-
-    memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
-    shared_image_representation_factory_ =
-        std::make_unique<SharedImageRepresentationFactory>(
-            &shared_image_manager_, nullptr);
+    ASSERT_NO_FATAL_FAILURE(InitializeContext(GrContextType::kVulkan));
     backing_factory_ =
         std::make_unique<ExternalVkImageBackingFactory>(context_state_);
 #endif
   }
-
-  std::unique_ptr<VulkanImplementation> vulkan_implementation_;
-  scoped_refptr<viz::VulkanInProcessContextProvider> vulkan_context_provider_;
-
-  scoped_refptr<gl::GLSurface> gl_surface_;
-  scoped_refptr<gl::GLContext> gl_context_;
-  scoped_refptr<SharedContextState> context_state_;
-
-  SharedImageManager shared_image_manager_;
-  std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
-  std::unique_ptr<SharedImageRepresentationFactory>
-      shared_image_representation_factory_;
-  std::unique_ptr<ExternalVkImageBackingFactory> backing_factory_;
 };
 
 #if BUILDFLAG(USE_DAWN)
@@ -183,14 +120,12 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, DawnWrite_SkiaVulkanRead) {
   ASSERT_NE(backing, nullptr);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_.Register(std::move(backing), &memory_type_tracker_);
 
   {
     // Create a Dawn representation to clear the texture contents to a green.
-    auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(
-            mailbox, dawn_device_.Get(), WGPUBackendType_Vulkan, {});
+    auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
+        mailbox, dawn_device_.Get(), WGPUBackendType_Vulkan, {});
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
@@ -223,9 +158,8 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, DawnWrite_SkiaVulkanRead) {
   EXPECT_TRUE(factory_ref->IsCleared());
 
   {
-    auto skia_representation =
-        shared_image_representation_factory_->ProduceSkia(mailbox,
-                                                          context_state_.get());
+    auto skia_representation = shared_image_representation_factory_.ProduceSkia(
+        mailbox, context_state_.get());
 
     std::vector<GrBackendSemaphore> begin_semaphores;
     std::vector<GrBackendSemaphore> end_semaphores;
@@ -245,7 +179,7 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, DawnWrite_SkiaVulkanRead) {
     EXPECT_EQ(size.height(), backend_texture.height());
 
     // Create an Sk Image from GrBackendTexture.
-    auto sk_image = SkImage::MakeFromTexture(
+    auto sk_image = SkImages::BorrowTextureFrom(
         gr_context(), backend_texture, kTopLeft_GrSurfaceOrigin,
         kRGBA_8888_SkColorType, kOpaque_SkAlphaType, nullptr);
     EXPECT_TRUE(sk_image);
@@ -301,14 +235,12 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, SkiaVulkanWrite_DawnRead) {
   ASSERT_NE(backing, nullptr);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_.Register(std::move(backing), &memory_type_tracker_);
 
   {
     // Create a SkiaImageRepresentation
-    auto skia_representation =
-        shared_image_representation_factory_->ProduceSkia(mailbox,
-                                                          context_state_.get());
+    auto skia_representation = shared_image_representation_factory_.ProduceSkia(
+        mailbox, context_state_.get());
 
     // Begin access for writing
     std::vector<GrBackendSemaphore> begin_semaphores;
@@ -346,9 +278,8 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, SkiaVulkanWrite_DawnRead) {
 
   {
     // Create a Dawn representation
-    auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(
-            mailbox, dawn_device_.Get(), WGPUBackendType_Vulkan, {});
+    auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
+        mailbox, dawn_device_.Get(), WGPUBackendType_Vulkan, {});
     ASSERT_TRUE(dawn_representation);
 
     // Begin access to copy the data out. Skia should have initialized the
@@ -444,7 +375,7 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Basic) {
   SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_GLES2;
 
-  bool supported = backing_factory_->IsSupported(
+  bool supported = backing_factory_->CanCreateSharedImage(
       usage, format, size, /*thread_safe=*/false, gfx::EMPTY_BUFFER,
       GrContextType::kVulkan, {});
   ASSERT_TRUE(supported);
@@ -456,11 +387,10 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Basic) {
   ASSERT_TRUE(backing);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_.Register(std::move(backing), &memory_type_tracker_);
   EXPECT_TRUE(shared_image);
 
-  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+  auto skia_representation = shared_image_representation_factory_.ProduceSkia(
       mailbox, context_state_.get());
   ASSERT_TRUE(skia_representation);
 
@@ -531,7 +461,7 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Basic) {
   // Verify GL access works.
   if (use_passthrough()) {
     auto gl_representation =
-        shared_image_representation_factory_->ProduceGLTexturePassthrough(
+        shared_image_representation_factory_.ProduceGLTexturePassthrough(
             mailbox);
     ASSERT_TRUE(gl_representation);
     auto scoped_access = gl_representation->BeginScopedAccess(
@@ -544,7 +474,7 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Basic) {
     EXPECT_NE(texture->service_id(), 0u);
   } else {
     auto gl_representation =
-        shared_image_representation_factory_->ProduceGLTexture(mailbox);
+        shared_image_representation_factory_.ProduceGLTexture(mailbox);
     ASSERT_TRUE(gl_representation);
     auto scoped_access = gl_representation->BeginScopedAccess(
         GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM,
@@ -555,6 +485,36 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Basic) {
     ASSERT_TRUE(texture);
     EXPECT_NE(texture->service_id(), 0u);
   }
+}
+
+// Verify that pixel upload works as expected.
+TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Upload) {
+  viz::SharedImageFormat format = get_format();
+  auto mailbox = Mailbox::GenerateForSharedImage();
+  gfx::Size size(30, 30);
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
+  uint32_t usage = SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_RASTER |
+                   SHARED_IMAGE_USAGE_CPU_UPLOAD;
+
+  // Verify backing can be created.
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, format, gpu::kNullSurfaceHandle, size, color_space,
+      surface_origin, alpha_type, usage, /*is_thread_safe=*/false);
+  ASSERT_TRUE(backing);
+
+  std::vector<SkBitmap> bitmaps = AllocateRedBitmaps(format, size);
+
+  // Upload pixels and set cleared.
+  ASSERT_TRUE(backing->UploadFromMemory(GetSkPixmaps(bitmaps)));
+  backing->SetCleared();
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image_ref =
+      shared_image_manager_.Register(std::move(backing), &memory_type_tracker_);
+  ASSERT_TRUE(shared_image_ref);
+
+  VerifyPixelsWithReadback(mailbox, bitmaps);
 }
 
 std::string TestParamToString(

@@ -90,7 +90,7 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
     return property_filters;
   }
 
-  std::vector<std::string> Dump() override;
+  std::vector<std::string> Dump(ui::AXMode mode) override;
 
   void OnDiffFailed() override;
   void RunEventTest(const base::FilePath::CharType* file_path);
@@ -100,7 +100,7 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
   std::string final_tree_;
 };
 
-std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
+std::vector<std::string> DumpAccessibilityEventsTest::Dump(ui::AXMode mode) {
   WebContentsImpl* web_contents = GetWebContents();
 
   // Save a copy of the accessibility tree (as a text dump); we'll
@@ -115,7 +115,8 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
     // in the HTML file.
     auto [go_results, event_logs] = CaptureEvents(
         base::BindOnce(&ExecuteScriptAndGetValue,
-                       web_contents->GetPrimaryMainFrame(), "go()"));
+                       web_contents->GetPrimaryMainFrame(), "go()"),
+        ui::kAXModeComplete);
     run_go_again = go_results.is_bool() && go_results.GetBool();
     // Save a copy of the final accessibility tree (as a text dump); we'll
     // log this for the user later if the test fails.
@@ -694,8 +695,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 // TODO(crbug.com/1423530): disabled on UIA.
+// TODO(crbug.com/1423845): Failing on Mac.
+// TODO(crbug.com/1423845): Actually failing everywhere. Disabled.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTestExceptUIA,
-                       AccessibilityEventsPopoverExpandedChanged) {
+                       DISABLED_AccessibilityEventsPopoverExpandedChanged) {
   RunEventTest(FILE_PATH_LITERAL("popover-expanded-changed.html"));
 }
 

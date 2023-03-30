@@ -238,7 +238,7 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner()
       const override;
-  mojom::blink::ColorScheme UsedColorScheme() const override;
+  mojom::blink::ColorScheme UsedColorSchemeScrollbars() const override;
   ScrollbarTheme& GetPageScrollbarTheme() const override;
   bool VisualViewportSuppliesScrollbars() const override;
   const Document* GetDocument() const override;
@@ -259,11 +259,6 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   // Used to calculate Width and Height above but do not update layout.
   double VisibleWidthCSSPx() const;
   double VisibleHeightCSSPx() const;
-
-  // Used for gathering data on user pinch-zoom statistics.
-  void UserDidChangeScale();
-  void SendUMAMetrics();
-  void StartTrackingPinchStats();
 
   // Heuristic-based function for determining if we should disable workarounds
   // for viewing websites that are not optimized for mobile devices.
@@ -387,11 +382,6 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   // animating or being dragged, browser_controls_adjustment_ tracks the amount
   // they expand or shrink the visible content height.
   float browser_controls_adjustment_;
-
-  // The maximum page scale the user has zoomed to on the current page. Used
-  // only to report statistics about pinch-zoom usage.
-  float max_page_scale_;
-  bool track_pinch_zoom_stats_for_page_;
 
   // For page scale animation on page_scale_node_.
   CompositorElementId page_scale_element_id_;

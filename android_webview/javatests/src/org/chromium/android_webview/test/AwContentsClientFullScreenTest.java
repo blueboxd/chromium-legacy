@@ -6,11 +6,11 @@ package org.chromium.android_webview.test;
 
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
 
-import android.support.test.InstrumentationRegistry;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
@@ -284,6 +284,7 @@ public class AwContentsClientFullScreenTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     @Test
+    @DisabledTest(message = "Flaky, see crbug.com/1425963")
     public void testPowerSaveBlockerIsTransferredToFullscreen() throws Throwable {
         Assert.assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
         loadTestPage(VIDEO_INSIDE_DIV_TEST_URL);

@@ -490,7 +490,7 @@ String LocalDOMWindow::CheckAndGetJavascriptUrl(
   if (ContentSecurityPolicy::ShouldBypassMainWorldDeprecated(world))
     return script_source;
 
-  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#require-trusted-types-for-pre-navigation-check
+  // https://w3c.github.io/trusted-types/dist/spec/#require-trusted-types-for-pre-navigation-check
   // 4.9.1.1. require-trusted-types-for Pre-Navigation check
   script_source =
       TrustedTypesCheckForJavascriptURLinNavigation(script_source, this);
@@ -2247,6 +2247,14 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
           frame_request, target.empty() ? "_blank" : target);
   if (!result.frame)
     return nullptr;
+
+  // If the resulting frame didn't create a new window and fullscreen was
+  // requested, reset the flag to prevent making a pre-existing frame
+  // fullscreen.
+  if (!result.new_window && window_features.is_fullscreen) {
+    window_features.is_fullscreen = false;
+    frame_request.SetFeaturesForWindowOpen(window_features);
+  }
 
   if (window_features.x_set || window_features.y_set) {
     // This runs after FindOrCreateFrameForNavigation() so blocked popups are

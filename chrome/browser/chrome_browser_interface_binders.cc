@@ -174,7 +174,6 @@
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
-#include "chrome/browser/ui/webui/side_panel/search_companion/search_companion_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
@@ -182,7 +181,7 @@
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/commerce/core/mojom/shopping_list.mojom.h"  // nogncheck crbug.com/1125897
-#include "components/image_service/mojom/image_service.mojom.h"
+#include "components/page_image_service/mojom/page_image_service.mojom.h"
 #include "components/search/ntp_features.h"
 #include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
@@ -249,8 +248,8 @@
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 #include "ash/webui/personalization_app/search/search.mojom.h"
 #include "ash/webui/print_management/print_management_ui.h"
-#include "ash/webui/projector_app/mojom/annotator.mojom.h"
-#include "ash/webui/projector_app/trusted_projector_annotator_ui.h"
+#include "ash/webui/projector_app/mojom/untrusted_annotator.mojom.h"
+#include "ash/webui/projector_app/untrusted_projector_annotator_ui.h"
 #include "ash/webui/scanning/mojom/scanning.mojom.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
@@ -978,12 +977,18 @@ void PopulateChromeWebUIFrameBinders(
       RegisterWebUIControllerInterfaceBinder<
           history_clusters::mojom::PageHandler, HistoryUI>(map);
     }
+  }
 
-    if (history_clusters_service->IsJourneysImagesEnabled()) {
-      RegisterWebUIControllerInterfaceBinder<
-          image_service::mojom::ImageServiceHandler, HistoryUI,
-          HistoryClustersSidePanelUI, NewTabPageUI>(map);
-    }
+  if ((history_clusters_service &&
+       history_clusters_service->IsJourneysEnabled() &&
+       history_clusters_service->IsJourneysImagesEnabled()) ||
+      base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule) ||
+      base::FeatureList::IsEnabled(
+          ntp_features::kNtpHistoryClustersModuleLoad) ||
+      base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel)) {
+    RegisterWebUIControllerInterfaceBinder<
+        page_image_service::mojom::PageImageServiceHandler, HistoryUI,
+        HistoryClustersSidePanelUI, NewTabPageUI, BookmarksSidePanelUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1058,17 +1063,6 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       shopping_list::mojom::ShoppingListHandlerFactory, BookmarksSidePanelUI>(
       map);
-
-  if (base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel)) {
-    RegisterWebUIControllerInterfaceBinder<
-        image_service::mojom::ImageServiceHandler, BookmarksSidePanelUI>(map);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kSidePanelSearchCompanion)) {
-    RegisterWebUIControllerInterfaceBinder<
-        side_panel::mojom::SearchCompanionPageHandlerFactory,
-        SearchCompanionSidePanelUI>(map);
-  }
 
   if (customize_chrome::IsSidePanelEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
@@ -1154,13 +1148,15 @@ void PopulateChromeWebUIFrameBinders(
       map);
 
   RegisterWebUIControllerInterfaceBinder<ash::auth::mojom::AuthFactorConfig,
-                                         ash::settings::OSSettingsUI>(map);
+                                         ash::settings::OSSettingsUI,
+                                         ash::OobeUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<ash::auth::mojom::RecoveryFactorEditor,
                                          ash::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<ash::auth::mojom::PinFactorEditor,
-                                         ash::settings::OSSettingsUI>(map);
+                                         ash::settings::OSSettingsUI,
+                                         ash::OobeUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::cellular_setup::mojom::ESimManager, ash::settings::OSSettingsUI,
@@ -1208,10 +1204,6 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       ash::camera_app::mojom::CameraAppHelper, ash::CameraAppUI>(map);
-
-  RegisterWebUIControllerInterfaceBinder<
-      ash::annotator::mojom::AnnotatorPageHandlerFactory,
-      ash::TrustedProjectorAnnotatorUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::help_app::mojom::PageHandlerFactory, ash::HelpAppUI>(map);
@@ -1293,13 +1285,9 @@ void PopulateChromeWebUIFrameBinders(
         map);
   }
 
-  // TODO(crbug.com/1218492): When boot RMA state is available disable this when
-  // not in RMA.
-  if (ash::features::IsShimlessRMAFlowEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        ash::shimless_rma::mojom::ShimlessRmaService, ash::ShimlessRMADialogUI>(
-        map);
-  }
+  RegisterWebUIControllerInterfaceBinder<
+      ash::shimless_rma::mojom::ShimlessRmaService, ash::ShimlessRMADialogUI>(
+      map);
 
   if (base::FeatureList::IsEnabled(features::kShortcutCustomizationApp)) {
     RegisterWebUIControllerInterfaceBinder<
@@ -1475,6 +1463,9 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry.ForWebUI<ash::DemoModeAppUntrustedUI>()
       .Add<ash::mojom::demo_mode::UntrustedPageHandlerFactory>();
+
+  registry.ForWebUI<ash::UntrustedProjectorAnnotatorUI>()
+      .Add<ash::annotator::mojom::UntrustedAnnotatorPageHandlerFactory>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)

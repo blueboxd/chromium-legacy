@@ -22,10 +22,9 @@ class Label;
 
 namespace ash {
 
-class CloseButton;
+class IconButton;
 class OverviewGrid;
 class PillButton;
-class RoundedImageView;
 class SavedDeskPresenter;
 
 // Wrapper for `SavedDeskPresenter` that exposes internal state to test
@@ -103,9 +102,7 @@ class SavedDeskItemViewTestApi {
 
   const views::Label* time_view() const { return item_view_->time_view_; }
 
-  const CloseButton* delete_button() const {
-    return item_view_->delete_button_;
-  }
+  const IconButton* delete_button() const { return item_view_->delete_button_; }
 
   const PillButton* launch_button() const { return item_view_->launch_button_; }
 
@@ -135,10 +132,6 @@ class SavedDeskIconViewTestApi {
 
   const views::Label* count_label() const {
     return saved_desk_icon_view_->count_label_;
-  }
-
-  const RoundedImageView* icon_view() const {
-    return saved_desk_icon_view_->icon_view_;
   }
 
   const SavedDeskIconView* saved_desk_icon_view() const {

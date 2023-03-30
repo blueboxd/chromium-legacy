@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -133,6 +134,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/metrics.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -165,6 +167,15 @@ const std::u16string& GetFolderButtonAccessibleName(
       l10n_util::GetStringUTF16(IDS_UNNAMED_BOOKMARK_FOLDER);
   return folder_title.empty() ? fallback_name : folder_title;
 }
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PreloadBookmarkMetricsEvent {
+  kMouseOver = 0,
+  kMouseDown = 1,
+  kMouseClick = 2,
+  kMaxValue = kMouseClick,
+};
 
 // BookmarkButtonBase -----------------------------------------------
 
@@ -238,7 +249,31 @@ class BookmarkButton : public BookmarkButtonBase {
   BookmarkButton(PressedCallback callback,
                  const GURL& url,
                  const std::u16string& title)
-      : BookmarkButtonBase(std::move(callback), title), url_(url) {}
+      : BookmarkButtonBase(std::move(callback), title), url_(url) {
+    const auto mouseover_and_mousedown_recorder_callback =
+        [](views::Button* button) {
+          switch (button->GetState()) {
+            case views::Button::ButtonState::STATE_PRESSED:
+              base::UmaHistogramEnumeration(
+                  "Prerender.Experimental.BookmarkUrlButtonEvent",
+                  PreloadBookmarkMetricsEvent::kMouseDown);
+              break;
+            case views::Button::ButtonState::STATE_HOVERED:
+              base::UmaHistogramEnumeration(
+                  "Prerender.Experimental.BookmarkUrlButtonEvent",
+                  PreloadBookmarkMetricsEvent::kMouseOver);
+              break;
+            case views::Button::ButtonState::STATE_DISABLED:
+            case views::Button::ButtonState::STATE_NORMAL:
+            case views::Button::ButtonState::STATE_COUNT:
+              break;
+          }
+        };
+
+    state_change_subscription_ =
+        this->AddStateChangedCallback(base::BindRepeating(
+            mouseover_and_mousedown_recorder_callback, base::Unretained(this)));
+  }
   BookmarkButton(const BookmarkButton&) = delete;
   BookmarkButton& operator=(const BookmarkButton&) = delete;
 
@@ -270,6 +305,7 @@ class BookmarkButton : public BookmarkButtonBase {
   mutable int max_tooltip_width_ = 0;
   mutable std::u16string tooltip_text_;
   const raw_ref<const GURL> url_;
+  base::CallbackListSubscription state_change_subscription_;
 };
 
 BEGIN_METADATA(BookmarkButton, BookmarkButtonBase)
@@ -451,6 +487,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       browser_(browser),
       browser_view_(browser_view) {
   SetID(VIEW_ID_BOOKMARK_BAR);
+  SetProperty(views::kElementIdentifierKey, kBookmarkBarElementId);
 
   // TODO(lgrey): This layer was introduced to support clipping the bookmark
   // bar to bounds to prevent it from drawing over the toolbar while animating.
@@ -1303,6 +1340,11 @@ void BookmarkBarView::OnButtonPressed(const bookmarks::BookmarkNode* node,
   RecordAppLaunch(browser_->profile(), node->url());
   chrome::OpenAllIfAllowed(browser_, {node},
                            ui::DispositionFromEventFlags(event.flags()), false);
+  if (event.IsMouseEvent()) {
+    base::UmaHistogramEnumeration(
+        "Prerender.Experimental.BookmarkUrlButtonEvent",
+        PreloadBookmarkMetricsEvent::kMouseClick);
+  }
   RecordBookmarkLaunch(
       BookmarkLaunchLocation::kAttachedBar,
       profile_metrics::GetBrowserProfileType(browser_->profile()));
@@ -2011,12 +2053,14 @@ const BookmarkNode* BookmarkBarView::GetParentNodeAndIndexForDrop(
   return parent_node;
 }
 
-void BookmarkBarView::PerformDrop(const bookmarks::BookmarkNodeData data,
-                                  const BookmarkNode* parent_node,
-                                  const size_t index,
-                                  const bool copy,
-                                  const ui::DropTargetEvent& event,
-                                  ui::mojom::DragOperation& output_drag_op) {
+void BookmarkBarView::PerformDrop(
+    const bookmarks::BookmarkNodeData data,
+    const BookmarkNode* parent_node,
+    const size_t index,
+    const bool copy,
+    const ui::DropTargetEvent& event,
+    ui::mojom::DragOperation& output_drag_op,
+    std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner) {
   DCHECK(data.is_valid());
   DCHECK(parent_node);
   DCHECK_NE(index, static_cast<size_t>(-1));

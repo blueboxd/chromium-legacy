@@ -34,9 +34,6 @@ namespace {
 // The size of the symbol badge image.
 constexpr CGFloat kSymbolBadgeImagePointSize = 13;
 
-// The size of the symbol for the metadata image.
-constexpr CGFloat kSymbolMetadataImagePointSize = 18;
-
 // The string format used to append the distillation date to the URL host.
 NSString* const kURLAndDistillationDateFormat = @"%@ • %@";
 
@@ -79,18 +76,13 @@ NSString* const kURLAndDistillationDateFormat = @"%@ • %@";
   _distillationState = distillationState;
   switch (_distillationState) {
     case ReadingListUIDistillationStatusFailure:
-      self.distillationBadgeImage =
-          UseSymbols() ? DefaultSymbolTemplateWithPointSize(
-                             kErrorCircleFillSymbol, kSymbolBadgeImagePointSize)
-                       : [UIImage imageNamed:@"distillation_fail_new"];
+      self.distillationBadgeImage = DefaultSymbolTemplateWithPointSize(
+          kErrorCircleFillSymbol, kSymbolBadgeImagePointSize);
       self.distillationBadgeTintColor = [UIColor colorNamed:kGrey600Color];
       break;
     case ReadingListUIDistillationStatusSuccess:
-      self.distillationBadgeImage =
-          UseSymbols()
-              ? DefaultSymbolTemplateWithPointSize(kCheckmarkCircleFillSymbol,
-                                                   kSymbolBadgeImagePointSize)
-              : [UIImage imageNamed:@"table_view_cell_check_mark"];
+      self.distillationBadgeImage = DefaultSymbolTemplateWithPointSize(
+          kCheckmarkCircleFillSymbol, kSymbolBadgeImagePointSize);
       self.distillationBadgeTintColor = [UIColor colorNamed:kGreen500Color];
       break;
     case ReadingListUIDistillationStatusPending:
@@ -111,17 +103,15 @@ NSString* const kURLAndDistillationDateFormat = @"%@ • %@";
   URLCell.accessibilityTraits |= UIAccessibilityTraitButton;
   URLCell.metadataImage.image =
       self.showCloudSlashIcon
-          ? CustomSymbolTemplateWithPointSize(kCloudSlashSymbol,
-                                              kSymbolMetadataImagePointSize)
+          ? CustomSymbolWithPointSize(kCloudSlashSymbol,
+                                      kCloudSlashSymbolPointSize)
           : nil;
-  URLCell.metadataImage.tintColor = [UIColor colorNamed:kTextSecondaryColor];
+  URLCell.metadataImage.tintColor = CloudSlashTintColor();
   if (styler.cellTitleColor)
     URLCell.titleLabel.textColor = styler.cellTitleColor;
   [URLCell.faviconView configureWithAttributes:self.attributes];
   URLCell.faviconBadgeView.image = self.distillationBadgeImage;
-  if (UseSymbols()) {
-    URLCell.faviconBadgeView.tintColor = self.distillationBadgeTintColor;
-  }
+  URLCell.faviconBadgeView.tintColor = self.distillationBadgeTintColor;
   cell.isAccessibilityElement = YES;
   cell.accessibilityLabel = GetReadingListCellAccessibilityLabel(
       self.title, [self hostname], self.distillationState,

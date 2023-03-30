@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/extension_control_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -38,12 +39,12 @@
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
-#include "chrome/browser/ui/webui/settings/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
 #include "chrome/browser/ui/webui/settings/hats_handler.h"
 #include "chrome/browser/ui/webui/settings/import_data_handler.h"
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
+#include "chrome/browser/ui/webui/settings/password_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/performance_handler.h"
 #include "chrome/browser/ui/webui/settings/privacy_sandbox_handler.h"
@@ -242,6 +243,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       std::make_unique<SecurityKeysBioEnrollmentHandler>());
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysPhonesHandler>());
 
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerRedesign)) {
+    AddSettingsPageUIHandler(std::make_unique<PasswordManagerHandler>());
+  }
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   AddSettingsPageUIHandler(std::make_unique<PasskeysHandler>());
 #endif
@@ -271,9 +276,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                           has_incompatible_applications);
   html_source->AddBoolean("hasAdminRights", HasAdminRights());
 
-  if (has_incompatible_applications)
+  if (has_incompatible_applications) {
     AddSettingsPageUIHandler(
         std::make_unique<IncompatibleApplicationsHandler>());
+  }
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   html_source->AddBoolean("signinAllowed", !profile->IsGuestSession() &&
@@ -397,6 +403,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "importPasswordsSuccessSummaryDevice",
       IDS_SETTINGS_PASSWORDS_IMPORT_SUCCESS_SUMMARY_DEVICE);
   plural_string_handler->AddLocalizedString(
+      "importPasswordsConflictsTitle",
+      IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICTS_TITLE);
+  plural_string_handler->AddLocalizedString(
       "importPasswordsSuccessSummaryAccount",
       IDS_SETTINGS_PASSWORDS_IMPORT_SUCCESS_SUMMARY_ACCOUNT);
   plural_string_handler->AddLocalizedString(
@@ -463,7 +472,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   html_source->AddBoolean(
       "privateStateTokensEnabled",
-      base::FeatureList::IsEnabled(network::features::kPrivateStateTokens));
+      base::FeatureList::IsEnabled(network::features::kPrivateStateTokens) ||
+          base::FeatureList::IsEnabled(network::features::kFledgePst));
 
   html_source->AddBoolean("safetyCheckNotificationPermissionsEnabled",
                           base::FeatureList::IsEnabled(
@@ -523,6 +533,7 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
         ash::phonehub::PhoneHubManagerFactory::GetForProfile(profile);
     ash::eche_app::EcheAppManager* eche_app_manager =
         ash::eche_app::EcheAppManagerFactory::GetForProfile(profile);
+
     web_ui()->AddMessageHandler(std::make_unique<
                                 ash::settings::MultideviceHandler>(
         profile->GetPrefs(),
@@ -537,7 +548,8 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
         android_sms_service ? android_sms_service->android_sms_app_manager()
                             : nullptr,
         eche_app_manager ? eche_app_manager->GetAppsAccessManager() : nullptr,
-        phone_hub_manager ? phone_hub_manager->GetCameraRollManager()
+        phone_hub_manager ? phone_hub_manager->GetCameraRollManager() : nullptr,
+        phone_hub_manager ? phone_hub_manager->GetBrowserTabsModelProvider()
                           : nullptr));
   }
 }
@@ -546,8 +558,9 @@ void SettingsUI::BindInterface(
     mojo::PendingReceiver<
         customize_themes::mojom::CustomizeThemesHandlerFactory>
         pending_receiver) {
-  if (customize_themes_factory_receiver_.is_bound())
+  if (customize_themes_factory_receiver_.is_bound()) {
     customize_themes_factory_receiver_.reset();
+  }
   customize_themes_factory_receiver_.Bind(std::move(pending_receiver));
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -555,8 +568,9 @@ void SettingsUI::BindInterface(
 void SettingsUI::BindInterface(
     mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandlerFactory>
         pending_receiver) {
-  if (help_bubble_handler_factory_receiver_.is_bound())
+  if (help_bubble_handler_factory_receiver_.is_bound()) {
     help_bubble_handler_factory_receiver_.reset();
+  }
   help_bubble_handler_factory_receiver_.Bind(std::move(pending_receiver));
 }
 

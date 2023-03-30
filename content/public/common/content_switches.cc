@@ -295,10 +295,6 @@ const char kDisable2dCanvasClipAntialiasing[] = "disable-2d-canvas-clip-aa";
 // Has no effect unless GPU rasterization is enabled.
 const char kDisableYUVImageDecoding[] = "disable-yuv-image-decoding";
 
-// Enables the Accept-CH cache for client hints to be durable past browser
-// restarts.
-const char kDurableClientHintsCache[] = "durable-client-hints-cache";
-
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 
@@ -1008,6 +1004,10 @@ const char kEnableAutomation[] = "enable-automation";
 // Linux speech service. Because it's buggy, the user must explicitly
 // enable it so that visiting a random webpage can't cause instability.
 const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
+
+// For lacros, we do not use environment variable to pass values. Instead we
+// use a command line flag to pass the path to the device.
+const char kLLVMProfileFile[] = "llvm-profile-file";
 #endif
 
 #if BUILDFLAG(IS_WIN)

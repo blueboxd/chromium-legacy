@@ -121,6 +121,8 @@ void ResetSigninPromoPreferences() {
   prefs->SetBoolean(prefs::kIosSettingsPromoAlreadySeen, false);
   prefs->SetInteger(prefs::kIosNtpFeedTopSigninPromoDisplayedCount, 0);
   prefs->SetBoolean(prefs::kIosNtpFeedTopPromoAlreadySeen, false);
+  prefs->SetInteger(prefs::kIosReadingListSigninPromoDisplayedCount, 0);
+  prefs->SetBoolean(prefs::kIosReadingListPromoAlreadySeen, false);
   prefs->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, false);
 }
 
@@ -136,7 +138,7 @@ void SignInWithoutSync(id<SystemIdentity> identity) {
   __block AuthenticationFlow* authenticationFlow =
       [[AuthenticationFlow alloc] initWithBrowser:browser
                                          identity:identity
-                                 postSignInAction:POST_SIGNIN_ACTION_NONE
+                                 postSignInAction:PostSignInAction::kNone
                          presentingViewController:viewController];
   authenticationFlow.dispatcher = (id<BrowsingDataCommands>)GetMainController();
   [authenticationFlow startSignInWithCompletion:^(BOOL success) {

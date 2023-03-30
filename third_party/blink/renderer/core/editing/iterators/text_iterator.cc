@@ -46,8 +46,9 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
-#include "third_party/blink/renderer/core/layout/layout_table_row.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -365,7 +366,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
       // Enter user-agent shadow root, if necessary.
       if (iteration_progress_ < kHandledUserAgentShadowRoot) {
         if (std::is_same<Strategy, EditingStrategy>::value &&
-            EntersTextControls() && layout_object->IsTextControlIncludingNG()) {
+            EntersTextControls() && layout_object->IsTextControl()) {
           ShadowRoot* user_agent_shadow_root =
               To<Element>(node_)->UserAgentShadowRoot();
           DCHECK(user_agent_shadow_root->IsUserAgent());
@@ -567,7 +568,7 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
 
   DCHECK_EQ(last_text_node_, text_node_handler_.GetNode());
 
-  if (EntersTextControls() && layout_object->IsTextControlIncludingNG()) {
+  if (EntersTextControls() && layout_object->IsTextControl()) {
     // The shadow tree should be already visited.
     return;
   }

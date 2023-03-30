@@ -178,8 +178,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     NOT_DESTROYED();
     return RoundToInt(OffsetTop(parent));
   }
-  virtual int PixelSnappedOffsetWidth(const Element*) const;
-  virtual int PixelSnappedOffsetHeight(const Element*) const;
 
   bool HasSelfPaintingLayer() const;
   PaintLayer* Layer() const {
@@ -248,8 +246,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   }
 
   // These functions are used during layout.
-  // - Table cells override them to include the intrinsic padding (see
-  //   explanations in LayoutTableCell).
   // - Table override them to exclude padding with collapsing borders.
   virtual LayoutUnit PaddingTop() const {
     NOT_DESTROYED();
@@ -535,6 +531,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // opaque background.
   virtual bool TextIsKnownToBeOnOpaqueBackground() const {
     NOT_DESTROYED();
+    DCHECK(!RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
     return false;
   }
 

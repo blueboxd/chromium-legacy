@@ -100,7 +100,6 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
 
   // ViewObserver:
@@ -109,6 +108,10 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
 
  private:
   FocusRing();
+
+  // Outset the input bounds if conditions are met.
+  void AdjustBounds(SkRect& rect) const;
+  void AdjustBounds(SkRRect& rect) const;
 
   SkPath GetPath() const;
   SkRRect GetRingRoundRect() const;

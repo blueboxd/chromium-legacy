@@ -216,6 +216,9 @@ struct FormFieldData {
 
   bool IsPasswordInputElement() const;
 
+  // Returns true for `form_control_type` select-one or selectmenu.
+  bool IsSelectOrSelectMenuElement() const;
+
   // Returns true if the field is focusable to the user.
   // This is an approximation of visibility with false positives.
   bool IsFocusable() const {
@@ -224,7 +227,7 @@ struct FormFieldData {
 
   bool DidUserType() const;
   bool HadFocus() const;
-  bool WasAutofilled() const;
+  bool WasPasswordAutofilled() const;
 
   // NOTE: update SameFieldAs()            if needed when adding new a member.
   // NOTE: update SimilarFieldAs()         if needed when adding new a member.

@@ -18,7 +18,6 @@
 # - components/
 # - ios/ (overlaps with chrome/)
 # - content/
-# - ios/web/ (overlaps with content/)
 # - everything else
 #
 # The range of ID values, which is used by pak files, is from 0 to 2^16 - 1.
@@ -152,6 +151,10 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [1380],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/remote_maintenance_curtain/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [1381],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/supervision/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [1383],
@@ -252,7 +255,7 @@
     "includes": [1680],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/nearby_internals/nearby_internals_resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
+    "META": {"sizes": {"includes": [40]}},
     "includes": [1740],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/nearby_share/nearby_share_dialog_resources.grd": {
@@ -274,6 +277,14 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/ntp4/apps_resources.grd": {
     "META": {"sizes": {"includes": [40]}},
     "includes": [1840],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/omnibox_popup/resources.grd": {
+    "META": {"sizes": {"includes": [50]}},
+    "includes": [1845],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/password_manager/resources.grd": {
+    "META": {"sizes": {"includes": [100]}},
+    "includes": [1850],
   },
   "chrome/browser/resources/preinstalled_web_apps/resources.grd": {
     "includes": [1860],
@@ -326,10 +337,6 @@
     "META": {"sizes": {"includes": [20],}},
     "includes": [1935],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/search_companion/resources.grd": {
-    "META": {"sizes": {"includes": [5],}},
-    "includes": [1936],
-  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/os_settings_resources.grd": {
     "META": {"sizes": {"includes": [1000],}},
     "includes": [1940],
@@ -376,14 +383,6 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/whats_new/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2140],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/password_manager/resources.grd": {
-    "META": {"sizes": {"includes": [70]}},
-    "includes": [2150],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/omnibox_popup/resources.grd": {
-    "META": {"sizes": {"includes": [50]}},
-    "includes": [2160],
   },
   # END chrome/browser section.
 
@@ -741,10 +740,6 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [3405],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/annotator/trusted/ash_projector_annotator_trusted_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},
-    "includes": [3410],
-  },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/common/ash_projector_common_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [3415],
@@ -890,12 +885,18 @@
     "META": {"join": 2},
     "messages": [800],
   },
-  # END ios/ section.
-
-  # START ios_internal/ section.
   "ios/chrome/widget_kit_extension/strings/ios_widget_kit_extension_strings.grd": {
     "messages": [820],
   },
+  "ios/web/ios_web_resources.grd": {
+    "includes": [825],
+  },
+  "ios/web/test/test_resources.grd": {
+    "includes": [830],
+  },
+  # END ios/ section.
+
+  # START ios_internal/ section.
   "ios_internal/chrome/app/ios_internal_strings.grd": {
     "messages": [840],
   },
@@ -912,7 +913,6 @@
   # END ios_internal/ section.
 
   # START content/ section.
-  # content/ and ios/web/ must start at the same id.
   "content/content_resources.grd": {
     # Big alignment at start of section.
     "META": {"join": 2, "align": 100},
@@ -932,24 +932,11 @@
   },
   # END content/ section.
 
-  # START ios/web/ section.
-  # content/ and ios/web/ must start at the same id.
-  # App only use one file depending on whether it is iOS or other platform.
-  "ios/web/ios_web_resources.grd": {
-    # Big alignment at start of section.
-    "META": {"align": 100},
-    "includes": [3800],
-  },
-  "ios/web/test/test_resources.grd": {
-    "includes": [3820],
-  },
-  # END ios/web/ section.
-
   # START "everything else" section.
   # Everything but chrome/, chromeos/, components/, content/, and ios/
   "ash/ash_strings.grd": {
     # Big alignment at start of section.
-    "META": {"join": 2, "align": 100},
+    "META": {"align": 100},
     "messages": [3960],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/os_feedback_ui/resources/ash_os_feedback_resources.grd": {

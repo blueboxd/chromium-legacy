@@ -156,6 +156,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_request.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -344,6 +345,7 @@ void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(fullscreen_video_elements_);
   visitor->Trace(pending_transform_updates_);
   visitor->Trace(pending_opacity_updates_);
+  visitor->Trace(disconnected_elements_with_remembered_size_);
 }
 
 void LocalFrameView::ForAllChildViewsAndPlugins(
@@ -1454,9 +1456,9 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
   DCHECK(To<LayoutBox>(root).IsOrthogonalWritingModeRoot());
   if (!root.NeedsLayout() || root.IsOutOfFlowPositioned() ||
       root.IsColumnSpanAll() || root.StyleRef().LogicalHeight().IsSpecified() ||
-      To<LayoutBox>(root).IsGridItem() || root.IsTablePart() ||
-      root.IsLayoutFlowThread())
+      root.IsTablePart() || root.IsLayoutFlowThread()) {
     return false;
+  }
 
   // Do not pre-layout objects that are fully managed by LayoutNG; it is not
   // necessary and may lead to double layouts. We do need to pre-layout objects
@@ -2574,6 +2576,14 @@ bool LocalFrameView::RunResizeObserverSteps(
     DocumentLifecycle::LifecycleState target_state) {
   if (target_state != DocumentLifecycle::kPaintClean)
     return false;
+
+  for (auto& element : disconnected_elements_with_remembered_size_) {
+    if (!element->isConnected()) {
+      element->SetLastRememberedBlockSize(absl::nullopt);
+      element->SetLastRememberedInlineSize(absl::nullopt);
+    }
+  }
+  disconnected_elements_with_remembered_size_.clear();
 
   bool re_run_lifecycles = false;
   ForAllNonThrottledLocalFrameViews(
@@ -5017,4 +5027,10 @@ void LocalFrameView::RemoveAllPendingUpdates() {
     pending_transform_updates_->clear();
   }
 }
+
+void LocalFrameView::NotifyElementWithRememberedSizeDisconnected(
+    Element* element) {
+  disconnected_elements_with_remembered_size_.insert(element);
+}
+
 }  // namespace blink

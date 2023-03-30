@@ -221,8 +221,8 @@ class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
 class SerialDelegate;
-class SpeculationHostDelegate;
 class SiteInstance;
+class SpeculationHostDelegate;
 class SpeechRecognitionManagerDelegate;
 class StoragePartition;
 class TracingDelegate;
@@ -592,10 +592,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if error page should be isolated in its own process.
   virtual bool ShouldIsolateErrorPage(bool in_main_frame);
 
-  // Returns true if the passed in URL should be assigned as the site of the
-  // current SiteInstance, if it does not yet have a site.
-  virtual bool ShouldAssignSiteForURL(const GURL& url);
-
   // Allows the embedder to programmatically provide some origins that should be
   // opted into --isolate-origins mode of Site Isolation.
   virtual std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
@@ -729,6 +725,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& script_url,
       BrowserContext* context);
 
+  // Returns true if the service worker associated with the given `scope` may be
+  // deleted. This can return false if the service worker is tied to another
+  // service that fundamentally should not be allowed to be removed (today, this
+  // is limited to extensions).
+  virtual bool MayDeleteServiceWorkerRegistration(
+      const GURL& scope,
+      BrowserContext* browser_context);
+
   // Allows the embedder to enable process-wide blink features before starting a
   // service worker. This is similar to
   // `blink.mojom.CommitNavigationParams.force_enabled_origin_trials` but for
@@ -858,16 +862,18 @@ class CONTENT_EXPORT ContentBrowserClient {
     kReport,
     kSourceVerboseDebugReport,
     kTriggerVerboseDebugReport,
+    kOsSource,
+    kOsTrigger,
     kAny,
   };
 
   // Allows the embedder to control if Attribution Reporting API operations can
   // happen in a given context. Origins must be provided for a given operation
   // as follows:
-  //   - `kSource` must provide a non-null `source_origin` and
+  //   - `kSource` and `kOsSource` must provide a non-null `source_origin` and
   //   `reporting_origin`
-  //   - `kTrigger` must provide a non-null `destination_origin` and
-  //   `reporting_origin`
+  //   - `kTrigger` and `kOsTrigger` must provide a non-null
+  //   `destination_origin` and `reporting_origin`
   //   - `kReport` must provide all non-null origins
   //   - `kAny` may provide all null origins. It checks whether conversion
   //   measurement is allowed anywhere in `browser_context`, returning false if
@@ -2399,6 +2405,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsThirdPartyStoragePartitioningAllowed(
       content::BrowserContext* browser_context,
       const url::Origin& top_level_origin);
+
+  // Checks if file or directory pickers from the file system access web API
+  // require a user gesture (transient activation). They usually do, but this
+  // can be bypassed via admin policy.
+  virtual bool IsTransientActivationRequiredForShowFileOrDirectoryPicker(
+      WebContents* web_contents);
+
+  // Checks if `origin` should always receive a first-party StorageKey
+  // in RenderFrameHostImpl. Currently in Chrome, this is true for all
+  // extension origins.
+  virtual bool ShouldUseFirstPartyStorageKey(const url::Origin& origin);
 };
 
 }  // namespace content

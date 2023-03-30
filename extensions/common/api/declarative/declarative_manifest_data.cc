@@ -148,7 +148,7 @@ std::unique_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
     }
 
     Rule rule;
-    if (!Rule::Populate(element, &rule)) {
+    if (!Rule::Populate(dict, rule)) {
       error_builder.Append("rule failed to populate");
       return nullptr;
     }
@@ -171,7 +171,8 @@ DeclarativeManifestData::RulesForEvent(const std::string& event) {
     // reference the rules owned here, but the ownership issues are a bit
     // tricky. Revisit this.
     std::unique_ptr<DeclarativeManifestData::Rule> rule_copy =
-        DeclarativeManifestData::Rule::FromValue(base::Value(rule.ToValue()));
+        DeclarativeManifestData::Rule::FromValueDeprecated(
+            base::Value(rule.ToValue()));
     result.push_back(std::move(*rule_copy));
   }
   return result;

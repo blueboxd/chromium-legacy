@@ -414,6 +414,10 @@ bool FormFieldData::IsPasswordInputElement() const {
   return form_control_type == "password";
 }
 
+bool FormFieldData::IsSelectOrSelectMenuElement() const {
+  return form_control_type == "select-one" || form_control_type == "selectmenu";
+}
+
 bool FormFieldData::DidUserType() const {
   return properties_mask & kUserTyped;
 }
@@ -422,7 +426,7 @@ bool FormFieldData::HadFocus() const {
   return properties_mask & kHadFocus;
 }
 
-bool FormFieldData::WasAutofilled() const {
+bool FormFieldData::WasPasswordAutofilled() const {
   return properties_mask & kAutofilled;
 }
 

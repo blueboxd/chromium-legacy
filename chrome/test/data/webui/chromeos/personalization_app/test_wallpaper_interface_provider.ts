@@ -65,6 +65,14 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
           {url: 'https://collections.googleusercontent.com/3'},
         ],
       },
+      {
+        description: '',
+        id: 'id_3',
+        name: 'time-of-day',
+        previews: [
+          {url: 'https://collections.googleusercontent.com/tod'},
+        ],
+      },
     ];
 
     /**
@@ -72,11 +80,11 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
      */
     this.images_ = [
       {
-        assetId: BigInt(0),
-        attribution: ['Image 0 dark'],
-        url: {url: 'https://images.googleusercontent.com/0'},
+        assetId: BigInt(1),
+        attribution: ['Image 0 light'],
+        url: {url: 'https://images.googleusercontent.com/1'},
         unitId: BigInt(1),
-        type: OnlineImageType.kDark,
+        type: OnlineImageType.kLight,
       },
       {
         assetId: BigInt(2),
@@ -86,11 +94,39 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
         type: OnlineImageType.kUnknown,
       },
       {
-        assetId: BigInt(1),
-        attribution: ['Image 0 light'],
-        url: {url: 'https://images.googleusercontent.com/1'},
+        assetId: BigInt(0),
+        attribution: ['Image 0 dark'],
+        url: {url: 'https://images.googleusercontent.com/0'},
         unitId: BigInt(1),
+        type: OnlineImageType.kDark,
+      },
+      {
+        assetId: BigInt(3),
+        attribution: ['Image 3'],
+        url: {url: 'https://images.googleusercontent.com/light-1'},
+        unitId: BigInt(3),
         type: OnlineImageType.kLight,
+      },
+      {
+        assetId: BigInt(4),
+        attribution: ['Image 3'],
+        url: {url: 'https://images.googleusercontent.com/morning-1'},
+        unitId: BigInt(3),
+        type: OnlineImageType.kMorning,
+      },
+      {
+        assetId: BigInt(5),
+        attribution: ['Image 3'],
+        url: {url: 'https://images.googleusercontent.com/afternoon-1'},
+        unitId: BigInt(3),
+        type: OnlineImageType.kLateAfternoon,
+      },
+      {
+        assetId: BigInt(6),
+        attribution: ['Image 3'],
+        url: {url: 'https://images.googleusercontent.com/dark-1'},
+        unitId: BigInt(3),
+        type: OnlineImageType.kDark,
       },
     ];
 
@@ -116,6 +152,7 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
     this.albumId = '';
 
     this.collectionId = this.collections_![0]!.id;
+    this.timeOfDayCollectionId = this.collections_![3]!.id;
   }
 
   private collections_: WallpaperCollection[]|null;
@@ -139,6 +176,7 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
   currentWallpaper: CurrentWallpaper;
   albumId: string;
   collectionId: string;
+  timeOfDayCollectionId: string;
   selectWallpaperResponse = true;
   selectGooglePhotosPhotoResponse = true;
   selectGooglePhotosAlbumResponse: SetDailyRefreshResponse = {

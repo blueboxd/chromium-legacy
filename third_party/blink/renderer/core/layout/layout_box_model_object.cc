@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -128,6 +127,8 @@ LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
 bool LayoutBoxModelObject::UsesCompositedScrolling() const {
   NOT_DESTROYED();
 
+  // TODO(crbug.com/1414885): We may need to redefine this function for
+  // CompositeScrollAfterPaint.
   const auto* properties = FirstFragment().PaintProperties();
   return properties && properties->ScrollTranslation() &&
          properties->ScrollTranslation()->HasDirectCompositingReasons();
@@ -625,12 +626,8 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
     cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(To<LayoutBox>(this)));
   }
   if (this_box && this_box->IsFlexItemIncludingNG()) {
-    if (this_box->IsFlexItem()) {
-      const auto& flex_box = To<LayoutFlexibleBox>(*Parent());
-      if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this_box))
-        return false;
-    } else if (const NGLayoutResult* result =
-                   this_box->GetSingleCachedLayoutResult()) {
+    if (const NGLayoutResult* result =
+            this_box->GetSingleCachedLayoutResult()) {
       // TODO(dgrogan): We won't get here when laying out the FlexNG item and
       // its descendant(s) for the first time because the item (|this_box|)
       // doesn't have anything in its cache. That seems bad because this method
@@ -642,11 +639,6 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
       if (space.IsFixedBlockSize() && !space.IsInitialBlockSizeIndefinite())
         return false;
     }
-  }
-  if (this_box && this_box->IsGridItem() &&
-      this_box->HasOverrideContainingBlockContentLogicalHeight()) {
-    return this_box->OverrideContainingBlockContentLogicalHeight() ==
-           kIndefiniteSize;
   }
   if (this_box && this_box->IsCustomItem() &&
       (this_box->HasOverrideContainingBlockContentLogicalHeight() ||
@@ -662,8 +654,7 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
     // We need the containing block to have a definite block-size in order to
     // resolve the block-size of the descendant, except when in quirks mode.
     // Flexboxes follow strict behavior even in quirks mode, though.
-    if (!GetDocument().InQuirksMode() ||
-        cb->IsFlexibleBoxIncludingDeprecatedAndNG()) {
+    if (!GetDocument().InQuirksMode() || cb->IsFlexibleBoxIncludingNG()) {
       if (this_box &&
           this_box->HasOverrideContainingBlockContentLogicalHeight()) {
         return this_box->OverrideContainingBlockContentLogicalHeight() ==
@@ -854,8 +845,9 @@ bool LayoutBoxModelObject::UpdateStickyPositionConstraints() {
   // Skip anonymous containing blocks except for anonymous fieldset content box.
   while (sticky_container->IsAnonymous()) {
     if (sticky_container->Parent() &&
-        sticky_container->Parent()->IsLayoutNGFieldset())
+        sticky_container->Parent()->IsFieldset()) {
       break;
+    }
     sticky_container = sticky_container->ContainingBlock();
   }
 
@@ -1061,8 +1053,9 @@ PhysicalOffset LayoutBoxModelObject::AdjustedPositionRelativeTo(
         // FIXME: What are we supposed to do inside SVG content?
         reference_point += PhysicalOffsetToBeNoop(
             current->ColumnOffset(reference_point.ToLayoutPoint()));
-        if (current->IsBox() && !current->IsLegacyTableRow())
+        if (current->IsBox()) {
           reference_point += To<LayoutBox>(current)->PhysicalLocation();
+        }
       }
 
       if (offset_parent_object->IsBox() && offset_parent_object->IsBody() &&
@@ -1122,17 +1115,6 @@ LayoutUnit LayoutBoxModelObject::OffsetTop(const Element* parent) const {
   // Note that LayoutInline and LayoutBox override this to pass a different
   // startPoint to adjustedPositionRelativeTo.
   return AdjustedPositionRelativeTo(PhysicalOffset(), parent).top;
-}
-
-int LayoutBoxModelObject::PixelSnappedOffsetWidth(const Element* parent) const {
-  NOT_DESTROYED();
-  return SnapSizeToPixel(OffsetWidth(), OffsetLeft(parent));
-}
-
-int LayoutBoxModelObject::PixelSnappedOffsetHeight(
-    const Element* parent) const {
-  NOT_DESTROYED();
-  return SnapSizeToPixel(OffsetHeight(), OffsetTop(parent));
 }
 
 LayoutUnit LayoutBoxModelObject::ComputedCSSPadding(
@@ -1336,7 +1318,7 @@ LayoutObject* LayoutBoxModelObject::SplitAnonymousBoxesAroundChild(
       auto* parent_box = To<LayoutBoxModelObject>(box_to_split->Parent());
       // We need to invalidate the |parentBox| before inserting the new node
       // so that the table paint invalidation logic knows the structure is
-      // dirty. See for example LayoutTableCell:localVisualRect().
+      // dirty.
       MarkBoxForRelayoutAfterSplit(parent_box);
       parent_box->VirtualChildren()->InsertChildNode(
           parent_box, post_box, box_to_split->NextSibling());

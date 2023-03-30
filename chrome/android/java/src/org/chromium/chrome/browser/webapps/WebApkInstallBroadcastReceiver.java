@@ -4,14 +4,20 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.service.notification.StatusBarNotification;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
@@ -31,6 +37,8 @@ public class WebApkInstallBroadcastReceiver extends BroadcastReceiver {
 
     private static final String NOTIFICATION_ID = "WebApkInstallNotification.notification_id";
     private static final String WEBAPK_START_URL = "WebApkInstallNotification.start_url";
+    @VisibleForTesting
+    static final String RETRY_PROTO = "WebApkInstallNotification.retry_proto";
 
     private final WebApkInstallCoordinatorBridge mBridge;
 
@@ -47,22 +55,51 @@ public class WebApkInstallBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        assert intent != null && !intent.hasExtra(NOTIFICATION_ID);
+        assert intent != null && intent.hasExtra(NOTIFICATION_ID);
 
-        String id = intent.getStringExtra(NOTIFICATION_ID);
+        String id = IntentUtils.safeGetStringExtra(intent, NOTIFICATION_ID);
+        String startUrl = IntentUtils.safeGetStringExtra(intent, WEBAPK_START_URL);
+
+        byte[] proto = IntentUtils.safeGetByteArrayExtra(intent, RETRY_PROTO);
+        Bitmap icon = getCurrentIconFromNotification(context, id);
+
         WebApkInstallService.cancelNotification(id);
 
-        if (ACTION_OPEN_IN_BROWSER.equals(intent.getAction())) {
-            openInChrome(context, intent.getStringExtra(WEBAPK_START_URL));
+        if (ACTION_RETRY_INSTALL.equals(intent.getAction())) {
+            if (icon != null && proto != null && proto.length != 0) {
+                mBridge.retry(id, proto, icon);
+            } else {
+                assert false : "Invalid intent data " + id;
+                openInChrome(context, startUrl);
+            }
+        } else if (ACTION_OPEN_IN_BROWSER.equals(intent.getAction())) {
+            openInChrome(context, startUrl);
         }
     }
 
-    static PendingIntentProvider createPendingIntent(
-            Context context, String notificationId, String url, String action) {
+    // Get the Bitmap icon from the current install notification, it will be use for the retry
+    // install notification.
+    @Nullable
+    private Bitmap getCurrentIconFromNotification(Context context, String id) {
+        NotificationManager nm =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        for (StatusBarNotification sbn : nm.getActiveNotifications()) {
+            if ((WebApkInstallService.WEBAPK_INSTALL_NOTIFICATION_TAG_PREFIX + id)
+                            .equals(sbn.getTag())) {
+                return ((BitmapDrawable) sbn.getNotification().getLargeIcon().loadDrawable(context))
+                        .getBitmap();
+            }
+        }
+        return null;
+    }
+
+    static PendingIntentProvider createPendingIntent(Context context, String notificationId,
+            String url, String action, byte[] serializedProto) {
         Intent intent = new Intent(action);
         intent.setClass(context, WebApkInstallBroadcastReceiver.class);
         intent.putExtra(NOTIFICATION_ID, notificationId);
         intent.putExtra(WEBAPK_START_URL, url);
+        intent.putExtra(RETRY_PROTO, serializedProto);
 
         int requestCode = 0;
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;

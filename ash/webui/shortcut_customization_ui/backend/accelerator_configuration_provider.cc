@@ -42,6 +42,42 @@ using ::ash::shortcut_customization::mojom::AcceleratorResultDataPtr;
 using ::ash::shortcut_customization::mojom::SimpleAccelerator;
 using ::ash::shortcut_customization::mojom::SimpleAcceleratorPtr;
 using mojom::AcceleratorConfigResult;
+using HiddenAcceleratorMap =
+    std::map<AcceleratorActionId, std::vector<ui::Accelerator>>;
+
+// Raw accelerator data may result in the same shortcut being displayed multiple
+// times in the frontend. GetHiddenAcceleratorMap() is used to collect such
+// accelerators and hide them from display.
+const HiddenAcceleratorMap& GetHiddenAcceleratorMap() {
+  static auto hiddenAcceleratorMap = base::NoDestructor<HiddenAcceleratorMap>(
+      {{TOGGLE_APP_LIST,
+        {ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE,
+                         ui::Accelerator::KeyState::PRESSED),
+         ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN,
+                         ui::Accelerator::KeyState::PRESSED),
+         ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE,
+                         ui::Accelerator::KeyState::RELEASED),
+         ui::Accelerator(ui::VKEY_LWIN, ui::EF_SHIFT_DOWN,
+                         ui::Accelerator::KeyState::RELEASED)}},
+       {SHOW_SHORTCUT_VIEWER,
+        {ui::Accelerator(ui::VKEY_F14, ui::EF_NONE,
+                         ui::Accelerator::KeyState::PRESSED),
+         ui::Accelerator(
+             ui::VKEY_OEM_2,
+             ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+             ui::Accelerator::KeyState::PRESSED)}},
+       {OPEN_GET_HELP,
+        {ui::Accelerator(ui::VKEY_OEM_2,
+                         ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+                         ui::Accelerator::KeyState::PRESSED)}},
+       {TOGGLE_FULLSCREEN,
+        {ui::Accelerator(ui::VKEY_ZOOM, ui::EF_SHIFT_DOWN,
+                         ui::Accelerator::KeyState::PRESSED)}},
+       {SWITCH_TO_LAST_USED_IME,
+        {ui::Accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
+                         ui::Accelerator::KeyState::RELEASED)}}});
+  return *hiddenAcceleratorMap;
+}
 
 // Gets the parts of the string that don't contain replacements.
 // Ex: "Press and " -> ["Press ", " and "]
@@ -124,6 +160,17 @@ std::vector<mojom::TextAcceleratorPartPtr> GenerateTextAcceleratorParts(
   DCHECK_EQ(upto, str_size);
   DCHECK_EQ(offset_index, offsets.size());
   return result;
+}
+
+bool IsAcceleratorHidden(AcceleratorActionId action_id,
+                         const ui::Accelerator& accelerator) {
+  const auto& iter = GetHiddenAcceleratorMap().find(action_id);
+  if (iter == GetHiddenAcceleratorMap().end()) {
+    return false;
+  }
+  const std::vector<ui::Accelerator>& hidden_accelerators = iter->second;
+  return std::find(hidden_accelerators.begin(), hidden_accelerators.end(),
+                   accelerator) != hidden_accelerators.end();
 }
 
 mojom::StandardAcceleratorPropertiesPtr CreateStandardAcceleratorProps(
@@ -229,6 +276,12 @@ void AcceleratorConfigurationProvider::IsMutable(
   // TODO(jimmyxgong): Add more cases for other source types when they're
   // available.
   std::move(callback).Run(/*is_mutable=*/true);
+}
+
+void AcceleratorConfigurationProvider::HasLauncherButton(
+    HasLauncherButtonCallback callback) {
+  std::move(callback).Run(
+      Shell::Get()->keyboard_capability()->HasLauncherButton());
 }
 
 void AcceleratorConfigurationProvider::GetAccelerators(
@@ -422,6 +475,16 @@ void AcceleratorConfigurationProvider::CreateAndAppendAliasedAccelerators(
       accelerator_alias_converter_.CreateAcceleratorAlias(accelerator);
   output.reserve(output.size() + accelerator_aliases.size());
 
+  // Return early if there are no alias accelerators (Because certain keys are
+  // unavailable), accelerator will be suppressed/disabled and its state will be
+  // kDisabledByUnavailableKeys.
+  if (accelerator_aliases.empty()) {
+    output.push_back(CreateStandardAcceleratorInfo(
+        accelerator, locked, GetAcceleratorType(accelerator),
+        mojom::AcceleratorState::kDisabledByUnavailableKeys));
+    return;
+  }
+
   for (const auto& accelerator_alias : accelerator_aliases) {
     output.push_back(CreateStandardAcceleratorInfo(
         accelerator_alias, locked, GetAcceleratorType(accelerator), state));
@@ -529,6 +592,9 @@ void AcceleratorConfigurationProvider::PopulateAshAcceleratorConfig(
     }
 
     for (const auto& accelerator : accelerators) {
+      if (IsAcceleratorHidden(layout_info.action_id, accelerator)) {
+        continue;
+      }
       // TODO(jimmyxgong): Check pref storage to determine whether the
       // AcceleratorType was user-added or default.
       CreateAndAppendAliasedAccelerators(

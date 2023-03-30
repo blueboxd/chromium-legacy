@@ -19,6 +19,11 @@ namespace autofill {
 class SaveUpdateAddressProfileFlowManagerBrowserTest
     : public AndroidBrowserTest {
  public:
+  // Explicitly avoiding the migration logic because the user must be logged in.
+  // TODO(crbug.com/1421056): figure out if the user can be logged in from an
+  // Android browser test.
+  static constexpr bool kNotMigrationToAccount = false;
+
   SaveUpdateAddressProfileFlowManagerBrowserTest() = default;
   ~SaveUpdateAddressProfileFlowManagerBrowserTest() override = default;
 
@@ -58,6 +63,7 @@ class SaveUpdateAddressProfileFlowManagerBrowserTest
 IN_PROC_BROWSER_TEST_F(SaveUpdateAddressProfileFlowManagerBrowserTest,
                        TriggerAutoDeclineDecisionIfMessageIsDisplayed) {
   flow_manager_->OfferSave(GetWebContents(), profile_, &original_profile_,
+                           kNotMigrationToAccount,
                            /*callback=*/base::DoNothing());
   EXPECT_TRUE(IsMessageDisplayed());
   EXPECT_FALSE(IsPromptDisplayed());
@@ -70,13 +76,14 @@ IN_PROC_BROWSER_TEST_F(SaveUpdateAddressProfileFlowManagerBrowserTest,
       Run(AutofillClient::SaveAddressProfileOfferUserDecision::kAutoDeclined,
           another_profile));
   flow_manager_->OfferSave(GetWebContents(), another_profile,
-                           /*original_profile=*/nullptr,
+                           /*original_profile=*/nullptr, kNotMigrationToAccount,
                            another_save_callback.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(SaveUpdateAddressProfileFlowManagerBrowserTest,
                        TriggerAutoDeclineDecisionIfPromptIsDisplayed) {
   flow_manager_->OfferSave(GetWebContents(), profile_, &original_profile_,
+                           kNotMigrationToAccount,
                            /*callback=*/base::DoNothing());
   // Proceed with message to prompt.
   flow_manager_->GetMessageControllerForTest()->OnPrimaryAction();
@@ -93,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(SaveUpdateAddressProfileFlowManagerBrowserTest,
       Run(AutofillClient::SaveAddressProfileOfferUserDecision::kAutoDeclined,
           another_profile));
   flow_manager_->OfferSave(GetWebContents(), another_profile,
-                           /*original_profile=*/nullptr,
+                           /*original_profile=*/nullptr, kNotMigrationToAccount,
                            another_save_callback.Get());
 }
 

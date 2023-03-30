@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_axis_value.h"
 #include "third_party/blink/renderer/core/css/css_bracketed_value_list.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
+#include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_counter_value.h"
 #include "third_party/blink/renderer/core/css/css_cursor_image_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
@@ -468,7 +469,8 @@ const CSSValue* AnimationRangeStart::ParseSingleValue(
     const CSSParserLocalContext&) const {
   DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
   return css_parsing_utils::ConsumeCommaSeparatedList(
-      css_parsing_utils::ConsumeAnimationRange, range, context);
+      css_parsing_utils::ConsumeAnimationRange, range, context,
+      /* default_offset_percent */ 0.0);
 }
 
 const CSSValue* AnimationRangeStart::CSSValueFromComputedStyleInternal(
@@ -479,13 +481,18 @@ const CSSValue* AnimationRangeStart::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
+const CSSValue* AnimationRangeStart::InitialValue() const {
+  return CSSIdentifierValue::Create(CSSValueID::kNormal);
+}
+
 const CSSValue* AnimationRangeEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
   return css_parsing_utils::ConsumeCommaSeparatedList(
-      css_parsing_utils::ConsumeAnimationRange, range, context);
+      css_parsing_utils::ConsumeAnimationRange, range, context,
+      /* default_offset_percent */ 100.0);
 }
 
 const CSSValue* AnimationRangeEnd::CSSValueFromComputedStyleInternal(
@@ -494,6 +501,10 @@ const CSSValue* AnimationRangeEnd::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForAnimationRangeEndList(style.Animations(),
                                                            style);
+}
+
+const CSSValue* AnimationRangeEnd::InitialValue() const {
+  return CSSIdentifierValue::Create(CSSValueID::kNormal);
 }
 
 const CSSValue* AnimationTimeline::ParseSingleValue(
@@ -586,13 +597,13 @@ const CSSValue* AspectRatio::CSSValueFromComputedStyleInternal(
                                       CSSPrimitiveValue::UnitType::kNumber),
       *CSSNumericLiteralValue::Create(ratio.GetRatio().height(),
                                       CSSPrimitiveValue::UnitType::kNumber));
-  if (ratio.GetTypeForComputedStyle() == EAspectRatioType::kRatio) {
-    return ratio_value;
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (ratio.GetTypeForComputedStyle() != EAspectRatioType::kRatio) {
+    DCHECK_EQ(ratio.GetTypeForComputedStyle(), EAspectRatioType::kAutoAndRatio);
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   }
 
-  DCHECK_EQ(ratio.GetTypeForComputedStyle(), EAspectRatioType::kAutoAndRatio);
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   list->Append(*ratio_value);
   return list;
 }
@@ -3863,7 +3874,7 @@ const CSSValue* GridTemplateColumns::ParseSingleValue(
 
 bool GridTemplateColumns::IsLayoutDependent(const ComputedStyle* style,
                                             LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsLayoutGridIncludingNG();
+  return layout_object && layout_object->IsLayoutNGGrid();
 }
 
 const CSSValue* GridTemplateColumns::CSSValueFromComputedStyleInternal(
@@ -3887,7 +3898,7 @@ const CSSValue* GridTemplateRows::ParseSingleValue(
 
 bool GridTemplateRows::IsLayoutDependent(const ComputedStyle* style,
                                          LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsLayoutGridIncludingNG();
+  return layout_object && layout_object->IsLayoutNGGrid();
 }
 
 const CSSValue* GridTemplateRows::CSSValueFromComputedStyleInternal(
@@ -4890,9 +4901,9 @@ const CSSValue* ListStyleType::CSSValueFromComputedStyleInternal(
     return MakeGarbageCollected<CSSStringValue>(
         list_style_type.GetStringValue());
   }
-  // TODO(crbug.com/687225): Return a scoped CSSValue?
-  return MakeGarbageCollected<CSSCustomIdentValue>(
-      list_style_type.GetCounterStyleName());
+  return &MakeGarbageCollected<CSSCustomIdentValue>(
+              list_style_type.GetCounterStyleName())
+              ->PopulateWithTreeScope(list_style_type.GetTreeScope());
 }
 
 void ListStyleType::ApplyValue(StyleResolverState& state,
@@ -5679,14 +5690,20 @@ const CSSValue* OverflowClipMargin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
+  auto* css_value_list = CSSValueList::CreateSpaceSeparated();
+
   if (!style.OverflowClipMargin()) {
-    return CSSPrimitiveValue::CreateFromLength(Length::Fixed(0), 1.f);
+    css_value_list->Append(
+        *CSSPrimitiveValue::CreateFromLength(Length::Fixed(0), 1.f));
+    return css_value_list;
   }
 
   if (style.OverflowClipMargin()->GetReferenceBox() ==
           StyleOverflowClipMargin::ReferenceBox::kPaddingBox &&
       style.OverflowClipMargin()->GetMargin() == LayoutUnit()) {
-    return CSSPrimitiveValue::CreateFromLength(Length::Fixed(0), 1.f);
+    css_value_list->Append(
+        *CSSPrimitiveValue::CreateFromLength(Length::Fixed(0), 1.f));
+    return css_value_list;
   }
 
   CSSValueID reference_box;
@@ -5702,7 +5719,6 @@ const CSSValue* OverflowClipMargin::CSSValueFromComputedStyleInternal(
       break;
   }
 
-  auto* css_value_list = CSSValueList::CreateSpaceSeparated();
   if (reference_box != CSSValueID::kPaddingBox) {
     css_value_list->Append(*CSSIdentifierValue::Create(reference_box));
   }
@@ -9656,11 +9672,11 @@ const CSSValue* ToggleVisibility::CSSValueFromComputedStyleInternal(
   return result_list;
 }
 
-const CSSValue* TopLayer::CSSValueFromComputedStyleInternal(
+const CSSValue* Overlay::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(style.TopLayer());
+  return CSSIdentifierValue::Create(style.Overlay());
 }
 
 const CSSValue* WebkitTransformOriginY::ParseSingleValue(
@@ -9711,49 +9727,27 @@ const CSSValue* WebkitWritingMode::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetWritingMode());
 }
 
-void WhiteSpace::ApplyInitial(StyleResolverState& state) const {
-  ComputedStyleBuilder& builder = state.StyleBuilder();
-  builder.SetWhiteSpace(ComputedStyleInitialValues::InitialWhiteSpace());
-  // TODO(crbug.com/1417543): `white-space` will become a shorthand in the
-  // future - in order to mitigate the forward compat risk, apply to the
-  // `text-wrap` longhand as well.
-  DCHECK(GetCSSPropertyWhiteSpace().IsLonghand());
-  builder.SetTextWrap(ComputedStyleInitialValues::InitialTextWrap());
-}
-
-void WhiteSpace::ApplyInherit(StyleResolverState& state) const {
-  ComputedStyleBuilder& builder = state.StyleBuilder();
-  builder.SetWhiteSpace(state.ParentStyle()->WhiteSpace());
-  // TODO(crbug.com/1417543): See `WhiteSpace::ApplyInitial`.
-  // For now, any `white-space` values should set `text-wrap: wrap`.
-  DCHECK(GetCSSPropertyWhiteSpace().IsLonghand());
-  builder.SetTextWrap(ComputedStyleInitialValues::InitialTextWrap());
-}
-
-void WhiteSpace::ApplyValue(StyleResolverState& state,
-                            const CSSValue& value,
-                            ValueMode) const {
-  ComputedStyleBuilder& builder = state.StyleBuilder();
-  builder.SetWhiteSpace(
-      To<CSSIdentifierValue>(value).ConvertTo<blink::EWhiteSpace>());
-  // TODO(crbug.com/1417543): See `WhiteSpace::ApplyInitial`.
-  // For now, any `white-space` values should set `text-wrap: wrap`.
-  DCHECK(GetCSSPropertyWhiteSpace().IsLonghand());
-  builder.SetTextWrap(ComputedStyleInitialValues::InitialTextWrap());
-}
-
 const CSSValue* WhiteSpace::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
+  DCHECK(!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled());
   return CSSIdentifierValue::Create(style.WhiteSpace());
+}
+
+// Longhands for `white-space`: `white-space-collapse` and `text-wrap`.
+const CSSValue* WhiteSpaceCollapse::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.GetWhiteSpaceCollapse());
 }
 
 const CSSValue* TextWrap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(style.TextWrap());
+  return CSSIdentifierValue::Create(style.GetTextWrap());
 }
 
 const CSSValue* Widows::ParseSingleValue(CSSParserTokenRange& range,
@@ -10072,6 +10066,28 @@ const CSSValue* InternalEmptyLineHeight::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeIdent<CSSValueID::kFabricated,
                                          CSSValueID::kNone>(range);
+}
+
+const CSSValue* BackgroundRepeatX::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer; curr_layer = curr_layer->Next()) {
+    list->Append(*CSSIdentifierValue::Create(curr_layer->RepeatX()));
+  }
+  return list;
+}
+
+const CSSValue* BackgroundRepeatY::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer; curr_layer = curr_layer->Next()) {
+    list->Append(*CSSIdentifierValue::Create(curr_layer->RepeatY()));
+  }
+  return list;
 }
 
 }  // namespace css_longhand

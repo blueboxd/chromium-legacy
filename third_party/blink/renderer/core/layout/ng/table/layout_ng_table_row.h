@@ -15,18 +15,24 @@
 namespace blink {
 
 class LayoutNGTableCell;
+class LayoutNGTableSection;
 class LayoutNGTable;
 
-// NOTE:
-// Legacy table row inherits from LayoutBox, not LayoutBlock.
 // Every child of LayoutNGTableRow must be LayoutNGTableCell.
 class CORE_EXPORT LayoutNGTableRow : public LayoutNGBlock,
                                      public LayoutNGTableRowInterface {
  public:
   explicit LayoutNGTableRow(Element*);
 
+  static LayoutNGTableRow* CreateAnonymousWithParent(const LayoutObject&);
+
   bool IsEmpty() const;
 
+  LayoutNGTableCell* FirstCell() const;
+  LayoutNGTableCell* LastCell() const;
+  LayoutNGTableRow* NextRow() const;
+  LayoutNGTableRow* PreviousRow() const;
+  LayoutNGTableSection* Section() const;
   LayoutNGTable* Table() const;
 
   // LayoutBlock methods start.
@@ -59,7 +65,6 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGBlock,
   // Whether a row has opaque background depends on many factors, e.g. border
   // spacing, border collapsing, missing cells, etc.
   // For simplicity, just conservatively assume all table rows are not opaque.
-  // Copied from Legacy's LayoutTableRow
   bool ForegroundIsKnownToBeOpaqueInRect(const PhysicalRect&,
                                          unsigned) const override {
     NOT_DESTROYED();
@@ -121,8 +126,6 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGBlock,
   // LayoutNGTableRowInterface methods end.
 
  protected:
-  LayoutNGTableCell* LastCell() const;
-
   bool IsOfType(LayoutObjectType type) const override {
     NOT_DESTROYED();
     return type == kLayoutObjectTableRow ||
@@ -134,7 +137,7 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGBlock,
 template <>
 struct DowncastTraits<LayoutNGTableRow> {
   static bool AllowFrom(const LayoutObject& object) {
-    return object.IsTableRow() && object.IsLayoutNGObject();
+    return object.IsTableRow();
   }
 };
 

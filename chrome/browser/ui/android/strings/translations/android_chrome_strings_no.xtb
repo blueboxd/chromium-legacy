@@ -477,6 +477,7 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3587596251841506391">Bidra til å gjøre nettet sikrere</translation>
 <translation id="3597179440835065298">Få bedre forslag</translation>
 <translation id="3602290021589620013">Forhåndsvisning</translation>
+<translation id="360901359071773787">Vil du slette de siste 15 minuttene?</translation>
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3622349720008044802">Administrer vinduer</translation>
 <translation id="3631987586758005671">Deler med <ph name="DEVICE_NAME" /></translation>
@@ -793,6 +794,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5342314432463739672">Tillatelsesforespørsler</translation>
 <translation id="53537532693258630">Nettsteder du har fjernet, vises her</translation>
 <translation id="5355191726083956201">Økt beskyttelse er på</translation>
+<translation id="5361107212971249203">tekst</translation>
 <translation id="5368227114232678694">For å surfe privat på denne enheten, prøv Inkognito</translation>
 <translation id="5375577065097716013">Søk etter bildet med Google Lens <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">For at du skal kunne fortsette, må <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> dele navnet ditt, e-postadressen din og profilbildet ditt med dette nettstedet.</translation>
@@ -822,6 +824,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5517095782334947753">Du har bokmerker, loggen, passord og andre innstillinger fra <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Når prøveprosjekter er påslått, og hvis Chrome har plassert deg tilfeldig i et aktivt prøveprosjekt, påvirker nettleserloggen din annonsene du ser, og interessene som er anslått nedenfor. For å beskytte personvernet ditt sletter Chrome interessene dine på rullerende basis hver måned.</translation>
 <translation id="5524843473235508879">Viderekobling blokkert.</translation>
+<translation id="554297709083131118">Følgende data fra de siste 15 minuttene blir slettet</translation>
 <translation id="5548606607480005320">Sikkerhetssjekk</translation>
 <translation id="5555525474779371165">Velg Safe Browsing-beskyttelse</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
@@ -1076,6 +1079,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, fane, valgt</translation>
 <translation id="6828070228333235514">Slutt å spore prisen</translation>
 <translation id="6830728435402077660">Ikke sikker</translation>
+<translation id="6831043979455480757">Oversett</translation>
 <translation id="6833996806551876956">Prøveperiode på Prosessisolering for personvern</translation>
 <translation id="6836206421467243968">Gjenopprett fanegruppen <ph name="TITLE_OF_GROUP" /> som en ny bakgrunnsfanegruppe.</translation>
 <translation id="6846298663435243399">Laster inn …</translation>
@@ -1262,6 +1266,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="78270725016672455">Datamaskinen din vil registrere denne enheten for pålogging på et nettsted</translation>
 <translation id="7844171778363018843">Ingen data er valgt for synkronisering</translation>
 <translation id="7846296061357476882">Google-tjenester</translation>
+<translation id="7847228556075070294">Slettet logg, informasjonskapsler og andre data</translation>
 <translation id="784934925303690534">Tidsperiode</translation>
 <translation id="7851858861565204677">Andre enheter</translation>
 <translation id="7853202427316060426">Aktivitet</translation>
@@ -1316,6 +1321,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8058746566562539958">Åpne i en ny Chrome-fane</translation>
 <translation id="8062594758852531064">Utvidet forhåndslasting:</translation>
 <translation id="8063895661287329888">Kunne ikke legge til bokmerket.</translation>
+<translation id="8066816452984416180">Sett denne siden som bokmerke raskt. Trykk og hold for å redigere denne snarveien.</translation>
 <translation id="806745655614357130">Hold dataene mine adskilt</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="8076492880354921740">Faner</translation>
@@ -1347,6 +1353,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8216351761227087153">Se</translation>
 <translation id="8218622182176210845">Administrer kontoen din</translation>
 <translation id="8223642481677794647">Feedkortmeny</translation>
+<translation id="8236097722223016103">Legg til i bokmerker</translation>
 <translation id="8250920743982581267">Dokumenter</translation>
 <translation id="8255617931166444521">Nettsteder kan bare bruke informasjonskapslene dine til å se surfeaktiviteten din på sitt eget nettsted</translation>
 <translation id="8259179246279078674">Siden de forhåndslastede sidene er krypterte, får ikke Google vite noe om det forhåndslastede sideinnholdet. Googles tjenere får vite hvilke nettsteder som forhåndslastes privat. Denne informasjonen brukes bare til å forhåndslaste sidene og blir ikke knyttet til annen informasjon i Google-kontoen din.</translation>
@@ -1441,6 +1448,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="869891660844655955">Utløpsdato</translation>
 <translation id="8699120352855309748">Ikke tilby å oversette disse språkene</translation>
 <translation id="8712637175834984815">Skjønner</translation>
+<translation id="8723453889042591629">Oversett denne siden raskt. Trykk og hold for å redigere denne snarveien.</translation>
 <translation id="8725066075913043281">Prøv på nytt</translation>
 <translation id="8746155870861185046">Del merket tekst</translation>
 <translation id="874726034427945498">Synkroniser fanene og loggen for å få bedre forslag i adressefeltet</translation>
@@ -1493,6 +1501,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8989968390305463310">Nettleserloggen din påvirker hvilke annonser du ser, og interessene som er anslått nedenfor. For å beskytte personvernet ditt sletter Chrome interessene dine automatisk på rullerende basis hver måned. Interessene kan fornyes med mindre du fjerner dem.</translation>
 <translation id="8993760627012879038">Åpne en ny fane i inkognitomodus</translation>
 <translation id="8996847606757455498">Velg en annen leverandør</translation>
+<translation id="8998289560386111590">Ikke tilgjengelig på enheten din</translation>
 <translation id="8998729206196772491">Du logger på med en konto som administreres av <ph name="MANAGED_DOMAIN" />, og du gir administratoren for dette domenet kontroll over Chrome-dataene dine. Dataene dine blir permanent knyttet til denne kontoen. Når du logger av Chrome, slettes dataene dine fra denne enheten, men de fortsetter å være lagret i Google-kontoen din.</translation>
 <translation id="9022774213089566801">Ofte besøkte</translation>
 <translation id="9022871169049522985">Nettsteder og annonsører kan måle annonseresultater sine</translation>

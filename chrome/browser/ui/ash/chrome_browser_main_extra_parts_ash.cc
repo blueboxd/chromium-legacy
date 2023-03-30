@@ -25,10 +25,11 @@
 #include "chrome/browser/ash/policy/display/display_resolution_handler.h"
 #include "chrome/browser/ash/policy/display/display_rotation_default_handler.h"
 #include "chrome/browser/ash/policy/display/display_settings_handler.h"
+#include "chrome/browser/ash/policy/handlers/screensaver_images_policy_handler.h"
 #include "chrome/browser/ash/privacy_hub/privacy_hub_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/sync/sync_error_notifier_factory.h"
-#include "chrome/browser/ash/wallpaper_handlers/backdrop_fetcher_delegate.h"
+#include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/tablet_mode/tablet_mode_page_behavior.h"
@@ -213,7 +214,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // ash::ChromeUserManagerImpl.
   wallpaper_controller_client_ =
       std::make_unique<WallpaperControllerClientImpl>(
-          std::make_unique<wallpaper_handlers::BackdropFetcherDelegateImpl>());
+          std::make_unique<wallpaper_handlers::WallpaperFetcherDelegateImpl>());
   wallpaper_controller_client_->Init();
 
   session_controller_client_ = std::make_unique<SessionControllerClientImpl>();
@@ -328,6 +329,11 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
   // Create geolocation manager
   g_browser_process->SetGeolocationManager(
       ash::SystemGeolocationSource::CreateGeolocationManagerOnAsh());
+
+  if (ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    screensaver_images_policy_handler_ =
+        std::make_unique<policy::ScreensaverImagesPolicyHandler>();
+  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -362,6 +368,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   tab_cluster_ui_client_.reset();
 
   // Initialized in PostProfileInit (which may not get called in some tests).
+  screensaver_images_policy_handler_.reset();
   game_mode_controller_.reset();
   quick_answers_controller_.reset();
   ash_web_view_factory_.reset();

@@ -5,11 +5,11 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_edit_item.h"
 
 #import "base/notreached.h"
+#import "ios/chrome/browser/shared/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
@@ -434,22 +434,12 @@ const CGFloat kSymbolSize = 15;
 
 // Returns the edit icon image.
 - (UIImage*)editImage {
-  if (UseSymbols()) {
-    return DefaultSymbolWithPointSize(kEditActionSymbol, kSymbolSize);
-  } else {
-    return [[UIImage imageNamed:@"table_view_cell_edit_icon"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  }
+  return DefaultSymbolWithPointSize(kEditActionSymbol, kSymbolSize);
 }
 
 // Returns the error icon image.
 - (UIImage*)errorImage {
-  if (UseSymbols()) {
-    return DefaultSymbolWithPointSize(kErrorCircleFillSymbol, kSymbolSize);
-  } else {
-    return [[UIImage imageNamed:@"table_view_cell_error_icon"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  }
+  return DefaultSymbolWithPointSize(kErrorCircleFillSymbol, kSymbolSize);
 }
 
 @end

@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/posix/eintr_wrapper.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -220,7 +221,9 @@ class Buffer final : public ui::GbmBuffer {
   }
 
   raw_ptr<gbm_bo> bo_;
-  void* mmap_data_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION void* mmap_data_ = nullptr;
 
   const uint32_t format_;
   const uint64_t format_modifier_;
@@ -354,8 +357,16 @@ class Device final : public ui::GbmDevice {
     struct gbm_bo* bo =
         gbm_bo_import(device_, GBM_BO_IMPORT_FD_MODIFIER, &fd_data, gbm_flags);
     if (!bo) {
-      LOG(ERROR) << "nullptr returned from gbm_bo_import";
-      return nullptr;
+      if (gbm_flags & GBM_BO_USE_SCANOUT) {
+        gbm_flags &= ~GBM_BO_USE_SCANOUT;
+        bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_MODIFIER, &fd_data,
+                           gbm_flags);
+      }
+
+      if (!bo) {
+        LOG(ERROR) << "nullptr returned from gbm_bo_import";
+        return nullptr;
+      }
     }
 
     return std::make_unique<Buffer>(bo, format, gbm_flags, handle.modifier,

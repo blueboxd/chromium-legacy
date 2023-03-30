@@ -67,10 +67,11 @@ void CreditCardFormEventLogger::OnDidShowSuggestions(
 
   suggestion_shown_timestamp_ = AutofillTickClock::NowTicks();
 
-  // Log if metadata is shown for any of the suggestions.
-  if (metadata_logging_context_.IsCardMetadataShown()) {
-    Log(FORM_EVENT_CARD_SUGGESTION_WITH_METADATA_SHOWN, form);
-  }
+  // Log if any of the suggestions had metadata.
+  Log(metadata_logging_context_.card_metadata_available
+          ? FORM_EVENT_CARD_SUGGESTION_WITH_METADATA_SHOWN
+          : FORM_EVENT_CARD_SUGGESTION_WITHOUT_METADATA_SHOWN,
+      form);
 }
 
 void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
@@ -114,12 +115,13 @@ void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
       AutofillTickClock::NowTicks() - suggestion_shown_timestamp_,
       metadata_logging_context_, credit_card);
 
-  // Log if the selected suggestion had metadata shown.
+  // Log if the selected suggestion had metadata.
   metadata_logging_context_ =
       autofill_metrics::GetMetadataLoggingContext({credit_card});
-  if (metadata_logging_context_.IsCardMetadataShown()) {
-    Log(FORM_EVENT_CARD_SUGGESTION_WITH_METADATA_SELECTED, form);
-  }
+  Log(metadata_logging_context_.card_metadata_available
+          ? FORM_EVENT_CARD_SUGGESTION_WITH_METADATA_SELECTED
+          : FORM_EVENT_CARD_SUGGESTION_WITHOUT_METADATA_SELECTED,
+      form);
 }
 
 void CreditCardFormEventLogger::OnDidFillSuggestion(
@@ -128,7 +130,8 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
     const AutofillField& field,
     const base::flat_set<FieldGlobalId>& newly_filled_fields,
     const base::flat_set<FieldGlobalId>& safe_fields,
-    AutofillSyncSigninState sync_state) {
+    AutofillSyncSigninState sync_state,
+    const AutofillTriggerSource trigger_source) {
   CreditCard::RecordType record_type = credit_card.record_type();
   sync_state_ = sync_state;
   ukm::builders::Autofill_CreditCardFill builder =
@@ -199,7 +202,9 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
 
   form_interactions_ukm_logger_->Record(std::move(builder));
 
-  ++form_interaction_counts_.autofill_fills;
+  if (trigger_source != AutofillTriggerSource::kFastCheckout) {
+    ++form_interaction_counts_.autofill_fills;
+  }
   UpdateFlowId();
 }
 

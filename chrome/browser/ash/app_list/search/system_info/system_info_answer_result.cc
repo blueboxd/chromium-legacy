@@ -20,6 +20,7 @@ namespace app_list {
 namespace {
 
 constexpr char kOsSettingsResultPrefix[] = "os-settings://";
+using AnswerCardInfo = ::ash::SystemInfoAnswerCardData;
 
 }  // namespace
 
@@ -32,7 +33,7 @@ SystemInfoAnswerResult::SystemInfoAnswerResult(
     const std::u16string& title,
     const std::u16string& description,
     SystemInfoCategory system_info_category,
-    ash::SystemInfoAnswerCardData answer_card_info)
+    const AnswerCardInfo& answer_card_info)
     : system_info_category_(system_info_category),
       profile_(profile),
       query_(query),
@@ -54,12 +55,16 @@ SystemInfoAnswerResult::SystemInfoAnswerResult(
 
 SystemInfoAnswerResult::~SystemInfoAnswerResult() = default;
 
-void SystemInfoAnswerResult::UpdateTitleAndDetails(
-    const std::u16string& title,
-    const std::u16string& description) {
+void SystemInfoAnswerResult::UpdateTitle(const std::u16string& title) {
   std::vector<TextItem> title_vector;
   title_vector.push_back(CreateStringTextItem(title));
   SetTitleTextVector(title_vector);
+}
+
+void SystemInfoAnswerResult::UpdateTitleAndDetails(
+    const std::u16string& title,
+    const std::u16string& description) {
+  UpdateTitle(title);
 
   std::vector<TextItem> details_vector;
   details_vector.push_back(CreateStringTextItem(description));
@@ -84,6 +89,12 @@ void SystemInfoAnswerResult::Open(int event_flags) {
     ash::LaunchSystemWebAppAsync(profile_, ash::SystemWebAppType::DIAGNOSTICS,
                                  launch_params);
   }
+}
+
+void SystemInfoAnswerResult::UpdateBarChartPercentage(
+    const double bar_chart_percentage) {
+  AnswerCardInfo answer_card_info(bar_chart_percentage);
+  SetSystemInfoAnswerCardData(answer_card_info);
 }
 
 }  // namespace app_list

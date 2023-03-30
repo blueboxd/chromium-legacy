@@ -66,7 +66,7 @@ gfx::BufferFormat GetBufferFormatForPlane(viz::SharedImageFormat format,
   return gfx::BufferFormat::RGBA_8888;
 }
 
-base::scoped_nsprotocol<id<MTLTexture>> CreateMetalTexture(
+[[maybe_unused]] base::scoped_nsprotocol<id<MTLTexture>> CreateMetalTexture(
     id<MTLDevice> mtl_device,
     IOSurfaceRef io_surface,
     const gfx::Size& size,
@@ -136,8 +136,8 @@ GLuint IOSurfaceBackingEGLState::GetGLServiceId(int plane_index) const {
 
 bool IOSurfaceBackingEGLState::BeginAccess(bool readonly) {
   gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
-  if (!display || display->GetDisplay() != egl_display_)
-    LOG(FATAL) << "Expected GLDisplayEGL not current.";
+  CHECK(display);
+  CHECK(display->GetDisplay() == egl_display_);
   return client_->IOSurfaceBackingEGLStateBeginAccess(this, readonly);
 }
 
@@ -608,20 +608,9 @@ IOSurfaceImageBacking::IOSurfaceImageBacking(
   // https://crbug.com/1251724
   if (usage & SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU)
     return;
-
-// iOS uses Metal and doesn't need to retain the GL texture.
-#if !BUILDFLAG(IS_IOS)
-  // NOTE: Mac currently retains GLTexture and reuses it. Not sure if this is
-  // best approach as it can lead to issues with context losses.
-  egl_state_for_legacy_mailbox_ = RetainGLTexture();
-#endif
 }
 
 IOSurfaceImageBacking::~IOSurfaceImageBacking() {
-  if (egl_state_for_legacy_mailbox_) {
-    egl_state_for_legacy_mailbox_->WillRelease(have_context());
-    egl_state_for_legacy_mailbox_ = nullptr;
-  }
   DCHECK(egl_state_map_.empty());
 }
 
@@ -848,55 +837,28 @@ std::unique_ptr<SkiaImageRepresentation> IOSurfaceImageBacking::ProduceSkia(
 
   for (int plane_index = 0; plane_index < format().NumberOfPlanes();
        plane_index++) {
-    sk_sp<SkPromiseImageTexture> promise_texture;
-    if (context_state->GrContextIsMetal()) {
-      int plane = format().is_single_plane() ? io_surface_plane_ : plane_index;
-      promise_texture = ProduceSkiaPromiseTextureMetal(context_state, plane);
-      DCHECK(promise_texture);
-    } else {
-      bool angle_rgbx_internal_format = context_state->feature_info()
-                                            ->feature_flags()
-                                            .angle_rgbx_internal_format;
-      GLenum gl_texture_storage_format = TextureStorageFormat(
-          format(), angle_rgbx_internal_format, plane_index);
-      GrBackendTexture backend_texture;
-      auto plane_size = format().GetPlaneSize(plane_index, size());
-      GetGrBackendTexture(
-          context_state->feature_info(), egl_state->GetGLTarget(), plane_size,
-          egl_state->GetGLServiceId(plane_index), gl_texture_storage_format,
-          context_state->gr_context()->threadSafeProxy(), &backend_texture);
-      promise_texture = SkPromiseImageTexture::Make(backend_texture);
-    }
+    bool angle_rgbx_internal_format = context_state->feature_info()
+                                          ->feature_flags()
+                                          .angle_rgbx_internal_format;
+    GLenum gl_texture_storage_format =
+        TextureStorageFormat(format(), angle_rgbx_internal_format, plane_index);
+    GrBackendTexture backend_texture;
+    auto plane_size = format().GetPlaneSize(plane_index, size());
+    GetGrBackendTexture(
+        context_state->feature_info(), egl_state->GetGLTarget(), plane_size,
+        egl_state->GetGLServiceId(plane_index), gl_texture_storage_format,
+        context_state->gr_context()->threadSafeProxy(), &backend_texture);
+    sk_sp<SkPromiseImageTexture> promise_texture =
+        SkPromiseImageTexture::Make(backend_texture);
     if (!promise_texture) {
       return nullptr;
     }
-
     promise_textures.push_back(std::move(promise_texture));
   }
 
   return std::make_unique<SkiaIOSurfaceRepresentation>(
       manager, this, egl_state, std::move(context_state), promise_textures,
       tracker);
-}
-
-sk_sp<SkPromiseImageTexture>
-IOSurfaceImageBacking::ProduceSkiaPromiseTextureMetal(
-    scoped_refptr<SharedContextState> context_state,
-    int plane_index) {
-  DCHECK(context_state->GrContextIsMetal());
-  auto plane_size = format().GetPlaneSize(plane_index, size());
-
-  id<MTLDevice> mtl_device =
-      context_state->metal_context_provider()->GetMTLDevice();
-  auto mtl_texture = CreateMetalTexture(mtl_device, io_surface_.get(),
-                                        plane_size, format(), plane_index);
-  DCHECK(mtl_texture);
-
-  GrMtlTextureInfo info;
-  info.fTexture.retain(mtl_texture.get());
-  auto gr_backend_texture = GrBackendTexture(
-      plane_size.width(), plane_size.height(), GrMipMapped::kNo, info);
-  return SkPromiseImageTexture::Make(gr_backend_texture);
 }
 
 void IOSurfaceImageBacking::SetPurgeable(bool purgeable) {
@@ -978,7 +940,9 @@ bool IOSurfaceImageBacking::IOSurfaceBackingEGLStateBeginAccess(
     // is that this was done by the Dawn representation), wait on
     // them.
     gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
-    if (display && display->IsANGLEMetalSharedEventSyncSupported()) {
+    CHECK(display);
+    CHECK(display->GetDisplay() == egl_state->egl_display_);
+    if (display->IsANGLEMetalSharedEventSyncSupported()) {
       std::vector<std::unique_ptr<SharedEventAndSignalValue>> signals =
           TakeSharedEvents();
       for (const auto& signal : signals) {
@@ -1104,14 +1068,14 @@ void IOSurfaceImageBacking::IOSurfaceBackingEGLStateEndAccess(
         if (!egl_state->egl_surfaces_.empty()) {
           gl::GLDisplayEGL* display =
               gl::GLDisplayEGL::GetDisplayForCurrentContext();
-          if (display) {
-            metal::MTLSharedEventPtr shared_event = nullptr;
-            uint64_t signal_value = 0;
-            if (display->CreateMetalSharedEvent(&shared_event, &signal_value)) {
-              AddSharedEventAndSignalValue(shared_event, signal_value);
-            } else {
-              LOG(DFATAL) << "Failed to create Metal shared event";
-            }
+          CHECK(display);
+          CHECK(display->GetDisplay() == egl_state->egl_display_);
+          metal::MTLSharedEventPtr shared_event = nullptr;
+          uint64_t signal_value = 0;
+          if (display->CreateMetalSharedEvent(&shared_event, &signal_value)) {
+            AddSharedEventAndSignalValue(shared_event, signal_value);
+          } else {
+            LOG(DFATAL) << "Failed to create Metal shared event";
           }
         }
       }

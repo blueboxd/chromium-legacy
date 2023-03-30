@@ -10,6 +10,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import './shared_style.css.js';
 import './dialogs/edit_password_dialog.js';
+import './dialogs/multi_store_delete_password_dialog.js';
 
 import {CrToastElement} from '//resources/cr_elements/cr_toast/cr_toast.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
@@ -36,6 +37,7 @@ export interface PasswordDetailsCardElement {
     copyPasswordButton: CrIconButtonElement,
     copyUsernameButton: CrIconButtonElement,
     deleteButton: CrButtonElement,
+    domainLabel: HTMLElement,
     editButton: CrButtonElement,
     noteValue: HTMLElement,
     passwordValue: CrInputElement,
@@ -66,6 +68,7 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
       showNoteFully_: Boolean,
 
       showEditPasswordDialog_: Boolean,
+      showDeletePasswordDialog_: Boolean,
     };
   }
 
@@ -74,6 +77,7 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
   private noteRows_: number;
   private showNoteFully_: boolean;
   private showEditPasswordDialog_: boolean;
+  private showDeletePasswordDialog_: boolean;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -118,8 +122,11 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
   }
 
   private onDeleteClick_() {
-    // TODO(crbug.com/1350947): Show delete dialog if credential is present in
-    // both stores.
+    if (this.password.storedIn ===
+        chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT) {
+      this.showDeletePasswordDialog_ = true;
+      return;
+    }
     PasswordManagerImpl.getInstance().removeSavedPassword(
         this.password.id, this.password.storedIn);
     this.dispatchEvent(new CustomEvent('password-removed', {
@@ -146,6 +153,11 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
     this.extendAuthValidity_();
   }
 
+  private onDeletePasswordDialogClosed_() {
+    this.showDeletePasswordDialog_ = false;
+    this.extendAuthValidity_();
+  }
+
   private getNoteValue_(): string {
     return !this.password.note ? this.i18n('emptyNote') : this.password.note!;
   }
@@ -163,6 +175,17 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
 
   private extendAuthValidity_() {
     PasswordManagerImpl.getInstance().extendAuthValidity();
+  }
+
+  private getDomainLabel_(): string {
+    const hasApps = this.password.affiliatedDomains?.some(
+        domain => domain.signonRealm.startsWith('android://'));
+    const hasSites = this.password.affiliatedDomains?.some(
+        domain => !domain.signonRealm.startsWith('android://'));
+    if (hasApps && hasSites) {
+      return this.i18n('sitesAndAppsLabel');
+    }
+    return hasApps ? this.i18n('appsLabel') : this.i18n('sitesLabel');
   }
 }
 

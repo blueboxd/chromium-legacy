@@ -5,12 +5,15 @@
 #include "chrome/browser/safe_browsing/tailored_security/consented_message_android.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/safe_browsing/android/safe_browsing_settings_launcher_android.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/messages/android/message_dispatcher_bridge.h"
 #include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_outcome.h"
+#include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_service_util.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -73,6 +76,13 @@ TailoredSecurityConsentedModalAndroid::TailoredSecurityConsentedModalAndroid(
       &TailoredSecurityConsentedModalAndroid::HandleSettingsClicked,
       base::Unretained(this)));
 
+  if (is_enable_message_) {
+    base::RecordAction(base::UserMetricsAction(
+        safe_browsing::kTailoredSecurityEnabledDialogShown));
+  } else {
+    base::RecordAction(base::UserMetricsAction(
+        safe_browsing::kTailoredSecurityDisabledDialogShown));
+  }
   messages::MessageDispatcherBridge::Get()->EnqueueWindowScopedMessage(
       message_.get(), web_contents_->GetTopLevelNativeWindow(),
       messages::MessagePriority::kNormal);
@@ -95,12 +105,26 @@ void TailoredSecurityConsentedModalAndroid::DismissMessageInternal(
 void TailoredSecurityConsentedModalAndroid::HandleSettingsClicked() {
   ShowSafeBrowsingSettings(web_contents_,
                            SettingsAccessPoint::kTailoredSecurity);
+  if (is_enable_message_) {
+    base::RecordAction(base::UserMetricsAction(
+        safe_browsing::kTailoredSecurityEnabledDialogSettingsButtonClicked));
+  } else {
+    base::RecordAction(base::UserMetricsAction(
+        safe_browsing::kTailoredSecurityDisabledDialogSettingsButtonClicked));
+  }
   LogOutcome(TailoredSecurityOutcome::kSettings, is_enable_message_);
   DismissMessageInternal(messages::DismissReason::SECONDARY_ACTION);
 }
 
 void TailoredSecurityConsentedModalAndroid::HandleMessageDismissed(
     messages::DismissReason dismiss_reason) {
+  if (is_enable_message_) {
+    base::RecordAction(base::UserMetricsAction(
+        safe_browsing::kTailoredSecurityEnabledDialogDismissed));
+  } else {
+    base::RecordAction(base::UserMetricsAction(
+        safe_browsing::kTailoredSecurityDisabledDialogDismissed));
+  }
   LogOutcome(TailoredSecurityOutcome::kDismissed, is_enable_message_);
   message_.reset();
   if (dismiss_callback_)
@@ -108,6 +132,13 @@ void TailoredSecurityConsentedModalAndroid::HandleMessageDismissed(
 }
 
 void TailoredSecurityConsentedModalAndroid::HandleMessageAccepted() {
+  if (is_enable_message_) {
+    base::RecordAction(base::UserMetricsAction(
+        safe_browsing::kTailoredSecurityEnabledDialogOkButtonClicked));
+  } else {
+    base::RecordAction(base::UserMetricsAction(
+        safe_browsing::kTailoredSecurityDisabledDialogOkButtonClicked));
+  }
   LogOutcome(TailoredSecurityOutcome::kAccepted, is_enable_message_);
 }
 

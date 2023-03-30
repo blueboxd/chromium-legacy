@@ -43,7 +43,6 @@ import org.chromium.base.jank_tracker.JankMetricUMARecorderJni;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -108,7 +107,6 @@ public class InstantStartFeedTest {
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS})
-    @DisabledTest(message = "https://crbug.com/1314456")
     public void testFeedPlaceholderFromColdStart() {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -138,7 +136,6 @@ public class InstantStartFeedTest {
     @Test
     @LargeTest
     @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS})
-    @DisabledTest(message = "https://crbug.com/1314456")
     public void testCachedFeedVisibility() {
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         mActivityTestRule.waitForActivityNativeInitializationComplete();
@@ -188,7 +185,6 @@ public class InstantStartFeedTest {
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS})
-    @DisabledTest(message = "https://crbug.com/1314456")
     public void testShowFeedPlaceholder() {
         // clang-format on
         StartSurfaceConfiguration.setFeedVisibilityForTesting(true);

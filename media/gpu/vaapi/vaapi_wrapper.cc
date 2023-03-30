@@ -250,6 +250,10 @@ media::VAImplementation VendorStringToImplementationType(
 }
 
 bool UseGlobalVaapiLock(media::VAImplementation implementation_type) {
+  if (!media::VaapiWrapper::allow_disabling_global_lock_) {
+    return true;
+  }
+
   // Only iHD and Mesa Gallium are known to be thread safe at the moment.
   // * Mesa Gallium: b/144877595
   // * iHD: crbug.com/1123429.
@@ -1582,7 +1586,9 @@ bool IsLowPowerEncSupported(VAProfile va_profile) {
       VAProfileH264Main,
       VAProfileH264High,
       VAProfileVP9Profile0,
-      VAProfileVP9Profile2};
+      VAProfileVP9Profile2,
+      VAProfileAV1Profile0,
+  };
   if (!base::Contains(kSupportedLowPowerEncodeProfiles, va_profile))
     return false;
 
@@ -1935,13 +1941,6 @@ bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
   if (!IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline, rt_format))
     return false;
 
-  // Workaround: for Mesa VAAPI driver, VPP only supports internal surface
-  // format for 4:2:0 JPEG image.
-  DCHECK_NE(VAImplementation::kInvalid, GetImplementationType());
-  if (GetImplementationType() == VAImplementation::kMesaGallium &&
-      rt_format != VA_RT_FORMAT_YUV420) {
-    return false;
-  }
 
   return IsVppFormatSupported(fourcc);
 }
@@ -3097,7 +3096,12 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
 }
 
 // static
-void VaapiWrapper::PreSandboxInitialization() {
+bool VaapiWrapper::allow_disabling_global_lock_ = false;
+
+// static
+void VaapiWrapper::PreSandboxInitialization(bool allow_disabling_global_lock) {
+  allow_disabling_global_lock_ = allow_disabling_global_lock;
+
   VADisplayState::PreSandboxInitialization();
 
   const std::string va_suffix(std::to_string(VA_MAJOR_VERSION + 1));

@@ -397,3 +397,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfPathDisplay) {
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BreadcrumbContainer) {
   RunTestURL("containers/breadcrumb_container_unittest.js");
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeContainer) {
+  RunTestURL("containers/directory_tree_container_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, EntryUtils) {
+  RunTestURL("common/js/entry_utils_unittest.js");
+}

@@ -65,7 +65,6 @@ const char kCustomizeChromeTutorialMetricPrefix[] = "CustomizeChromeSidePanel";
 const char kSideSearchTutorialMetricPrefix[] = "SideSearch";
 constexpr char kTabGroupHeaderElementName[] = "TabGroupHeader";
 constexpr char kReadingListItemElementName[] = "ReadingListItem";
-constexpr char kChangeChromeThemeElementName[] = "ChangeChromeTheme";
 
 class BrowserHelpBubbleDelegate : public user_education::HelpBubbleDelegate {
  public:
@@ -234,7 +233,7 @@ void MaybeRegisterChromeFeaturePromos(
   registry.RegisterFeature(
       std::move(FeaturePromoSpecification::CreateForTutorialPromo(
                     feature_engagement::kIPHDesktopCustomizeChromeFeature,
-                    kTabStripRegionElementId,
+                    kTopContainerElementId,
                     IDS_TUTORIAL_CUSTOMIZE_CHROME_START_TUTORIAL_IPH,
                     kSidePanelCustomizeChromeTutorialId)
                     .SetBubbleArrow(HelpBubbleArrow::kNone)
@@ -284,6 +283,14 @@ void MaybeRegisterChromeFeaturePromos(
       IDS_PASSWORD_MANAGER_IPH_MANAGEMENT_BUBBLE_DURING_SIGNIN,
       IDS_PASSWORD_MANAGER_IPH_MANAGEMENT_BUBBLE_DURING_SIGNIN_SCREENREADER,
       FeaturePromoSpecification::AcceleratorInfo()));
+
+  // kIPHPasswordsWebAppProfileSwitchFeature:
+  registry.RegisterFeature(
+      std::move(FeaturePromoSpecification::CreateForSnoozePromo(
+                    feature_engagement::kIPHPasswordsWebAppProfileSwitchFeature,
+                    kAvatarButtonElementId,
+                    IDS_PASSWORD_MANAGER_IPH_BODY_WEB_APP_PROFILE_SWITCH)
+                    .SetBubbleIcon(&vector_icons::kLightbulbOutlineIcon)));
 
   // kIPHPowerBookmarksSidePanelFeature:
   registry.RegisterFeature(FeaturePromoSpecification::CreateForSnoozePromo(
@@ -426,6 +433,14 @@ void MaybeRegisterChromeFeaturePromos(
   registry.RegisterFeature(FeaturePromoSpecification::CreateForLegacyPromo(
       &feature_engagement::kIPHPriceTrackingInSidePanelFeature,
       kSidePanelButtonElementId, IDS_PRICE_TRACKING_SIDE_PANEL_IPH));
+
+  // kIPHDownloadToolbarButtonFeature:
+  registry.RegisterFeature(
+      std::move(FeaturePromoSpecification::CreateForSnoozePromo(
+                    feature_engagement::kIPHDownloadToolbarButtonFeature,
+                    kDownloadToolbarButtonElementId, IDS_DOWNLOAD_BUBBLE_PROMO)
+                    .SetBubbleArrow(HelpBubbleArrow::kTopRight)
+                    .SetBubbleTitleText(IDS_DOWNLOAD_BUBBLE_PROMO_TITLE)));
 }
 
 void MaybeRegisterChromeTutorials(
@@ -596,20 +611,17 @@ void MaybeRegisterChromeTutorials(
         HelpBubbleArrow::kRightCenter, ui::CustomElementEventType(),
         /* must_remain_visible =*/false,
         /* transition_only_on_event =*/false,
-        base::BindRepeating(
-            [](ui::InteractionSequence* sequence, ui::TrackedElement* element) {
-              sequence->NameElement(
-                  element, base::StringPiece(kChangeChromeThemeElementName));
-              return true;
-            }),
+        user_education::TutorialDescription::NameElementsCallback(),
         TutorialDescription::ContextMode::kAny);
     customize_chrome_description.steps.emplace_back(select_theme_step);
 
     // Event step - select theme event
     TutorialDescription::Step select_theme_event_step(
         0, 0, ui::InteractionSequence::StepType::kCustomEvent,
-        ui::ElementIdentifier(), kChangeChromeThemeElementName,
-        HelpBubbleArrow::kNone, kChromeThemeSelectedCustomEventId);
+        kBrowserViewElementId, std::string(), HelpBubbleArrow::kNone,
+        kBrowserThemeChangedEventId,
+        /* must_remain_visible =*/false);
+    select_theme_event_step.must_be_visible = false;
     customize_chrome_description.steps.emplace_back(select_theme_event_step);
 
     // Bubble step - back button
@@ -628,9 +640,8 @@ void MaybeRegisterChromeTutorials(
     TutorialDescription::Step success_step(
         IDS_TUTORIAL_GENERIC_SUCCESS_TITLE,
         IDS_TUTORIAL_CUSTOMIZE_CHROME_SUCCESS_BODY,
-        ui::InteractionSequence::StepType::kShown,
-        CustomizeChromeUI::kChangeChromeThemeClassicElementId, std::string(),
-        HelpBubbleArrow::kRightCenter, ui::CustomElementEventType(),
+        ui::InteractionSequence::StepType::kShown, kTopContainerElementId,
+        std::string(), HelpBubbleArrow::kNone, ui::CustomElementEventType(),
         /* must_remain_visible =*/false,
         /* transition_only_on_event =*/false,
         user_education::TutorialDescription::NameElementsCallback(),

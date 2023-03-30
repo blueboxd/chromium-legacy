@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
 
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
@@ -16,9 +16,45 @@ namespace blink {
 LayoutNGTableRow::LayoutNGTableRow(Element* element)
     : LayoutNGMixin<LayoutBlock>(element) {}
 
+LayoutNGTableRow* LayoutNGTableRow::CreateAnonymousWithParent(
+    const LayoutObject& parent) {
+  scoped_refptr<const ComputedStyle> new_style =
+      parent.GetDocument().GetStyleResolver().CreateAnonymousStyleWithDisplay(
+          parent.StyleRef(), EDisplay::kTableRow);
+  auto* new_row = MakeGarbageCollected<LayoutNGTableRow>(nullptr);
+  new_row->SetDocumentForAnonymous(&parent.GetDocument());
+  new_row->SetStyle(std::move(new_style));
+  return new_row;
+}
+
 bool LayoutNGTableRow::IsEmpty() const {
   NOT_DESTROYED();
   return !FirstChild();
+}
+
+LayoutNGTableCell* LayoutNGTableRow::FirstCell() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableCell>(FirstChild());
+}
+
+LayoutNGTableCell* LayoutNGTableRow::LastCell() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableCell>(LastChild());
+}
+
+LayoutNGTableRow* LayoutNGTableRow::NextRow() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableRow>(NextSibling());
+}
+
+LayoutNGTableRow* LayoutNGTableRow::PreviousRow() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableRow>(PreviousSibling());
+}
+
+LayoutNGTableSection* LayoutNGTableRow::Section() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableSection>(Parent());
 }
 
 LayoutNGTable* LayoutNGTableRow::Table() const {
@@ -66,8 +102,7 @@ void LayoutNGTableRow::AddChild(LayoutObject* child,
       return;
     }
 
-    LayoutBlockFlow* cell =
-        LayoutObjectFactory::CreateAnonymousTableCellWithParent(*this);
+    auto* cell = LayoutNGTableCell::CreateAnonymousWithParent(*this);
     AddChild(cell, before_child);
     cell->AddChild(child);
     return;
@@ -110,7 +145,7 @@ void LayoutNGTableRow::StyleDidChange(StyleDifference diff,
 LayoutBox* LayoutNGTableRow::CreateAnonymousBoxWithSameTypeAs(
     const LayoutObject* parent) const {
   NOT_DESTROYED();
-  return LayoutObjectFactory::CreateAnonymousTableRowWithParent(*parent);
+  return CreateAnonymousWithParent(*parent);
 }
 
 LayoutBlock* LayoutNGTableRow::StickyContainer() const {
@@ -149,34 +184,29 @@ unsigned LayoutNGTableRow::RowIndex() const {
   return 0;
 }
 
-LayoutNGTableCell* LayoutNGTableRow::LastCell() const {
-  NOT_DESTROYED();
-  return To<LayoutNGTableCell>(LastChild());
-}
-
 LayoutNGTableSectionInterface* LayoutNGTableRow::SectionInterface() const {
   NOT_DESTROYED();
-  return To<LayoutNGTableSection>(Parent());
+  return Section();
 }
 
 LayoutNGTableRowInterface* LayoutNGTableRow::PreviousRowInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableRowInterface>(PreviousSibling());
+  return ToInterface<LayoutNGTableRowInterface>(PreviousRow());
 }
 
 LayoutNGTableRowInterface* LayoutNGTableRow::NextRowInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableRowInterface>(NextSibling());
+  return ToInterface<LayoutNGTableRowInterface>(NextRow());
 }
 
 LayoutNGTableCellInterface* LayoutNGTableRow::FirstCellInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableCellInterface>(FirstChild());
+  return ToInterface<LayoutNGTableCellInterface>(FirstCell());
 }
 
 LayoutNGTableCellInterface* LayoutNGTableRow::LastCellInterface() const {
   NOT_DESTROYED();
-  return ToInterface<LayoutNGTableCellInterface>(LastChild());
+  return ToInterface<LayoutNGTableCellInterface>(LastCell());
 }
 
 }  // namespace blink

@@ -8,6 +8,7 @@
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/containers/stack.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -388,8 +389,12 @@ void FormForest::UpdateTreeOfRendererForm(FormData* form,
     // If Node::next_frame is out of bounds (indicating that all fields and
     // frames have been visited already), we omit the latter step.
     struct Node {
-      FrameData* frame;   // Not null.
-      FormData* form;     // Not null.
+      // This field is not a raw_ptr<> because it was filtered by the rewriter
+      // for: #reinterpret-cast-trivial-type
+      RAW_PTR_EXCLUSION FrameData* frame;  // Not null.
+      // This field is not a raw_ptr<> because it was filtered by
+      // the rewriter for: #reinterpret-cast-trivial-type
+      RAW_PTR_EXCLUSION FormData* form;  // Not null.
       size_t next_frame;  // In the range [0, `form->child_frames.size()`].
     };
     base::stack<Node> frontier;
@@ -627,6 +632,11 @@ FormForest::RendererForms FormForest::GetRendererFormsOfBrowserForm(
           case CREDIT_CARD_NAME_FULL:
           case CREDIT_CARD_NAME_FIRST:
           case CREDIT_CARD_NAME_LAST:
+          case CREDIT_CARD_EXP_MONTH:
+          case CREDIT_CARD_EXP_2_DIGIT_YEAR:
+          case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+          case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+          case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
             return false;
           default:
             return true;

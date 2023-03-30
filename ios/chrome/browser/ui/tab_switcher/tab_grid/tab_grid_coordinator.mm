@@ -15,29 +15,37 @@
 #import "components/search_engines/template_url_service.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bring_android_tabs/bring_android_tabs_to_ios_service.h"
+#import "ios/chrome/browser/bring_android_tabs/bring_android_tabs_to_ios_service_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
+#import "ios/chrome/browser/shared/public/commands/bring_android_tabs_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/shared/public/commands/thumb_strip_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
+#import "ios/chrome/browser/synced_sessions/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/synced_sessions_util.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
-#import "ios/chrome/browser/tabs/inactive_tabs/utils.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
+#import "ios/chrome/browser/ui/bring_android_tabs/bring_android_tabs_prompt_coordinator.h"
+#import "ios/chrome/browser/ui/bring_android_tabs/tab_list_from_android_coordinator.h"
 #import "ios/chrome/browser/ui/commerce/price_card/price_card_mediator.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/gestures/view_controller_trait_collection_observer.h"
@@ -55,8 +63,6 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_helper.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
-#import "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
-#import "ios/chrome/browser/ui/recent_tabs/synced_sessions_util.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
@@ -86,7 +92,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator () <RecentTabsPresentationDelegate,
+@interface TabGridCoordinator () <BringAndroidTabsCommands,
+                                  RecentTabsPresentationDelegate,
                                   HistoryPresentationDelegate,
                                   InactiveTabsCoordinatorDelegate,
                                   SceneStateObserver,
@@ -107,6 +114,13 @@
   // The coordinator that shows the bookmarking UI after the user taps the Add
   // to Bookmarks button.
   BookmarksCoordinator* _bookmarksCoordinator;
+
+  // The coordinator that manages the "Bring Android Tabs" prompt for Android
+  // switchers.
+  BringAndroidTabsPromptCoordinator* _bringAndroidTabsPromptCoordinator;
+
+  // Coordinator for the "Tab List From Android Prompt" for Android switchers.
+  TabListFromAndroidCoordinator* _tabListFromAndroidCoordinator;
 }
 
 // Browser that contain tabs from the main pane (i.e. non-incognito).
@@ -236,7 +250,12 @@
   DCHECK(self.incognitoTabsMediator);
   self.incognitoTabsMediator.browser = incognitoBrowser;
   self.thumbStripCoordinator.incognitoBrowser = incognitoBrowser;
-  self.incognitoTabContextMenuHelper.browser = incognitoBrowser;
+  if (incognitoBrowser) {
+    self.incognitoTabContextMenuHelper.browserState =
+        incognitoBrowser->GetBrowserState();
+  } else {
+    self.incognitoTabContextMenuHelper.browserState = nullptr;
+  }
 
   if (self.incognitoSnackbarCoordinator) {
     [self.incognitoSnackbarCoordinator stop];
@@ -374,6 +393,13 @@
       [DefaultBrowserSceneAgent agentFromScene:sceneState];
   [agent.nonModalScheduler logTabGridEntered];
 
+  // Store the currentActivePage at this point in code, to be potentially used
+  // during execution of the dispatched block to get the transition from Browser
+  // to Tab Grid. That is because in some instances the active page might change
+  // before the block gets executed, for example when closing the last tab in
+  // incognito (crbug.com/1136882).
+  TabGridPage currentActivePage = self.baseViewController.activePage;
+
   // If a BVC is currently being presented, dismiss it.  This will trigger any
   // necessary animations.
   if (self.bvcContainer) {
@@ -381,12 +407,6 @@
     // This is done with a dispatch to make sure that the view isn't added to
     // the view hierarchy right away, as it is not the expectations of the
     // API.
-    // Store the currentActivePage at this point in code, to be used during
-    // execution of the dispatched block to get the transition from Browser to
-    // Tab Grid. That is because in some instances the active page might change
-    // before the block gets executed, for example when closing the last tab in
-    // incognito (crbug.com/1136882).
-    TabGridPage currentActivePage = self.baseViewController.activePage;
     dispatch_async(dispatch_get_main_queue(), ^{
       self.transitionHandler = [[TabGridTransitionHandler alloc]
           initWithLayoutProvider:self.baseViewController];
@@ -407,6 +427,23 @@
       // updating the status bar style afterwards.
       self.baseViewController.childViewControllerForStatusBarStyle = nil;
     });
+  }
+
+  // Show "Bring Android Tabs" prompt if the user is an Android switcher and has
+  // open tabs from their previous Android device.
+  // Note: if the coordinator is already created, the prompt should have already
+  // been displayed, therefore we should not need to display it again.
+  if (currentActivePage == TabGridPageRegularTabs &&
+      !_bringAndroidTabsPromptCoordinator) {
+    BringAndroidTabsToIOSService* bringAndroidTabsService =
+        BringAndroidTabsToIOSServiceFactory::GetForBrowserStateIfExists(
+            self.regularBrowser->GetBrowserState());
+    if (bringAndroidTabsService != nil) {
+      bringAndroidTabsService->LoadTabs();
+      if (bringAndroidTabsService->GetNumberOfAndroidTabs() > 0) {
+        [self displayBringAndroidTabsPrompt];
+      }
+    }
   }
 
   // Record when the tab switcher is presented.
@@ -719,14 +756,14 @@
   self.baseViewController.remoteTabsViewController.menuProvider =
       self.recentTabsContextMenuHelper;
 
-  self.regularTabContextMenuHelper =
-      [[TabContextMenuHelper alloc] initWithBrowser:self.regularBrowser
-                             tabContextMenuDelegate:self];
+  self.regularTabContextMenuHelper = [[TabContextMenuHelper alloc]
+        initWithBrowserState:self.regularBrowser->GetBrowserState()
+      tabContextMenuDelegate:self];
   self.baseViewController.regularTabsContextMenuProvider =
       self.regularTabContextMenuHelper;
-  self.incognitoTabContextMenuHelper =
-      [[TabContextMenuHelper alloc] initWithBrowser:self.incognitoBrowser
-                             tabContextMenuDelegate:self];
+  self.incognitoTabContextMenuHelper = [[TabContextMenuHelper alloc]
+        initWithBrowserState:self.incognitoBrowser->GetBrowserState()
+      tabContextMenuDelegate:self];
   self.baseViewController.incognitoTabsContextMenuProvider =
       self.incognitoTabContextMenuHelper;
 
@@ -835,6 +872,12 @@
   self.snackbarCoordinator = nil;
   [self.incognitoSnackbarCoordinator stop];
   self.incognitoSnackbarCoordinator = nil;
+
+  self.baseViewController.bringAndroidTabsPromptViewController = nil;
+  [_bringAndroidTabsPromptCoordinator stop];
+  _bringAndroidTabsPromptCoordinator = nil;
+  [_tabListFromAndroidCoordinator stop];
+  _tabListFromAndroidCoordinator = nil;
 }
 
 #pragma mark - TabPresentationDelegate
@@ -937,51 +980,6 @@
   [self.actionSheetCoordinator start];
 }
 
-- (void)
-    showCloseAllItemsConfirmationActionSheetWithTabGridMediator:
-        (TabGridMediator*)tabGridMediator
-                                                         anchor:
-                                                             (UIBarButtonItem*)
-                                                                 buttonAnchor {
-  DCHECK(tabGridMediator == self.regularTabsMediator);
-
-  NSString* title = l10n_util::GetNSString(
-      IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_ACTION_SHEET_TITLE);
-  NSString* message = l10n_util::GetNSString(
-      IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_ACTION_SHEET_MESSAGE);
-
-  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:self.browser
-                           title:title
-                         message:message
-                   barButtonItem:buttonAnchor];
-
-  self.actionSheetCoordinator.alertStyle = UIAlertControllerStyleActionSheet;
-
-  __weak TabGridMediator* weakTabGridMediator = tabGridMediator;
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(
-                           IDS_IOS_TAB_GRID_CLOSE_NON_PINNED_TABS_ONLY)
-                action:^{
-                  [weakTabGridMediator saveAndCloseNonPinnedItems];
-                }
-                 style:UIAlertActionStyleDefault];
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_TABS)
-                action:^{
-                  [weakTabGridMediator saveAndCloseAllItems];
-                }
-                 style:UIAlertActionStyleDestructive];
-
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                action:^{
-                }
-                 style:UIAlertActionStyleCancel];
-  [self.actionSheetCoordinator start];
-}
-
 - (void)tabGridMediator:(TabGridMediator*)tabGridMediator
               shareURLs:(NSArray<URLWithTitle*>*)URLs
                  anchor:(UIBarButtonItem*)buttonAnchor {
@@ -1077,6 +1075,7 @@
       initWithBaseViewController:self.baseViewController
                          browser:_inactiveBrowser];
   self.inactiveTabsCoordinator.delegate = self;
+  self.inactiveTabsCoordinator.menuProvider = self.regularTabContextMenuHelper;
   [self.inactiveTabsCoordinator start];
 }
 
@@ -1090,11 +1089,7 @@
   WebStateList* regularWebStateList = self.regularBrowser->GetWebStateList();
   int toInsertIndex = regularWebStateList->count();
 
-  WebStateList* inactiveWebStateList = _inactiveBrowser->GetWebStateList();
-  int toRemoveIndex = GetTabIndex(inactiveWebStateList, itemID, /*pinned=*/NO);
-
-  MoveTab(inactiveWebStateList, toRemoveIndex, regularWebStateList,
-          toInsertIndex);
+  MoveTabToBrowser(itemID, self.regularBrowser, toInsertIndex);
 
   // TODO(crbug.com/1420938): Adapt the animation so the grid animation is
   // coming from the inactive panel.
@@ -1153,8 +1148,10 @@
       "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",
       session->tabs.size());
 
-  OpenDistantTabsInBackground(
-      session->tabs, self.regularBrowser,
+  BOOL inIncognito = self.regularBrowser->GetBrowserState()->IsOffTheRecord();
+  OpenDistantSessionInBackground(
+      session, inIncognito,
+      UrlLoadingBrowserAgent::FromBrowser(self.regularBrowser),
       self.baseViewController.remoteTabsViewController.loadStrategy);
 
   [self showActiveRegularTabFromRecentTabs];
@@ -1300,6 +1297,50 @@
       [self uninstallThumbStrip];
     }
   }
+}
+
+#pragma mark - BringAndroidTabsCommands
+
+- (void)displayBringAndroidTabsPrompt {
+  if (!_bringAndroidTabsPromptCoordinator) {
+    _bringAndroidTabsPromptCoordinator =
+        [[BringAndroidTabsPromptCoordinator alloc]
+            initWithBaseViewController:self.baseViewController
+                               browser:self.regularBrowser];
+  }
+  [_bringAndroidTabsPromptCoordinator start];
+  self.baseViewController.bringAndroidTabsPromptViewController =
+      _bringAndroidTabsPromptCoordinator.viewController;
+}
+
+- (void)reviewAllBringAndroidTabs {
+  [self onUserInteractionWithBringAndroidTabsPrompt:YES];
+}
+
+- (void)dismissBringAndroidTabsPrompt {
+  [self onUserInteractionWithBringAndroidTabsPrompt:NO];
+}
+
+// Helper method to handle BringAndroidTabsCommands.
+- (void)onUserInteractionWithBringAndroidTabsPrompt:(BOOL)reviewTabs {
+  DCHECK(_bringAndroidTabsPromptCoordinator);
+  DCHECK_EQ(self.baseViewController.bringAndroidTabsPromptViewController,
+            _bringAndroidTabsPromptCoordinator.viewController);
+  self.baseViewController.bringAndroidTabsPromptViewController = nil;
+  if (reviewTabs) {
+    _tabListFromAndroidCoordinator = [[TabListFromAndroidCoordinator alloc]
+        initWithBaseViewController:self.baseViewController
+                           browser:self.regularBrowser];
+    [_tabListFromAndroidCoordinator start];
+  } else {
+    // The user journey to bring recent tabs on Android to iOS has finished.
+    // Reload the service to update/clear the tabs.
+    BringAndroidTabsToIOSServiceFactory::GetForBrowserStateIfExists(
+        self.regularBrowser->GetBrowserState())
+        ->LoadTabs();
+  }
+  [_bringAndroidTabsPromptCoordinator stop];
+  _bringAndroidTabsPromptCoordinator = nil;
 }
 
 #pragma mark - SnackbarCoordinatorDelegate

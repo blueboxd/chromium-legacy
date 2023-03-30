@@ -23,12 +23,16 @@ void FakePingManager::OnPingResponseReceived() {
   is_waiting_for_response_ = false;
 }
 
-int FakePingManager::GetNumPingRequest() const {
+int FakePingManager::GetNumPingRequests() const {
   return num_ping_requests_;
 }
 
 bool FakePingManager::GetIsWaitingForResponse() const {
   return is_waiting_for_response_;
+}
+
+void FakePingManager::Reset() {
+  is_waiting_for_response_ = false;
 }
 
 }  // namespace ash::phonehub

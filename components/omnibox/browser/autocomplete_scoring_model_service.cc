@@ -35,25 +35,44 @@ AutocompleteScoringModelService::AutocompleteScoringModelService(
 AutocompleteScoringModelService::~AutocompleteScoringModelService() = default;
 
 void AutocompleteScoringModelService::ScoreAutocompleteUrlMatch(
+    base::CancelableTaskTracker* tracker,
     const metrics::OmniboxEventProto::Suggestion::ScoringSignals&
         scoring_signals,
-    base::OnceCallback<void(
-        const absl::optional<AutocompleteScoringModelExecutor::ModelOutput>&)>
-        scoring_callback) {
+    ResultCallback result_callback) {
   if (!UrlScoringModelAvailable()) {
+    std::move(result_callback).Run(absl::nullopt);
     return;
   }
 
   absl::optional<std::vector<float>> input_signals =
       url_scoring_model_handler_->GetModelInput(scoring_signals);
   if (!input_signals) {
+    std::move(result_callback).Run(absl::nullopt);
     return;
   }
 
-  url_scoring_model_handler_->ExecuteModelWithInput(std::move(scoring_callback),
-                                                    *input_signals);
+  url_scoring_model_handler_->ExecuteModelWithInput(
+      tracker,
+      base::BindOnce(&AutocompleteScoringModelService::ProcessModelOutput,
+                     base::Unretained(this), std::move(result_callback)),
+      *input_signals);
 }
 
 bool AutocompleteScoringModelService::UrlScoringModelAvailable() {
-  return url_scoring_model_handler_ != nullptr;
+  return url_scoring_model_handler_ &&
+         url_scoring_model_handler_->ModelAvailable();
+}
+
+void AutocompleteScoringModelService::ProcessModelOutput(
+    ResultCallback result_callback,
+    const absl::optional<AutocompleteScoringModelExecutor::ModelOutput>&
+        model_output) {
+  if (model_output.has_value()) {
+    if (!model_output.value().empty()) {
+      std::move(result_callback).Run(model_output.value()[0]);
+      return;
+    }
+    NOTREACHED() << "The model generated an empty output vector.";
+  }
+  std::move(result_callback).Run(absl::nullopt);
 }

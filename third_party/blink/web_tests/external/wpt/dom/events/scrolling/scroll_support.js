@@ -18,6 +18,23 @@ async function waitForPointercancelEvent(test, target, timeoutMs = 500) {
   return waitForEvent("pointercancel", test, target, timeoutMs);
 }
 
+// Resets the scroll position to (0,0).  If a scroll is required, then the
+// promise is not resolved until the scrollend event is received.
+async function waitForScrollReset(test, scroller, timeoutMs = 500) {
+  return new Promise(resolve => {
+    if (scroller.scrollTop == 0 &&
+        scroller.scrollLeft == 0) {
+      resolve();
+    } else {
+      const eventTarget =
+        scroller == document.scrollingElement ? document : scroller;
+      scroller.scrollTop = 0;
+      scroller.scrollLeft = 0;
+      waitForScrollendEvent(test, eventTarget, timeoutMs).then(resolve);
+    }
+  });
+}
+
 async function createScrollendPromiseForTarget(test,
                                                target_div,
                                                timeoutMs = 500) {
@@ -42,8 +59,8 @@ async function verifyScrollStopped(test, target_div) {
   const y = target_div.scrollTop;
   return new Promise(resolve => {
     test.step_timeout(() => {
-      assert_equals(x, target_div.scrollLeft);
-      assert_equals(y, target_div.scrollTop);
+      assert_equals(target_div.scrollLeft, x);
+      assert_equals(target_div.scrollTop, y);
       resolve();
     }, unscaled_pause_time_in_ms);
   });

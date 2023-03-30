@@ -47,7 +47,6 @@
 #include "content/browser/buckets/bucket_context.h"
 #include "content/browser/can_commit_status.h"
 #include "content/browser/network/cross_origin_opener_policy_reporter.h"
-#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/browsing_context_state.h"
@@ -110,6 +109,7 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
+#include "services/network/public/mojom/trust_token_access_observer.mojom.h"
 #include "services/network/public/mojom/url_loader_network_service_observer.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -126,6 +126,7 @@
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-forward.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
+#include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom.h"
 #include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-forward.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
@@ -140,6 +141,7 @@
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_cache.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
@@ -243,6 +245,7 @@ namespace internal {
 class DocumentServiceBase;
 }  // namespace internal
 
+class AgentSchedulingGroupHost;
 class BrowsingContextState;
 class CodeCacheHostImpl;
 class CrossOriginEmbedderPolicyReporter;
@@ -306,6 +309,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public blink::mojom::LocalMainFrameHost,
       public ui::AXActionHandlerBase,
       public network::mojom::CookieAccessObserver,
+      public network::mojom::TrustTokenAccessObserver,
       public BucketContext {
  public:
   using JavaScriptDialogCallback =
@@ -375,7 +379,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ~RenderFrameHostImpl() override;
 
   // RenderFrameHost
-  int GetRoutingID() const final;
+  int GetRoutingID() const override;
   const blink::LocalFrameToken& GetFrameToken() const override;
   const base::UnguessableToken& GetReportingSource() override;
 
@@ -1516,7 +1520,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns the AgentSchedulingGroupHost associated with this
   // RenderFrameHostImpl.
-  AgentSchedulingGroupHost& GetAgentSchedulingGroup();
+  virtual AgentSchedulingGroupHost& GetAgentSchedulingGroup();
 
   // Returns associated remote for the blink::mojom::LocalMainFrame Mojo
   // interface. May be overridden by subclasses, e.g. tests which wish to
@@ -1828,13 +1832,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   using BackForwardCacheDisablingFeature =
       blink::scheduler::WebSchedulerTrackedFeature;
 
-  // BackForwardCache disabling feature for |this|, used in determing |this|
-  // frame's BackForwardCache eligibility.
-  // See comments at |renderer_reported_bfcache_disabling_features_| and
+  // BackForwardCache disabling feature for |this|, used in determining |this|
+  // frame's BackForwardCache eligibility. The return value includes all the
+  // blocking features from browser, renderer and dedicated workers.
+  // See comments at |renderer_reported_bfcache_blocking_details_| and
   // |browser_reported_bfcache_disabling_features_|.
   BackForwardCacheDisablingFeatures GetBackForwardCacheDisablingFeatures()
       const;
-
+  using BackForwardCacheBlockingDetails =
+      std::vector<blink::mojom::BlockingDetailsPtr>;
+  // Returns a vector of blocking details for |this|. This returns more
+  // information than `GetBackForwardCacheDisablingFeatures()`, which returns
+  // only a list of features used.
+  BackForwardCacheBlockingDetails GetBackForwardCacheBlockingDetails() const;
   using BackForwardCacheDisablingFeaturesCallback =
       base::RepeatingCallback<void(BackForwardCacheDisablingFeatures)>;
   void SetBackForwardCacheDisablingFeaturesCallbackForTesting(
@@ -2399,7 +2409,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateFencedFrame(
       mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
           pending_receiver,
-      blink::mojom::FencedFrameMode mode,
       blink::mojom::RemoteFrameInterfacesFromRendererPtr
           remote_frame_interfaces,
       const blink::RemoteFrameToken& frame_token,
@@ -2409,8 +2418,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // blink::mojom::BackForwardCacheControllerHost:
   void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
-  using BackForwardCacheBlockingDetails =
-      std::vector<blink::mojom::BlockingDetailsPtr>;
+
   void DidChangeBackForwardCacheDisablingFeatures(
       BackForwardCacheBlockingDetails details) override;
 
@@ -2534,9 +2542,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::PendingRemote<network::mojom::CookieAccessObserver>
   CreateCookieAccessObserver();
 
+  mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
+  CreateTrustTokenAccessObserver();
+
   // network::mojom::CookieAccessObserver:
-  void OnCookiesAccessed(
-      network::mojom::CookieAccessDetailsPtr details) override;
+  void OnCookiesAccessed(std::vector<network::mojom::CookieAccessDetailsPtr>
+                             details_vector) override;
+
+  // network::mojom::TrustTokenAccessObserver:
+  void OnTrustTokensAccessed(
+      network::mojom::TrustTokenAccessDetailsPtr details) override;
 
   void GetSavableResourceLinksFromRenderer();
   void GetPendingBeaconHost(
@@ -2689,20 +2704,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // opaque origin instead).
   void SetOriginDependentStateOfNewFrame(RenderFrameHostImpl* creator_frame);
 
-  // Indicates whether `this` main frame has third-party storage partitioning
-  // enabled. This depends on the deprecation trial (which can block), content
-  // browser client (which can block), and base feature (which can allow).
-  bool IsMainFrameThirdPartyStoragePartitioningEnabled();
-
   // Calculates the storage key for this RenderFrameHostImpl using the passed
-  // `new_rfh_origin`, and `nonce`, and
-  // `is_third_party_storage_partitioning_allowed` and deriving the storage
-  // key's top_level_site` and `ancestor_bit` parameters. This takes into
-  // account possible host permissions of the top_level RenderFrameHostImpl.
-  blink::StorageKey CalculateStorageKey(
-      const url::Origin& new_rfh_origin,
-      const base::UnguessableToken* nonce,
-      bool is_third_party_storage_partitioning_allowed);
+  // `new_rfh_origin`, and `nonce`, and deriving the storage key's
+  // top_level_site` and `ancestor_bit` parameters. If
+  // `is_third_party_storage_partitioning_allowed` is provided then that value
+  // is used for allowing third-party storage partitioning, if it is
+  // absl::nullopt then the value is calculated using the top frame's
+  // RuntimeFeatureStateReadContext, the enterprise policy, and the
+  // base::feature. This also takes into account special embedding cases, such
+  // as extensions embedding web iframes, where the top-level frame is not the
+  // same as the top-level site for the purposes of calculating the storage key.
+  // See the implementation for more details.
+  blink::StorageKey CalculateStorageKey(const url::Origin& new_rfh_origin,
+                                        const base::UnguessableToken* nonce);
 
   // Returns the BrowsingContextState associated with this RenderFrameHostImpl.
   // See class comments in BrowsingContextState for a more detailed description.
@@ -2882,6 +2896,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // last committed document.
   CookieChangeListener::CookieChangeInfo GetCookieChangeInfo();
 
+  // Sets a ResourceCache in the renderer. `remote` must have the same process
+  // isolation policy.
+  // TODO(https://crbug.com/1414262): Add checks to ensure the preconditions.
+  void SetResourceCache(
+      mojo::PendingRemote<blink::mojom::ResourceCache> remote);
+
+  void FlushMojomFrameRemoteForTesting();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2931,6 +2953,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
           prefetch_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           topics_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          keep_alive_loader_factory,
       const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
       blink::mojom::PolicyContainerPtr policy_container,
       const blink::DocumentToken& document_token,
@@ -3200,6 +3224,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // network::mojom::CookieAccessObserver
   void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
+                 observer) override;
+
+  // network::mojom::TrustTokenAccessObserver
+  void Clone(mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>
                  observer) override;
 
   // Resets any waiting state of this RenderFrameHost that is no longer
@@ -3869,6 +3897,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool from_renderer,
       absl::optional<int64_t> navigation_id = absl::nullopt);
 
+  // Indicates whether this frame has third-party storage
+  // partitioning enabled. This depends on the deprecation trial (which can
+  // block), content browser client (which can block), and base feature (which
+  // can allow/block). `main_frame_for_storage_partitioning` indicates the top
+  // most frame that third-party storage partitioning is affected by (this can
+  // be the real main frame or it could be a subframe when taking into account
+  // special embedding cases, see CalculateStorageKey's implementation for more
+  // information.)
+  bool IsThirdPartyStoragePartitioningEnabled(
+      RenderFrameHostImpl* main_frame_for_storage_partitioning);
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
@@ -3883,8 +3922,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   scoped_refptr<RenderViewHostImpl> render_view_host_;
 
   const raw_ptr<RenderFrameHostDelegate> delegate_;
-
-  const int routing_id_;
 
   // The SiteInstance associated with this RenderFrameHost. All content drawn
   // in this RenderFrameHost is part of this SiteInstance. Cannot change over
@@ -3905,9 +3942,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // to access it or its associated `AgentSchedulingGroupHost` (see
   // crbug.com/1297030).
   const base::SafeRef<AgentSchedulingGroupHost> agent_scheduling_group_;
-
-  const AgentSchedulingGroupHost::RouteOwner route_{
-      this, *agent_scheduling_group_, routing_id_};
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
   // Allows this RenderFrameHost to add and remove nodes in response to
@@ -4082,6 +4116,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(kenrb): Later this will also be used on the top-level frame, when
   // RenderFrameHost owns its RenderViewHost.
   std::unique_ptr<RenderWidgetHostImpl> owned_render_widget_host_;
+
+  const int routing_id_;
 
   // Boolean indicating whether this RenderFrameHost is being actively used or
   // is waiting for mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame and
@@ -4520,16 +4556,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // These values should be cleared on document commit.
   //
   // Some features are tracked in these places:
-  //   * `renderer_reported_bfcache_disabling_features_` for features in the
-  //      document in the renderer.
+  //   * `renderer_reported_bfcache_blocking_details_` for features in the
+  //      document in the renderer and the JavaScript locations that used the
+  //      features.
   //   * `browser_reported_bfcache_disabling_features_counts_` for the browser
   //      features.
   //   * `DedicatedWorkerHost` for features used in dedicated workers.
   // They are tracked separately, because when the renderer updates the set of
   // features, the browser ones should persist. Also, dedicated workers might be
   // destroyed while their renderers persist.
-  BackForwardCacheDisablingFeatures
-      renderer_reported_bfcache_disabling_features_;
+  BackForwardCacheBlockingDetails renderer_reported_bfcache_blocking_details_;
 
   // Count the usage of BackForwardCacheDisablingFeature.
   base::flat_map<BackForwardCacheDisablingFeature, int>
@@ -4760,6 +4796,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(crbug.com/936696): Remove this warning after the RDH ships.
   mojo::ReceiverSet<network::mojom::CookieAccessObserver> cookie_observers_;
 
+  // Observers listening to Trust Token access notifications for the current
+  // document in this RenderFrameHost. Note: at the moment this set is not
+  // cleared when a new document is created in this RenderFrameHost. This is
+  // done because the first observer is created before the navigation actually
+  // commits and because the old routing id-based behaved in the same way as
+  // well. This problem should go away with RenderDocumentHost in any case.
+  // TODO(crbug.com/936696): Remove this warning after the RDH ships.
+  mojo::ReceiverSet<network::mojom::TrustTokenAccessObserver>
+      trust_token_observers_;
+
   // Indicates whether this frame is an outer delegate frame for some other
   // RenderFrameHost. This will be a valid ID if so, and
   // `kFrameTreeNodeInvalidId` otherwise.
@@ -4942,6 +4988,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // the destruction of the document. See the comments of the
   // `cookie_change_listener_` in `NavigationRequest`.
   std::unique_ptr<CookieChangeListener> cookie_change_listener_;
+
+  // Contains a document token to fullscreen when the document element is ready.
+  // Set when a committed navigation requested fullscreen (e.g. Fullscreen popup
+  // window) and triggers a fullscreen on the document element once it is ready
+  // (`MainDocumentElementAvailable` dispatched).
+  // See: https://chromestatus.com/feature/6002307972464640
+  absl::optional<blink::DocumentToken>
+      fullscreen_document_on_document_element_ready_ = absl::nullopt;
 
   // WeakPtrFactories are the last members, to ensure they are destroyed before
   // all other fields of `this`.

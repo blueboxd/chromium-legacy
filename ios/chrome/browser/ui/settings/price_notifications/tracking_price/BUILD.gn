@@ -13,19 +13,24 @@ source_set("tracking_price") {
   deps = [
     ":constants",
     ":tracking_price_ui",
+    "//components/commerce/core:pref_names",
+    "//components/commerce/core:shopping_service",
+    "//components/prefs",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/commerce:shopping_service",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/push_notification:push_notification_browser_state_service",
     "//ios/chrome/browser/push_notification:push_notification_browser_state_service_factory",
     "//ios/chrome/browser/push_notification:push_notification_client",
     "//ios/chrome/browser/push_notification:push_notification_service",
+    "//ios/chrome/browser/shared/coordinator/alert",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/ui/list_model",
     "//ios/chrome/browser/shared/ui/table_view:utils",
     "//ios/chrome/browser/shared/ui/table_view/cells",
-    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/signin",
     "//ui/base",
   ]
 }
@@ -74,7 +79,6 @@ source_set("eg2_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/third_party/earl_grey2:test_lib",
     "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]

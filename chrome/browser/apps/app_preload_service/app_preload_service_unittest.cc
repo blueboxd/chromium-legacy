@@ -12,7 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/apps/app_preload_service/app_preload_service_factory.h"
-#include "chrome/browser/apps/app_preload_service/proto/app_provisioning.pb.h"
+#include "chrome/browser/apps/app_preload_service/proto/app_preload.pb.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
@@ -20,16 +20,15 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/system/fake_statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
-#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -82,7 +81,7 @@ class AppPreloadServiceTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingProfile> profile_;
   user_manager::ScopedUserManager scoped_user_manager_;
-  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
 TEST_F(AppPreloadServiceTest, ServiceAccessPerProfile) {
@@ -150,7 +149,7 @@ TEST_F(AppPreloadServiceTest, FirstLoginStartedPrefSet) {
 TEST_F(AppPreloadServiceTest, FirstLoginCompletedPrefSetAfterSuccess) {
   // An empty response indicates that the request completed successfully, but
   // there are no apps to install.
-  proto::AppProvisioningListAppsResponse response;
+  proto::AppPreloadListResponse response;
 
   url_loader_factory_.AddResponse(
       AppPreloadServerConnector::GetServerUrl().spec(),
@@ -186,11 +185,10 @@ TEST_F(AppPreloadServiceTest, IgnoreAndroidAppInstall) {
   constexpr char kPackageName[] = "com.peanuttypes";
   constexpr char kActivityName[] = "com.peanuttypes.PeanutTypesActivity";
 
-  proto::AppProvisioningListAppsResponse response;
+  proto::AppPreloadListResponse response;
   auto* app = response.add_apps_to_install();
   app->set_name("Peanut Types");
-  app->set_install_reason(
-      proto::AppProvisioningListAppsResponse::INSTALL_REASON_OEM);
+  app->set_install_reason(proto::AppPreloadListResponse::INSTALL_REASON_OEM);
 
   url_loader_factory_.AddResponse(
       AppPreloadServerConnector::GetServerUrl().spec(),

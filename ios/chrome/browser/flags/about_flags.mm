@@ -52,6 +52,7 @@
 #import "components/policy/core/common/features.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
+#import "components/reading_list/features/reading_list_switches.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/send_tab_to_self/features.h"
 #import "components/shared_highlighting/core/common/shared_highlighting_features.h"
@@ -65,9 +66,11 @@
 #import "components/translate/core/browser/translate_prefs.h"
 #import "components/translate/core/common/translate_util.h"
 #import "ios/chrome/app/background_mode_buildflags.h"
+#import "ios/chrome/browser/bring_android_tabs/features.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #import "ios/chrome/browser/crash_report/features.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/find_in_page/features.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
@@ -85,10 +88,8 @@
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/autofill/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_retention_field_trial_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
@@ -425,24 +426,28 @@ const FeatureEntry::FeatureVariation kFeedBackgroundRefreshVariations[] = {
 #endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
 
 // Feed Foreground Refresh Feature Params.
-const FeatureEntry::FeatureParam kFeedRefreshPostFeedSessionOnly[] = {
-    {kEnableFeedRefreshPostFeedSession, "true"},
-    {kEnableFeedRefreshOnAppBackgrounding, "false"}};
-const FeatureEntry::FeatureParam kFeedRefreshOnAppBackgroundingOnly[] = {
-    {kEnableFeedRefreshPostFeedSession, "false"},
-    {kEnableFeedRefreshOnAppBackgrounding, "true"}};
-const FeatureEntry::FeatureParam kFeedForegroundRefreshAll[] = {
-    {kEnableFeedRefreshPostFeedSession, "true"},
-    {kEnableFeedRefreshOnAppBackgrounding, "true"}};
+const FeatureEntry::FeatureParam kFeedSessionCloseForegroundRefresh[] = {
+    {kEnableFeedSessionCloseForegroundRefresh, "true"},
+    {kEnableFeedAppCloseForegroundRefresh, "false"},
+    {kEnableFeedAppCloseBackgroundRefresh, "false"}};
+const FeatureEntry::FeatureParam kFeedAppCloseForegroundRefresh[] = {
+    {kEnableFeedSessionCloseForegroundRefresh, "false"},
+    {kEnableFeedAppCloseForegroundRefresh, "true"},
+    {kEnableFeedAppCloseBackgroundRefresh, "false"}};
+const FeatureEntry::FeatureParam kFeedAppCloseBackgroundRefresh[] = {
+    {kEnableFeedSessionCloseForegroundRefresh, "false"},
+    {kEnableFeedAppCloseForegroundRefresh, "false"},
+    {kEnableFeedAppCloseBackgroundRefresh, "true"}};
 
-// Feed Foreground Refresh Feature Variations.
-const FeatureEntry::FeatureVariation kFeedForegroundRefreshVariations[] = {
-    {"Post Feed session", kFeedRefreshPostFeedSessionOnly,
-     std::size(kFeedRefreshPostFeedSessionOnly), nullptr},
-    {"On app backgrounding", kFeedRefreshOnAppBackgroundingOnly,
-     std::size(kFeedRefreshOnAppBackgroundingOnly), nullptr},
-    {"All foreground refresh methods", kFeedForegroundRefreshAll,
-     std::size(kFeedForegroundRefreshAll), nullptr},
+// Feed Invisible Foreground Refresh Feature Variations.
+const FeatureEntry::FeatureVariation
+    kFeedInvisibleForegroundRefreshVariations[] = {
+        {"session close foreground refresh", kFeedSessionCloseForegroundRefresh,
+         std::size(kFeedSessionCloseForegroundRefresh), nullptr},
+        {"app close foreground refresh", kFeedAppCloseForegroundRefresh,
+         std::size(kFeedAppCloseForegroundRefresh), nullptr},
+        {"app close background refresh", kFeedAppCloseBackgroundRefresh,
+         std::size(kFeedAppCloseBackgroundRefresh), nullptr},
 };
 
 const FeatureEntry::FeatureParam kTrendingQueriesEnableAllUsers[] = {
@@ -714,7 +719,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"fullscreen-viewport-adjustment-experiment",
      flag_descriptions::kFullscreenSmoothScrollingName,
      flag_descriptions::kFullscreenSmoothScrollingDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(fullscreen::features::kSmoothScrollingDefault)},
+     FEATURE_VALUE_TYPE(web::features::kSmoothScrollingDefault)},
     {"webpage-default-zoom-from-dynamic-type",
      flag_descriptions::kWebPageDefaultZoomFromDynamicTypeName,
      flag_descriptions::kWebPageDefaultZoomFromDynamicTypeDescription,
@@ -1125,6 +1130,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-password-ui-split", flag_descriptions::kIOSPasswordUISplitName,
      flag_descriptions::kIOSPasswordUISplitDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordUISplit)},
+    {"ios-set-up-list", flag_descriptions::kIOSSetUpListName,
+     flag_descriptions::kIOSSetUpListDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSSetUpList)},
     {"ios-password-manager-cross-origin-iframe-support",
      flag_descriptions::kIOSPasswordManagerCrossOriginIframeSupportName,
      flag_descriptions::kIOSPasswordManagerCrossOriginIframeSupportDescription,
@@ -1210,6 +1218,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillParseVcnCardOnFileStandaloneCvcFields)},
+    {"default-browser-refactoring-promo-manager",
+     flag_descriptions::kDefaultBrowserRefactoringPromoManagerName,
+     flag_descriptions::kDefaultBrowserRefactoringPromoManagerDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDefaultBrowserRefactoringPromoManager)},
 #if BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
     {"feed-background-refresh-ios",
      flag_descriptions::kFeedBackgroundRefreshName,
@@ -1218,12 +1231,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
                                     kFeedBackgroundRefreshVariations,
                                     "FeedBackgroundRefresh")},
 #endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
-    {"feed-foreground-refresh-ios",
-     flag_descriptions::kFeedForegroundRefreshName,
-     flag_descriptions::kFeedForegroundRefreshDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFeedForegroundRefresh,
-                                    kFeedForegroundRefreshVariations,
-                                    "FeedForegroundRefresh")},
+    {"feed-invisible-foreground-refresh-ios",
+     flag_descriptions::kFeedInvisibleForegroundRefreshName,
+     flag_descriptions::kFeedInvisibleForegroundRefreshDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFeedInvisibleForegroundRefresh,
+                                    kFeedInvisibleForegroundRefreshVariations,
+                                    "FeedInvisibleForegroundRefresh")},
     {"omnibox-keyboard-paste-button",
      flag_descriptions::kOmniboxKeyboardPasteButtonName,
      flag_descriptions::kOmniboxKeyboardPasteButtonDescription,
@@ -1297,12 +1311,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnablePinnedTabs,
                                     kEnablePinnedTabsVariations,
                                     "EnablePinnedTabs")},
-    {"enable-pinned-tabs-ipad", flag_descriptions::kEnablePinnedTabsIpadName,
-     flag_descriptions::kEnablePinnedTabsIpadDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnablePinnedTabsIpad)},
-    {"remove-crash-infobar", flag_descriptions::kRemoveCrashInfobarName,
-     flag_descriptions::kRemoveCrashInfobarDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kRemoveCrashInfobar)},
     {"credential-provider-extension-promo",
      flag_descriptions::kCredentialProviderExtensionPromoName,
      flag_descriptions::kCredentialProviderExtensionPromoDescription,
@@ -1425,7 +1433,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIndicateAccountStorageErrorInAccountCellName,
      flag_descriptions::kIndicateAccountStorageErrorInAccountCellDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kIndicateAccountStorageErrorInAccountCell)},
+     FEATURE_VALUE_TYPE(syncer::kIndicateAccountStorageErrorInAccountCell)},
     {"enable-bookmarks-account-storage",
      flag_descriptions::kEnableBookmarksAccountStorageName,
      flag_descriptions::kEnableBookmarksAccountStorageDescription,
@@ -1469,6 +1477,29 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePreferencesAccountStorageDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(syncer::kEnablePreferencesAccountStorage)},
+    {"indicate-identity-error-overflow-menu",
+     flag_descriptions::kIndicateIdentityErrorInOverflowMenuName,
+     flag_descriptions::kIndicateIdentityErrorInOverflowMenuDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIndicateSyncErrorInOverflowMenu)},
+    {"ios-browser-edit-menu-metrics",
+     flag_descriptions::kIOSBrowserEditMenuMetricsName,
+     flag_descriptions::kIOSBrowserEditMenuMetricsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSBrowserEditMenuMetrics)},
+    {"sf-symbols-follow-up", flag_descriptions::kSFSymbolsFollowUpName,
+     flag_descriptions::kSFSymbolsFollowUpDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSFSymbolsFollowUp)},
+    {"enable-reading-list-account-storage",
+     flag_descriptions::kEnableReadingListAccountStorageName,
+     flag_descriptions::kEnableReadingListAccountStorageDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         reading_list::switches::kReadingListEnableDualReadingListModel)},
+    {"enable-reading-list-sign-in-promo",
+     flag_descriptions::kEnableReadingListSignInPromoName,
+     flag_descriptions::kEnableReadingListSignInPromoDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(reading_list::switches::
+                            kReadingListEnableSyncTransportModeUponSignIn)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

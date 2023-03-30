@@ -294,6 +294,9 @@ class HistoryReportJniBridge;
 namespace ios_web_view {
 class WebViewBrowserState;
 }
+namespace io_thread {
+class IOSIOThread;
+}
 namespace leveldb::port {
 class CondVar;
 }  // namespace leveldb::port
@@ -333,7 +336,7 @@ class ScopedIPCSupport;
 namespace ipcz_driver {
 class MojoTrap;
 }
-}
+}  // namespace core
 }  // namespace mojo
 namespace printing {
 class LocalPrinterHandlerDefault;
@@ -391,6 +394,7 @@ namespace remoting {
 class AutoThread;
 class ScopedBypassIOThreadRestrictions;
 namespace protocol {
+class ScopedAllowSyncPrimitivesForWebRtcDataStreamAdapter;
 class ScopedAllowSyncPrimitivesForWebRtcTransport;
 class ScopedAllowThreadJoinForWebRtcTransport;
 }  // namespace protocol
@@ -419,7 +423,7 @@ class SystemctlLauncherScopedAllowBaseSyncPrimitives;
 namespace viz {
 class HostGpuMemoryBufferManager;
 class ClientGpuMemoryBufferManager;
-}
+}  // namespace viz
 
 namespace vr {
 class VrShell;
@@ -427,7 +431,6 @@ class VrShell;
 
 namespace web {
 class WebMainLoop;
-class WebSubThread;
 }  // namespace web
 
 namespace webrtc {
@@ -449,7 +452,7 @@ class TaskQueueImpl;
 namespace android {
 class JavaHandlerThread;
 class ScopedAllowBlockingForImportantFileWriter;
-}
+}  // namespace android
 
 namespace internal {
 class GetAppOutputScopedAllowBaseSyncPrimitives;
@@ -469,7 +472,7 @@ class StackTrace;
 namespace win {
 class OSInfo;
 class ScopedAllowBlockingForUserAccountControl;
-}
+}  // namespace win
 
 class AdjustOOMScoreHelper;
 class ChromeOSVersionInfo;
@@ -614,6 +617,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
   friend class extensions::UnpackedInstaller;
   friend class font_service::internal::MappedFontFile;
   friend class ios_web_view::WebViewBrowserState;
+  friend class io_thread::IOSIOThread;
   friend class media::FileVideoCaptureDeviceFactory;
   friend class memory_instrumentation::OSMetrics;
   friend class memory_pressure::UserLevelMemoryPressureSignalGenerator;
@@ -636,7 +640,6 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
   friend class ui::DrmDisplayHostManager;
   friend class ui::ScopedAllowBlockingForGbmSurface;
   friend class ui::SelectFileDialogLinux;
-  friend class web::WebSubThread;
   friend class weblayer::BrowserContextImpl;
   friend class weblayer::ContentBrowserClientImpl;
   friend class weblayer::ProfileImpl;
@@ -874,6 +877,8 @@ class BASE_EXPORT
   friend class proxy_resolver::
       ScopedAllowThreadJoinForProxyResolverV8Tracing;  // http://crbug.com/69710
   friend class remoting::AutoThread;  // https://crbug.com/944316
+  friend class remoting::protocol::
+      ScopedAllowSyncPrimitivesForWebRtcDataStreamAdapter;  // http://b/233844893
   friend class remoting::protocol::
       ScopedAllowSyncPrimitivesForWebRtcTransport;  // http://crbug.com/1198501
   friend class remoting::protocol::

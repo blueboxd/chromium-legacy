@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/performance_controls/tab_discard_tab_helper.h"
+#include "chrome/browser/ui/performance_controls/high_efficiency_chip_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -55,6 +55,9 @@ HighEfficiencyChipView::HighEfficiencyChipView(
                          "HighEfficiency"),
       browser_(browser) {
   DCHECK(browser_);
+  SetAccessibilityProperties(
+      /*role*/ absl::nullopt,
+      l10n_util::GetStringUTF16(IDS_HIGH_EFFICIENCY_CHIP_ACCNAME));
 
   auto* manager = performance_manager::user_tuning::
       UserPerformanceTuningManager::GetInstance();
@@ -90,8 +93,8 @@ void HighEfficiencyChipView::OnTabStripModelChanged(
   }
 
   if (selection.active_tab_changed()) {
-    TabDiscardTabHelper* const tab_helper =
-        TabDiscardTabHelper::FromWebContents(web_contents);
+    HighEfficiencyChipTabHelper* const tab_helper =
+        HighEfficiencyChipTabHelper::FromWebContents(web_contents);
     tab_helper->SetChipHasBeenHidden();
   }
 }
@@ -101,8 +104,8 @@ void HighEfficiencyChipView::UpdateImpl() {
   if (!web_contents) {
     return;
   }
-  TabDiscardTabHelper* const tab_helper =
-      TabDiscardTabHelper::FromWebContents(web_contents);
+  HighEfficiencyChipTabHelper* const tab_helper =
+      HighEfficiencyChipTabHelper::FromWebContents(web_contents);
   if (tab_helper->ShouldChipBeVisible() && is_high_efficiency_mode_enabled_) {
     SetVisible(true);
     if (tab_helper->ShouldIconAnimate()) {
@@ -166,11 +169,6 @@ const gfx::VectorIcon& HighEfficiencyChipView::GetVectorIcon() const {
 
 views::BubbleDialogDelegate* HighEfficiencyChipView::GetBubble() const {
   return bubble_;
-}
-
-std::u16string HighEfficiencyChipView::GetTextForTooltipAndAccessibleName()
-    const {
-  return l10n_util::GetStringUTF16(IDS_HIGH_EFFICIENCY_CHIP_ACCNAME);
 }
 
 void HighEfficiencyChipView::MaybeShowIPH() {

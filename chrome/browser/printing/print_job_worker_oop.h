@@ -31,20 +31,24 @@ class PrintedDocument;
 // thread.  PrintJob always outlives its worker instance.
 class PrintJobWorkerOop : public PrintJobWorker {
  public:
+  // The `client_id` specifies the print document client registered with
+  // `PrintBackendServiceManager`.  `PrintJobWorkerOop` takes responsibility
+  // for unregistering the client ID with `PrintBackendServiceManager` once
+  // printing is completed.
+  // The `client_id` can be empty.  This can occur for placeholder print jobs
+  // that don't actually initiate printing such as during content analysis.
   PrintJobWorkerOop(
       std::unique_ptr<PrintingContext::Delegate> printing_context_delegate,
       std::unique_ptr<PrintingContext> printing_context,
+      absl::optional<PrintBackendServiceManager::ClientId> client_id,
+      absl::optional<PrintBackendServiceManager::ContextId> context_id,
       PrintJob* print_job,
-      mojom::PrintTargetType print_target_type);
+      bool print_from_system_dialog);
   PrintJobWorkerOop(const PrintJobWorkerOop&) = delete;
   PrintJobWorkerOop& operator=(const PrintJobWorkerOop&) = delete;
   ~PrintJobWorkerOop() override;
 
   // `PrintJobWorker` overrides.
-#if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
-  void SetPrintDocumentClient(
-      PrintBackendServiceManager::ClientId client_id) override;
-#endif
   void StartPrinting(PrintedDocument* new_document) override;
 
  protected:
@@ -52,10 +56,14 @@ class PrintJobWorkerOop : public PrintJobWorker {
   PrintJobWorkerOop(
       std::unique_ptr<PrintingContext::Delegate> printing_context_delegate,
       std::unique_ptr<PrintingContext> printing_context,
+      absl::optional<PrintBackendServiceManager::ClientId> client_id,
+      absl::optional<PrintBackendServiceManager::ContextId> context_id,
       PrintJob* print_job,
-      mojom::PrintTargetType print_target_type,
+      bool print_from_system_dialog,
       bool simulate_spooling_memory_errors);
 
+  // Local callback wrappers for Print Backend Service mojom call.  Virtual to
+  // support testing.
   virtual void OnDidStartPrinting(mojom::ResultCode result);
 #if BUILDFLAG(IS_WIN)
   virtual void OnDidRenderPrintedPage(uint32_t page_index,
@@ -85,6 +93,8 @@ class PrintJobWorkerOop : public PrintJobWorker {
   // Initiate failure handling, including notification to the user.
   void NotifyFailure(mojom::ResultCode result);
 
+  // Mojo support to send messages from UI thread.
+  void SendEstablishPrintingContext();
   void SendStartPrinting(const std::string& device_name,
                          const std::u16string& document_name);
 #if BUILDFLAG(IS_WIN)
@@ -107,6 +117,10 @@ class PrintJobWorkerOop : public PrintJobWorker {
   absl::optional<PrintBackendServiceManager::ClientId>
       service_manager_client_id_;
 
+  // The printing context identifier related to this print job.
+  // Used only from UI thread.
+  absl::optional<PrintBackendServiceManager::ContextId> printing_context_id_;
+
   // The device name used when printing via a service.  Used only from the UI
   // thread.
   std::string device_name_;
@@ -123,9 +137,8 @@ class PrintJobWorkerOop : public PrintJobWorker {
   // to avoid any potential confusion between them.
   scoped_refptr<PrintedDocument> document_oop_;
 
-  // The type of target to print to.  Used only from the UI thread.
-  mojom::PrintTargetType print_target_type_ =
-      mojom::PrintTargetType::kDirectToDevice;
+  // Indicates if the print job was initiated from the print system dialog.
+  const bool print_from_system_dialog_;
 
 #if BUILDFLAG(IS_WIN)
   // Number of pages that have completed printing.

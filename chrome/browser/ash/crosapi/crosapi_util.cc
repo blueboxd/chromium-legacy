@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_crosapi_util.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -115,6 +116,7 @@
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
+#include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/timezone.mojom.h"
 #include "chromeos/crosapi/mojom/tts.mojom.h"
@@ -260,7 +262,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 105,
+static_assert(crosapi::mojom::Crosapi::Version_ == 106,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -340,6 +342,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Power>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
     MakeInterfaceVersionEntry<crosapi::mojom::PrintingMetrics>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::TelemetryEventService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TelemetryProbeService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Remoting>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ResourceManager>(),
@@ -469,7 +472,7 @@ void InjectBrowserInitParams(
   params->ash_metrics_enabled =
       local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled);
   params->ash_metrics_managed =
-      local_state->IsManagedPreference(metrics::prefs::kMetricsReportingEnabled)
+      IsMetricsReportingPolicyManaged()
           ? mojom::MetricsReportingManaged::kManaged
           : mojom::MetricsReportingManaged::kNotManaged;
 
@@ -607,8 +610,6 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
   params->session_type = environment_provider->GetSessionType();
   params->default_paths = environment_provider->GetDefaultPaths();
 
-  params->device_account_gaia_id =
-      environment_provider->GetDeviceAccountGaiaId();
   const absl::optional<account_manager::Account> maybe_device_account =
       environment_provider->GetDeviceAccount();
   if (maybe_device_account) {

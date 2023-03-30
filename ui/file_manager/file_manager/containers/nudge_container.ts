@@ -131,6 +131,13 @@ export class NudgeContainer {
   }
 
   /**
+   * Clears the `seen` state from the localStorage for the given nudge.
+   */
+  async clearSeen(nudgeType: NudgeType) {
+    storage.local.remove(nudgeType);
+  }
+
+  /**
    * Shows the nudge if it has not already been seen before.
    */
   async showNudge(nudge: NudgeType) {
@@ -352,18 +359,28 @@ export const nudgeInfo: {[type in NudgeType]: NudgeInfo} = {
     expiryDate: new Date(2023, 4, 6),
   },
   [NudgeType['ONE_DRIVE_MOVED_FILE_NUDGE']]: {
-    anchor: () => document.querySelector<HTMLSpanElement>(
-        '.tree-item[one-drive] .file-row .item-icon'),
+    anchor: () => {
+      return document
+                 .querySelector<HTMLSpanElement>(
+                     '.tree-item[one-drive] .file-row .item-icon')
+                 ?.parentElement ||
+          null;
+    },
     content: () => str('ONE_DRIVE_MOVED_FILE_NUDGE'),
-    direction: NudgeDirection.BOTTOM_ENDWARD,
+    direction: NudgeDirection.TRAILING_DOWNWARD,
     // Expire after 4 releases (expires when M120 hits Stable).
     expiryDate: new Date(2023, 12, 5),
   },
   [NudgeType['DRIVE_MOVED_FILE_NUDGE']]: {
-    anchor: () => document.querySelector<HTMLSpanElement>(
-        '.tree-item .item-icon[volume-type-icon="drive"]'),
+    anchor: () => {
+      return document
+                 .querySelector<HTMLSpanElement>(
+                     '.tree-item .item-icon[volume-type-icon="drive"]')
+                 ?.parentElement ||
+          null;
+    },
     content: () => str('DRIVE_MOVED_FILE_NUDGE'),
-    direction: NudgeDirection.BOTTOM_ENDWARD,
+    direction: NudgeDirection.TRAILING_DOWNWARD,
     // Expire after 4 releases (expires when M120 hits Stable).
     expiryDate: new Date(2023, 12, 5),
   },

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
+#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
@@ -434,8 +435,8 @@ static CSSPropertyValueSet* ForcedColorsUserAgentDeclarations() {
   return decl;
 }
 
-// UA rule: * { top-layer: none !important }
-static CSSPropertyValueSet* UniversalTopLayerUserAgentDeclaration() {
+// UA rule: * { overlay: none !important }
+static CSSPropertyValueSet* UniversalOverlayUserAgentDeclaration() {
   DEFINE_STATIC_LOCAL(
       Persistent<MutableCSSPropertyValueSet>, decl,
       (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
@@ -443,7 +444,7 @@ static CSSPropertyValueSet* UniversalTopLayerUserAgentDeclaration() {
   DCHECK(RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled());
 
   if (decl->IsEmpty()) {
-    decl->SetProperty(CSSPropertyID::kTopLayer,
+    decl->SetProperty(CSSPropertyID::kOverlay,
                       *CSSIdentifierValue::Create(CSSValueID::kNone),
                       true /* important */);
   }
@@ -1342,14 +1343,14 @@ void StyleResolver::ApplyBaseStyleNoCache(
           ForcedColorsUserAgentDeclarations());
     }
 
-    // UA rule: * { top-layer: none !important }
+    // UA rule: * { overlay: none !important }
     // Implemented here because DCHECKs ensures we don't add universal rules to
     // the UA sheets. Note that this is a universal rule in any namespace.
     // Adding this to the html.css would only do the override in the HTML
     // namespace since the sheet has a default namespace.
     if (RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
       cascade.MutableMatchResult().AddMatchedProperties(
-          UniversalTopLayerUserAgentDeclaration());
+          UniversalOverlayUserAgentDeclaration());
     }
 
     // This adds a CSSInitialColorValue to the cascade for the document
@@ -2869,6 +2870,39 @@ Element& StyleResolver::EnsureElementForFormattedText() {
   return *formatted_text_element_;
 }
 
+StyleRulePositionFallback* StyleResolver::ResolvePositionFallbackRule(
+    const TreeScope* tree_scope,
+    AtomicString position_fallback_name) {
+  if (!tree_scope) {
+    tree_scope = &GetDocument();
+  }
+
+  StyleRulePositionFallback* position_fallback_rule = nullptr;
+  for (; tree_scope; tree_scope = tree_scope->ParentTreeScope()) {
+    if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver()) {
+      position_fallback_rule =
+          resolver->PositionFallbackForName(position_fallback_name);
+      if (position_fallback_rule) {
+        break;
+      }
+    }
+  }
+
+  // Try UA rules if no author rule matches
+  if (!position_fallback_rule) {
+    for (const auto& rule : CSSDefaultStyleSheets::Instance()
+                                .DefaultHtmlStyle()
+                                ->PositionFallbackRules()) {
+      if (position_fallback_name == rule->Name()) {
+        position_fallback_rule = rule;
+        break;
+      }
+    }
+  }
+
+  return position_fallback_rule;
+}
+
 scoped_refptr<const ComputedStyle> StyleResolver::ResolvePositionFallbackStyle(
     Element& element,
     unsigned index) {
@@ -2881,28 +2915,8 @@ scoped_refptr<const ComputedStyle> StyleResolver::ResolvePositionFallbackStyle(
     tree_scope = &GetDocument();
   }
 
-  StyleRulePositionFallback* position_fallback_rule = nullptr;
-  for (; tree_scope; tree_scope = tree_scope->ParentTreeScope()) {
-    if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver()) {
-      position_fallback_rule =
-          resolver->PositionFallbackForName(position_fallback->GetName());
-      if (position_fallback_rule) {
-        break;
-      }
-    }
-  }
-
-  // Try UA rules if no author rule matches
-  if (!position_fallback_rule) {
-    for (const auto& rule : CSSDefaultStyleSheets::Instance()
-                                .DefaultHtmlStyle()
-                                ->PositionFallbackRules()) {
-      if (position_fallback->GetName() == rule->Name()) {
-        position_fallback_rule = rule;
-        break;
-      }
-    }
-  }
+  StyleRulePositionFallback* position_fallback_rule =
+      ResolvePositionFallbackRule(tree_scope, position_fallback->GetName());
 
   if (!position_fallback_rule ||
       index >= position_fallback_rule->TryRules().size()) {

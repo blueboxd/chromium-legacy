@@ -14,6 +14,7 @@
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/hotspot_capabilities_provider.h"
+#include "chromeos/ash/components/network/hotspot_configuration_handler.h"
 #include "chromeos/ash/components/network/hotspot_controller.h"
 #include "chromeos/ash/components/network/hotspot_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
@@ -54,16 +55,20 @@ class HotspotMetricsHelperTest : public testing::Test {
     hotspot_controller_->Init(hotspot_capabilities_provider_.get(),
                               hotspot_state_handler_.get(),
                               technology_state_controller_.get());
+    hotspot_configuration_handler_ =
+        std::make_unique<HotspotConfigurationHandler>();
+    hotspot_configuration_handler_->Init(hotspot_controller_.get());
     hotspot_metrics_helper_ = std::make_unique<HotspotMetricsHelper>();
     hotspot_metrics_helper_->Init(
         hotspot_capabilities_provider_.get(), hotspot_state_handler_.get(),
-        hotspot_controller_.get(),
+        hotspot_controller_.get(), hotspot_configuration_handler_.get(),
         network_state_test_helper_.network_state_handler());
 
     base::RunLoop().RunUntilIdle();
   }
 
   void PrepareEnableHotspotForTesting() {
+    SetHotspotStateInShill(shill::kTetheringStateIdle);
     SetHotspotAllowStatus(hotspot_config::mojom::HotspotAllowStatus::kAllowed);
     network_state_test_helper_.manager_test()
         ->SetSimulateCheckTetheringReadinessResult(
@@ -79,10 +84,19 @@ class HotspotMetricsHelperTest : public testing::Test {
     hotspot_capabilities_provider_->SetHotspotAllowStatus(allow_status);
   }
 
+  void SetHotspotStateInShill(const std::string& hotspot_state) {
+    base::Value::Dict status_dict;
+    status_dict.Set(shill::kTetheringStatusStateProperty, hotspot_state);
+    network_state_test_helper_.manager_test()->SetManagerProperty(
+        shill::kTetheringStatusProperty, base::Value(std::move(status_dict)));
+    base::RunLoop().RunUntilIdle();
+  }
+
   void TearDown() override {
     network_state_test_helper_.ClearDevices();
     network_state_test_helper_.ClearServices();
     hotspot_metrics_helper_.reset();
+    hotspot_configuration_handler_.reset();
     hotspot_controller_.reset();
     hotspot_capabilities_provider_.reset();
     hotspot_state_handler_.reset();
@@ -100,6 +114,7 @@ class HotspotMetricsHelperTest : public testing::Test {
   std::unique_ptr<HotspotStateHandler> hotspot_state_handler_;
   std::unique_ptr<TechnologyStateController> technology_state_controller_;
   std::unique_ptr<HotspotController> hotspot_controller_;
+  std::unique_ptr<HotspotConfigurationHandler> hotspot_configuration_handler_;
   std::unique_ptr<HotspotMetricsHelper> hotspot_metrics_helper_;
 };
 
@@ -151,8 +166,8 @@ TEST_F(HotspotMetricsHelperTest, HotspotUsageConfigHistogram) {
   mojom_config->ssid = "test_ssid";
   mojom_config->passphrase = "test_password";
   mojom_config->bssid_randomization = true;
-  hotspot_state_handler_->SetHotspotConfig(std::move(mojom_config),
-                                           base::DoNothing());
+  hotspot_configuration_handler_->SetHotspotConfig(std::move(mojom_config),
+                                                   base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   PrepareEnableHotspotForTesting();
@@ -180,12 +195,14 @@ TEST_F(HotspotMetricsHelperTest, HotspotUsageDurationHistogram) {
   base::RunLoop().RunUntilIdle();
   task_environment_.FastForwardBy(kHotspotUsageTime);
 
+  SetHotspotStateInShill(shill::kTetheringStateActive);
   hotspot_controller_->DisableHotspot(
       base::DoNothing(), hotspot_config::mojom::DisableReason::kUserInitiated);
   base::RunLoop().RunUntilIdle();
   histogram_tester_.ExpectTimeBucketCount(
       HotspotMetricsHelper::kHotspotUsageDuration, kHotspotUsageTime, 1);
 
+  SetHotspotStateInShill(shill::kTetheringStateIdle);
   // Verifies that the usage duration is logged if hotspot is torn down by
   // internal error.
   hotspot_controller_->EnableHotspot(base::DoNothing());
@@ -233,6 +250,7 @@ TEST_F(HotspotMetricsHelperTest, HotspotMaxClientCountHistogram) {
       HotspotMetricsHelper::kHotspotMaxClientCount,
       /*sample=*/1, /*expected_count=*/1);
 
+  SetHotspotStateInShill(shill::kTetheringStateIdle);
   // Verifies that the max client count is logged if hotspot is torn down by
   // internal error.
   hotspot_controller_->EnableHotspot(base::DoNothing());
@@ -310,6 +328,35 @@ TEST_F(HotspotMetricsHelperTest, HotspotEnabledUpstreamStatusHistogram) {
       HotspotMetricsHelper::HotspotMetricsUpstreamStatus::
           kWifiWithCellularNotConnected,
       /*expected_count=*/1);
+}
+
+TEST_F(HotspotMetricsHelperTest, HotspotDisableReasonHistogram) {
+  PrepareEnableHotspotForTesting();
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  SetHotspotStateInShill(shill::kTetheringStateActive);
+  hotspot_controller_->DisableHotspot(
+      base::DoNothing(), hotspot_config::mojom::DisableReason::kUserInitiated);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      HotspotMetricsHelper::kHotspotDisableReasonHistogram,
+      HotspotMetricsHelper::HotspotMetricsDisableReason::kUserInitiated, 1);
+
+  SetHotspotStateInShill(shill::kTetheringStateIdle);
+  // Verifies that the disabel reason is logged if hotspot is torn down by
+  // internal error.
+  base::Value::Dict status_dict;
+  status_dict.Set(shill::kTetheringStatusStateProperty,
+                  shill::kTetheringStateIdle);
+  status_dict.Set(shill::kTetheringStatusIdleReasonProperty,
+                  shill::kTetheringIdleReasonError);
+  network_state_test_helper_.manager_test()->SetManagerProperty(
+      shill::kTetheringStatusProperty, base::Value(status_dict.Clone()));
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      HotspotMetricsHelper::kHotspotDisableReasonHistogram,
+      HotspotMetricsHelper::HotspotMetricsDisableReason::kInternalError, 1);
 }
 
 }  // namespace ash

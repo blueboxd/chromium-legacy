@@ -7,12 +7,16 @@
 
 #include "device/vr/android/cardboard/cardboard_sdk.h"
 
+#include "base/component_export.h"
+
 namespace device {
 
-class CardboardSdkImpl : public CardboardSdk {
+class COMPONENT_EXPORT(VR_CARDBOARD) CardboardSdkImpl : public CardboardSdk {
  public:
   CardboardSdkImpl();
   ~CardboardSdkImpl() override;
+
+  void Initialize(jobject context) override;
 
   CardboardSdkImpl(const CardboardSdkImpl&) = delete;
   CardboardSdkImpl& operator=(const CardboardSdkImpl&) = delete;

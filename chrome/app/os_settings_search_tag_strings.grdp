@@ -143,20 +143,19 @@
   <message name="IDS_OS_SETTINGS_TAG_VPN" desc="Text for search result item which, when clicked, navigates the user to VPN settings.">
     VPN
   </message>
-  <!-- TODO(b/260277007): Remove translateble false and upload snapshots when strings finalized. -->
-  <message translateable="false" name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS"  desc="Text for search result item which, when clicked, navigates the user to Audio settings.">
+  <message name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS"  desc="Text for search result item which, when clicked, navigates the user to Audio settings.">
     Audio
   </message>
-  <message translateable="false" name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT1"  desc="Text for search result item which, when clicked, navigates the user to Audio settings. Alternative phrase for: 'Audio'.">
+  <message name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT1"  desc="Text for search result item which, when clicked, navigates the user to Audio settings. Alternative phrase for: 'Audio'.">
     Volume
   </message>
-  <message translateable="false" name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT2"  desc="Text for search result item which, when clicked, navigates the user to Audio settings. Alternative phrase for: 'Audio'.">
+  <message name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT2"  desc="Text for search result item which, when clicked, navigates the user to Audio settings. Alternative phrase for: 'Audio'.">
     Sound
   </message>
-  <message translateable="false" name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT3"  desc="Text for search result item which, when clicked, navigates the user to Audio settings. Alternative phrase for: 'Audio'.">
+  <message name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT3"  desc="Text for search result item which, when clicked, navigates the user to Audio settings. Alternative phrase for: 'Audio'.">
     Speakers
   </message>
-  <message translateable="false" name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT4"  desc="Text for search result item which, when clicked, navigates the user to Audio settings. Alternative phrase for: 'Audio'.">
+  <message name="IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT4"  desc="Text for search result item which, when clicked, navigates the user to Audio settings. Alternative phrase for: 'Audio'.">
     Microphone
   </message>
   <message name="IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK" desc="Text for search result item which, when clicked, navigates the user to settings to toggle whether the device auto-connects to a network. Alternate phrase for: 'Auto connect to network'">
@@ -493,6 +492,12 @@
   </message>
   <message name="IDS_OS_SETTINGS_TAG_KEYBOARD_FUNCTION_KEYS" desc="Text for search result item which, when clicked, navigates the user to keyboard settings, with a toggle to enable/disable treating the top row as function keys.">
     Keyboard function keys
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_KEYBOARD_BLOCK_META_FKEY_COMBO_REWRITES" translateable="false" desc="Text for search result item which, when clicked, navigates the user to keyboard settings, with a toggle to enable/disable system/launcher keys to switch the top row between function keys and chromeos actions.">
+    Block meta F-key combo rewrites
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_KEYBOARD_REMAP_KEYS" translateable="false" desc="Text for search result item which, when clicked, navigates the user to keyboard settings, with a button leading the user to remap keyboard keys page.">
+    Remap keyboard keys
   </message>
   <message name="IDS_OS_SETTINGS_TAG_KEYBOARD_AUTO_REPEAT" desc="Text for search result item which, when clicked, navigates the user to keyboard settings, with toggles/sliders to set the auto-repeat state. Alternate phrase for: 'Keyboard repeat latency'">
     Keyboard auto-repeat

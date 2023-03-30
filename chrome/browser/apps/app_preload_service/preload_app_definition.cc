@@ -5,13 +5,14 @@
 #include "chrome/browser/apps/app_preload_service/preload_app_definition.h"
 
 #include "base/strings/string_util.h"
+#include "chrome/browser/apps/app_preload_service/proto/app_preload.pb.h"
 #include "chrome/browser/apps/app_service/package_id.h"
 #include "url/gurl.h"
 
 namespace apps {
 
 PreloadAppDefinition::PreloadAppDefinition(
-    proto::AppProvisioningListAppsResponse_App app_proto)
+    proto::AppPreloadListResponse_App app_proto)
     : app_proto_(app_proto),
       package_id_(PackageId::FromString(app_proto_.package_id())) {}
 
@@ -34,7 +35,12 @@ AppType PreloadAppDefinition::GetPlatform() const {
 
 bool PreloadAppDefinition::IsOemApp() const {
   return app_proto_.install_reason() ==
-         proto::AppProvisioningListAppsResponse::INSTALL_REASON_OEM;
+         proto::AppPreloadListResponse::INSTALL_REASON_OEM;
+}
+
+bool PreloadAppDefinition::IsTestApp() const {
+  return app_proto_.install_reason() ==
+         proto::AppPreloadListResponse::INSTALL_REASON_TEST;
 }
 
 GURL PreloadAppDefinition::GetWebAppManifestUrl() const {

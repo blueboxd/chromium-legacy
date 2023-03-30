@@ -66,7 +66,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
     <owner>chromeos-tango@google.com</owner>
   </variant>
   <variant name="FastPair" summary="Fast Pair">
-    <owner>shanefitz@google.com</owner>
+    <owner>jackshira@google.com</owner>
     <owner>julietlevesque@google.com</owner>
     <owner>chromeos-cross-device-eng@google.com</owner>
   </variant>
@@ -289,7 +289,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Camera.AutoFraming.EnabledCount" units="times"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>kamesan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -309,7 +309,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Camera.AutoFraming.Error" enum="AutoFramingError"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>kamesan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -353,6 +353,56 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 
     This metric is reported for all users and will not cause abnormal
     distribution since the metric is Chrome OS specified.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.Effects.Error" enum="CameraEffectError"
+    expires_after="2024-03-21">
+  <owner>skyostil@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the first error encountered in a camera which uses effects.
+
+    This metric is emitting once every hour if the camera session exceeds an
+    hour, and once at the end of every session.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.Effects.NumConcurrentProcessedStreams"
+    units="count" expires_after="2024-03-21">
+  <owner>skyostil@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the number streams that required rendering effects in a camera
+    session which uses effects.
+
+    This metric is emitting once every hour if the camera session exceeds an
+    hour, and once at the end of every session.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.Effects.NumConcurrentStreams" units="count"
+    expires_after="2024-03-21">
+  <owner>skyostil@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the number streams in a camera session which uses effects.
+
+    This metric is emitting once every hour if the camera session exceeds an
+    hour, and once at the end of every session.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.Effects.NumStillShotsTaken" units="captures"
+    expires_after="2024-03-21">
+  <owner>skyostil@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the number of still capture shots taken in a camera session which
+    uses effects.
+
+    This metric is emitting once every hour if the camera session exceeds an
+    hour, and once at the end of every session.
   </summary>
 </histogram>
 
@@ -425,6 +475,40 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   <token key="StreamType">
     <variant name="BLOB" summary="Processing time for BLOB (JPEG) streams"/>
     <variant name="YUV" summary="Processing time for YUV streams"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.Camera.Effects.{StreamType}.MaxStreamSize"
+    units="pixels" expires_after="2024-03-21">
+  <owner>skyostil@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the number of pixels in one frame of the largest stream in a camera
+    session which uses effects.
+
+    This metric is emitting once every hour if the camera session exceeds an
+    hour, and once at the end of every session.
+  </summary>
+  <token key="StreamType">
+    <variant name="BLOB" summary="Maximum stream size for BLOB (JPEG) streams"/>
+    <variant name="YUV" summary="Maximum stream size for YUV streams"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.Camera.Effects.{StreamType}.MinStreamSize"
+    units="pixels" expires_after="2024-03-21">
+  <owner>skyostil@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the number of pixels in one frame of the smallest stream in a camera
+    session which uses effects.
+
+    This metric is emitting once every hour if the camera session exceeds an
+    hour, and once at the end of every session.
+  </summary>
+  <token key="StreamType">
+    <variant name="BLOB" summary="Minimum stream size for BLOB (JPEG) streams"/>
+    <variant name="YUV" summary="Minimum stream size for YUV streams"/>
   </token>
 </histogram>
 
@@ -534,7 +618,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Camera.HDRnet.MaxOutputBuffersRendered"
-    units="buffers" expires_after="2023-07-16">
+    units="buffers" expires_after="2023-09-17">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -1055,7 +1139,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}" enum="FeatureUsageEvent"
-    expires_after="2023-05-11">
+    expires_after="2024-04-01">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1067,7 +1151,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}.Usetime" units="ms"
-    expires_after="2023-05-11">
+    expires_after="2024-04-01">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1473,7 +1557,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerAction"
-    enum="IntentPickerDialogAction" expires_after="2023-09-10">
+    enum="IntentPickerDialogAction" expires_after="2023-09-17">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1544,7 +1628,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent2"
-    enum="LinkCapturingEvent" expires_after="2023-07-23">
+    enum="LinkCapturingEvent" expires_after="2023-09-24">
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1608,7 +1692,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.Migration"
-    enum="KeyPermissionsManagerMigrationStatus" expires_after="2023-07-23">
+    enum="KeyPermissionsManagerMigrationStatus" expires_after="2023-09-24">
   <owner>omorsi@google.com</owner>
   <owner>pmarko@google.com</owner>
   <summary>
@@ -1669,7 +1753,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.GetPackState.FeatureId"
-    enum="LanguagePackFeatureIds" expires_after="2023-07-16">
+    enum="LanguagePackFeatureIds" expires_after="2023-09-17">
   <owner>claudiomagni@chromium.org</owner>
   <owner>mlcui@google.com</owner>
   <owner>dvallet@chromium.org</owner>
@@ -2179,7 +2263,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Secagentd.Policy" enum="SecagentdPolicy"
-    expires_after="2023-07-23">
+    expires_after="2023-09-24">
   <owner>aashay@google.com</owner>
   <owner>cros-enterprise-security@google.com</owner>
   <summary>
@@ -2228,6 +2312,40 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
     system is detected as anomalous (i.e. presents any of the tracked
     anomalies.)
   </summary>
+</histogram>
+
+<histogram
+    name="ChromeOS.Settings.Device.Keyboard.{KeyboardType}.BlockMetaFKeyRewrites.Initial"
+    enum="Boolean" expires_after="2024-03-22">
+  <owner>dpad@google.com</owner>
+  <owner>yyhyyh@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the initial value of the Block Meta and Function Key rewrites
+    settings when a keyboard's settings are first initialized.
+  </summary>
+  <token key="KeyboardType">
+    <variant name="External"/>
+    <variant name="ExternalChromeOs"/>
+    <variant name="Internal"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ChromeOS.Settings.Device.Keyboard.{KeyboardType}.TopRowAreFKeys.Initial"
+    enum="Boolean" expires_after="2024-03-22">
+  <owner>dpad@google.com</owner>
+  <owner>yyhyyh@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the initial value of the top-row keys are used as Function Keys when
+    a keyboard's settings are first initialized.
+  </summary>
+  <token key="KeyboardType">
+    <variant name="External"/>
+    <variant name="ExternalChromeOs"/>
+    <variant name="Internal"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.AppCount2.{AppType}" units="apps"

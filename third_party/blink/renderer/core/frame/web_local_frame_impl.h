@@ -363,6 +363,9 @@ class CORE_EXPORT WebLocalFrameImpl final
           session_storage_area) override;
   void AddHitTestOnTouchStartCallback(
       base::RepeatingCallback<void(const WebHitTestResult&)> callback) override;
+  void SetResourceCacheRemote(
+      CrossVariantMojoRemote<mojom::blink::ResourceCacheInterfaceBase> remote)
+      override;
 
   // WebNavigationControl overrides:
   bool DispatchBeforeUnloadEvent(bool) override;
@@ -409,6 +412,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const DocumentToken& document_token,
       std::unique_ptr<blink::WebPolicyContainer> policy_container,
       const StorageKey& storage_key,
+      const KURL& creator_base_url,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
           network::mojom::blink::WebSandboxFlags::kNone);
   LocalFrame* GetFrame() const { return frame_.Get(); }
@@ -426,7 +430,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebString& name,
       network::mojom::blink::WebSandboxFlags,
       const DocumentToken& document_token,
-      std::unique_ptr<WebPolicyContainer>);
+      std::unique_ptr<WebPolicyContainer>,
+      const WebURL& creator_base_url);
   static WebLocalFrameImpl* CreateProvisional(
       WebLocalFrameClient*,
       InterfaceRegistry*,
@@ -458,8 +463,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   RemoteFrame* CreateFencedFrame(
       HTMLFencedFrameElement*,
-      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>,
-      mojom::blink::FencedFrameMode);
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>);
 
   void DidChangeContentsSize(const gfx::Size&);
 
@@ -564,6 +568,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   void AddInspectorIssueImpl(mojom::blink::InspectorIssueCode code) override;
   void AddGenericIssueImpl(mojom::blink::GenericIssueErrorType error_type,
                            int violating_node_id) override;
+  void AddGenericIssueImpl(mojom::blink::GenericIssueErrorType error_type,
+                           int violating_node_id,
+                           const WebString& violating_node_attribute) override;
 
  private:
   friend LocalFrameClientImpl;
@@ -621,6 +628,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       std::unique_ptr<PolicyContainer> policy_container,
       const StorageKey& storage_key,
       ukm::SourceId document_ukm_source_id,
+      const KURL& creator_base_url,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
           network::mojom::blink::WebSandboxFlags::kNone);
 

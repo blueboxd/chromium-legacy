@@ -132,7 +132,7 @@
       light: '$cros.ref.neutral99',
       dark:  '$cros.ref.neutral10',
     },
-    'app-base-elevated': {
+    'base-elevated': {
       light: '$cros.ref.neutralvariant100',
       /* In dark mode we layer primary80 @ 11% ontop of neutral80 @ 2% ontop of neutral 10. */
       dark: 'blend(rgba($cros.ref.primary80.rgb, .11), blend(rgba($cros.ref.neutral80.rgb, .02), $cros.ref.neutral10))',
@@ -198,17 +198,21 @@
       dark: 'rgba($cros.ref.neutralvariant0.rgb, 0.14)',
     },
 
-    'input-field-light': {
+    'input-field-on-shaded': {
       light: '$cros.ref.neutral99',
       dark: 'rgba($cros.ref.neutral50.rgb, 0.4)'
     },
-    'input-field-dark': {
+    'input-field-on-base': {
       light: '$cros.ref.neutral95',
       dark: 'rgba($cros.ref.neutral0.rgb, 0.6)'
     },
     'system-on-base': {
       light: '$cros.ref.neutralvariant95',
       dark: 'rgba($cros.ref.neutralvariant40.rgb, 0.4)',
+    },
+    'system-on-base1': {
+      light: 'rgba($cros.ref.neutral99.rgb, 0.10)',
+      dark: 'rgba($cros.ref.neutral10.rgb, 0.06)',
     },
     'system-primary-container': {
       light: '$cros.ref.primary80',
@@ -356,6 +360,10 @@
       light: '$cros.ref.primary40',
       dark: '$cros.ref.primary80',
     },
+    'focus-ring-on-primary-container': {
+      light: '$cros.ref.primary40',
+      dark: '$cros.ref.primary40',
+    },
     'shadow': {
       light: '$cros.ref.neutral30',
       dark: '$cros.ref.neutral0',
@@ -363,5 +371,38 @@
     /* When the button is pressed, we layer the ripple color on top of the hover color to form the pressed color, that's what blend() does here. */
     'pressed-on-prominent': 'blend($cros.sys.hover-on-prominent, $cros.sys.ripple-neutral-on-prominent)',
     'pressed-on-subtle': 'blend($cros.sys.hover-on-subtle, $cros.sys.ripple-neutral-on-subtle)',
+
+    /* Illustration colors. */
+    'illo.color1': {
+      light: '$cros.ref.primary30',
+      dark: '$cros.ref.primary80',
+    },
+    'illo.color1.1': {
+      light: '$cros.ref.primary80',
+      dark: '$cros.ref.secondary40',
+    },
+    'illo.color1.2': {
+      light: '$cros.ref.primary90',
+      dark: '$cros.ref.secondary30',
+    },
+    'illo.color2': '$cros.sys.positive',
+    'illo.color3': '$cros.sys.warning',
+    'illo.color4': '$cros.sys.error',
+    'illo.color5': {
+      light: '$cros.ref.tertiary70',
+      dark: '$cros.ref.tertiary40',
+    },
+    'illo.color6': {
+      light: '$cros.ref.secondary90',
+      dark: '$cros.ref.secondary50',
+    },
+    'illo.base': {
+      light: '$cros.ref.secondary100',
+      dark: '$cros.ref.secondary0',
+    },
+    'illo.secondary': {
+      light: '$cros.ref.neutralvariant90',
+      dark: '$cros.ref.neutralvariant40',
+    },
   },
 }

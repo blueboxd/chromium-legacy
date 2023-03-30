@@ -5,10 +5,13 @@
 #include "chromeos/ash/components/osauth/impl/auth_parts_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/osauth/impl/auth_session_storage_impl.h"
+#include "chromeos/ash/components/osauth/public/auth_factor_engine_factory.h"
 #include "chromeos/ash/components/osauth/public/auth_parts.h"
 
 namespace ash {
@@ -49,12 +52,23 @@ AuthPartsImpl::~AuthPartsImpl() {
 }
 
 void AuthPartsImpl::CreateDefaultComponents() {
-  session_storage_ = std::make_unique<AuthSessionStorageImpl>();
+  session_storage_ =
+      std::make_unique<AuthSessionStorageImpl>(UserDataAuthClient::Get());
 }
 
 AuthSessionStorage* AuthPartsImpl::GetAuthSessionStorage() {
   CHECK(session_storage_);
   return session_storage_.get();
+}
+
+void AuthPartsImpl::RegisterEngineFactory(
+    std::unique_ptr<AuthFactorEngineFactory> factory) {
+  engine_factories_.push_back(std::move(factory));
+}
+
+const std::vector<std::unique_ptr<AuthFactorEngineFactory>>&
+AuthPartsImpl::GetEngineFactories() {
+  return engine_factories_;
 }
 
 }  // namespace ash

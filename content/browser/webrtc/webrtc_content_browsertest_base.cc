@@ -65,12 +65,9 @@ void WebRtcContentBrowserTestBase::AppendUseFakeUIForMediaStreamFlag() {
       switches::kUseFakeUIForMediaStream);
 }
 
-// Executes |javascript|. The script is required to use
-// window.domAutomationController.send to send a string value back to here.
-std::string WebRtcContentBrowserTestBase::ExecuteJavascriptAndReturnResult(
+std::string WebRtcContentBrowserTestBase::EvalJsInShell(
     const std::string& javascript) {
-  return EvalJs(shell(), javascript, EXECUTE_SCRIPT_USE_MANUAL_REPLY)
-      .ExtractString();
+  return EvalJs(shell(), javascript).ExtractString();
 }
 
 void WebRtcContentBrowserTestBase::MakeTypicalCall(
@@ -82,12 +79,7 @@ void WebRtcContentBrowserTestBase::MakeTypicalCall(
   GURL url(embedded_test_server()->GetURL(html_file));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  ExecuteJavascriptAndWaitForOk(javascript);
-}
-
-void WebRtcContentBrowserTestBase::ExecuteJavascriptAndWaitForOk(
-    const std::string& javascript) {
-  std::string result = ExecuteJavascriptAndReturnResult(javascript);
+  std::string result = EvalJs(shell(), javascript).ExtractString();
   if (result != "OK") {
     if (result.empty())
       result = "(nothing)";
@@ -95,7 +87,7 @@ void WebRtcContentBrowserTestBase::ExecuteJavascriptAndWaitForOk(
            javascript.c_str());
     FAIL();
   }
- }
+}
 
  std::string WebRtcContentBrowserTestBase::GenerateGetUserMediaCall(
      const char* function_name,

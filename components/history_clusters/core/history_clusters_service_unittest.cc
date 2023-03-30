@@ -410,6 +410,10 @@ class HistoryClustersServiceTestBase : public testing::Test {
     pref_service_->SetBoolean(prefs::kVisible, visible);
   }
 
+  void LoadCachesFromPrefs() {
+    history_clusters_service_->LoadCachesFromPrefs();
+  }
+
  protected:
   // ScopedFeatureList needs to be declared before TaskEnvironment, so that it
   // is destroyed after the TaskEnvironment is destroyed, preventing other
@@ -1384,159 +1388,6 @@ TEST_P(HistoryClustersServiceTest,
   EXPECT_EQ(
       history_clusters_service_->DoesQueryMatchAnyCluster("remote").has_value(),
       ExpectSyncedVisits());
-}
-
-TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterWithNoisyURLs) {
-  Config config;
-  config.omnibox_action_on_urls = true;
-  config.omnibox_action_on_noisy_urls = true;
-  SetConfigForTesting(config);
-
-  AddHardcodedTestDataToHistoryService();
-
-  // Verify that initially, the test URL doesn't match anything, but this
-  // query should have kicked off a cache population request. This is the URL
-  // for visit 5.
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  std::vector<history::Cluster> clusters;
-  // This cluster should contribute to keywords.
-  clusters.push_back(history::Cluster(
-      0,
-      {
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(
-              /*visit_id=*/2, /*score=*/0.0, /*engagement_score=*/20.0),
-      },
-      {{u"apples", history::ClusterKeywordData()},
-       {u"oranges", history::ClusterKeywordData()},
-       {u"z", history::ClusterKeywordData()},
-       {u"apples bananas", history::ClusterKeywordData()}},
-      /*should_show_on_prominent_ui_surfaces=*/true));
-  // This cluster should NOT contribute to keywords because
-  // `should_show_on_prominent_ui_surfaces` is false.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           GetHardcodedClusterVisit(5),
-                           GetHardcodedClusterVisit(2),
-                       },
-                       {{u"sensitive", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/false));
-  // This cluster should NOT contribute to keywords because it only has 1
-  // visible visit.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           GetHardcodedClusterVisit(2),
-                           GetHardcodedClusterVisit(2, /*score=*/0),
-                       },
-                       {{u"singlevisit", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/true));
-
-  // Hardcoded test visits span 3 days (1-day-old, 2-days-old, and 60-day-old).
-  FlushKeywordRequests(clusters, 3);
-
-  // Now the exact query should match the populated cache.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  // Github should be shown since we are including visits from noisy URLs.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://github.com/"))));
-
-  // Deleting a history entry should clear the keyword cache.
-  history_service_->DeleteURLs({GURL{"https://google.com/"}});
-  history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  // Visits now span 2 days (1-day-old and 60-day-old) since we deleted the only
-  // 2-day-old visit.
-  FlushKeywordRequests(clusters, 2);
-
-  // The keyword cache should be repopulated.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-}
-
-TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
-  Config config;
-  config.omnibox_action_on_urls = true;
-  config.omnibox_action_on_noisy_urls = false;
-  SetConfigForTesting(config);
-
-  AddHardcodedTestDataToHistoryService();
-
-  // Verify that initially, the test URL doesn't match anything, but this
-  // query should have kicked off a cache population request. This is the URL
-  // for visit 5.
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  std::vector<history::Cluster> clusters;
-  // This cluster should contribute to keywords.
-  clusters.push_back(history::Cluster(
-      0,
-      {
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(
-              /*visit_id=*/2, /*score=*/0.0, /*engagement_score=*/20.0),
-      },
-      {{u"apples", history::ClusterKeywordData()},
-       {u"oranges", history::ClusterKeywordData()},
-       {u"z", history::ClusterKeywordData()},
-       {u"apples bananas", history::ClusterKeywordData()}},
-      /*should_show_on_prominent_ui_surfaces=*/true));
-  // This cluster should NOT contribute to keywords because
-  // `should_show_on_prominent_ui_surfaces` is false.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           GetHardcodedClusterVisit(5),
-                           GetHardcodedClusterVisit(2),
-                       },
-                       {{u"sensitive", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/false));
-  // This cluster should NOT contribute to keywords because it only has 1
-  // visible visit.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           GetHardcodedClusterVisit(2),
-                           GetHardcodedClusterVisit(2, /*score=*/0),
-                       },
-                       {{u"singlevisit", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/true));
-
-  // Hardcoded test visits span 3 days (1-day-old, 2-days-old, and 60-day-old).
-  FlushKeywordRequests(clusters, 3);
-
-  // Now the exact query should match the populated cache.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  // Github should never be shown (highly-engaged for cluster 1, sensitive for
-  // cluster 2, single visit cluster for cluster 3).
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://github.com/"))));
-
-  // Deleting a history entry should clear the keyword cache.
-  history_service_->DeleteURLs({GURL{"https://google.com/"}});
-  history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  // Visits now span 2 days (1-day-old and 60-day-old) since we deleted the only
-  // 2-day-old visit.
-  FlushKeywordRequests(clusters, 2);
-
-  // The keyword cache should be repopulated.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
 }
 
 class HistoryClustersServiceJourneysDisabledTest

@@ -569,6 +569,10 @@ gfx::RectF GeometryMapper::VisualRectForCompositingOverlap(
       ForCompositingOverlap::kYes>(local_state, ancestor_state, visual_rect,
                                    kIgnoreOverlayScrollbarSize,
                                    kNonInclusiveIntersect);
+  if (const absl::optional<gfx::RectF> visibility_limit =
+          VisibilityLimit(ancestor_state)) {
+    visual_rect.Rect().Intersect(*visibility_limit);
+  }
   return visual_rect.Rect();
 }
 
@@ -584,27 +588,18 @@ void GeometryMapper::MapVisualRectAboveScrollForCompositingOverlap(
   DCHECK_EQ(&state.Transform().NearestScrollTranslationNode(),
             &scroll_translation);
   DCHECK(scroll_translation.ScrollNode());
-  gfx::RectF container_rect(scroll_translation.ScrollNode()->ContainerRect());
-
-  if (!RuntimeEnabledFeatures::ScrollOverlapOptimizationEnabled()) {
-    rect = container_rect;
-    state = ScrollContainerState(scroll_translation);
-    return;
-  }
 
   rect = VisualRectForCompositingOverlap(
       rect, state, ScrollingContentsState(scroll_translation));
   gfx::SizeF max_scroll_offset = MaxScrollOffset(scroll_translation);
   // Expand the rect to the top-left direction by max_scroll_offset, which is
   // equivalent to
-  //   rect = Union(rect, result - max_scroll_offset)
-  // i.e.
-  //   rect = Union(rect_when_scroll_offset_is_zero,
-  //                rect_when_scroll_offset_is_max);
+  //   rect = Union(/*rect when scroll_offset is zero*/ rect,
+  //                /*rect when scroll_offset is max*/ rect - max_scroll_offset)
   // in the container space.
   rect.Offset(-max_scroll_offset.width(), -max_scroll_offset.height());
   rect.set_size(rect.size() + max_scroll_offset);
-  rect.Intersect(container_rect);
+  rect.Intersect(gfx::RectF(scroll_translation.ScrollNode()->ContainerRect()));
 
   state = ScrollContainerState(scroll_translation);
 }
@@ -628,6 +623,17 @@ bool GeometryMapper::
       ForCompositingOverlap::kYes>(local_state, ancestor_state, mapping_rect,
                                    kIgnoreOverlayScrollbarSize,
                                    kNonInclusiveIntersect);
+}
+
+absl::optional<gfx::RectF> GeometryMapper::VisibilityLimit(
+    const PropertyTreeState& state) {
+  if (&state.Clip().LocalTransformSpace() == &state.Transform()) {
+    return state.Clip().PaintClipRect().Rect();
+  }
+  if (const auto* scroll = state.Transform().ScrollNode()) {
+    return gfx::RectF(scroll->ContentsRect());
+  }
+  return absl::nullopt;
 }
 
 void GeometryMapper::ClearCache() {

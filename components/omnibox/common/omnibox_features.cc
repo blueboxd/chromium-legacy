@@ -4,6 +4,8 @@
 
 #include "components/omnibox/common/omnibox_features.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
 
@@ -394,9 +396,10 @@ BASE_FEATURE(kOmniboxFuzzyUrlSuggestions,
              enabled_by_default_desktop_only);
 
 // Feature used to enable the default browser pedal.
+// TODO(orinj): Enabled by default 2023-03-17; clean up after M113 settles.
 BASE_FEATURE(kOmniboxDefaultBrowserPedal,
              "OmniboxDefaultBrowserPedal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to synchronize the toolbar's and status bar's color.
 BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
@@ -430,6 +433,17 @@ BASE_FEATURE(kWebUIOmniboxPopup,
              "WebUIOmniboxPopup",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, Omnibox "expanded state" height is increased from 42 px to 44 px.
+BASE_FEATURE(kExpandedStateHeight,
+             "OmniboxExpandedStateHeight",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, Omnibox "expanded state" corner radius is increased from 8px to
+// 16px.
+BASE_FEATURE(kExpandedStateShape,
+             "OmniboxExpandedStateShape",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, use Assistant for omnibox voice query recognition instead of
 // Android's built-in voice recognition service. Only works on Android.
 BASE_FEATURE(kOmniboxAssistantVoiceSearch,
@@ -442,6 +456,74 @@ BASE_FEATURE(kOmniboxSteadyStateBackgroundColor,
              "OmniboxSteadyStateBackgroundColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Specifies the GM3 omnibox background color in Dark Mode.
+//
+// In order to control the value of this param via Finch, the
+// kOmniboxSteadyStateBackgroundColor feature flag must be enabled.
+//
+// Enabling only the kChromeRefresh2023 flag, while leaving the
+// kOmniboxSteadyStateBackgroundColor flag disabled, will result in the param
+// being locked to its default value and ignoring any overrides provided via
+// Finch.
+//
+// If neither kChromeRefresh2023 nor kOmniboxSteadyStateBackgroundColor are
+// enabled, then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxDarkBackgroundColor(
+    &omnibox::kOmniboxSteadyStateBackgroundColor,
+    "OmniboxDarkBackgroundColor",
+    "0x2A2A2A");
+
+// Specifies the GM3 omnibox background color in Dark Mode (on-hover).
+//
+// In order to control the value of this param via Finch, the
+// kOmniboxSteadyStateBackgroundColor feature flag must be enabled.
+//
+// Enabling only the kChromeRefresh2023 flag, while leaving the
+// kOmniboxSteadyStateBackgroundColor flag disabled, will result in the param
+// being locked to its default value and ignoring any overrides provided via
+// Finch.
+//
+// If neither kChromeRefresh2023 nor kOmniboxSteadyStateBackgroundColor are
+// enabled, then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxDarkBackgroundColorHovered(
+    &omnibox::kOmniboxSteadyStateBackgroundColor,
+    "OmniboxDarkBackgroundColorHovered",
+    "0x4C4C4B");
+
+// Specifies the GM3 omnibox background color in Light Mode.
+//
+// In order to control the value of this param via Finch, the
+// kOmniboxSteadyStateBackgroundColor feature flag must be enabled.
+//
+// Enabling only the kChromeRefresh2023 flag, while leaving the
+// kOmniboxSteadyStateBackgroundColor flag disabled, will result in the param
+// being locked to its default value and ignoring any overrides provided via
+// Finch.
+//
+// If neither kChromeRefresh2023 nor kOmniboxSteadyStateBackgroundColor are
+// enabled, then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxLightBackgroundColor(
+    &omnibox::kOmniboxSteadyStateBackgroundColor,
+    "OmniboxLightBackgroundColor",
+    "0xEBEFF7");
+
+// Specifies the GM3 omnibox background color in Light Mode (on-hover).
+//
+// In order to control the value of this param via Finch, the
+// kOmniboxSteadyStateBackgroundColor feature flag must be enabled.
+//
+// Enabling only the kChromeRefresh2023 flag, while leaving the
+// kOmniboxSteadyStateBackgroundColor flag disabled, will result in the param
+// being locked to its default value and ignoring any overrides provided via
+// Finch.
+//
+// If neither kChromeRefresh2023 nor kOmniboxSteadyStateBackgroundColor are
+// enabled, then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxLightBackgroundColorHovered(
+    &omnibox::kOmniboxSteadyStateBackgroundColor,
+    "OmniboxLightBackgroundColorHovered",
+    "0xE3E7F0");
+
 // If enabled, Omnibox "steady state" height is increased from 28 dp to 34 dp to
 // match GM3 guidelines.
 BASE_FEATURE(kOmniboxSteadyStateHeight,
@@ -453,6 +535,76 @@ BASE_FEATURE(kOmniboxSteadyStateHeight,
 BASE_FEATURE(kOmniboxSteadyStateTextStyle,
              "OmniboxSteadyStateTextStyle",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, Omnibox "steady state" text color is updated to match GM3
+// guidelines.
+BASE_FEATURE(kOmniboxSteadyStateTextColor,
+             "OmniboxSteadyStateTextColor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Specifies the GM3 omnibox text color in Dark Mode.
+//
+// In order to control the value of this param via Finch, the
+// kOmniboxSteadyStateTextColor feature flag must be enabled.
+//
+// Enabling only the kChromeRefresh2023 flag, while leaving the
+// kOmniboxSteadyStateTextColor flag disabled, will result in the param being
+// locked to its default value and ignoring any overrides provided via Finch.
+//
+// If neither kChromeRefresh2023 nor kOmniboxSteadyStateTextColor are enabled,
+// then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxTextColorDarkMode(
+    &omnibox::kOmniboxSteadyStateTextColor,
+    "OmniboxTextColorDarkMode",
+    "0xE3E3E3");
+
+// Specifies the GM3 omnibox text color in Dark Mode (dimmed).
+//
+// In order to control the value of this param via Finch, the
+// kOmniboxSteadyStateTextColor feature flag must be enabled.
+//
+// Enabling only the kChromeRefresh2023 flag, while leaving the
+// kOmniboxSteadyStateTextColor flag disabled, will result in the param being
+// locked to its default value and ignoring any overrides provided via Finch.
+//
+// If neither kChromeRefresh2023 nor kOmniboxSteadyStateTextColor are enabled,
+// then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxTextColorDimmedDarkMode(
+    &omnibox::kOmniboxSteadyStateTextColor,
+    "OmniboxTextColorDimmedDarkMode",
+    "0xC7C7C7");
+
+// Specifies the GM3 omnibox text color in Light Mode.
+//
+// In order to control the value of this param via Finch, the
+// kOmniboxSteadyStateTextColor feature flag must be enabled.
+//
+// Enabling only the kChromeRefresh2023 flag, while leaving the
+// kOmniboxSteadyStateTextColor flag disabled, will result in the param being
+// locked to its default value and ignoring any overrides provided via Finch.
+//
+// If neither kChromeRefresh2023 nor kOmniboxSteadyStateTextColor are enabled,
+// then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxTextColorLightMode(
+    &omnibox::kOmniboxSteadyStateTextColor,
+    "OmniboxTextColorLightMode",
+    "0x1F1F1F");
+
+// Specifies the GM3 omnibox text color in Light Mode (dimmed).
+//
+// In order to control the value of this param via Finch, the
+// kOmniboxSteadyStateTextColor feature flag must be enabled.
+//
+// Enabling only the kChromeRefresh2023 flag, while leaving the
+// kOmniboxSteadyStateTextColor flag disabled, will result in the param being
+// locked to its default value and ignoring any overrides provided via Finch.
+//
+// If neither kChromeRefresh2023 nor kOmniboxSteadyStateTextColor are enabled,
+// then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxTextColorDimmedLightMode(
+    &omnibox::kOmniboxSteadyStateTextColor,
+    "OmniboxTextColorDimmedLightMode",
+    "0x474747");
 
 // If enabled, switching tabs will not restore the omnibox state.
 // TODO(manukh): Should also blur the omnibox on tab switch.

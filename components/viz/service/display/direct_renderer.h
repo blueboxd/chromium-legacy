@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
@@ -128,7 +129,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     raw_ptr<const AggregatedRenderPassList> render_passes_in_draw_order =
         nullptr;
     raw_ptr<const AggregatedRenderPass> root_render_pass = nullptr;
-    const AggregatedRenderPass* current_render_pass = nullptr;
+    // This field is not a raw_ptr<> because of a reference to raw_ptr in
+    // not-rewritten platform specific code and #addr-of.
+    RAW_PTR_EXCLUSION const AggregatedRenderPass* current_render_pass = nullptr;
 
     gfx::Rect root_damage_rect;
     std::vector<gfx::Rect> root_content_bounds;
@@ -204,6 +207,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     bool generate_mipmap = false;
     ResourceFormat format;
     gfx::ColorSpace color_space;
+    // Render pass wants scanout
+    bool is_scanout = false;
+    // Render pass wants to synchronize updates with other overlays, on Windows
+    // this means a DComp surface.
+    bool scanout_dcomp_surface = false;
   };
 
   static gfx::RectF QuadVertexRect();
@@ -228,9 +236,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetScissorTestRectInDrawSpace(const gfx::Rect& draw_space_rect);
 
   gfx::Size CalculateTextureSizeForRenderPass(
-      const AggregatedRenderPass* render_pass);
+      const AggregatedRenderPass* render_pass) const;
   gfx::Size CalculateSizeForOutputSurface(
       const gfx::Size& device_viewport_size);
+  RenderPassRequirements CalculateRenderPassRequirements(
+      const AggregatedRenderPass* render_pass) const;
 
   void FlushPolygons(
       base::circular_deque<std::unique_ptr<DrawPolygon>>* poly_list,

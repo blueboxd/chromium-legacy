@@ -25,12 +25,10 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_inline.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_list_marker.h"
-#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_base.h"
-#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_run.h"
-#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_text.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
@@ -851,25 +849,6 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
           has_annotations_before = true;
         else
           has_annotations_after = true;
-
-        LineLayoutRubyRun ruby_run =
-            LineLayoutRubyRun(curr->GetLineLayoutItem());
-        if (LineLayoutRubyBase ruby_base = ruby_run.RubyBase()) {
-          LayoutUnit bottom_ruby_base_leading =
-              (curr->LogicalHeight() - ruby_base.LogicalBottom()) +
-              ruby_base.LogicalHeight() -
-              (ruby_base.LastRootBox() ? ruby_base.LastRootBox()->LineBottom()
-                                       : LayoutUnit());
-          LayoutUnit top_ruby_base_leading =
-              ruby_base.LogicalTop() +
-              (ruby_base.FirstRootBox() ? ruby_base.FirstRootBox()->LineTop()
-                                        : LayoutUnit());
-          new_logical_top +=
-              !GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode()
-                  ? top_ruby_base_leading
-                  : bottom_ruby_base_leading;
-          box_height -= (top_ruby_base_leading + bottom_ruby_base_leading);
-        }
       }
       if (curr->IsInlineTextBox()) {
         TextEmphasisPosition emphasis_mark_position;
@@ -1597,32 +1576,7 @@ LayoutUnit InlineFlowBox::ComputeOverAnnotationAdjustment(
         curr->GetLineLayoutItem().IsRubyRun() &&
         curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
             RubyPosition::kBefore) {
-      LineLayoutRubyRun ruby_run = LineLayoutRubyRun(curr->GetLineLayoutItem());
-      LineLayoutRubyText ruby_text = ruby_run.RubyText();
-      if (!ruby_text)
-        continue;
-
-      if (!ruby_run.StyleRef().IsFlippedLinesWritingMode()) {
-        LayoutUnit top_of_first_ruby_text_line =
-            ruby_text.LogicalTop() + (ruby_text.FirstRootBox()
-                                          ? ruby_text.FirstRootBox()->LineTop()
-                                          : LayoutUnit());
-        if (top_of_first_ruby_text_line >= 0)
-          continue;
-        top_of_first_ruby_text_line += curr->LogicalTop();
-        result =
-            std::max(result, allowed_position - top_of_first_ruby_text_line);
-      } else {
-        LayoutUnit bottom_of_last_ruby_text_line =
-            ruby_text.LogicalTop() +
-            (ruby_text.LastRootBox() ? ruby_text.LastRootBox()->LineBottom()
-                                     : ruby_text.LogicalHeight());
-        if (bottom_of_last_ruby_text_line <= curr->LogicalHeight())
-          continue;
-        bottom_of_last_ruby_text_line += curr->LogicalTop();
-        result =
-            std::max(result, bottom_of_last_ruby_text_line - allowed_position);
-      }
+      continue;
     }
 
     if (curr->IsInlineTextBox()) {
@@ -1669,32 +1623,7 @@ LayoutUnit InlineFlowBox::ComputeUnderAnnotationAdjustment(
         curr->GetLineLayoutItem().IsRubyRun() &&
         curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
             RubyPosition::kAfter) {
-      LineLayoutRubyRun ruby_run = LineLayoutRubyRun(curr->GetLineLayoutItem());
-      LineLayoutRubyText ruby_text = ruby_run.RubyText();
-      if (!ruby_text)
-        continue;
-
-      if (ruby_run.StyleRef().IsFlippedLinesWritingMode()) {
-        LayoutUnit top_of_first_ruby_text_line =
-            ruby_text.LogicalTop() + (ruby_text.FirstRootBox()
-                                          ? ruby_text.FirstRootBox()->LineTop()
-                                          : LayoutUnit());
-        if (top_of_first_ruby_text_line >= 0)
-          continue;
-        top_of_first_ruby_text_line += curr->LogicalTop();
-        result =
-            std::max(result, allowed_position - top_of_first_ruby_text_line);
-      } else {
-        LayoutUnit bottom_of_last_ruby_text_line =
-            ruby_text.LogicalTop() +
-            (ruby_text.LastRootBox() ? ruby_text.LastRootBox()->LineBottom()
-                                     : ruby_text.LogicalHeight());
-        if (bottom_of_last_ruby_text_line <= curr->LogicalHeight())
-          continue;
-        bottom_of_last_ruby_text_line += curr->LogicalTop();
-        result =
-            std::max(result, bottom_of_last_ruby_text_line - allowed_position);
-      }
+      continue;
     }
 
     if (curr->IsInlineTextBox()) {

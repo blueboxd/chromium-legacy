@@ -19,6 +19,8 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHAdaptiveButtonInTopToolbarCustomizationNewTabFeature,
     &kIPHAdaptiveButtonInTopToolbarCustomizationShareFeature,
     &kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature,
+    &kIPHAdaptiveButtonInTopToolbarCustomizationAddToBookmarksFeature,
+    &kIPHAdaptiveButtonInTopToolbarCustomizationTranslateFeature,
     &kIPHAddToHomescreenMessageFeature,
     &kIPHAutoDarkOptOutFeature,
     &kIPHAutoDarkUserEducationMessageFeature,
@@ -135,6 +137,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHBatterySaverModeFeature,
     &kIPHDesktopTabGroupsNewGroupFeature,
     &kIPHDesktopCustomizeChromeFeature,
+    &kIPHDownloadToolbarButtonFeature,
     &kIPHExtensionsMenuFeature,
     &kIPHFocusHelpBubbleScreenReaderPromoFeature,
     &kIPHGMCCastStartStopFeature,
@@ -145,6 +148,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHPasswordsAccountStorageFeature,
     &kIPHPasswordsManagementBubbleAfterSaveFeature,
     &kIPHPasswordsManagementBubbleDuringSigninFeature,
+    &kIPHPasswordsWebAppProfileSwitchFeature,
     &kIPHPerformanceNewBadgeFeature,
     &kIPHPowerBookmarksSidePanelFeature,
     &kIPHPriceTrackingPageActionIconLabelFeature,
@@ -175,6 +179,7 @@ const base::Feature* const kAllFeatures[] = {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     &kIPHGoogleOneOfferNotificationFeature,
+    &kIPHLauncherSearchHelpUiFeature,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 }  // namespace

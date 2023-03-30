@@ -18,7 +18,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
-#include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
+#include "chrome/browser/ash/login/app_mode/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -87,7 +87,7 @@ class MockKioskProfileLoadFailedObserver
 class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
  public:
   using AppState = KioskLaunchController::AppState;
-  using NetworkUIState = KioskLaunchController::NetworkUIState;
+  using NetworkUIState = NetworkUiController::NetworkUIState;
 
   KioskLaunchControllerTest()
       : extensions::ExtensionServiceTestBase(
@@ -136,11 +136,11 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
 
   KioskLaunchController& controller() { return *controller_; }
 
-  KioskAppLauncher::NetworkDelegate& network_delegate() { return *controller_; }
+  KioskAppLauncher::NetworkDelegate& network_delegate() {
+    return *controller_->GetNetworkUiControllerForTesting();
+  }
 
   KioskProfileLoader::Delegate& profile_controls() { return *controller_; }
-
-  AppLaunchSplashScreenView::Delegate& view_controls() { return *controller_; }
 
   FakeKioskAppLauncher& launcher() { return *app_launcher_; }
 
@@ -150,9 +150,9 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     return testing::AllOf(
         testing::Field("app_state", &KioskLaunchController::app_state_,
                        Eq(app_state)),
-        testing::Field("network_ui_state",
-                       &KioskLaunchController::network_ui_state_,
-                       Eq(network_state)));
+        testing::Property("network_ui_state",
+                          &KioskLaunchController::GetNetworkUiStateForTesting,
+                          Eq(network_state)));
   }
 
   auto HasViewState(AppLaunchSplashScreenView::AppLaunchState launch_state) {

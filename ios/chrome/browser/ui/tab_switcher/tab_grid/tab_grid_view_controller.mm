@@ -15,6 +15,7 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -25,7 +26,6 @@
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/gestures/view_controller_trait_collection_observer.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
@@ -724,6 +724,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [_reauthAgent addObserver:self];
 }
 
+- (void)setBringAndroidTabsPromptViewController:
+    (UIViewController*)viewController {
+  _bringAndroidTabsPromptViewController = viewController;
+  // TODO(crbug.com/1418117): Move around other UI components in the regular tab
+  // grid accordingly, and add/remove `viewController` to the view hierarchy.
+}
+
 #pragma mark - TabGridPaging
 
 - (void)setActivePage:(TabGridPage)activePage {
@@ -801,7 +808,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     completion(completeds[0], finisheds[0]);
   };
 
-  // Each LayoutSwitcher method calls regular and icognito grid controller's
+  // Each LayoutSwitcher method calls regular and incognito grid controller's
   // corresponding method. Thus, attaching the completion to only one of the
   // grid view controllers should suffice.
   [regularViewController willTransitionToLayout:nextState
@@ -1103,8 +1110,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     GridTransitionLayout* pinnedTabsTransitionLayout =
         [self.pinnedTabsViewController transitionLayout];
 
-    return [self combineTransitionLayout:pinnedTabsTransitionLayout
-                    withTransitionLayout:regularTabsTransitionLayout];
+    return [self combineTransitionLayout:regularTabsTransitionLayout
+                    withTransitionLayout:pinnedTabsTransitionLayout];
   }
 
   return regularTabsTransitionLayout;
@@ -1283,10 +1290,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                     nil);
   }
   if (IsPinnedTabsEnabled()) {
-    BOOL isTabGridPageRegularTabs =
-        currentPage == TabGridPage::TabGridPageRegularTabs;
-    [self.pinnedTabsViewController
-        pinnedTabsAvailable:isTabGridPageRegularTabs];
+    const BOOL pinnedTabsAvailable =
+        currentPage == TabGridPage::TabGridPageRegularTabs &&
+        self.tabGridMode == TabGridModeNormal;
+    [self.pinnedTabsViewController pinnedTabsAvailable:pinnedTabsAvailable];
   }
   [self updateToolbarsAppearance];
   // Make sure the current page becomes the first responder, so that it can
@@ -1594,15 +1601,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 // Adds the top toolbar and sets constraints.
 - (void)setupTopToolbar {
-  UIVisualEffectView* topToolbarBlurView;
-  if (!UseSymbols() && base::ios::HasDynamicIsland()) {
-    UIBlurEffect* blurEffect =
-        [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-    topToolbarBlurView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    topToolbarBlurView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:topToolbarBlurView];
-  }
-
   // In iOS 13+, constraints break if the UIToolbar is initialized with a null
   // or zero rect frame. An arbitrary non-zero frame fixes this issue.
   TabGridTopToolbar* topToolbar =
@@ -1641,19 +1639,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [topToolbar.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [topToolbar.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor]
   ]];
-
-  if (!UseSymbols() && base::ios::HasDynamicIsland()) {
-    [NSLayoutConstraint activateConstraints:@[
-      [topToolbarBlurView.topAnchor
-          constraintEqualToAnchor:self.view.topAnchor],
-      [topToolbarBlurView.bottomAnchor
-          constraintEqualToAnchor:topToolbar.bottomAnchor],
-      [topToolbarBlurView.leadingAnchor
-          constraintEqualToAnchor:topToolbar.leadingAnchor],
-      [topToolbarBlurView.trailingAnchor
-          constraintEqualToAnchor:topToolbar.trailingAnchor],
-    ]];
-  }
 }
 
 // Adds the bottom toolbar and sets constraints.
@@ -1883,9 +1868,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.currentPage];
 
-  BOOL enabled = (gridViewController == nil)
-                     ? NO
-                     : [self tabsPresentForPage:self.currentPage];
+  BOOL enabled = gridViewController && ![gridViewController isGridEmpty];
   BOOL incognitoTabsNeedsAuth =
       (self.currentPage == TabGridPageIncognitoTabs &&
        self.incognitoTabsViewController.contentNeedsAuthentication);
@@ -2458,6 +2441,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.regularTabsViewController.dropAnimationInProgress = NO;
 }
 
+- (void)pinnedViewControllerDragSessionDidEnd:
+    (PinnedTabsViewController*)pinnedTabsViewController {
+  [self.topToolbar setSearchButtonEnabled:YES];
+}
+
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -2467,10 +2455,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     return;
   }
 
-  // Update the model with the tab selection, but don't have the grid view
-  // controller display the new selection, since there will be a transition
-  // away from it immediately afterwards.
-  gridViewController.showsSelectionUpdates = NO;
   // Check if the tab being selected is already selected.
   BOOL alreadySelected = NO;
   id<GridCommands> tabsDelegate;
@@ -2520,7 +2504,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage
                                        focusOmnibox:NO
                                        closeTabGrid:closeTabGrid];
-  gridViewController.showsSelectionUpdates = YES;
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -2756,24 +2739,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)handleCloseAllButtonForRegularTabsWithAnchor:(UIBarButtonItem*)anchor {
-  const BOOL hasPinnedTabs =
-      (IsPinnedTabsEnabled() && !self.pinnedTabsViewController.collectionEmpty);
-  const BOOL hasOpenTabs =
-      !self.regularTabsViewController.gridEmpty || hasPinnedTabs;
-  DCHECK_EQ(self.undoCloseAllAvailable, !hasOpenTabs);
+  DCHECK_EQ(self.undoCloseAllAvailable,
+            self.regularTabsViewController.gridEmpty);
 
   if (self.undoCloseAllAvailable) {
     [self undoCloseAllItemsForRegularTabs];
-  } else if (hasPinnedTabs) {
-    [self confirmCloseAllItemsForRegularTabs:anchor];
   } else {
     [self saveAndCloseAllItemsForRegularTabs];
   }
-}
-
-- (void)confirmCloseAllItemsForRegularTabs:(UIBarButtonItem*)anchor {
-  [self.regularTabsDelegate
-      showCloseAllItemsConfirmationActionSheetWithAnchor:anchor];
 }
 
 - (void)undoCloseAllItemsForRegularTabs {
@@ -2980,16 +2953,28 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (NSArray<UIKeyCommand*>*)keyCommands {
-  // Other key commands are already declared in the menu.
-  return @[
-    UIKeyCommand.cr_openNewRegularTab,
-    UIKeyCommand.cr_undo,
-    UIKeyCommand.cr_close,
-    // TODO(crbug.com/1385469): Move it to the menu builder once we have the
-    // strings.
-    UIKeyCommand.cr_select2,
-    UIKeyCommand.cr_select3,
-  ];
+  // On iOS 15+, key commands visible in the app's menu are created in
+  // MenuBuilder.
+  if (@available(iOS 15, *)) {
+    // Return the key commands that are not already present in the menu.
+    return @[
+      UIKeyCommand.cr_openNewRegularTab,
+      UIKeyCommand.cr_undo,
+      UIKeyCommand.cr_close,
+      // TODO(crbug.com/1385469): Move it to the menu builder once we have the
+      // strings.
+      UIKeyCommand.cr_select2,
+      UIKeyCommand.cr_select3,
+    ];
+  } else {
+    // Return all the commands supported by TabGridViewController.
+    return @[
+      UIKeyCommand.cr_openNewTab,
+      UIKeyCommand.cr_openNewIncognitoTab,
+      UIKeyCommand.cr_openNewRegularTab,
+      UIKeyCommand.cr_close,
+    ];
+  }
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {

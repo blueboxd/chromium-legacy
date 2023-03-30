@@ -102,7 +102,6 @@ CONTENT_EXPORT extern const char kDisableWebSecurity[];
 CONTENT_EXPORT extern const char kDisableZeroCopyDxgiVideo[];
 CONTENT_EXPORT extern const char kDomAutomationController[];
 extern const char kDisable2dCanvasClipAntialiasing[];
-CONTENT_EXPORT extern const char kDurableClientHintsCache[];
 CONTENT_EXPORT extern const char kEnableAggressiveDOMStorageFlushing[];
 CONTENT_EXPORT extern const char kEnableAutomation[];
 CONTENT_EXPORT extern const char kEnableBlinkFeatures[];
@@ -270,6 +269,7 @@ CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 CONTENT_EXPORT extern const char kEnableSpeechDispatcher[];
+CONTENT_EXPORT extern const char kLLVMProfileFile[];
 #endif
 
 #if BUILDFLAG(IS_WIN)

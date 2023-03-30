@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.junit.Assert.assertEquals;
+
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
 
 import android.content.ComponentName;
@@ -11,12 +13,12 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Process;
-import android.support.test.InstrumentationRegistry;
 
 import androidx.browser.customtabs.CustomTabsCallback;
 import androidx.browser.customtabs.CustomTabsClient;
 import androidx.browser.customtabs.CustomTabsServiceConnection;
 import androidx.browser.customtabs.CustomTabsSession;
+import androidx.test.InstrumentationRegistry;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -24,13 +26,15 @@ import org.junit.Assert;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuItemProperties;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -107,7 +111,7 @@ public class CustomTabsTestUtils {
     }
 
     public static void openAppMenuAndAssertMenuShown(CustomTabActivity activity) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+        PostTask.runOrPostTask(TaskTraits.UI_DEFAULT,
                 () -> { activity.onMenuOrKeyboardAction(R.id.show_menu, false); });
 
         CriteriaHelper.pollUiThread(activity.getRootUiCoordinatorForTesting()
@@ -143,6 +147,27 @@ public class CustomTabsTestUtils {
                     Matchers.notNullValue());
         }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         ChromeTabUtils.waitForTabPageLoaded(connection.getSpeculationParamsForTesting().tab, url);
+    }
+
+    /**
+     * Asserts that the number of items in {@code list} matches the {@code expectedSize}.
+     * @param list The list of items in the menu.
+     * @param expectedSize The number of expected menu items.
+     */
+    public static void assertMenuSize(ModelList list, int expectedSize) {
+        assertEquals("Populated menu items were:" + getMenuTitles(list), expectedSize, list.size());
+    }
+
+    /**
+     * @param list The list of items in the menu.
+     * @return A string containing the titles of all items in the {@code list}.
+     */
+    public static String getMenuTitles(ModelList list) {
+        StringBuilder items = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            items.append("\n").append(list.get(i).model.get(AppMenuItemProperties.TITLE));
+        }
+        return items.toString();
     }
 
     @NativeMethods

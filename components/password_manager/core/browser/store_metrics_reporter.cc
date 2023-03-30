@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,11 +18,13 @@
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_reuse_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync/base/features.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -48,10 +51,23 @@ constexpr char kOverallSuffix[] = ".Overall";
 constexpr char kWithCustomPassphraseSuffix[] = ".WithCustomPassphrase";
 constexpr char kWithoutCustomPassphraseSuffix[] = ".WithoutCustomPassphrase";
 
-base::StringPiece GetCustomPassphraseSuffix(
-    bool custom_passphrase_sync_enabled) {
-  return custom_passphrase_sync_enabled ? kWithCustomPassphraseSuffix
-                                        : kWithoutCustomPassphraseSuffix;
+bool IsCustomPassphraseEnabled(password_manager::SyncState sync_state) {
+  switch (sync_state) {
+    case password_manager::SyncState::kSyncingWithCustomPassphrase:
+    case password_manager::SyncState::
+        kAccountPasswordsActiveWithCustomPassphrase:
+      return true;
+    case password_manager::SyncState::kNotSyncing:
+    case password_manager::SyncState::kSyncingNormalEncryption:
+    case password_manager::SyncState::kAccountPasswordsActiveNormalEncryption:
+      return false;
+  }
+  NOTREACHED_NORETURN();
+}
+
+base::StringPiece GetCustomPassphraseSuffix(bool custom_passphrase_enabled) {
+  return custom_passphrase_enabled ? kWithCustomPassphraseSuffix
+                                   : kWithoutCustomPassphraseSuffix;
 }
 
 // Returns a suffix (infix, really) to be used in histogram names to
@@ -90,7 +106,7 @@ void LogTimesUsedStat(const std::string& name, int sample) {
 
 void ReportNumberOfAccountsMetrics(
     bool is_account_store,
-    bool custom_passphrase_sync_enabled,
+    bool custom_passphrase_enabled,
     const std::vector<std::unique_ptr<PasswordForm>>& forms) {
   base::flat_map<std::tuple<std::string, PasswordForm::Type, int>, int>
       accounts_per_site_map;
@@ -102,7 +118,7 @@ void ReportNumberOfAccountsMetrics(
 
   base::StringPiece store_suffix = GetMetricsSuffixForStore(is_account_store);
   base::StringPiece custom_passphrase_suffix =
-      GetCustomPassphraseSuffix(custom_passphrase_sync_enabled);
+      GetCustomPassphraseSuffix(custom_passphrase_enabled);
 
   int total_user_created_accounts = 0;
   int total_generated_accounts = 0;
@@ -284,11 +300,11 @@ void ReportPasswordNotesMetrics(
 
 void ReportTimesPasswordUsedMetrics(
     bool is_account_store,
-    bool custom_passphrase_sync_enabled,
+    bool custom_passphrase_enabled,
     const std::vector<std::unique_ptr<PasswordForm>>& forms) {
   base::StringPiece store_suffix = GetMetricsSuffixForStore(is_account_store);
   base::StringPiece custom_passphrase_suffix =
-      GetCustomPassphraseSuffix(custom_passphrase_sync_enabled);
+      GetCustomPassphraseSuffix(custom_passphrase_enabled);
 
   for (const auto& form : forms) {
     auto type = form->type;
@@ -405,17 +421,30 @@ void ReportPasswordIssuesMetrics(
       count_phished);
 }
 
+void ReportPasswordProtectedMetrics(
+    const std::vector<std::unique_ptr<PasswordForm>>& forms) {
+  for (const std::unique_ptr<PasswordForm>& form : forms) {
+    metrics_util::LogIsPasswordProtected(
+        form->password_value.size() >=
+        password_manager::kMinPasswordLengthToCheck);
+  }
+}
+
 void ReportStoreMetrics(bool is_account_store,
-                        bool custom_passphrase_sync_enabled,
+                        bool custom_passphrase_enabled,
                         const std::string& sync_username,
                         BulkCheckDone bulk_check_done,
+                        bool is_safe_browsing_enabled,
                         std::vector<std::unique_ptr<PasswordForm>> results) {
-  ReportNumberOfAccountsMetrics(is_account_store,
-                                custom_passphrase_sync_enabled, results);
+  ReportNumberOfAccountsMetrics(is_account_store, custom_passphrase_enabled,
+                                results);
   ReportLoginsWithSchemesMetrics(is_account_store, results);
-  ReportTimesPasswordUsedMetrics(is_account_store,
-                                 custom_passphrase_sync_enabled, results);
+  ReportTimesPasswordUsedMetrics(is_account_store, custom_passphrase_enabled,
+                                 results);
   ReportPasswordNotesMetrics(is_account_store, results);
+  if (is_safe_browsing_enabled) {
+    ReportPasswordProtectedMetrics(results);
+  }
 
   // The remaining metrics are not recorded for the account store:
   // - SyncingAccountState2 just doesn't make sense, since syncing users only
@@ -511,10 +540,11 @@ void ReportMultiStoreMetrics(
   }
 }
 
-void ReportAllMetrics(bool custom_passphrase_sync_enabled,
+void ReportAllMetrics(bool custom_passphrase_enabled,
                       const std::string& sync_username,
                       BulkCheckDone bulk_check_done,
                       bool is_opted_in_account_storage,
+                      bool is_safe_browsing_enabled,
                       absl::optional<std::vector<std::unique_ptr<PasswordForm>>>
                           profile_store_results,
                       absl::optional<std::vector<std::unique_ptr<PasswordForm>>>
@@ -550,15 +580,13 @@ void ReportAllMetrics(bool custom_passphrase_sync_enabled,
   }
 
   if (profile_store_results.has_value()) {
-    ReportStoreMetrics(/*is_account_store=*/false,
-                       custom_passphrase_sync_enabled, sync_username,
-                       bulk_check_done,
+    ReportStoreMetrics(/*is_account_store=*/false, custom_passphrase_enabled,
+                       sync_username, bulk_check_done, is_safe_browsing_enabled,
                        std::move(profile_store_results).value());
   }
   if (account_store_results.has_value()) {
-    ReportStoreMetrics(/*is_account_store=*/true,
-                       custom_passphrase_sync_enabled, sync_username,
-                       bulk_check_done,
+    ReportStoreMetrics(/*is_account_store=*/true, custom_passphrase_enabled,
+                       sync_username, bulk_check_done, is_safe_browsing_enabled,
                        std::move(account_store_results).value());
   }
 
@@ -636,15 +664,16 @@ StoreMetricsReporter::StoreMetricsReporter(
       password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
           sync_service, identity_manager);
 
-  custom_passphrase_sync_enabled_ =
-      password_manager_util::GetPasswordSyncState(sync_service) ==
-      password_manager::SyncState::kSyncingWithCustomPassphrase;
+  custom_passphrase_enabled_ = IsCustomPassphraseEnabled(
+      password_manager_util::GetPasswordSyncState(sync_service));
 
   bulk_check_done_ =
       BulkCheckDone(prefs->HasPrefPath(prefs::kLastTimePasswordCheckCompleted));
 
   is_opted_in_account_storage_ =
       features_util::IsOptedInForAccountStorage(prefs, sync_service);
+
+  is_safe_browsing_enabled_ = safe_browsing::IsSafeBrowsingEnabled(*prefs);
 
   base::UmaHistogramEnumeration(
       base::StrCat({kPasswordManager, ".EnableState"}),
@@ -703,9 +732,9 @@ void StoreMetricsReporter::OnGetPasswordStoreResultsFrom(
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(&ReportAllMetrics, custom_passphrase_sync_enabled_,
+      base::BindOnce(&ReportAllMetrics, custom_passphrase_enabled_,
                      sync_username_, bulk_check_done_,
-                     is_opted_in_account_storage_,
+                     is_opted_in_account_storage_, is_safe_browsing_enabled_,
                      std::exchange(profile_store_results_, absl::nullopt),
                      std::exchange(account_store_results_, absl::nullopt)),
       base::BindOnce(&OnMetricsReportingCompleted,

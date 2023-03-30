@@ -10,6 +10,8 @@
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
 #import "base/time/time.h"
@@ -24,15 +26,16 @@
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
+#import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/security_alert_commands.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_coordinator.h"
@@ -119,8 +122,11 @@
           initWithManualFillAccessoryViewControllerDelegate:self];
 
   DCHECK(self.browserState);
-  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+  auto profilePasswordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
       self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
+  auto accountPasswordStore =
+      IOSChromeAccountPasswordStoreFactory::GetForBrowserState(
+          self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
 
   // There is no personal data manager in OTR (incognito). Get the original
   // one for manual fallback.
@@ -135,7 +141,8 @@
                      handler:self
                 webStateList:self.browser->GetWebStateList()
          personalDataManager:personalDataManager
-               passwordStore:passwordStore
+        profilePasswordStore:profilePasswordStore
+        accountPasswordStore:accountPasswordStore
         securityAlertHandler:securityAlertHandler
       reauthenticationModule:self.reauthenticationModule];
   self.formInputAccessoryViewController.formSuggestionClient =
@@ -276,12 +283,17 @@
 
 #pragma mark - PasswordCoordinatorDelegate
 
-- (void)openPasswordSettings {
+- (void)openPasswordManager {
   [self reset];
-  [self.navigator openPasswordSettings];
+  [self.navigator openPasswordManager];
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.ManagePasswordsReferrer",
       password_manager::ManagePasswordsReferrer::kPasswordsAccessorySheet);
+}
+
+- (void)openPasswordSettings {
+  [self reset];
+  [self.navigator openPasswordSettings];
 }
 
 - (void)openAllPasswordsPicker {

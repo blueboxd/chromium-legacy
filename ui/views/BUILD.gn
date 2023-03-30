@@ -685,6 +685,7 @@ component("views") {
       "win/hwnd_message_handler_delegate.h",
       "win/hwnd_util.h",
       "win/pen_event_processor.h",
+      "win/pen_id_handler.h",
       "win/scoped_enable_unadjusted_mouse_events_win.h",
       "win/scoped_fullscreen_visibility.h",
     ]
@@ -696,6 +697,7 @@ component("views") {
       "win/hwnd_message_handler.cc",
       "win/hwnd_util_aurawin.cc",
       "win/pen_event_processor.cc",
+      "win/pen_id_handler.cc",
       "win/scoped_enable_unadjusted_mouse_events_win.cc",
       "win/scoped_fullscreen_visibility.cc",
     ]
@@ -733,6 +735,7 @@ component("views") {
       "corewm/tooltip_aura.h",
       "corewm/tooltip_controller.h",
       "corewm/tooltip_state_manager.h",
+      "corewm/tooltip_view_aura.h",
       "event_monitor_aura.h",
       "native_window_tracker_aura.h",
       "touchui/touch_selection_controller_impl.h",
@@ -762,6 +765,7 @@ component("views") {
       "corewm/tooltip_aura.cc",
       "corewm/tooltip_controller.cc",
       "corewm/tooltip_state_manager.cc",
+      "corewm/tooltip_view_aura.cc",
       "drag_utils_aura.cc",
       "event_monitor_aura.cc",
       "metrics_aura.cc",
@@ -1086,6 +1090,10 @@ source_set("test_support") {
     sources += [
       "test/desktop_window_tree_host_win_test_api.cc",
       "test/desktop_window_tree_host_win_test_api.h",
+      "win/test_support/fake_ipen_device.cc",
+      "win/test_support/fake_ipen_device.h",
+      "win/test_support/fake_ipen_device_statics.cc",
+      "win/test_support/fake_ipen_device_statics.h",
     ]
   }
   if (is_mac) {
@@ -1170,6 +1178,7 @@ test("views_unittests") {
     "bubble/bubble_dialog_model_host_unittest.cc",
     "bubble/bubble_frame_view_unittest.cc",
     "bubble/info_bubble_unittest.cc",
+    "bubble/tooltip_icon_unittest.cc",
     "controls/base_control_test_widget.cc",
     "controls/base_control_test_widget.h",
     "controls/button/button_unittest.cc",
@@ -1293,6 +1302,7 @@ test("views_unittests") {
     "//ui/base/emoji",
     "//ui/base/ime/init",
     "//ui/color",
+    "//ui/color:mixers",
     "//ui/compositor:test_support",
     "//ui/display:test_support",
     "//ui/events:dom_keycode_converter",
@@ -1337,6 +1347,7 @@ test("views_unittests") {
       "accessibility/test_list_grid_view.h",
       "accessibility/view_ax_platform_node_delegate_win_unittest.cc",
       "win/pen_event_processor_unittest.cc",
+      "win/pen_id_handler_unittest.cc",
     ]
   }
 

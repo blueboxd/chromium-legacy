@@ -351,20 +351,12 @@ bool LayoutBlockFlow::IsInitialLetterBox() const {
          !StyleRef().InitialLetter().IsNormal();
 }
 
+// TODO(1229581): Remove this function.
 bool LayoutBlockFlow::IsSelfCollapsingBlock() const {
   NOT_DESTROYED();
-  if (NeedsLayout()) {
-    // Sometimes we don't lay out objects in DOM order (column spanners being
-    // one such relevant type of object right here). As long as the object in
-    // question establishes a new formatting context, that's nothing to worry
-    // about, though.
-    DCHECK(CreatesNewFormattingContext());
-    return false;
-  }
-  DCHECK(!RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
-  if (!IsLayoutNGObject())
-    DCHECK_EQ(!is_self_collapsing_, !CheckIfIsSelfCollapsingBlock());
-  return is_self_collapsing_;
+  DCHECK(NeedsLayout());
+  DCHECK(CreatesNewFormattingContext());
+  return false;
 }
 
 bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
@@ -4316,8 +4308,9 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   // For LayoutNG, the multi-column display type will be applied to the
   // anonymous content box. Thus, the flow thread should be added to the
   // anonymous content box instead of the fieldset itself.
-  if (IsFieldsetIncludingNG())
+  if (IsFieldset()) {
     return;
+  }
 
   // Form controls are replaced content (also when implemented as a regular
   // block), and are therefore not supposed to support multicol.

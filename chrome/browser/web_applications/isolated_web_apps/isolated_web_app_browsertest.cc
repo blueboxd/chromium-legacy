@@ -5,7 +5,6 @@
 #include "base/barrier_closure.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
@@ -42,7 +40,6 @@
 #include "content/public/browser/service_worker_running_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -182,8 +179,6 @@ class ServiceWorkerVersionStoppedRunningWaiter
 class IsolatedWebAppBrowserTest : public IsolatedWebAppBrowserTestHarness {
  public:
   IsolatedWebAppBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode}, {});
     isolated_web_app_dev_server_ =
         CreateAndStartServer(FILE_PATH_LITERAL("web_apps/simple_isolated_app"));
   }
@@ -208,7 +203,6 @@ class IsolatedWebAppBrowserTest : public IsolatedWebAppBrowserTestHarness {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_dev_server_;
 };
 
@@ -409,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserCookieTest, Cookies) {
   content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
   Browser* app_browser = GetBrowserFromFrame(app_frame);
   app_frame = ui_test_utils::NavigateToURL(app_browser, app_url);
-  CreateIframe(app_frame, "child", non_app_url, "");
+  web_app::CreateIframe(app_frame, "child", non_app_url, "");
 
   const auto& app_cookies = GetCookieHeadersForUrl(app_proxy_url);
   EXPECT_EQ(1u, app_cookies.size());
@@ -423,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserCookieTest, Cookies) {
   content::RenderFrameHost* app_frame2 = OpenApp(url_info.app_id());
   Browser* app_browser2 = GetBrowserFromFrame(app_frame2);
   app_frame2 = ui_test_utils::NavigateToURL(app_browser2, app_url);
-  CreateIframe(app_frame2, "child", non_app_url, "");
+  web_app::CreateIframe(app_frame2, "child", non_app_url, "");
 
   EXPECT_EQ(2u, app_cookies.size());
   EXPECT_TRUE(app_cookies[1].empty());
@@ -480,7 +474,6 @@ class IsolatedWebAppBrowserServiceWorkerTest
   raw_ptr<content::StoragePartition, DanglingUntriaged> storage_partition_;
   absl::optional<web_app::IsolatedWebAppUrlInfo> url_info_;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_dev_server_;
 };
 

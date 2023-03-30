@@ -11,6 +11,7 @@
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer_type.h"
@@ -145,6 +146,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // Scrolls the `contents_` by an offset.
   void ScrollByOffset(const gfx::PointF& offset);
+
+  // Scrolls the `contents_` to an offset.
+  void ScrollToOffset(const gfx::PointF& offset);
 
   bool GetUseColorId() const { return !!background_color_id_; }
 
@@ -294,10 +298,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // Update the scrollbars positions given viewport and content sizes.
   void UpdateScrollBarPositions();
 
-  // Helpers to get and set the current scroll offset (either from the ui::Layer
-  // or from the |contents_| origin offset).
+  // Get the current scroll offset either from the ui::Layer or from the
+  // |contents_| origin offset.
   gfx::PointF CurrentOffset() const;
-  void ScrollToOffset(const gfx::PointF& offset);
 
   // Whether the ScrollView scrolls using ui::Layer APIs.
   bool ScrollsWithLayers() const;
@@ -327,12 +330,16 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // The current contents and its viewport. |contents_| is contained in
   // |contents_viewport_|.
-  View* contents_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION View* contents_ = nullptr;
   raw_ptr<Viewport> contents_viewport_ = nullptr;
 
   // The current header and its viewport. |header_| is contained in
   // |header_viewport_|.
-  View* header_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION View* header_ = nullptr;
   raw_ptr<Viewport> header_viewport_ = nullptr;
 
   // Horizontal scrollbar.

@@ -29,6 +29,7 @@
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/viz_utils.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/bsp_walk_action.h"
@@ -199,17 +200,9 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
         continue;
       }
     }
-    gfx::Size size = pass->output_rect.size();
-    // We should not change the buffer size for the root render pass.
-    // The requirement is used for non-root render pass only.
-    if (!is_root) {
-      size = CalculateTextureSizeForRenderPass(pass.get());
-    }
-    auto color_space = RenderPassColorSpace(pass.get());
-    auto format = GetColorSpaceResourceFormat(color_space);
 
-    render_passes_in_frame[pass->id] = {size, pass->generate_mipmap, format,
-                                        color_space};
+    render_passes_in_frame[pass->id] =
+        CalculateRenderPassRequirements(pass.get());
   }
   UMA_HISTOGRAM_COUNTS_1000(
       "Compositing.Display.FlattenedRenderPassCount",
@@ -260,11 +253,6 @@ void DirectRenderer::DrawFrame(
   current_frame()->root_damage_rect.Intersect(gfx::Rect(device_viewport_size));
   current_frame()->device_viewport_size = device_viewport_size;
   current_frame()->display_color_spaces = display_color_spaces;
-
-  // DecideRenderPassAllocationsForFrame needs
-  // current_frame()->display_color_spaces to decide the color space
-  // of each render pass.
-  DecideRenderPassAllocationsForFrame(*render_passes_in_draw_order);
 
   output_surface_->SetNeedsMeasureNextDrawLatency();
   BeginDrawingFrame();
@@ -378,7 +366,7 @@ void DirectRenderer::DrawFrame(
     // TODO(penghuang): verify this logic with SkiaRenderer.
     if (!output_surface_->capabilities().supports_surfaceless)
       needs_full_frame_redraw = true;
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_WIN)
     // If compositing is delegated, then there will be no output_surface_plane,
     // and we should not trigger a redraw of the root render pass.
     // Pixel tests will not be displayed as overlay planes, so they need redraw.
@@ -391,6 +379,13 @@ void DirectRenderer::DrawFrame(
     needs_full_frame_redraw = true;
 #endif
   }
+
+  // DecideRenderPassAllocationsForFrame needs
+  // current_frame()->display_color_spaces to decide the color space
+  // of each render pass. Overlay processing is also allowed to modify the
+  // render pass backing requirements due to e.g. a underlay promotion. On
+  // Windows, the root render pass' size is based on the |reshape_params_|.
+  DecideRenderPassAllocationsForFrame(*render_passes_in_draw_order);
 
   // Draw all non-root render passes except for the root render pass.
   for (const auto& pass : *render_passes_in_draw_order) {
@@ -771,6 +766,51 @@ bool DirectRenderer::CanSkipRenderPass(
   return false;
 }
 
+DirectRenderer::RenderPassRequirements
+DirectRenderer::CalculateRenderPassRequirements(
+    const AggregatedRenderPass* render_pass) const {
+  bool is_root = render_pass == current_frame()->root_render_pass;
+
+  RenderPassRequirements requirements;
+
+  if (is_root) {
+    requirements.size = surface_size_for_swap_buffers();
+    requirements.generate_mipmap = false;
+    requirements.color_space = reshape_color_space();
+    requirements.format = GetResourceFormat(reshape_buffer_format());
+
+    // All root render pass backings allocated by the renderer needs to
+    // eventually go into some composition tree. Other things that own/allocate
+    // the root pass backing include the output device and buffer queue.
+    requirements.is_scanout = true;
+
+#if BUILDFLAG(IS_WIN)
+    requirements.scanout_dcomp_surface =
+        render_pass->needs_synchronous_dcomp_commit;
+
+    // On Windows, the root render pass can be made transparent due to overlay
+    // processing promoting a quad as an underlay. If the format we picked does
+    // not have alpha bits, we ned to change to one that does.
+    if (render_pass->has_transparent_background &&
+        AlphaBits(requirements.format) == 0) {
+      requirements.format =
+          GetColorSpaceResourceFormat(requirements.color_space);
+    }
+#endif
+  } else {
+    requirements.size = CalculateTextureSizeForRenderPass(render_pass);
+    requirements.generate_mipmap = render_pass->generate_mipmap;
+    requirements.color_space = RenderPassColorSpace(render_pass);
+    requirements.format = GetColorSpaceResourceFormat(requirements.color_space);
+  }
+
+  if (render_pass->has_transparent_background) {
+    DCHECK_GT(AlphaBits(requirements.format), 0);
+  }
+
+  return requirements;
+}
+
 void DirectRenderer::UseRenderPass(const AggregatedRenderPass* render_pass) {
   bool is_root = render_pass == current_frame()->root_render_pass;
   current_frame()->current_render_pass = render_pass;
@@ -789,20 +829,14 @@ void DirectRenderer::UseRenderPass(const AggregatedRenderPass* render_pass) {
     return;
   }
 
-  gfx::Size size = render_pass->output_rect.size();
+  DirectRenderer::RenderPassRequirements requirements =
+      CalculateRenderPassRequirements(render_pass);
   // We should not change the buffer size for the root render pass.
   if (!is_root) {
-    size = CalculateTextureSizeForRenderPass(render_pass);
-    size.Enlarge(enlarge_pass_texture_amount_.width(),
-                 enlarge_pass_texture_amount_.height());
+    requirements.size.Enlarge(enlarge_pass_texture_amount_.width(),
+                              enlarge_pass_texture_amount_.height());
   }
-
-  auto color_space = CurrentRenderPassColorSpace();
-  auto format = GetColorSpaceResourceFormat(color_space);
-
-  AllocateRenderPassResourceIfNeeded(
-      render_pass->id,
-      {size, render_pass->generate_mipmap, format, color_space});
+  AllocateRenderPassResourceIfNeeded(render_pass->id, requirements);
 
   // TODO(crbug.com/582554): This change applies only when Vulkan is enabled and
   // it will be removed once SkiaRenderer has complete support for Vulkan.
@@ -933,7 +967,7 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
 }
 
 gfx::Size DirectRenderer::CalculateTextureSizeForRenderPass(
-    const AggregatedRenderPass* render_pass) {
+    const AggregatedRenderPass* render_pass) const {
   // Round the size of the render pass backings to a multiple of 64 pixels. This
   // reduces memory fragmentation. https://crbug.com/146070. This also allows
   // backings to be more easily reused during a resize operation.

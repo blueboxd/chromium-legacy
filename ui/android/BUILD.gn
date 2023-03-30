@@ -449,6 +449,8 @@ android_library("ui_java_test_support") {
   sources = [
     "javatests/src/org/chromium/ui/test/util/BlankUiTestActivity.java",
     "javatests/src/org/chromium/ui/test/util/BlankUiTestActivityTestCase.java",
+    "javatests/src/org/chromium/ui/test/util/DeviceRestriction.java",
+    "javatests/src/org/chromium/ui/test/util/DeviceRestrictionSkipCheck.java",
     "javatests/src/org/chromium/ui/test/util/DisableAnimationsTestRule.java",
     "javatests/src/org/chromium/ui/test/util/MockitoHelper.java",
     "javatests/src/org/chromium/ui/test/util/NightModeTestUtils.java",
@@ -476,9 +478,10 @@ android_library("ui_java_test_support") {
 
     # For androidx.test.espresso.ViewInteraction
     "//third_party/android_deps:espresso_java",
-    "//third_party/android_support_test_runner:rules_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_test_monitor_java",
+    "//third_party/androidx:androidx_test_rules_java",
+    "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_core_java",
     "//third_party/hamcrest:hamcrest_library_java",
     "//third_party/junit",

@@ -31,7 +31,6 @@
 
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
-#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
@@ -337,9 +336,11 @@ MediaQueryExp::MediaQueryExp(const String& media_feature,
 
 MediaQueryExp MediaQueryExp::Create(const String& media_feature,
                                     CSSParserTokenRange& range,
+                                    const CSSParserTokenOffsets& offsets,
                                     const CSSParserContext& context) {
   String feature = AttemptStaticStringCreation(media_feature);
-  if (auto value = MediaQueryExpValue::Consume(feature, range, context)) {
+  if (auto value =
+          MediaQueryExpValue::Consume(feature, range, offsets, context)) {
     return MediaQueryExp(feature, *value);
   }
   return Invalid();
@@ -348,17 +349,15 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
 absl::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
     const String& media_feature,
     CSSParserTokenRange& range,
+    const CSSParserTokenOffsets& offsets,
     const CSSParserContext& context) {
   CSSParserContext::ParserModeOverridingScope scope(context, kHTMLStandardMode);
 
   if (CSSVariableParser::IsValidVariableName(media_feature)) {
-    // CSSParserTokenRange doesn't store precise location information about
-    // where each token started or ended, so we don't have the actual original
-    // string. However, for media queries, it's not a huge issue if we get
-    // normalized whitespace etc., so we work around it by creating
-    // a fake “original text” by serializing the tokens back.
-    String serialized = range.Serialize();
-    CSSTokenizedValue tokenized_value{range, serialized};
+    base::span span = range.RemainingSpan();
+    StringView original_string =
+        offsets.StringForTokens(span.data(), span.data() + span.size());
+    CSSTokenizedValue tokenized_value{range, original_string};
     CSSParserImpl::RemoveImportantAnnotationIfPresent(tokenized_value);
     if (const CSSValue* value =
             CSSVariableParser::ParseDeclarationIncludingCSSWide(
@@ -386,7 +385,7 @@ absl::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
         range, context, CSSPrimitiveValue::ValueRange::kAll);
   }
   if (!value) {
-    value = css_parsing_utils::ConsumeResolution(range);
+    value = css_parsing_utils::ConsumeResolution(range, context);
   }
 
   if (!value) {
@@ -422,8 +421,12 @@ absl::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
   }
 
   if (FeatureWithValidDensity(media_feature, value)) {
-    // TODO(crbug.com/983613): Support resolution in math functions.
-    DCHECK(value->IsNumericLiteralValue());
+    DCHECK(value->IsResolution());
+
+    if (const auto* math_function = DynamicTo<CSSMathFunctionValue>(value)) {
+      return MediaQueryExpValue(*math_function);
+    }
+
     const auto* numeric_literal = To<CSSNumericLiteralValue>(value);
     return MediaQueryExpValue(numeric_literal->DoubleValue(),
                               numeric_literal->GetType());

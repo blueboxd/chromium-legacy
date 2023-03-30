@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.share.android_share_sheet;
 
 import android.app.Activity;
-import android.os.Parcelable;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -13,18 +16,27 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ChromeCustomShareAction;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
+import org.chromium.chrome.browser.share.ShareContentTypeHelper;
+import org.chromium.chrome.browser.share.ShareContentTypeHelper.ContentType;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
+import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.share.ShareImageFileUtils;
 import org.chromium.components.browser_ui.share.ShareParams;
+import org.chromium.url.GURL;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Share sheet controller used to display Android share sheet.
@@ -97,20 +109,23 @@ public class AndroidShareSheetController implements ChromeOptionShareCallback {
         Profile profile = mProfileSupplier.get();
         boolean isIncognito = mTabModelSelectorSupplier.hasValue()
                 && mTabModelSelectorSupplier.get().isIncognitoSelected();
-        List<Parcelable> customActions = null;
-        if (showCustomActions) {
-            var customActionHandler = new AndroidCustomActionProvider(
-                    params.getWindow().getActivity().get(), params.getWindow(), mTabProvider,
-                    mController, params, mPrintCallback, isIncognito, this,
-                    TrackerFactory.getTrackerForProfile(profile), params.getUrl(), profile);
+        Activity activity = params.getWindow().getActivity().get();
+        ChromeCustomShareAction.Provider provider = null;
 
-            Activity activity = params.getWindow().getActivity().get();
+        if (showCustomActions) {
             boolean isInMultiWindow = ApiCompatibilityUtils.isInMultiWindowMode(activity);
-            customActions = customActionHandler.createCustomActions(
-                    params, chromeShareExtras, isInMultiWindow);
+            var actionProvider =
+                    new AndroidCustomActionProvider(params.getWindow().getActivity().get(),
+                            params.getWindow(), mTabProvider, mController, params, mPrintCallback,
+                            isIncognito, this, TrackerFactory.getTrackerForProfile(profile),
+                            params.getUrl(), profile, chromeShareExtras, isInMultiWindow);
+            if (actionProvider.getCustomActions().size() > 0) {
+                provider = actionProvider;
+            }
         }
 
-        if (customActions == null || customActions.size() == 0) {
+        // TODO(https://crbug.com/1421783): Maybe fallback to Chrome's share sheet properly.
+        if (provider == null || provider.getCustomActions().size() == 0) {
             Log.i(TAG, "No custom actions provided.");
         }
 
@@ -120,13 +135,49 @@ public class AndroidShareSheetController implements ChromeOptionShareCallback {
             String imageUrlToShare = getImageUrlToShare(params, chromeShareExtras);
             params.setUrl(imageUrlToShare);
         }
-        ShareHelper.shareWithSystemShareSheetUi(
-                params, profile, chromeShareExtras.saveLastUsed(), customActions);
+        if (!isLinkSharing(params, chromeShareExtras)) {
+            ShareHelper.shareWithSystemShareSheetUi(
+                    params, profile, chromeShareExtras.saveLastUsed(), provider);
+            return;
+        }
+
+        long iconPrepStartTime = SystemClock.elapsedRealtime();
+        ChromeCustomShareAction.Provider finalProvider = provider;
+        preparePreviewFavicon(activity, profile, params.getUrl(), (uri) -> {
+            RecordHistogram.recordTimesHistogram("Sharing.PreparePreviewFaviconDuration",
+                    SystemClock.elapsedRealtime() - iconPrepStartTime);
+            params.setPreviewImageUri(uri);
+            ShareHelper.shareWithSystemShareSheetUi(
+                    params, profile, chromeShareExtras.saveLastUsed(), finalProvider);
+        });
     }
 
-    @VisibleForTesting
-    public static void resetForTesting() {
-        AndroidCustomActionProvider.unregisterBroadcastReceiver();
+    private static void preparePreviewFavicon(
+            Context context, Profile profile, String pageUrl, Callback<Uri> onUriReady) {
+        int size = context.getResources().getDimensionPixelSize(R.dimen.share_preview_favicon_size);
+        FaviconHelper faviconHelper = new FaviconHelper();
+        faviconHelper.getLocalFaviconImageForURL(
+                profile, new GURL(pageUrl), size, (Bitmap icon, GURL iconUrl) -> {
+                    onFaviconRetrieved(context, icon, size, onUriReady);
+                });
+    }
+
+    private static void onFaviconRetrieved(
+            Context context, Bitmap bitmap, int size, Callback<Uri> onImageUriAvailable) {
+        // If bitmap is not provided, fallback to the globe placeholder icon.
+        if (bitmap == null) {
+            bitmap = FaviconUtils.createGenericFaviconBitmap(context, size);
+        }
+        String fileName = String.valueOf(System.currentTimeMillis());
+        ShareImageFileUtils.generateTemporaryUriFromBitmap(fileName, bitmap, onImageUriAvailable);
+    }
+
+    private static boolean isLinkSharing(ShareParams params, ChromeShareExtras chromeShareExtras) {
+        @ContentType
+        Set<Integer> contents = ShareContentTypeHelper.getContentTypes(params, chromeShareExtras);
+        return contents.contains(ContentType.LINK_PAGE_VISIBLE)
+                || contents.contains(ContentType.LINK_PAGE_NOT_VISIBLE)
+                || contents.contains(ContentType.LINK_AND_TEXT);
     }
 
     private static String getImageUrlToShare(

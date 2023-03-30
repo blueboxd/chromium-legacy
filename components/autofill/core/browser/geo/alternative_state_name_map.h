@@ -9,7 +9,8 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/no_destructor.h"
-#include "base/sequence_checker.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/types/strong_alias.h"
 #include "components/autofill/core/browser/proto/states.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -163,21 +164,22 @@ class AlternativeStateNameMap {
   // allowed to construct the class.
   friend class base::NoDestructor<AlternativeStateNameMap>;
 
+  // TODO(crbug.com/1425951): Remove lock.
+  mutable base::Lock lock_;
+
   // A map that stores the alternative state names. The map is keyed
   // by the country_code and the canonical state name (or
   // normalized_state_value_from_profile in case no canonical state name is
   // known) while the value is the StateEntry object.
   std::map<std::pair<CountryCode, CanonicalStateName>, StateEntry>
-      localized_state_names_map_;
+      localized_state_names_map_ GUARDED_BY(lock_);
 
   // The map is keyed by the country_code and the abbreviation or
   // canonical name or the alternative name of the state.
   std::map<std::pair<CountryCode, StateName>,
            CanonicalStateName,
            CaseInsensitiveLessComparator>
-      localized_state_names_reverse_lookup_map_;
-
-  SEQUENCE_CHECKER(alternative_state_name_map_sequence_checker_);
+      localized_state_names_reverse_lookup_map_ GUARDED_BY(lock_);
 };
 
 }  // namespace autofill

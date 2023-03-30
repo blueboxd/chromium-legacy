@@ -160,6 +160,7 @@
 #include "third_party/blink/renderer/core/testing/hit_test_layer_rect_list.h"
 #include "third_party/blink/renderer/core/testing/internal_runtime_flags.h"
 #include "third_party/blink/renderer/core/testing/internal_settings.h"
+#include "third_party/blink/renderer/core/testing/internals_ukm_recorder.h"
 #include "third_party/blink/renderer/core/testing/mock_hyphenation.h"
 #include "third_party/blink/renderer/core/testing/origin_trials_test.h"
 #include "third_party/blink/renderer/core/testing/record_test.h"
@@ -2095,12 +2096,6 @@ void Internals::cancelCurrentSpellCheckRequest(
 
 String Internals::idleTimeSpellCheckerState(Document* document,
                                             ExceptionState& exception_state) {
-  static const char* const kTexts[] = {
-#define V(state) #state,
-      FOR_EACH_IDLE_SPELL_CHECK_CONTROLLER_STATE(V)
-#undef V
-  };
-
   if (!document || !document->GetFrame()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
@@ -2108,14 +2103,10 @@ String Internals::idleTimeSpellCheckerState(Document* document,
     return String();
   }
 
-  IdleSpellCheckController::State state = document->GetFrame()
-                                              ->GetSpellChecker()
-                                              .GetIdleSpellCheckController()
-                                              .GetState();
-  auto* const* const it = std::begin(kTexts) + static_cast<size_t>(state);
-  DCHECK_GE(it, std::begin(kTexts)) << "Unknown state value";
-  DCHECK_LT(it, std::end(kTexts)) << "Unknown state value";
-  return *it;
+  return document->GetFrame()
+      ->GetSpellChecker()
+      .GetIdleSpellCheckController()
+      .GetStateAsString();
 }
 
 void Internals::runIdleTimeSpellChecker(Document* document,
@@ -2365,6 +2356,7 @@ Vector<AtomicString> Internals::svgTags() {
 }
 
 StaticNodeList* Internals::nodesFromRect(
+    ScriptState* script_state,
     Document* document,
     int x,
     int y,
@@ -2401,6 +2393,13 @@ StaticNodeList* Internals::nodesFromRect(
   HitTestResult result(request, location);
   frame->ContentLayoutObject()->HitTest(location, result);
   HeapVector<Member<Node>> matches(result.ListBasedTestResult());
+
+  // Ensure WindowProxy instances for child frames. crbug.com/1407555.
+  for (auto& node : matches) {
+    if (node->IsDocumentNode() && node.Get() != document) {
+      node->GetDocument().GetFrame()->GetWindowProxy(script_state->World());
+    }
+  }
 
   return StaticNodeList::Adopt(matches);
 }
@@ -2866,6 +2865,10 @@ SequenceTest* Internals::sequenceTest() const {
 
 UnionTypesTest* Internals::unionTypesTest() const {
   return MakeGarbageCollected<UnionTypesTest>();
+}
+
+InternalsUkmRecorder* Internals::initializeUKMRecorder() {
+  return MakeGarbageCollected<InternalsUkmRecorder>(document_);
 }
 
 OriginTrialsTest* Internals::originTrialsTest() const {

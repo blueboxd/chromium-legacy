@@ -11,6 +11,7 @@
 
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
+#include "base/json/values_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -47,6 +49,63 @@ void RecordUpdateClustersLatencyHistogram(const std::string& histogram_name,
   base::UmaHistogramMediumTimes(histogram_name, elapsed_timer.Elapsed());
 }
 
+// Serializes a KeywordMap to a base::Value::Dict using hardcoded keys. Recover
+// a KeywordMap serialized in this way via DictToKeywordsCache.
+base::Value::Dict KeywordsCacheToDict(
+    HistoryClustersService::KeywordMap* keyword_map) {
+  base::Value::Dict keyword_dict;
+  if (!keyword_map) {
+    return keyword_dict;
+  }
+  for (const auto& pair : *keyword_map) {
+    base::Value::Dict cluster_keyword_dict;
+    cluster_keyword_dict.Set("type", pair.second.type);
+    cluster_keyword_dict.Set("score", pair.second.score);
+    base::Value::List entity_collections_list;
+    for (std::string entity : pair.second.entity_collections) {
+      entity_collections_list.Append(entity);
+    }
+    cluster_keyword_dict.Set("entity_collections",
+                             std::move(entity_collections_list));
+    keyword_dict.Set(base::UTF16ToUTF8(pair.first),
+                     std::move(cluster_keyword_dict));
+  }
+  return keyword_dict;
+}
+
+// Deserializes a KeywordMap from a base::Value::Dict serialized using
+// KeywordsCacheToDict().
+HistoryClustersService::KeywordMap DictToKeywordsCache(
+    const base::Value::Dict* dict) {
+  HistoryClustersService::KeywordMap keyword_map;
+  if (!dict) {
+    return keyword_map;
+  }
+
+  for (auto pair : *dict) {
+    const base::Value::Dict& entry_dict = pair.second.GetDict();
+    absl::optional<int> type = entry_dict.FindInt("type");
+    absl::optional<double> score = entry_dict.FindDouble("score");
+    if (!type || !score) {
+      continue;
+    }
+    std::vector<std::string> entity_collections;
+    const base::Value::List* entity_collections_list =
+        entry_dict.FindList("entity_collections");
+    if (entity_collections_list) {
+      for (const auto& val : *entity_collections_list) {
+        entity_collections.push_back(val.GetString());
+      }
+    }
+    keyword_map.insert(std::make_pair(
+        base::UTF8ToUTF16(pair.first),
+        history::ClusterKeywordData(
+            static_cast<history::ClusterKeywordData::ClusterKeywordType>(*type),
+            *score, entity_collections)));
+  }
+
+  return keyword_map;
+}
 }  // namespace
 
 VisitDeletionObserver::VisitDeletionObserver(
@@ -76,7 +135,8 @@ HistoryClustersService::HistoryClustersService(
     TemplateURLService* template_url_service,
     optimization_guide::NewOptimizationGuideDecider* optimization_guide_decider,
     PrefService* prefs)
-    : is_journeys_enabled_(
+    : persist_caches_to_prefs_(GetConfig().persist_caches_to_prefs),
+      is_journeys_enabled_(
           GetConfig().is_journeys_enabled_no_locale_check &&
           IsApplicationLocaleSupportedByJourneys(application_locale)),
       history_service_(history_service),
@@ -84,7 +144,8 @@ HistoryClustersService::HistoryClustersService(
       context_clusterer_observer_(history_service,
                                   template_url_service,
                                   optimization_guide_decider,
-                                  engagement_score_provider) {
+                                  engagement_score_provider),
+      pref_service_(prefs) {
   if (prefs && is_journeys_enabled_) {
     // Log whether the user has Journeys enabled if they are eligible for it.
     base::UmaHistogramBoolean(
@@ -103,6 +164,7 @@ HistoryClustersService::HistoryClustersService(
         optimization_guide_decider, JourneysMidBlocklist());
   }
 
+  LoadCachesFromPrefs();
   RepeatedlyUpdateClusters();
 }
 
@@ -326,33 +388,14 @@ HistoryClustersService::DoesQueryMatchAnyCluster(const std::string& query) {
   return absl::nullopt;
 }
 
-bool HistoryClustersService::DoesURLMatchAnyCluster(
-    const std::string& url_keyword) {
-  if (!IsJourneysEnabled())
-    return false;
-
-  // We don't want any omnibox jank for low-end devices.
-  if (base::SysInfo::IsLowEndDevice())
-    return false;
-
-  StartKeywordCacheRefresh();
-  if (GetConfig().persist_on_query)
-    UpdateClusters();
-
-  return short_url_keywords_cache_.find(url_keyword) !=
-             short_url_keywords_cache_.end() ||
-         all_url_keywords_cache_.find(url_keyword) !=
-             all_url_keywords_cache_.end();
-}
-
 void HistoryClustersService::ClearKeywordCache() {
   all_keywords_cache_timestamp_ = base::Time();
   short_keyword_cache_timestamp_ = base::Time();
   all_keywords_cache_.clear();
-  all_url_keywords_cache_.clear();
-  short_keyword_cache_.clear();
   short_keyword_cache_.clear();
   cache_keyword_query_task_.reset();
+  WriteShortCacheToPrefs();
+  WriteAllCacheToPrefs();
 }
 
 void HistoryClustersService::PrintKeywordBagStateToLogMessage() const {
@@ -360,13 +403,11 @@ void HistoryClustersService::PrintKeywordBagStateToLogMessage() const {
   NotifyDebugMessage("Timestamp: " +
                      GetDebugTime(short_keyword_cache_timestamp_));
   NotifyDebugMessage(GetDebugJSONForKeywordMap(short_keyword_cache_));
-  NotifyDebugMessage(GetDebugJSONForUrlKeywordSet(short_url_keywords_cache_));
 
   NotifyDebugMessage("-- Printing All-Time Keyword Bag --");
   NotifyDebugMessage("Timestamp: " +
                      GetDebugTime(all_keywords_cache_timestamp_));
   NotifyDebugMessage(GetDebugJSONForKeywordMap(all_keywords_cache_));
-  NotifyDebugMessage(GetDebugJSONForUrlKeywordSet(all_url_keywords_cache_));
 
   NotifyDebugMessage("-- Printing Keyword Bags Done --");
 }
@@ -405,9 +446,7 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        /*begin_time=*/base::Time(),
-                       std::make_unique<KeywordMap>(),
-                       std::make_unique<URLKeywordSet>(), &all_keywords_cache_,
-                       &all_url_keywords_cache_));
+                       std::make_unique<KeywordMap>(), &all_keywords_cache_));
   } else if ((base::Time::Now() - all_keywords_cache_timestamp_).InSeconds() >
                  10 &&
              (base::Time::Now() - short_keyword_cache_timestamp_).InSeconds() >
@@ -424,9 +463,7 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        all_keywords_cache_timestamp_,
-                       std::make_unique<KeywordMap>(),
-                       std::make_unique<URLKeywordSet>(), &short_keyword_cache_,
-                       &short_url_keywords_cache_));
+                       std::make_unique<KeywordMap>(), &short_keyword_cache_));
   }
 }
 
@@ -434,9 +471,7 @@ void HistoryClustersService::PopulateClusterKeywordCache(
     base::ElapsedTimer total_latency_timer,
     base::Time begin_time,
     std::unique_ptr<KeywordMap> keyword_accumulator,
-    std::unique_ptr<URLKeywordSet> url_keyword_accumulator,
     KeywordMap* cache,
-    URLKeywordSet* url_cache,
     std::vector<history::Cluster> clusters,
     QueryClustersContinuationParams continuation_params) {
   base::ElapsedThreadTimer populate_keywords_thread_timer;
@@ -480,26 +515,6 @@ void HistoryClustersService::PopulateClusterKeywordCache(
         }
       }
     }
-
-    // Push a simplified form of the URL for each visit into the cache.
-    if (url_keyword_accumulator->size() < max_keyword_phrases) {
-      for (const auto& visit : cluster.visits) {
-        if (visit.engagement_score >
-                GetConfig().noisy_cluster_visits_engagement_threshold &&
-            !GetConfig().omnibox_action_on_noisy_urls) {
-          // Do not add a noisy visit to the URL keyword accumulator if not
-          // enabled via flag. Note that this is at the visit-level rather than
-          // at the cluster-level, which is handled by the NoisyClusterFinalizer
-          // in the ClusteringBackend.
-          continue;
-        }
-        url_keyword_accumulator->insert(
-            (!visit.annotated_visit.content_annotations.search_normalized_url
-                  .is_empty())
-                ? visit.normalized_url.spec()
-                : ComputeURLKeywordForLookup(visit.normalized_url));
-      }
-    }
   }
 
   // Make a continuation request to get the next page of clusters and their
@@ -508,8 +523,7 @@ void HistoryClustersService::PopulateClusterKeywordCache(
   constexpr char kKeywordCacheThreadTimeUmaName[] =
       "History.Clusters.KeywordCache.ThreadTime";
   if (!continuation_params.exhausted_all_visits &&
-      (keyword_accumulator->size() < max_keyword_phrases ||
-       url_keyword_accumulator->size() < max_keyword_phrases)) {
+      keyword_accumulator->size() < max_keyword_phrases) {
     const ClusteringRequestSource clustering_request_source =
         cache == &all_keywords_cache_
             ? ClusteringRequestSource::kAllKeywordCacheRefresh
@@ -522,8 +536,7 @@ void HistoryClustersService::PopulateClusterKeywordCache(
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(total_latency_timer), begin_time,
                        // Pass on the accumulator sets to the next callback.
-                       std::move(keyword_accumulator),
-                       std::move(url_keyword_accumulator), cache, url_cache));
+                       std::move(keyword_accumulator), cache));
     // Log this even if we go back for more clusters.
     base::UmaHistogramTimes(kKeywordCacheThreadTimeUmaName,
                             populate_keywords_thread_timer.Elapsed());
@@ -534,12 +547,9 @@ void HistoryClustersService::PopulateClusterKeywordCache(
   // via the constructor for efficiency (as recommended by the flat_set docs).
   // De-duplication is handled by the flat_set itself.
   *cache = std::move(*keyword_accumulator);
-  *url_cache = std::move(*url_keyword_accumulator);
   if (ShouldNotifyDebugMessage()) {
     NotifyDebugMessage("Cache construction complete; keyword cache:");
     NotifyDebugMessage(GetDebugJSONForKeywordMap(*cache));
-    NotifyDebugMessage("Url cache:");
-    NotifyDebugMessage(GetDebugJSONForUrlKeywordSet(*url_cache));
   }
 
   // Record keyword phrase & keyword counts for the appropriate cache.
@@ -547,16 +557,83 @@ void HistoryClustersService::PopulateClusterKeywordCache(
     base::UmaHistogramCounts100000(
         "History.Clusters.Backend.KeywordCache.AllKeywordsCount",
         static_cast<int>(cache->size()));
+    WriteAllCacheToPrefs();
   } else {
     base::UmaHistogramCounts100000(
         "History.Clusters.Backend.KeywordCache.ShortKeywordsCount",
         static_cast<int>(cache->size()));
+    WriteShortCacheToPrefs();
   }
 
   base::UmaHistogramTimes(kKeywordCacheThreadTimeUmaName,
                           populate_keywords_thread_timer.Elapsed());
   base::UmaHistogramMediumTimes("History.Clusters.KeywordCache.Latency",
                                 total_latency_timer.Elapsed());
+}
+
+void HistoryClustersService::LoadCachesFromPrefs() {
+  if (!pref_service_ || !persist_caches_to_prefs_) {
+    return;
+  }
+
+  base::ElapsedTimer load_caches_timer;
+  const base::Value::Dict& short_cache_dict =
+      pref_service_->GetDict(prefs::kShortCache);
+  const base::Value::Dict* short_keywords_dict =
+      short_cache_dict.FindDict("short_keywords");
+  short_keyword_cache_ = DictToKeywordsCache(short_keywords_dict);
+  short_keyword_cache_timestamp_ =
+      base::ValueToTime(short_cache_dict.Find("short_timestamp"))
+          .value_or(short_keyword_cache_timestamp_);
+
+  const base::Value::Dict& all_cache_dict =
+      pref_service_->GetDict(prefs::kAllCache);
+  const base::Value::Dict* all_keywords_dict =
+      all_cache_dict.FindDict("all_keywords");
+  all_keywords_cache_ = DictToKeywordsCache(all_keywords_dict);
+  all_keywords_cache_timestamp_ =
+      base::ValueToTime(all_cache_dict.Find("all_timestamp"))
+          .value_or(all_keywords_cache_timestamp_);
+
+  base::UmaHistogramCustomTimes(
+      "History.Clusters.KeywordCache.LoadCachesFromPrefs.Latency",
+      load_caches_timer.Elapsed(), base::Microseconds(50), base::Seconds(2),
+      50);
+}
+
+void HistoryClustersService::WriteShortCacheToPrefs() {
+  if (!pref_service_ || !persist_caches_to_prefs_) {
+    return;
+  }
+
+  base::ElapsedTimer write_short_cache_timer;
+  base::Value::Dict short_cache_dict;
+  short_cache_dict.Set("short_keywords",
+                       KeywordsCacheToDict(&short_keyword_cache_));
+  short_cache_dict.Set("short_timestamp",
+                       base::TimeToValue(short_keyword_cache_timestamp_));
+  pref_service_->SetDict(prefs::kShortCache, std::move(short_cache_dict));
+  base::UmaHistogramCustomTimes(
+      "History.Clusters.KeywordCache.WriteCache.Short.Latency",
+      write_short_cache_timer.Elapsed(), base::Microseconds(50),
+      base::Seconds(2), 50);
+}
+
+void HistoryClustersService::WriteAllCacheToPrefs() {
+  if (!pref_service_ || !persist_caches_to_prefs_) {
+    return;
+  }
+
+  base::ElapsedTimer write_all_cache_timer;
+  base::Value::Dict all_cache_dict;
+  all_cache_dict.Set("all_keywords", KeywordsCacheToDict(&all_keywords_cache_));
+  all_cache_dict.Set("all_timestamp",
+                     base::TimeToValue(all_keywords_cache_timestamp_));
+  pref_service_->SetDict(prefs::kAllCache, std::move(all_cache_dict));
+  base::UmaHistogramCustomTimes(
+      "History.Clusters.KeywordCache.WriteCache.All.Latency",
+      write_all_cache_timer.Elapsed(), base::Microseconds(50), base::Seconds(2),
+      50);
 }
 
 }  // namespace history_clusters

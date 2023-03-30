@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/locks/lock.h"
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
@@ -47,7 +48,7 @@ base::Value::Dict CreateLogValue(const WebAppCommand& command,
   base::Value debug_value = command.ToDebugValue();
   bool is_empty_dict = debug_value.is_dict() && debug_value.GetDict().empty();
   if (!debug_value.is_none() && !is_empty_dict) {
-    dict.Set("value", command.ToDebugValue());
+    dict.Set("value", std::move(debug_value));
   }
   if (result) {
     switch (result.value()) {

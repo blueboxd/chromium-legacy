@@ -51,17 +51,7 @@ class MobileFriendlinessCheckerTest : public testing::Test {
 
     load(*helper);
 
-    std::unique_ptr<ukm::UkmRecorder> old_ukm_recorder =
-        std::move(helper->GetWebView()
-                      ->MainFrameImpl()
-                      ->GetFrame()
-                      ->GetDocument()
-                      ->ukm_recorder_);
-    helper->GetWebView()
-        ->MainFrameImpl()
-        ->GetFrame()
-        ->GetDocument()
-        ->ukm_recorder_ = std::make_unique<ukm::TestUkmRecorder>();
+    ukm::TestAutoSetUkmRecorder result;
 
     DCHECK(helper->GetWebView()->MainFrameImpl()->GetFrame()->IsLocalRoot());
     helper->GetWebView()
@@ -74,23 +64,10 @@ class MobileFriendlinessCheckerTest : public testing::Test {
         ->GetMobileFriendlinessChecker()
         ->ComputeNowForTesting();
 
-    std::unique_ptr<ukm::UkmRecorder> result_ukm =
-        std::move(helper->GetWebView()
-                      ->MainFrameImpl()
-                      ->GetFrame()
-                      ->GetDocument()
-                      ->ukm_recorder_);
-    ukm::TestUkmRecorder* result =
-        reinterpret_cast<ukm::TestUkmRecorder*>(result_ukm.get());
-    auto entries = result->GetEntriesByName("MobileFriendliness");
+    auto entries = result.GetEntriesByName("MobileFriendliness");
     EXPECT_EQ(entries.size(), 1u);
     EXPECT_EQ(entries[0]->event_hash,
               ukm::builders::MobileFriendliness::kEntryNameHash);
-    helper->GetWebView()
-        ->MainFrameImpl()
-        ->GetFrame()
-        ->GetDocument()
-        ->ukm_recorder_ = std::move(old_ukm_recorder);
     return *entries[0];
   }
 
@@ -782,13 +759,7 @@ TEST_F(MobileFriendlinessCheckerTest, TextTooWide) {
               20);
 }
 
-#if BUILDFLAG(IS_IOS)
-// TODO(crbug.com/1141478)
-#define MAYBE_TextAbsolutePositioning DISABLED_TextAbsolutePositioning
-#else
-#define MAYBE_TextAbsolutePositioning TextAbsolutePositioning
-#endif  // BUILDFLAG(IS_IOS)
-TEST_F(MobileFriendlinessCheckerTest, MAYBE_TextAbsolutePositioning) {
+TEST_F(MobileFriendlinessCheckerTest, TextAbsolutePositioning) {
   ukm::mojom::UkmEntry ukm = CalculateMetricsForHTMLString(
       R"HTML(
 <html>

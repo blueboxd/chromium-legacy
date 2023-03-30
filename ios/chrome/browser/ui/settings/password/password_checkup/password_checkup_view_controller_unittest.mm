@@ -21,7 +21,10 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
+#import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_commands.h"
+#import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_utils.h"
@@ -29,6 +32,8 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest_mac.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -39,6 +44,7 @@ using password_manager::CredentialUIEntry;
 using password_manager::InsecureType;
 using password_manager::PasswordForm;
 using password_manager::TestPasswordStore;
+using password_manager::WarningType;
 
 // Test fixture for testing PasswordCheckupViewController class.
 class PasswordCheckupViewControllerTest : public ChromeTableViewControllerTest {
@@ -77,6 +83,9 @@ class PasswordCheckupViewControllerTest : public ChromeTableViewControllerTest {
                                              browser_state_.get())];
     view_controller.delegate = mediator_;
     mediator_.consumer = view_controller;
+
+    handler_ = OCMStrictProtocolMock(@protocol(PasswordCheckupCommands));
+    view_controller.handler = handler_;
 
     // Add a saved password since Password Checkup is not available when the
     // user doesn't have any saved passwords.
@@ -168,30 +177,93 @@ class PasswordCheckupViewControllerTest : public ChromeTableViewControllerTest {
     AddPasswordForm(std::move(form));
   }
 
-  void CheckPasswordCheckupTimestampItem(NSString* expected_text,
-                                         int expected_detail_text_id,
+  // Checks if the header image of the table view is as expected.
+  void CheckHeaderImage(NSString* image_name) {
+    UIImageView* headerImageView =
+        (UIImageView*)GetPasswordCheckupViewController()
+            .tableView.tableHeaderView;
+    EXPECT_NSEQ([UIImage imageNamed:image_name], headerImageView.image);
+  }
+
+  // Checks if the item at the given index of the insecure types section is as
+  // expected.
+  void CheckItemFromInsecureTypesSection(
+      int index,
+      NSString* text,
+      NSString* detail_text,
+      bool indicator_hidden,
+      bool trailing_icon_hidden,
+      NSString* trailing_icon_name,
+      NSString* trailing_icon_color_name,
+      UITableViewCellAccessoryType accessory_type) {
+    SettingsCheckItem* cell =
+        static_cast<SettingsCheckItem*>(GetTableViewItem(0, index));
+    EXPECT_NSEQ(text, cell.text);
+    EXPECT_NSEQ(detail_text, cell.detailText);
+    EXPECT_TRUE(cell.enabled);
+    EXPECT_TRUE(cell.indicatorHidden == indicator_hidden);
+    EXPECT_TRUE(cell.infoButtonHidden);
+    if (trailing_icon_hidden) {
+      EXPECT_TRUE(nil == cell.trailingImage);
+    } else {
+      EXPECT_NSEQ(DefaultSymbolTemplateWithPointSize(trailing_icon_name, 22),
+                  cell.trailingImage);
+      EXPECT_TRUE([cell.trailingImageTintColor
+          isEqual:[UIColor colorNamed:trailing_icon_color_name]]);
+    }
+    EXPECT_TRUE(accessory_type == cell.accessoryType);
+  }
+
+  // Checks if the timestamp item is as expected.
+  void CheckPasswordCheckupTimestampItem(NSString* text,
+                                         int detail_text_id,
                                          int affiliated_group_count,
                                          bool indicator_hidden) {
     SettingsCheckItem* cell =
-        static_cast<SettingsCheckItem*>(GetTableViewItem(0, 0));
-    EXPECT_NSEQ(expected_text, [cell text]);
-    EXPECT_NSEQ(l10n_util::GetPluralNSStringF(expected_detail_text_id,
-                                              affiliated_group_count),
-                [cell detailText]);
+        static_cast<SettingsCheckItem*>(GetTableViewItem(1, 0));
+    EXPECT_NSEQ(text, cell.text);
+    EXPECT_NSEQ(
+        l10n_util::GetPluralNSStringF(detail_text_id, affiliated_group_count),
+        cell.detailText);
     EXPECT_TRUE(cell.enabled);
     EXPECT_TRUE(cell.indicatorHidden == indicator_hidden);
     EXPECT_TRUE(cell.infoButtonHidden);
   }
 
+  // Checks if the check passwords button item is as expected.
   void CheckCheckPasswordsButtonItem(NSString* text_color_name,
                                      bool is_enabled) {
     TableViewTextItem* cell =
-        static_cast<TableViewTextItem*>(GetTableViewItem(0, 1));
+        static_cast<TableViewTextItem*>(GetTableViewItem(1, 1));
     EXPECT_NSEQ(l10n_util::GetNSString(
                     IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_CHECK_AGAIN_BUTTON),
-                [cell text]);
+                cell.text);
     EXPECT_TRUE([cell.textColor isEqual:[UIColor colorNamed:text_color_name]]);
     EXPECT_TRUE(cell.enabled == is_enabled);
+  }
+
+  // Initializes the strings for the items in the insecure types section as if
+  // all saved passwords were safe.
+  void InitializeStringsForInsecureTypeSection() {
+    compromised_text_ = l10n_util::GetPluralNSStringF(
+        IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_COMPROMISED_PASSWORDS_TITLE, 0);
+    compromised_detail_text_ = l10n_util::GetNSString(
+        IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_NO_COMPROMISED_PASSWORDS_SUBTITLE);
+    reused_text_ = l10n_util::GetNSString(
+        IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_NO_REUSED_PASSWORDS_TITLE);
+    reused_detail_text_ = l10n_util::GetNSString(
+        IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_NO_REUSED_PASSWORDS_SUBTITLE);
+    weak_text_ = l10n_util::GetNSString(
+        IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_NO_WEAK_PASSWORDS_TITLE);
+    weak_detail_text_ = l10n_util::GetNSString(
+        IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_NO_WEAK_PASSWORDS_SUBTITLE);
+  }
+
+  // Simulates a tap on an item in the tableView.
+  void SimulateTap(int index, int section) {
+    [controller() tableView:controller().tableView
+        didSelectRowAtIndexPath:[NSIndexPath indexPathForItem:index
+                                                    inSection:section]];
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
@@ -201,22 +273,52 @@ class PasswordCheckupViewControllerTest : public ChromeTableViewControllerTest {
   std::unique_ptr<TestBrowser> browser_;
   PasswordCheckupMediator* mediator_;
   base::test::ScopedFeatureList feature_list;
+  id<PasswordCheckupCommands> handler_;
+  // Strings for the insecure types section.
+  NSString* compromised_text_;
+  NSString* compromised_detail_text_;
+  NSString* reused_text_;
+  NSString* reused_detail_text_;
+  NSString* weak_text_;
+  NSString* weak_detail_text_;
 };
 
 // Tests the running state of the Password Checkup homepage.
 TEST_F(PasswordCheckupViewControllerTest, PasswordCheckupHomepageStateRunning) {
   ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateRunning);
 
-  UIImageView* headerImageView =
-      (UIImageView*)GetPasswordCheckupViewController()
-          .tableView.tableHeaderView;
-  EXPECT_NSEQ([UIImage imageNamed:@"password_checkup_header_loading"],
-              headerImageView.image);
+  CheckHeaderImage(password_manager::kPasswordCheckupHeaderImageLoading);
+
+  InitializeStringsForInsecureTypeSection();
+  CheckItemFromInsecureTypesSection(
+      /*index=*/0, /*text=*/compromised_text_,
+      /*detail_text=*/compromised_detail_text_,
+      /*indicator_hidden=*/NO,
+      /*trailing_icon_hidden=*/YES,
+      /*trailing_icon_name=*/@"",
+      /*trailing_icon_color_name=*/@"",
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/1, /*text=*/reused_text_,
+      /*detail_text=*/reused_detail_text_,
+      /*indicator_hidden=*/NO,
+      /*trailing_icon_hidden=*/YES,
+      /*trailing_icon_name=*/@"",
+      /*trailing_icon_color_name=*/@"",
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/2, /*text=*/weak_text_,
+      /*detail_text=*/weak_detail_text_,
+      /*indicator_hidden=*/NO,
+      /*trailing_icon_hidden=*/YES,
+      /*trailing_icon_name=*/@"",
+      /*trailing_icon_color_name=*/@"",
+      /*accessory_type=*/UITableViewCellAccessoryNone);
 
   CheckPasswordCheckupTimestampItem(
-      /*expected_text=*/l10n_util::GetNSString(
-          IDS_IOS_PASSWORD_CHECKUP_ONGOING),
-      /*expected_detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
+      /*text=*/l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ONGOING),
+      /*detail_text_id=*/
+      IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
       /*affiliated_group_count=*/1, /*indicator_hidden=*/false);
   CheckCheckPasswordsButtonItem(/*text_color_name=*/kTextSecondaryColor,
                                 /*is_enabled=*/false);
@@ -229,15 +331,37 @@ TEST_F(PasswordCheckupViewControllerTest, PasswordCheckupHomepageStateRunning) {
 TEST_F(PasswordCheckupViewControllerTest, PasswordCheckupHomepageStateSafe) {
   ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDone);
 
-  UIImageView* headerImageView =
-      (UIImageView*)GetPasswordCheckupViewController()
-          .tableView.tableHeaderView;
-  EXPECT_NSEQ([UIImage imageNamed:@"password_checkup_header_green"],
-              headerImageView.image);
+  CheckHeaderImage(password_manager::kPasswordCheckupHeaderImageGreen);
+
+  InitializeStringsForInsecureTypeSection();
+  CheckItemFromInsecureTypesSection(
+      /*index=*/0, /*text=*/compromised_text_,
+      /*detail_text=*/compromised_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/1, /*text=*/reused_text_,
+      /*detail_text=*/reused_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/2, /*text=*/weak_text_,
+      /*detail_text=*/weak_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
 
   CheckPasswordCheckupTimestampItem(
-      /*expected_text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
-      /*expected_detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
+      /*text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
+      /*detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
       /*affiliated_group_count=*/1, /*indicator_hidden=*/true);
   CheckCheckPasswordsButtonItem(/*text_color_name=*/kBlueColor,
                                 /*is_enabled=*/true);
@@ -252,15 +376,41 @@ TEST_F(PasswordCheckupViewControllerTest,
   AddSavedInsecureForm(InsecureType::kLeaked);
   ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDone);
 
-  UIImageView* headerImageView =
-      (UIImageView*)GetPasswordCheckupViewController()
-          .tableView.tableHeaderView;
-  EXPECT_NSEQ([UIImage imageNamed:@"password_checkup_header_red"],
-              headerImageView.image);
+  CheckHeaderImage(password_manager::kPasswordCheckupHeaderImageRed);
+
+  InitializeStringsForInsecureTypeSection();
+  compromised_text_ = l10n_util::GetPluralNSStringF(
+      IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_COMPROMISED_PASSWORDS_TITLE, 1);
+  compromised_detail_text_ = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_COMPROMISED_PASSWORDS_SUBTITLE);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/0, /*text=*/compromised_text_,
+      /*detail_text=*/compromised_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kErrorCircleFillSymbol,
+      /*trailing_icon_color_name=*/kRed500Color,
+      /*accessory_type=*/UITableViewCellAccessoryDisclosureIndicator);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/1, /*text=*/reused_text_,
+      /*detail_text=*/reused_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/2, /*text=*/weak_text_,
+      /*detail_text=*/weak_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
 
   CheckPasswordCheckupTimestampItem(
-      /*expected_text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
-      /*expected_detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
+      /*text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
+      /*detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
       /*affiliated_group_count=*/2, /*indicator_hidden=*/true);
   CheckCheckPasswordsButtonItem(/*text_color_name=*/kBlueColor,
                                 /*is_enabled=*/true);
@@ -275,15 +425,39 @@ TEST_F(PasswordCheckupViewControllerTest,
   AddSavedInsecureForm(InsecureType::kLeaked, /*is_muted=*/true);
   ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDone);
 
-  UIImageView* headerImageView =
-      (UIImageView*)GetPasswordCheckupViewController()
-          .tableView.tableHeaderView;
-  EXPECT_NSEQ([UIImage imageNamed:@"password_checkup_header_yellow"],
-              headerImageView.image);
+  CheckHeaderImage(password_manager::kPasswordCheckupHeaderImageYellow);
+
+  InitializeStringsForInsecureTypeSection();
+  compromised_detail_text_ = l10n_util::GetPluralNSStringF(
+      IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_DISMISSED_WARNINGS_SUBTITLE, 1);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/0, /*text=*/compromised_text_,
+      /*detail_text=*/compromised_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kErrorCircleFillSymbol,
+      /*trailing_icon_color_name=*/kYellow500Color,
+      /*accessory_type=*/UITableViewCellAccessoryDisclosureIndicator);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/1, /*text=*/reused_text_,
+      /*detail_text=*/reused_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/2, /*text=*/weak_text_,
+      /*detail_text=*/weak_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
 
   CheckPasswordCheckupTimestampItem(
-      /*expected_text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
-      /*expected_detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
+      /*text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
+      /*detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
       /*affiliated_group_count=*/2, /*indicator_hidden=*/true);
   CheckCheckPasswordsButtonItem(/*text_color_name=*/kBlueColor,
                                 /*is_enabled=*/true);
@@ -298,15 +472,42 @@ TEST_F(PasswordCheckupViewControllerTest,
   AddSavedInsecureForm(InsecureType::kReused);
   ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDone);
 
-  UIImageView* headerImageView =
-      (UIImageView*)GetPasswordCheckupViewController()
-          .tableView.tableHeaderView;
-  EXPECT_NSEQ([UIImage imageNamed:@"password_checkup_header_yellow"],
-              headerImageView.image);
+  CheckHeaderImage(password_manager::kPasswordCheckupHeaderImageYellow);
+
+  InitializeStringsForInsecureTypeSection();
+  reused_text_ = l10n_util::GetNSStringF(
+      IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_REUSED_PASSWORDS_TITLE,
+      base::NumberToString16(1));
+  reused_detail_text_ = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_REUSED_PASSWORDS_SUBTITLE);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/0, /*text=*/compromised_text_,
+      /*detail_text=*/compromised_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/1, /*text=*/reused_text_,
+      /*detail_text=*/reused_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kErrorCircleFillSymbol,
+      /*trailing_icon_color_name=*/kYellow500Color,
+      /*accessory_type=*/UITableViewCellAccessoryDisclosureIndicator);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/2, /*text=*/weak_text_,
+      /*detail_text=*/weak_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
 
   CheckPasswordCheckupTimestampItem(
-      /*expected_text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
-      /*expected_detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
+      /*text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
+      /*text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
       /*affiliated_group_count=*/2, /*indicator_hidden=*/true);
   CheckCheckPasswordsButtonItem(/*text_color_name=*/kBlueColor,
                                 /*is_enabled=*/true);
@@ -320,18 +521,88 @@ TEST_F(PasswordCheckupViewControllerTest,
   AddSavedInsecureForm(InsecureType::kWeak);
   ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDone);
 
-  UIImageView* headerImageView =
-      (UIImageView*)GetPasswordCheckupViewController()
-          .tableView.tableHeaderView;
-  EXPECT_NSEQ([UIImage imageNamed:@"password_checkup_header_yellow"],
-              headerImageView.image);
+  CheckHeaderImage(password_manager::kPasswordCheckupHeaderImageYellow);
+
+  InitializeStringsForInsecureTypeSection();
+  weak_text_ = l10n_util::GetPluralNSStringF(
+      IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_WEAK_PASSWORDS_TITLE, 1);
+  weak_detail_text_ = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_WEAK_PASSWORDS_SUBTITLE);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/0, /*text=*/compromised_text_,
+      /*detail_text=*/compromised_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/1, /*text=*/reused_text_,
+      /*detail_text=*/reused_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kCheckmarkCircleFillSymbol,
+      /*trailing_icon_color_name=*/kGreen500Color,
+      /*accessory_type=*/UITableViewCellAccessoryNone);
+  CheckItemFromInsecureTypesSection(
+      /*index=*/2, /*text=*/weak_text_,
+      /*detail_text=*/weak_detail_text_,
+      /*indicator_hidden=*/YES,
+      /*trailing_icon_hidden=*/NO,
+      /*trailing_icon_name=*/kErrorCircleFillSymbol,
+      /*trailing_icon_color_name=*/kYellow500Color,
+      /*accessory_type=*/UITableViewCellAccessoryDisclosureIndicator);
 
   CheckPasswordCheckupTimestampItem(
-      /*expected_text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
-      /*expected_detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
+      /*text=*/[mediator_ formattedElapsedTimeSinceLastCheck],
+      /*detail_text_id=*/IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
       /*affiliated_group_count=*/2, /*indicator_hidden=*/true);
   CheckCheckPasswordsButtonItem(/*text_color_name=*/kBlueColor,
                                 /*is_enabled=*/true);
 
   [GetPasswordCheckupViewController() settingsWillBeDismissed];
+}
+
+// Verifies that tapping on the compromised passwords cell tells the handler to
+// show compromised issues.
+TEST_F(PasswordCheckupViewControllerTest,
+       TestTapCompromisedPasswordsNotifiesHandler) {
+  AddSavedInsecureForm(InsecureType::kLeaked);
+  ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDone);
+
+  OCMExpect([handler_ showPasswordIssuesWithWarningType:
+                          WarningType::kCompromisedPasswordsWarning]);
+
+  SimulateTap(/*index=*/0, /*section=*/0);
+
+  EXPECT_OCMOCK_VERIFY((id)handler_);
+}
+
+// Verifies that tapping on the reused passwords cell tells the handler to show
+// reused issues.
+TEST_F(PasswordCheckupViewControllerTest,
+       TestTapReusedPasswordsNotifiesHandler) {
+  AddSavedInsecureForm(InsecureType::kReused);
+  ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDone);
+
+  OCMExpect([handler_
+      showPasswordIssuesWithWarningType:WarningType::kReusedPasswordsWarning]);
+
+  SimulateTap(/*index=*/1, /*section=*/0);
+
+  EXPECT_OCMOCK_VERIFY((id)handler_);
+}
+
+// Verifies that tapping on the weak passwords cell tells the handler to
+// show weak issues.
+TEST_F(PasswordCheckupViewControllerTest, TestTapWeakPasswordsNotifiesHandler) {
+  AddSavedInsecureForm(InsecureType::kWeak);
+  ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDone);
+
+  OCMExpect([handler_
+      showPasswordIssuesWithWarningType:WarningType::kWeakPasswordsWarning]);
+
+  SimulateTap(/*index=*/2, /*section=*/0);
+
+  EXPECT_OCMOCK_VERIFY((id)handler_);
 }

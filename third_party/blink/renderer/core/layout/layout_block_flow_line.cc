@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
-#include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/breaking_context_inline_headers.h"
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
@@ -41,7 +40,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/vertical_position_cache.h"
 #include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
@@ -471,33 +469,6 @@ static void UpdateLogicalWidthForCenterAlignedBlock(
                               trailing_space_width;
 }
 
-void LayoutBlockFlow::SetMarginsForRubyRun(BidiRun* run,
-                                           LayoutRubyRun* layout_ruby_run,
-                                           LayoutObject* previous_object,
-                                           const LineInfo& line_info) {
-  NOT_DESTROYED();
-  int start_overhang;
-  int end_overhang;
-  LayoutObject* next_object = nullptr;
-  for (BidiRun* run_with_next_object = run->Next(); run_with_next_object;
-       run_with_next_object = run_with_next_object->Next()) {
-    if (!run_with_next_object->line_layout_item_.IsOutOfFlowPositioned() &&
-        !run_with_next_object->box_->IsLineBreak()) {
-      next_object = run_with_next_object->line_layout_item_.GetLayoutObject();
-      break;
-    }
-  }
-  layout_ruby_run->GetOverhang(
-      line_info.IsFirstLine(),
-      layout_ruby_run->StyleRef().IsLeftToRightDirection() ? previous_object
-                                                           : next_object,
-      layout_ruby_run->StyleRef().IsLeftToRightDirection() ? next_object
-                                                           : previous_object,
-      start_overhang, end_overhang);
-  SetMarginStartForChild(*layout_ruby_run, LayoutUnit(-start_overhang));
-  SetMarginEndForChild(*layout_ruby_run, LayoutUnit(-end_overhang));
-}
-
 static inline wtf_size_t FindWordMeasurement(
     LineLayoutText layout_text,
     int offset,
@@ -738,8 +709,8 @@ bool LayoutBlockFlow::CanContainFirstFormattedLine() const {
   // line of an element. For example, the first line of an anonymous block
   // box is only affected if it is the first child of its parent element.
   // https://drafts.csswg.org/css-text-3/#text-indent-property
-  return !IsAnonymousBlock() || !PreviousSibling() ||
-         IsFlexItemIncludingDeprecatedAndNG() || IsGridItemIncludingNG();
+  return !IsAnonymousBlock() || !PreviousSibling() || IsFlexItemIncludingNG() ||
+         IsGridItemIncludingNG();
 }
 
 static void UpdateLogicalInlinePositions(LayoutBlockFlow* block,
@@ -811,7 +782,6 @@ BidiRun* LayoutBlockFlow::ComputeInlineDirectionPositionsForSegment(
   LayoutUnit total_logical_width = line_box->GetFlowSpacingLogicalWidth();
   bool is_after_expansion = true;
   ExpansionOpportunities expansions;
-  LayoutObject* previous_object = nullptr;
   ETextAlign text_align = line_info.GetTextAlign();
 
   BidiRun* r = first_run;
@@ -850,10 +820,6 @@ BidiRun* LayoutBlockFlow::ComputeInlineDirectionPositionsForSegment(
       if (!r->line_layout_item_.IsLayoutInline()) {
         auto* layout_box =
             To<LayoutBox>(r->line_layout_item_.GetLayoutObject());
-        if (layout_box->IsRubyRun()) {
-          SetMarginsForRubyRun(r, To<LayoutRubyRun>(layout_box),
-                               previous_object, line_info);
-        }
         r->box_->SetLogicalWidth(LogicalWidthForChild(*layout_box));
         total_logical_width +=
             MarginStartForChild(*layout_box) + MarginEndForChild(*layout_box);
@@ -862,7 +828,6 @@ BidiRun* LayoutBlockFlow::ComputeInlineDirectionPositionsForSegment(
     }
 
     total_logical_width += r->box_->LogicalWidth();
-    previous_object = r->line_layout_item_.GetLayoutObject();
   }
 
   if (is_after_expansion)
@@ -943,31 +908,18 @@ RootInlineBox* LayoutBlockFlow::CreateLineBoxesFromBidiRuns(
   line_box->SetBidiLevel(bidi_level);
   line_box->SetEndsWithBreak(line_info.PreviousLineBrokeCleanly());
 
-  bool is_svg_root_inline_box = line_box->IsSVGRootInlineBox();
-
   GlyphOverflowAndFallbackFontsMap text_box_data_map;
 
   // Now we position all of our text runs horizontally.
-  if (!is_svg_root_inline_box)
-    ComputeInlineDirectionPositionsForLine(
-        line_box, line_info, bidi_runs.FirstRun(), trailing_space_run,
-        end.AtEnd(), text_box_data_map, vertical_position_cache,
-        word_measurements);
+  ComputeInlineDirectionPositionsForLine(
+      line_box, line_info, bidi_runs.FirstRun(), trailing_space_run,
+      end.AtEnd(), text_box_data_map, vertical_position_cache,
+      word_measurements);
 
   // Now position our text runs vertically.
   ComputeBlockDirectionPositionsForLine(line_box, bidi_runs.FirstRun(),
                                         text_box_data_map,
                                         vertical_position_cache);
-
-  // SVG text layout code computes vertical & horizontal positions on its own.
-  // Note that we still need to execute computeVerticalPositionsForLine() as
-  // it calls InlineTextBox::positionLineBox(), which tracks whether the box
-  // contains reversed text or not. If we wouldn't do that editing and thus
-  // text selection in RTL boxes would not work as expected.
-  if (is_svg_root_inline_box) {
-    DCHECK(IsSVGText());
-    To<SVGRootInlineBox>(line_box)->ComputePerCharacterLayoutInformation();
-  }
 
   // Compute our overflow now.
   line_box->ComputeOverflow(line_box->LineTop(), line_box->LineBottom(),

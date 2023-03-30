@@ -77,6 +77,8 @@ class Feature {
     MISSING_COMMAND_LINE_SWITCH,
     FEATURE_FLAG_DISABLED,
     REQUIRES_DEVELOPER_MODE,
+    MISSING_DELEGATED_AVAILABILITY_CHECK,
+    FAILED_DELEGATED_AVAILABILITY_CHECK,
   };
 
   // Shorthand for delegated availability check handler function signature. The
@@ -90,7 +92,7 @@ class Feature {
                                    Platform platform,
                                    int context_id,
                                    bool check_developer_mode,
-                                   std::unique_ptr<ContextData> context_data)>;
+                                   const ContextData& context_data)>;
 
   // Mapping Feature::name() to override function.
   using FeatureDelegatedAvailabilityCheckMap =
@@ -138,6 +140,10 @@ class Feature {
   // check.
   virtual bool RequiresDelegatedAvailabilityCheck() const = 0;
 
+  // Sets the feature availability override handler to use.
+  virtual void SetDelegatedAvailabilityCheckHandler(
+      DelegatedAvailabilityCheckHandler handler) = 0;
+
   // Returns true if the feature is available to be parsed into a new extension
   // manifest.
   Availability IsAvailableToManifest(const HashedExtensionId& hashed_id,
@@ -160,35 +166,35 @@ class Feature {
 
   // Returns true if the feature is available to be used in the specified
   // extension and context.
-  Availability IsAvailableToContext(
-      const Extension* extension,
-      Context context,
-      const GURL& url,
-      int context_id,
-      std::unique_ptr<ContextData> context_data) const {
+  Availability IsAvailableToContext(const Extension* extension,
+                                    Context context,
+                                    const GURL& url,
+                                    int context_id,
+                                    const ContextData& context_data) const {
     return IsAvailableToContext(extension, context, url, GetCurrentPlatform(),
-                                context_id, std::move(context_data));
+                                context_id, context_data);
   }
 
-  Availability IsAvailableToContext(
+  Availability IsAvailableToContext(const Extension* extension,
+                                    Context context,
+                                    const GURL& url,
+                                    Platform platform,
+                                    int context_id,
+                                    const ContextData& context_data) const {
+    return IsAvailableToContextImpl(extension, context, url, platform,
+                                    context_id, true, context_data);
+  }
+
+  Availability IsAvailableToContextIgnoringDevMode(
       const Extension* extension,
       Context context,
       const GURL& url,
       Platform platform,
       int context_id,
-      std::unique_ptr<ContextData> context_data) const {
-    return IsAvailableToContextImpl(extension, context, url, platform,
-                                    context_id, true, std::move(context_data));
-  }
-
-  Availability IsAvailableToContextIgnoringDevMode(const Extension* extension,
-                                                   Context context,
-                                                   const GURL& url,
-                                                   Platform platform,
-                                                   int context_id) const {
-    return IsAvailableToContextImpl(extension, context, url, platform,
-                                    context_id, false,
-                                    /*context_data=*/nullptr);
+      const ContextData& context_data) const {
+    return IsAvailableToContextImpl(
+        extension, context, url, platform, context_id,
+        /*check_developer_mode=*/false, context_data);
   }
   // Returns true if the feature is available to the current environment,
   // without needing to know information about an Extension or any other
@@ -204,6 +210,8 @@ class Feature {
   virtual bool IsIdInBlocklist(const HashedExtensionId& hashed_id) const = 0;
   virtual bool IsIdInAllowlist(const HashedExtensionId& hashed_id) const = 0;
 
+  bool HasDelegatedAvailabilityCheckHandlerForTesting() const;
+
  protected:
   friend class SimpleFeature;
   friend class ComplexFeature;
@@ -217,7 +225,10 @@ class Feature {
       Platform platform,
       int context_id,
       bool check_developer_mode,
-      std::unique_ptr<ContextData> context_data) const = 0;
+      const ContextData& context_data) const = 0;
+
+  // Gets whether a feature availability override handler has been set.
+  virtual bool HasDelegatedAvailabilityCheckHandler() const = 0;
 
   std::string name_;
   std::string alias_;

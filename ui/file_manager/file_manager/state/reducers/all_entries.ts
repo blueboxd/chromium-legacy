@@ -216,23 +216,25 @@ function appendChildIfNotExisted(
  * Converts the entry to the Store representation of an Entry: FileData.
  */
 export function convertEntryToFileData(entry: Entry|FilesAppEntry): FileData {
-  // TODO: get VolumeManager/MetadataModel properly.
   const {volumeManager, metadataModel} = window.fileManager;
   const volumeInfo = volumeManager.getVolumeInfo(entry);
   const locationInfo = volumeManager.getLocationInfo(entry);
   // getEntryLabel() can accept locationInfo=null, but TS doesn't recognize the
   // type definition in closure, hence the ! here.
   const label = util.getEntryLabel(locationInfo!, entry);
-  const volumeType = volumeInfo?.volumeType || null;
+  // For FakeEntry, we need to read from entry.volumeType because it doesn't
+  // have volumeInfo in the volume manager.
+  const volumeType = 'volumeType' in entry && entry.volumeType ?
+      entry.volumeType as VolumeManagerCommon.VolumeType :
+      (volumeInfo?.volumeType || null);
   const icon = getEntryIcon(entry, locationInfo, volumeType);
 
   /**
    * Update disabled attribute if entry supports disabled attribute and has a
    * non-null volumeType.
    */
-  if ('disabled' in entry && 'volumeType' in entry && entry.volumeType) {
-    entry.disabled = volumeManager.isDisabled(
-        entry.volumeType as VolumeManagerCommon.VolumeType);
+  if ('disabled' in entry && volumeType) {
+    entry.disabled = volumeManager.isDisabled(volumeType);
   }
 
   const metadata = metadataModel ?
@@ -246,8 +248,10 @@ export function convertEntryToFileData(entry: Entry|FilesAppEntry): FileData {
     isDirectory: entry.isDirectory,
     label,
     volumeType,
+    rootType: locationInfo?.rootType ?? null,
     metadata,
     expanded: false,
+    disabled: 'disabled' in entry ? entry.disabled as boolean : false,
     isRootEntry: !!locationInfo?.isRootEntry,
     // `isEjectable/shouldDelayLoadingChildren` is determined by its
     // corresponding volume, will be updated when volume is added.
@@ -264,14 +268,31 @@ function appendEntry(state: State, entry: Entry|FilesAppEntry) {
   const allEntries = state.allEntries || {};
   const key = entry.toURL();
   const existingFileData = allEntries[key] || {};
+
+  // Some client code might dispatch actions based on
+  // `volume.resolveDisplayRoot()` which is a DirectoryEntry instead of a
+  // VolumeEntry. It's safe to ignore this entry because the data will be the
+  // same as `existingFileData` and we don't want to convert from VolumeEntry to
+  // DirectoryEntry.
+  if (existingFileData.type === EntryType.VOLUME_ROOT &&
+      getEntryType(entry) !== EntryType.VOLUME_ROOT) {
+    return;
+  }
+
   const fileData = convertEntryToFileData(entry);
 
   allEntries[key] = {
-    ...existingFileData,
     ...fileData,
-    // if the entry is existed, we want to keep the existing
-    // children to prevent sudden removal of the children items on the UI.
-    children: existingFileData.children || [],
+    // For existing entries already in the store, we want to keep the existing
+    // value for the following fields. For example, for "expanded" entries with
+    // expanded=true, we don't want to override it with expanded=false derived
+    // from `convertEntryToFileData` function above.
+    expanded: existingFileData.expanded || fileData.expanded,
+    isEjectable: existingFileData.isEjectable || fileData.isEjectable,
+    shouldDelayLoadingChildren: existingFileData.shouldDelayLoadingChildren ||
+        fileData.shouldDelayLoadingChildren,
+    // Keep children to prevent sudden removal of the children items on the UI.
+    children: existingFileData.children || fileData.children,
   };
 
   state.allEntries = allEntries;
@@ -466,31 +487,33 @@ function volumeNestingEntries(
   const {myFilesEntry} = getMyFiles(state);
   if (myFilesNestedVolumeTypes.has(volumeInfo.volumeType)) {
     const myFilesEntryKey = myFilesEntry.toURL();
-    const myFilesFileData = getFileData(state, myFilesEntryKey)!;
+    // Shallow copy here because we will update this object directly below, and
+    // the same object might be referenced in the UI.
+    const myFilesFileData = {...getFileData(state, myFilesEntryKey)!};
     // Nest the entry for the new volume info in MyFiles.
-    for (const childEntry of myFilesEntry.getUIChildren()) {
-      // Remove a placeholder for the currently mounting volume.
-      if (childEntry.name === newVolumeEntry.name) {
-        myFilesEntry.removeChildEntry(childEntry);
-        // Also remove it from the children field.
-        myFilesFileData.children = myFilesFileData.children.filter(
-            childKey => childKey !== childEntry.toURL());
-        // And remove it from the uiEntries if existed.
-        state.uiEntries = state.uiEntries.filter(
-            uiEntryKey => uiEntryKey !== childEntry.toURL());
-      }
+    const uiEntryPlaceholder = myFilesEntry.getUIChildren().find(
+        childEntry => childEntry.name === newVolumeEntry.name);
+    // Remove a placeholder for the currently mounting volume.
+    if (uiEntryPlaceholder) {
+      myFilesEntry.removeChildEntry(uiEntryPlaceholder);
+      // Also remove it from the children field.
+      myFilesFileData.children = myFilesFileData.children.filter(
+          childKey => childKey !== uiEntryPlaceholder.toURL());
+      // And remove it from the uiEntries if existed.
+      state.uiEntries = state.uiEntries.filter(
+          uiEntryKey => uiEntryKey !== uiEntryPlaceholder.toURL());
     }
     appendChildIfNotExisted(myFilesEntry, newVolumeEntry);
     // Push the new entry to the children of FileData and sort them.
     if (!myFilesFileData.children.find(
             childKey => childKey === volumeRootKey)) {
-      myFilesFileData.children.push(volumeRootKey);
+      const newChildren = [...myFilesFileData.children, volumeRootKey];
       const childEntries =
-          myFilesFileData.children.map(childKey => getEntry(state, childKey)!);
+          newChildren.map(childKey => getEntry(state, childKey)!);
       myFilesFileData.children =
           sortEntries(myFilesEntry, childEntries).map(entry => entry.toURL());
     }
-    state.allEntries[myFilesEntryKey] = {...myFilesFileData};
+    state.allEntries[myFilesEntryKey] = myFilesFileData;
   }
 
   // When mounting MyFiles replace the temporary placeholder entry.
@@ -603,10 +626,11 @@ function volumeNestingEntries(
           if (fileData?.entry) {
             appendChildIfNotExisted(parentEntry, fileData.entry);
             // For sub-partition from a removable volume, its children icon
-            // should be UNKNOWN_REMOVABLE.
+            // should be UNKNOWN_REMOVABLE, and it shouldn't be ejectable.
             state.allEntries[v.rootKey!] = {
               ...fileData,
               icon: constants.ICON_TYPES.UNKNOWN_REMOVABLE,
+              isEjectable: false,
             };
           }
         }
@@ -615,20 +639,23 @@ function volumeNestingEntries(
       // we need to add that to that group.
       appendChildIfNotExisted(parentEntry, newVolumeEntry);
       // For sub-partition from a removable volume, its children icon should be
-      // UNKNOWN_REMOVABLE.
+      // UNKNOWN_REMOVABLE, and it shouldn't be ejectable.
       const fileData = getFileData(state, volumeRootKey);
       state.allEntries[volumeRootKey] = {
         ...fileData,
         icon: constants.ICON_TYPES.UNKNOWN_REMOVABLE,
+        isEjectable: false,
       };
+    } else {
+      // Update the isEjectable only if the removable device is not grouped.
+      state.allEntries[volumeRootKey].isEjectable =
+          (volumeInfo.source === VolumeManagerCommon.Source.DEVICE &&
+           volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.MTP) ||
+          volumeInfo.source === VolumeManagerCommon.Source.FILE;
     }
   }
 
-  // Update the isEjectable/shouldDelayLoadingChildren field in the FileData.
-  state.allEntries[volumeRootKey].isEjectable =
-      (volumeInfo.source === VolumeManagerCommon.Source.DEVICE &&
-       volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.MTP) ||
-      volumeInfo.source === VolumeManagerCommon.Source.FILE;
+  // Update the shouldDelayLoadingChildren field in the FileData.
   state.allEntries[volumeRootKey].shouldDelayLoadingChildren =
       volumeInfo.source === VolumeManagerCommon.Source.NETWORK &&
       (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED ||

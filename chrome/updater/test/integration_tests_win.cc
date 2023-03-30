@@ -97,9 +97,6 @@ enum class CheckInstallationVersions {
 template <typename ComInterface>
 HRESULT CreateLocalServer(GUID clsid,
                           Microsoft::WRL::ComPtr<ComInterface>& server) {
-  // crbug.com/1259178 - there is known race condition between the COM server
-  // shutdown and server start up.
-  base::PlatformThread::Sleep(kCreateUpdaterInstanceDelay);
   return ::CoCreateInstance(clsid, nullptr, CLSCTX_LOCAL_SERVER,
                             IID_PPV_ARGS(&server));
 }
@@ -256,9 +253,6 @@ void CheckInstallation(UpdaterScope scope,
                 !IsServiceGone(GetServiceName(is_internal_service)))
           << ": " << service_name << ": " << is_internal_service;
 
-// TODO(crbug.com/1378769) - this code can be enabled after the the new CIPD
-// build containing fix r1105318 is published.
-#if 0
       if (!is_installed) {
         ForEachServiceWithPrefix(
             base::StrCat({base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
@@ -269,7 +263,6 @@ void CheckInstallation(UpdaterScope scope,
               ADD_FAILURE() << "Unexpected service found: " << service_name;
             }));
       }
-#endif  // 0
     }
   }
 
@@ -302,14 +295,28 @@ void CheckInstallation(UpdaterScope scope,
 
   const absl::optional<base::FilePath> path =
       GetVersionedInstallDirectory(scope, base::Version(kUpdaterVersion));
-  EXPECT_TRUE(path);
+  ASSERT_TRUE(path);
   EXPECT_TRUE(WaitFor(base::BindLambdaForTesting([&]() {
                         return is_installed == base::PathExists(*path);
                       }),
                       base::BindLambdaForTesting([&]() {
                         VLOG(0) << "Still waiting for " << *path
                                 << " where is_installed=" << is_installed;
-                      })));
+                      })))
+      << base::JoinString(
+             [&path]() {
+               base::FileEnumerator it(*path, true,
+                                       base::FileEnumerator::FILES |
+                                           base::FileEnumerator::DIRECTORIES);
+               std::vector<base::FilePath::StringType> files;
+               for (base::FilePath name = it.Next(); !name.empty();
+                    name = it.Next()) {
+                 files.push_back(name.value());
+               }
+
+               return files;
+             }(),
+             FILE_PATH_LITERAL(","));
 }
 
 // Returns true if any updater process is found running in any session in the
@@ -637,11 +644,11 @@ void Uninstall(UpdaterScope scope) {
   // dir, because it is useful for tests to be able to run it to clean the
   // system even if installation has failed or the installed binaries have
   // already been removed.
-  base::FilePath path =
-      GetSetupExecutablePath().DirName().Append(GetExecutableRelativePath());
+  base::FilePath path = GetSetupExecutablePath().DirName().Append(
+      FILE_PATH_LITERAL("updater_test.exe"));
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
-  command_line.AppendSwitch("uninstall");
+  command_line.AppendSwitch(kUninstallSwitch);
   int exit_code = -1;
   Run(scope, command_line, &exit_code);
 
@@ -1446,6 +1453,9 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
       ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueBrandCode, L"GGLS"), ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueAP, L"TestAP"), ERROR_SUCCESS);
+  ASSERT_EQ(key.WriteValue(kRegValueDateOfLastActivity, 0xFFFFFFFF),
+            ERROR_SUCCESS);
+  ASSERT_EQ(key.WriteValue(kRegValueDateOfLastRollcall, 5929), ERROR_SUCCESS);
   key.Close();
 
   ASSERT_EQ(
@@ -1456,6 +1466,8 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
       ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueBrandCode, L"GGLS"), ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueAP, L"TestAP"), ERROR_SUCCESS);
+  ASSERT_EQ(key.WriteValue(kRegValueDateOfLastActivity, L"5900"),
+            ERROR_SUCCESS);
   key.Close();
 
   if (IsSystemInstall(scope)) {
@@ -1534,12 +1546,16 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_TRUE(persisted_data->GetAP(kNoPVAppId).empty());
   EXPECT_TRUE(persisted_data->GetBrandCode(kNoPVAppId).empty());
   EXPECT_TRUE(persisted_data->GetFingerprint(kNoPVAppId).empty());
+  EXPECT_FALSE(persisted_data->GetDateLastActive(kNoPVAppId));
+  EXPECT_FALSE(persisted_data->GetDateLastRollcall(kNoPVAppId));
 
   EXPECT_EQ(persisted_data->GetProductVersion(kChromeAppId),
             base::Version("99.0.0.1"));
   EXPECT_EQ(persisted_data->GetAP(kChromeAppId), "TestAP");
   EXPECT_EQ(persisted_data->GetBrandCode(kChromeAppId), "GGLS");
   EXPECT_TRUE(persisted_data->GetFingerprint(kChromeAppId).empty());
+  EXPECT_EQ(persisted_data->GetDateLastActive(kChromeAppId).value(), -1);
+  EXPECT_EQ(persisted_data->GetDateLastRollcall(kChromeAppId).value(), 5929);
 
   int count_entries = 0;
   if (IsSystemInstall(scope)) {

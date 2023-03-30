@@ -250,7 +250,9 @@ class CORE_EXPORT CSSParserImpl {
                                    CSSParserTokenStream& stream,
                                    CSSNestingType,
                                    StyleRule* parent_rule_for_nesting);
-  void ConsumeDeclaration(CSSParserTokenStream&, StyleRule::RuleType);
+  // Returns true if a declaration was parsed and added to parsed_properties_,
+  // and false otherwise.
+  bool ConsumeDeclaration(CSSParserTokenStream&, StyleRule::RuleType);
   void ConsumeDeclarationValue(const CSSTokenizedValue&,
                                CSSPropertyID,
                                bool important,
@@ -267,8 +269,10 @@ class CORE_EXPORT CSSParserImpl {
   // Finds a previously parsed MediaQuerySet for the given `prelude_string`
   // and returns it. If no MediaQuerySet is found, parses one using `prelude`,
   // and returns the result after caching it.
-  const MediaQuerySet* CachedMediaQuerySet(String prelude_string,
-                                           CSSParserTokenRange prelude);
+  const MediaQuerySet* CachedMediaQuerySet(
+      String prelude_string,
+      CSSParserTokenRange prelude,
+      const CSSParserTokenOffsets& offsets);
 
   // Create an implicit & {} rule to wrap properties in, and insert every
   // property from parsed_properties_ in it. Used when there are properties
@@ -291,6 +295,9 @@ class CORE_EXPORT CSSParserImpl {
   // Used for temporary allocations of CSSParserSelector (we send it down
   // to CSSSelectorParser, which temporarily holds on to a reference to it).
   HeapVector<CSSSelector> arena_;
+
+  // True when parsing a StyleRule via ConsumeNestedRule.
+  bool in_nested_style_rule_ = false;
 
   HeapHashMap<String, Member<const MediaQuerySet>> media_query_cache_;
 };

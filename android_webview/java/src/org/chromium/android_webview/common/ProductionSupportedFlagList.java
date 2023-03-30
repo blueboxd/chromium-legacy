@@ -10,6 +10,7 @@ import org.chromium.blink_public.common.BlinkFeatures;
 import org.chromium.blink_scheduler.BlinkSchedulerFeatures;
 import org.chromium.cc.base.CcFeatures;
 import org.chromium.cc.base.CcSwitches;
+import org.chromium.components.autofill.AndroidAutofillFeatures;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.metrics.AndroidMetricsFeatures;
@@ -22,6 +23,7 @@ import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
+import org.chromium.net.NetFeatures;
 import org.chromium.services.network.NetworkServiceFeatures;
 import org.chromium.ui.accessibility.AccessibilityFeatures;
 
@@ -135,11 +137,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY,
                     "Only allow extra headers added via loadUrl() to be sent to the same origin "
                             + "as the original request."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_MEASURE_SCREEN_COVERAGE,
-                    "Measure the number of pixels occupied by one or more WebViews as a proportion "
-                            + "of the total screen size. Depending on the number of WebViews and "
-                            + "the size of the screen this might be expensive so hidden behind a "
-                            + "feature flag until the true runtime cost can be measured."),
             Flag.baseFeature(AwFeatures.WEBVIEW_DISPLAY_CUTOUT,
                     "Enables display cutout (notch) support in WebView for Android P and above."),
             Flag.baseFeature(BlinkFeatures.WEBVIEW_ACCELERATE_SMALL_CANVASES,
@@ -154,6 +151,11 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.GMS_CORE_EMOJI,
                     "Enables retrieval of the emoji font through GMS Core "
                             + "improving emoji glyph coverage."),
+            Flag.baseFeature(
+                    AndroidAutofillFeatures
+                            .ANDROID_AUTOFILL_VIEW_STRUCTURE_WITH_FORM_HIERARCHY_LAYER_NAME,
+                    "When enabled, Android Autofill ViewStructures contain an additional "
+                            + "hierarchy level."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ACROSS_IFRAMES,
                     "Enable Autofill for frame-transcending forms (forms whose fields live in "
                             + "different frames)."),
@@ -282,9 +284,6 @@ public final class ProductionSupportedFlagList {
                     "Controls whether wake ups are possible for canceled tasks."),
             Flag.baseFeature(BaseFeatures.REMOVE_CANCELED_TASKS_IN_TASK_QUEUE,
                     "Controls whether or not canceled delayed tasks are removed from task queues."),
-            Flag.baseFeature(BaseFeatures.ALWAYS_ABANDON_SCHEDULED_TASK,
-                    "Controls whether or not the scheduled task is always abandoned when a timer "
-                            + "is stopped or resets."),
             Flag.baseFeature(BlinkFeatures.VIEW_TRANSITION,
                     "Enables the experimental View Transitions API."
                             + " See https://github.com/WICG/view-transitions/blob/main/explainer.md."),
@@ -326,17 +325,11 @@ public final class ProductionSupportedFlagList {
                     "If enabled, SVG images will suspend animations when all "
                             + "instances of the image are outside of the "
                             + "viewport."),
-            Flag.baseFeature(BlinkFeatures.SCROLL_OVERLAP_OPTIMIZATION,
-                    "Enables scroll overlap optimization. See https://crbug.com/1401086#c29."),
             Flag.baseFeature(BlinkFeatures.SVG_RASTER_OPTIMIZATIONS),
-            Flag.baseFeature("PreconnectOnRedirect"),
-            Flag.baseFeature("PreconnectInNetworkService"), Flag.baseFeature("PrefetchDNSWithURL"),
             Flag.baseFeature(BlinkFeatures.SEND_MOUSE_EVENTS_DISABLED_FORM_CONTROLS,
                     "This changes event propagation for disabled form controls."),
             Flag.baseFeature(ContentFeatures.SURFACE_SYNC_FULLSCREEN_KILLSWITCH,
                     "Disable to turn off the new SurfaceSync Fullscreen path."),
-            Flag.baseFeature(MetricsFeatures.EMIT_HISTOGRAMS_EARLIER,
-                    "Controls whether histograms are emitted earlier."),
             Flag.baseFeature(ContentFeatures.PERSISTENT_ORIGIN_TRIALS,
                     "If enabled, servers will be able to use persistent origin trials "
                             + "on this device."),
@@ -363,8 +356,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature("CanvasColorCache"),
             Flag.baseFeature(AwFeatures.WEBVIEW_RESTRICT_SENSITIVE_CONTENT,
                     "Controls whether access to sensitive web content should be restricted."),
-            Flag.baseFeature("NavigationRequestPreconnect"),
-            Flag.baseFeature("WebViewEnableDnsPrefetchAndPreconnect"),
             Flag.baseFeature(BlinkFeatures.KEYBOARD_FOCUSABLE_SCROLLERS,
                     "When enabled, can focus on a scroller element using the keyboard."),
             Flag.commandLine(AwSwitches.WEBVIEW_ENABLE_TRUST_TOKENS_COMPONENT,
@@ -395,6 +386,19 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
                     "Enables WebView to use the extended keyboard shortcuts added for Android U"),
             Flag.baseFeature("LessChattyNetworkService"),
+            Flag.baseFeature(BlinkFeatures.AUTOFILL_DETECT_REMOVED_FORM_CONTROLS,
+                    "Enables Autofill to detect if form controls are removed from the DOM"),
+            Flag.baseFeature(NetFeatures.SUPPORT_PARTITIONED_BLOB_URL,
+                    "Enables the new Blob URL implementation needed for third-party storage"
+                            + " partitioning"),
+            Flag.baseFeature(NetFeatures.THIRD_PARTY_STORAGE_PARTITIONING,
+                    "Enables partitioning of third-party storage by top-level site. "
+                            + "Note: this is under active development and may result in unexpected "
+                            + "behavior. Please file bugs at https://bugs.chromium.org/p/chromium/issues/"
+                            + "entry?labels=StoragePartitioning-trial-bugs&components=Blink%3EStorage."),
+            Flag.baseFeature(BaseFeatures.CRASH_BROWSER_ON_CHILD_MISMATCH_IF_BROWSER_CHANGED,
+                    "Causes the browser process to crash if child processes are failing to launch"
+                            + " due to a browser version change."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

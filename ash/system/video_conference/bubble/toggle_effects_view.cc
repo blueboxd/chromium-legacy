@@ -13,9 +13,12 @@
 #include "ash/system/video_conference/bubble/bubble_view_ids.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager_types.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
+#include "ash/system/video_conference/video_conference_utils.h"
 #include "ash/utility/haptics_util.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -52,8 +55,9 @@ class ButtonContainer : public views::Button {
                   const std::u16string& label_text,
                   const int accessible_name_id,
                   const int preferred_width,
-                  absl::optional<int> container_id = absl::nullopt)
-      : callback_(callback), toggled_(toggle_state) {
+                  absl::optional<int> container_id,
+                  const VcEffectId effect_id)
+      : callback_(callback), toggled_(toggle_state), effect_id_(effect_id) {
     SetCallback(base::BindRepeating(&ButtonContainer::OnButtonClicked,
                                     weak_ptr_factory_.GetWeakPtr()));
     SetID(video_conference::BubbleViewID::kToggleEffectsButton);
@@ -105,6 +109,9 @@ class ButtonContainer : public views::Button {
     // Sets the toggled state.
     toggled_ = !toggled_;
 
+    base::UmaHistogramBoolean(
+        video_conference_utils::GetEffectHistogramName(effect_id_), toggled_);
+
     haptics_util::PlayHapticToggleEffect(
         !toggled_, ui::HapticTouchpadEffectStrength::kMedium);
 
@@ -124,6 +131,9 @@ class ButtonContainer : public views::Button {
 
   // Indicates the toggled state of the button.
   bool toggled_ = false;
+
+  // The effect id associated to the effect of this button.
+  const VcEffectId effect_id_;
 
   // Owned by the views hierarchy.
   views::ImageView* icon_ = nullptr;
@@ -191,7 +201,7 @@ ToggleEffectsView::ToggleEffectsView(VideoConferenceTrayController* controller,
       row_view->AddChildView(std::make_unique<ButtonContainer>(
           state->button_callback(), state->icon(), toggle_state,
           state->label_text(), state->accessible_name_id(), button_width,
-          tile->container_id()));
+          tile->container_id(), tile->id()));
     }
 
     // Add the row as a child, now that it's fully populated,

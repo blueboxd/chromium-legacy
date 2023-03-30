@@ -22,6 +22,7 @@
 
 Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne kontoen. Du kan administrere Google-kontoene dine i <ph name="SETTINGS_LINK_BEGIN" />innstillingene<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Laster ned …</translation>
+<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium ble koblet til en HID-enhet}=1{Chromium er koblet til en HID-enhet}other{Chromium er koblet til HID-enheter}}</translation>
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
 <translation id="17264556997921157">Du kan se og fjerne interesseemnene som nettsteder bruker for å vise deg annonser. Chromium anslår interessene dine basert på den nylige nettleserloggen din.</translation>
 <translation id="1733725117201708356">Chromium sletter snart nettlesingsdata</translation>
@@ -79,7 +80,6 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="2928420929544864228">Installasjonen er fullført.</translation>
 <translation id="2977470724722393594">Chromium er oppdatert</translation>
 <translation id="2977506796191543575">Hvis nettsteder prøver å stjele passordet ditt, eller når du laster ned skadelige filer, kan Chromium også sende nettadresser, inkludert deler av sideinnholdet, til Safe Browsing</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium er koblet til en HID-enhet}other{Chromium er koblet til HID-enheter}}</translation>
 <translation id="3032706164202344641">Chromium kan ikke sjekke passordene dine. Prøv på nytt senere.</translation>
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
 <translation id="3038232873781883849">Venter på installering</translation>

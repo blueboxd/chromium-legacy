@@ -35,8 +35,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) CryptohomeMiscClient {
       ::user_data_auth::LockToSingleUserMountUntilRebootReply>;
   using GetRsuDeviceIdCallback =
       chromeos::DBusMethodCallback<::user_data_auth::GetRsuDeviceIdReply>;
-  using CheckHealthCallback =
-      chromeos::DBusMethodCallback<::user_data_auth::CheckHealthReply>;
 
   // Not copyable or movable.
   CryptohomeMiscClient(const CryptohomeMiscClient&) = delete;
@@ -84,10 +82,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) CryptohomeMiscClient {
   virtual void GetRsuDeviceId(
       const ::user_data_auth::GetRsuDeviceIdRequest& request,
       GetRsuDeviceIdCallback callback) = 0;
-
-  // Returns the "health" state of the system. i.e. If powerwash is needed.
-  virtual void CheckHealth(const ::user_data_auth::CheckHealthRequest& request,
-                           CheckHealthCallback callback) = 0;
 
   // Blocking version of GetSanitizedUsername().
   virtual absl::optional<::user_data_auth::GetSanitizedUsernameReply>

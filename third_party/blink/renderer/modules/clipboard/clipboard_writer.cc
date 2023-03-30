@@ -64,8 +64,8 @@ class ClipboardImageWriter final : public ClipboardWriter {
     std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
         SegmentReader::CreateFromSkData(
             SkData::MakeWithoutCopy(png_data.Data(), png_data.DataLength())),
-        true, ImageDecoder::kAlphaPremultiplied, ImageDecoder::kDefaultBitDepth,
-        ColorBehavior::Tag());
+        /*data_complete=*/true, ImageDecoder::kAlphaPremultiplied,
+        ImageDecoder::kDefaultBitDepth, ColorBehavior::Tag());
     sk_sp<SkImage> image = nullptr;
     // `decoder` is nullptr if `png_data` doesn't begin with the PNG signature.
     if (decoder) {
@@ -161,7 +161,10 @@ class ClipboardHtmlWriter final : public ClipboardWriter {
     if (!local_frame || !execution_context) {
       return;
     }
-    execution_context->CountUse(WebFeature::kHtmlClipboardApiWrite);
+    execution_context->CountUse(
+        RuntimeEnabledFeatures::ClipboardUnsanitizedContentEnabled()
+            ? WebFeature::kHtmlClipboardApiUnsanitizedWrite
+            : WebFeature::kHtmlClipboardApiWrite);
 
     String html_string =
         String::FromUTF8(reinterpret_cast<const LChar*>(html_data->Data()),

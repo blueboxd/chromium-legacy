@@ -19,6 +19,7 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/cart/cart_handler.h"
 #include "chrome/browser/image_service/image_service_factory.h"
+#include "chrome/browser/new_tab_page/customize_chrome/customize_chrome_feature_promo_helper.h"
 #include "chrome/browser/new_tab_page/modules/drive/drive_handler.h"
 #include "chrome/browser/new_tab_page/modules/feed/feed_handler.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
@@ -63,10 +64,8 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/history_clusters/core/config.h"
-#include "components/image_service/features.h"
-#include "components/image_service/image_service.h"
-#include "components/image_service/image_service_handler.h"
+#include "components/page_image_service/image_service.h"
+#include "components/page_image_service/image_service_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
@@ -202,6 +201,9 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       base::FeatureList::IsEnabled(ntp_features::kNtpOneGoogleBar));
   source->AddBoolean("shortcutsEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kNtpShortcuts));
+  source->AddBoolean(
+      "singleRowShortcutsEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpSingleRowShortcuts));
   source->AddBoolean("logoEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kNtpLogo));
   source->AddBoolean(
@@ -231,10 +233,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
                      base::FeatureList::IsEnabled(
                          ntp_features::kNtpHistoryClustersModuleLoad) &&
                          HasCredentials(profile));
-  source->AddBoolean(
-      "isHistoryClustersImagesEnabled",
-      history_clusters::GetConfig().images &&
-          base::FeatureList::IsEnabled(image_service::kImageService));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
@@ -488,17 +486,16 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesJourneyDisable", IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TEXT},
       {"modulesJourneysShowAllAcc", IDS_ACCNAME_SHOW_ALL},
       {"modulesJourneysSearchSuggAcc", IDS_ACCNAME_SEARCH_SUGG},
+      {"modulesJourneysBookmarked",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_BOOKMARKED},
 
       // Middle slot promo.
       {"undoDismissPromoButtonToast", IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST},
   };
   source->AddLocalizedStrings(kStrings);
 
-  absl::optional<int> modules_max_width_px =
-      ntp_features::GetModulesMaxWidthPixels();
-  if (modules_max_width_px.has_value()) {
-    source->AddInteger("modulesMaxWidthPx", modules_max_width_px.value());
-  }
+  source->AddBoolean("wideModulesEnabled", base::FeatureList::IsEnabled(
+                                               ntp_features::kNtpWideModules));
 
   source->AddBoolean(
       "modulesHeaderIconEnabled",
@@ -799,15 +796,17 @@ void NewTabPageUI::BindInterface(
 }
 
 void NewTabPageUI::BindInterface(
-    mojo::PendingReceiver<image_service::mojom::ImageServiceHandler>
+    mojo::PendingReceiver<page_image_service::mojom::PageImageServiceHandler>
         pending_page_handler) {
-  base::WeakPtr<image_service::ImageService> image_service_weak;
+  base::WeakPtr<page_image_service::ImageService> image_service_weak;
   if (auto* image_service =
-          image_service::ImageServiceFactory::GetForBrowserContext(profile_)) {
+          page_image_service::ImageServiceFactory::GetForBrowserContext(
+              profile_)) {
     image_service_weak = image_service->GetWeakPtr();
   }
-  image_service_handler_ = std::make_unique<image_service::ImageServiceHandler>(
-      std::move(pending_page_handler), std::move(image_service_weak));
+  image_service_handler_ =
+      std::make_unique<page_image_service::ImageServiceHandler>(
+          std::move(pending_page_handler), std::move(image_service_weak));
 }
 
 void NewTabPageUI::BindInterface(
@@ -829,6 +828,7 @@ void NewTabPageUI::CreatePageHandler(
       std::move(pending_page_handler), std::move(pending_page), profile_,
       ntp_custom_background_service_, theme_service_,
       LogoServiceFactory::GetForProfile(profile_), web_contents(),
+      std::make_unique<CustomizeChromeFeaturePromoHelper>(),
       navigation_start_time_, module_id_names_);
 }
 

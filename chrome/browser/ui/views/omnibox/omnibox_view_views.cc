@@ -90,6 +90,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -617,8 +618,12 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
 void OmniboxViewViews::OnThemeChanged() {
   views::Textfield::OnThemeChanged();
 
-  set_placeholder_text_color(
-      GetColorProvider()->GetColor(kColorOmniboxTextDimmed));
+  bool gm3_text_color_enabled =
+      features::IsChromeRefresh2023() ||
+      base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextColor);
+
+  set_placeholder_text_color(GetColorProvider()->GetColor(
+      gm3_text_color_enabled ? kColorOmniboxText : kColorOmniboxTextDimmed));
 
   EmphasizeURLComponents();
 }
@@ -1599,8 +1604,19 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       } else if (shift) {
         disposition = WindowOpenDisposition::NEW_WINDOW;
       }
-      model()->OpenSelection(model()->GetPopupSelection(), event.time_stamp(),
-                             disposition);
+      // According to unit tests and comments, holding control when pressing
+      // enter has special behavior handled by `AcceptInput` so in this case
+      // the user is selecting their input (possibly with modification like
+      // appending ".com") and not the row match. This is indicated with an
+      // explicit `kNoMatch` line selection.
+      if (model()->PopupIsOpen() && !control) {
+        model()->OpenSelection(model()->GetPopupSelection(), event.time_stamp(),
+                               disposition);
+      } else {
+        model()->OpenSelection(
+            OmniboxPopupSelection(OmniboxPopupSelection::kNoMatch),
+            event.time_stamp(), disposition);
+      }
       return true;
     }
     case ui::VKEY_ESCAPE:
@@ -1804,7 +1820,7 @@ void OmniboxViewViews::AppendDropFormats(
 
 DragOperation OmniboxViewViews::OnDrop(const ui::DropTargetEvent& event) {
   ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  PerformDrop(event, output_drag_op);
+  PerformDrop(event, output_drag_op, /*drag_image_layer_owner=*/nullptr);
   return output_drag_op;
 }
 
@@ -1889,8 +1905,10 @@ void OmniboxViewViews::PermitExternalProtocolHandler() {
   ExternalProtocolHandler::PermitLaunchUrl();
 }
 
-void OmniboxViewViews::PerformDrop(const ui::DropTargetEvent& event,
-                                   ui::mojom::DragOperation& output_drag_op) {
+void OmniboxViewViews::PerformDrop(
+    const ui::DropTargetEvent& event,
+    ui::mojom::DragOperation& output_drag_op,
+    std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner) {
   if (HasTextBeingDragged()) {
     output_drag_op = DragOperation::kNone;
     return;

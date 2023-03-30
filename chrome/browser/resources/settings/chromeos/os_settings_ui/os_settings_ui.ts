@@ -11,6 +11,7 @@
  *    <settings-ui prefs="{{prefs}}"></settings-ui>
  */
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/cr_elements/icons.html.js';
@@ -65,7 +66,7 @@ assert(
     !window.settings || !defaultResourceLoaded,
     'os_settings_ui.js was executed twice. You probably have an invalid import.');
 
-interface OsSettingsUiElement {
+export interface OsSettingsUiElement {
   $: {
     container: HTMLDivElement,
     prefs: SettingsPrefsElement,
@@ -79,7 +80,7 @@ const OsSettingsUiElementBase =
     RouteObserverMixin(
         FindShortcutMixin(CrContainerShadowMixin(PolymerElement)));
 
-class OsSettingsUiElement extends OsSettingsUiElementBase {
+export class OsSettingsUiElement extends OsSettingsUiElementBase {
   static get is() {
     return 'os-settings-ui';
   }

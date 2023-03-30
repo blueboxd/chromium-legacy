@@ -5,11 +5,13 @@
 #include "content/app/android/library_loader_hooks.h"
 
 #include "base/android/reached_code_profiler.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/process/current_process.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/url_schemes.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 
 namespace content {
@@ -53,6 +55,13 @@ bool LibraryLoaded(JNIEnv* env,
     VLOG(0) << "Chromium logging enabled: level = " << logging::GetMinLogLevel()
             << ", default verbosity = " << logging::GetVlogVerbosity();
   }
+
+#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
+  // Initialize ICU early so that it can be used by JNI calls before
+  // ContentMain() is called.
+  TRACE_EVENT0("startup", "InitializeICU");
+  CHECK(base::i18n::InitializeICU());
+#endif
 
   // Content Schemes need to be registered as early as possible after the
   // CommandLine has been initialized to allow java and tests to use GURL before

@@ -1219,7 +1219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.NumEvents" enum="UsedOmnibox"
-    expires_after="2023-07-13">
+    expires_after="2023-09-17">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1917,7 +1917,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.SuggestionUsed.Search.InputToNavigationStart"
+<histogram name="Omnibox.SuggestionUsed.Search.InputToNavigationStart2"
     units="ms" expires_after="2023-08-20">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
@@ -1944,7 +1944,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Omnibox.SuggestionUsed.Search.NavigationToLargestContentfulPaint2"
     units="ms" expires_after="2023-09-03">
-  <owner>asamidoi@chromium.org</owner>
+  <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -2012,7 +2012,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.SuggestionUsed.URL.InputToNavigationStart" units="ms"
+<histogram name="Omnibox.SuggestionUsed.URL.InputToNavigationStart2" units="ms"
     expires_after="2023-08-20">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
@@ -2037,8 +2037,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.URL.NavigationToLargestContentfulPaint2"
-    units="ms" expires_after="2023-04-27">
-  <owner>asamidoi@chromium.org</owner>
+    units="ms" expires_after="2023-09-03">
+  <owner>robertlin@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -2086,7 +2086,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequests" enum="OmniboxSuggestRequests"
-    expires_after="2023-06-04">
+    expires_after="2023-09-24">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -2171,7 +2171,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.TabMatchTime" units="microseconds"
-    expires_after="2023-07-02">
+    expires_after="2023-09-24">
   <owner>gangwu@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>

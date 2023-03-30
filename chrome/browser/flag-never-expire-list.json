@@ -57,6 +57,7 @@
   "enable-quic",
   "enable-reader-mode-in-cct",
   "enable-resource-loading-hints",
+  "enable-rfc-8925",
   "enable-show-autofill-signatures",
   "enable-site-per-process",
   "enable-touchscreen-calibration",
@@ -133,5 +134,6 @@
   "wait-threshold-seconds-for-capabilities-api",
   "wallet-service-use-sandbox",
   "web-authentication-permit-enterprise-attestation",
-  "webxr-runtime"
+  "webxr-runtime",
+  "webxr-shared-buffers"
 ]

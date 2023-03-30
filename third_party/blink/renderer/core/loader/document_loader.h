@@ -752,7 +752,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // |archive_|, but won't have |loading_main_document_from_mhtml_archive_| set.
   bool loading_main_document_from_mhtml_archive_ = false;
   const bool loading_srcdoc_ = false;
-  const KURL fallback_srcdoc_base_url_;
+  const KURL fallback_base_url_;
   const bool loading_url_as_empty_document_ = false;
   const bool is_static_data_ = false;
   CommitReason commit_reason_ = CommitReason::kRegular;
@@ -815,7 +815,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Indicates whether the document should be loaded with its has_storage_access
   // bit set.
-  const bool has_storage_access_;
+  const bool load_with_storage_access_;
 
   // Only container-initiated navigations (e.g. iframe change src) report
   // their resource timing to the parent.

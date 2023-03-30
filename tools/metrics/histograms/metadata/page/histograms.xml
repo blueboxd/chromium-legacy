@@ -30,6 +30,15 @@ chromium-metrics-reviews@google.com.
   <variant name="5000ms"/>
 </variants>
 
+<variants name="PrivacySandboxAdsApi">
+  <variant name="AttributionReporting"/>
+  <variant name="FencedFrames"/>
+  <variant name="Fledge"/>
+  <variant name="PrivateAggregation"/>
+  <variant name="SharedStorage"/>
+  <variant name="Topics"/>
+</variants>
+
 <variants name="RequestDestination">
   <variant name="audio"/>
   <variant name="audioworklet"/>
@@ -758,7 +767,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.FencedFrames.PaintTiming.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2023-07-16">
+    units="ms" expires_after="2023-09-17">
   <owner>toyoshim@chromium.org</owner>
   <owner>mparch-dev@chromium.org</owner>
   <summary>
@@ -796,7 +805,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.FencedFrames.PaintTiming.NavigationToLargestContentfulPaint2"
-    units="ms" expires_after="2023-07-16">
+    units="ms" expires_after="2023-09-17">
   <owner>toyoshim@chromium.org</owner>
   <owner>mparch-dev@chromium.org</owner>
   <summary>
@@ -935,9 +944,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.Prerender.InteractiveTiming.FirstInputDelay4{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
+    units="ms" expires_after="2023-09-03">
   <owner>ksakamoto@chromium.org</owner>
-  <owner>asamidoi@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     PageLoad.InteractiveTiming.FirstInputDelay4, but for page loads that were
@@ -953,9 +961,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.Prerender.LayoutInstability.CumulativeShiftScore.MainFrame{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
+    units="ms" expires_after="2023-09-03">
   <owner>ksakamoto@chromium.org</owner>
-  <owner>asamidoi@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame, but for page
@@ -972,9 +979,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.Prerender.LayoutInstability.CumulativeShiftScore{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
+    units="ms" expires_after="2023-09-03">
   <owner>ksakamoto@chromium.org</owner>
-  <owner>asamidoi@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     PageLoad.LayoutInstability.CumulativeShiftScore, but for page loads that
@@ -990,8 +996,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.Prerender.LayoutInstability.MaxCumulativeShiftScore.SessionWindow.Gap1000ms.Max5000ms2{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
-  <owner>asamidoi@chromium.org</owner>
+    units="ms" expires_after="2023-09-03">
+  <owner>kenoss@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     PageLoad.LayoutInstability.MaxCumulativeShiftScore.SessionWindow.Gap1000ms.Max5000ms2,
@@ -1008,9 +1014,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.Prerender.NavigationToActivation{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
+    units="ms" expires_after="2023-09-03">
   <owner>ksakamoto@chromium.org</owner>
-  <owner>asamidoi@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     Measures the time from the start of initial prerendering navigation to the
@@ -1026,25 +1031,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="PageLoad.Clients.Prerender.PageEndReason{PrerenderTriggerType}"
-    enum="PageEndReason" expires_after="2023-04-27">
-  <owner>asamidoi@chromium.org</owner>
-  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
-  <summary>
-    The reason how the page load ended on the prerender's activation.
-  </summary>
-<!-- PrerenderTriggerType variant is defined in
-  tools/metrics/histograms/metadata/navigation/histograms.xml.
--->
-
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
-</histogram>
-
-<histogram
     name="PageLoad.Clients.Prerender.PaintTiming.ActivationToFirstContentfulPaint{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
+    units="ms" expires_after="2023-09-03">
   <owner>ksakamoto@chromium.org</owner>
-  <owner>asamidoi@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     PageLoad.PaintTiming.NavigationToFirstContentfulPaint, but for page loads
@@ -1062,9 +1051,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.Prerender.PaintTiming.ActivationToFirstPaint{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
+    units="ms" expires_after="2023-09-03">
   <owner>ksakamoto@chromium.org</owner>
-  <owner>asamidoi@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     PageLoad.PaintTiming.NavigationToFirstPaint, but for page loads that were
@@ -1081,9 +1069,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.Prerender.PaintTiming.ActivationToLargestContentfulPaint2{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
+    units="ms" expires_after="2023-09-03">
   <owner>ksakamoto@chromium.org</owner>
-  <owner>asamidoi@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     PageLoad.PaintTiming.NavigationToLargestContentfulPaint2, but for page loads
@@ -1097,6 +1084,58 @@ chromium-metrics-reviews@google.com.
 -->
 
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.PrivacySandboxAds.InteractiveTiming.FirstInputDelay4.{PrivacySandboxAdsApi}"
+    units="ms" expires_after="M117">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    PageLoad.InteractiveTiming.FirstInputDelay4, but recorded iff
+    {PrivacySandboxAdsApi} was used in the page.
+  </summary>
+  <token key="PrivacySandboxAdsApi" variants="PrivacySandboxAdsApi"/>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.PrivacySandboxAds.LayoutInstability.MaxCumulativeShiftScore.SessionWindow.Gap1000ms.Max5000ms2.{PrivacySandboxAdsApi}"
+    units="ms" expires_after="M117">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    PageLoad.LayoutInstability.MaxCumulativeShiftScore.SessionWindow.Gap1000ms.Max5000ms2,
+    but recorded iff {PrivacySandboxAdsApi} was used in the page.
+  </summary>
+  <token key="PrivacySandboxAdsApi" variants="PrivacySandboxAdsApi"/>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.PrivacySandboxAds.PaintTiming.NavigationToFirstContentfulPaint.{PrivacySandboxAdsApi}"
+    units="ms" expires_after="M117">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    PageLoad.PaintTiming.NavigationToFirstContentfulPaint, but recorded iff
+    {PrivacySandboxAdsApi} was used in the page.
+  </summary>
+  <token key="PrivacySandboxAdsApi" variants="PrivacySandboxAdsApi"/>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.PrivacySandboxAds.PaintTiming.NavigationToLargestContentfulPaint2.{PrivacySandboxAdsApi}"
+    units="ms" expires_after="M117">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    PageLoad.PaintTiming.NavigationToLargestContentfulPaint2, but recorded iff
+    {PrivacySandboxAdsApi} was used in the page.
+  </summary>
+  <token key="PrivacySandboxAdsApi" variants="PrivacySandboxAdsApi"/>
 </histogram>
 
 <histogram name="PageLoad.Clients.Scheme.HTTP.PaintTiming.UnderStat"
@@ -1325,7 +1364,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.UseCounter.Experimental.MetricsReplayAtActivationDuration"
-    units="ms" expires_after="2023-03-16">
+    units="ms" expires_after="2023-09-03">
   <owner>kenoss@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <summary>
@@ -1337,6 +1376,9 @@ chromium-metrics-reviews@google.com.
     memory. When a page is activated then, buffered metrics are flushed and
     recorded. This metric records the duration of this flush, in case of this
     cause a performance degradation.
+
+    Warning: this histogram was expired from 2023-03-16 to 2023-03-29; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -2394,7 +2436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Internal.PageType" enum="PageLoadTrackerPageType"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>toyoshim@chromium.org</owner>
   <owner>mparch-dev@chromium.org</owner>
   <summary>
@@ -2441,9 +2483,29 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PageLoad.Internal.Prerender2.ActivatedPageLoaderStatus{PrerenderTriggerType}"
+    enum="NetErrorCodes" expires_after="2023-08-27">
+  <owner>lingqi@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Records error codes for loading of a main resource of a main frame which
+    belongs to a prerendered and then activated page when the page received
+    loading completion event for the resource.
+
+    This metric is used to monitor whether preload cache intercepting logic
+    causes extra page loading errors.
+  </summary>
+<!-- PrerenderTriggerType variant is defined in
+  tools/metrics/histograms/metadata/navigation/histograms.xml.
+-->
+
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
 <histogram name="PageLoad.Internal.Prerender2.Event"
-    enum="PageLoadPrerenderEvent" expires_after="2023-07-16">
-  <owner>asamidoi@chromium.org</owner>
+    enum="PageLoadPrerenderEvent" expires_after="2023-09-17">
+  <owner>kenoss@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
     Counts page load events related to Prerender2, like navigation in
@@ -2470,7 +2532,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Internal.Prerender2.ObserverEvent"
-    enum="PageLoadPrerenderObserverEvent" expires_after="2023-07-26">
+    enum="PageLoadPrerenderObserverEvent" expires_after="2023-09-24">
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
@@ -2481,7 +2543,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Internal.Prerender2.VisibilityAtActivation"
-    enum="PageLoadPrerenderVisibilityAtActivation" expires_after="2023-07-26">
+    enum="PageLoadPrerenderVisibilityAtActivation" expires_after="2023-09-24">
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
@@ -2564,7 +2626,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.LayoutInstability.CumulativeShiftScore"
-    units="scorex10" expires_after="2023-07-13">
+    units="scorex10" expires_after="2023-09-17">
   <owner>bmcquade@chromium.org</owner>
   <owner>skobes@chromium.org</owner>
   <summary>
@@ -2781,7 +2843,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.PageTiming.NavigationToFirstForeground" units="ms"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -2827,7 +2889,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.PaintTiming.NavigationToFirstImagePaint" units="ms"
-    expires_after="2023-07-21">
+    expires_after="2023-09-24">
   <owner>sullivan@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>

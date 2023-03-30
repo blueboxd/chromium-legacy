@@ -22,13 +22,21 @@ static_library("eche_app_ui_pref") {
   deps = [ "//base:base" ]
 }
 
+static_library("feature_status") {
+  sources = [
+    "feature_status.cc",
+    "feature_status.h",
+  ]
+}
+
 static_library("eche_connection_status") {
   sources = [
-    "eche_connection_status_observer.cc",
-    "eche_connection_status_observer.h",
+    "eche_connection_status_handler.cc",
+    "eche_connection_status_handler.h",
   ]
 
   deps = [
+    ":feature_status",
     "//ash/constants",
     "//ash/webui/eche_app_ui/mojom",
     "//base:base",
@@ -46,6 +54,8 @@ static_library("eche_app_ui") {
     "apps_access_manager_impl.h",
     "apps_access_setup_operation.cc",
     "apps_access_setup_operation.h",
+    "apps_launch_info_provider.cc",
+    "apps_launch_info_provider.h",
     "eche_alert_generator.cc",
     "eche_alert_generator.h",
     "eche_app_manager.cc",
@@ -82,8 +92,6 @@ static_library("eche_app_ui") {
     "eche_tray_stream_status_observer.h",
     "eche_uid_provider.cc",
     "eche_uid_provider.h",
-    "feature_status.cc",
-    "feature_status.h",
     "feature_status_provider.cc",
     "feature_status_provider.h",
     "launch_app_helper.cc",
@@ -101,6 +109,7 @@ static_library("eche_app_ui") {
   deps = [
     ":eche_app_ui_pref",
     ":eche_connection_status",
+    ":feature_status",
     "//ash",
     "//ash/constants",
     "//ash/public/cpp",
@@ -156,10 +165,11 @@ source_set("unit_tests") {
   sources = [
     "apps_access_manager_impl_unittest.cc",
     "apps_access_setup_operation_unittest.cc",
+    "apps_launch_info_provider_unittest.cc",
     "eche_alert_generator_unittest.cc",
     "eche_app_manager_unittest.cc",
     "eche_connection_scheduler_impl_unittest.cc",
-    "eche_connection_status_observer_unittest.cc",
+    "eche_connection_status_handler_unittest.cc",
     "eche_connector_impl_unittest.cc",
     "eche_feature_status_provider_unittest.cc",
     "eche_message_receiver_impl_unittest.cc",
@@ -178,6 +188,7 @@ source_set("unit_tests") {
     ":eche_app_ui",
     ":eche_app_ui_pref",
     ":eche_connection_status",
+    ":feature_status",
     ":test_support",
     "//ash:test_support",
     "//ash/public/cpp",

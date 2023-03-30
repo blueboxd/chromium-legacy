@@ -122,7 +122,12 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   virtual void ShowFailureDialog(WebContents* rp_web_contents,
                                  const std::string& top_frame_for_display,
                                  const std::string& idp_for_display,
+                                 const IdentityProviderMetadata& idp_metadata,
                                  DismissCallback dismiss_callback);
+
+  // Only to be called after a dialog is shown.
+  virtual std::string GetTitle() const;
+  virtual absl::optional<std::string> GetSubtitle() const;
 
   // Show dialog notifying user that IdP sign-in failed.
   virtual void ShowIdpSigninFailureDialog(base::OnceClosure dismiss_callback);

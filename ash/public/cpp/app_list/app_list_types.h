@@ -325,7 +325,7 @@ enum class AppListGridAnimationStatus {
 // AppListLaunchedFrom enum listing in tools/metrics/histograms/enums.xml.
 enum class AppListLaunchedFrom {
   kLaunchedFromGrid = 1,
-  kLaunchedFromSuggestionChip = 2,
+  DEPRECATED_kLaunchedFromSuggestionChip = 2,
   kLaunchedFromShelf = 3,
   kLaunchedFromSearchBox = 4,
   kLaunchedFromRecentApps = 5,
@@ -746,6 +746,18 @@ struct SearchResultIdWithPositionIndex {
 
   // The position index of the result.
   int position_index;
+};
+
+// `ScopedIphSession` manages an IPH session. A UI must show an IPH once an
+// IPH session gets created. Also the UI must destroy
+// `ScopedIphSession` when it has stopped showing an IPH.
+class ASH_PUBLIC_EXPORT ScopedIphSession {
+ public:
+  ScopedIphSession() = default;
+  virtual ~ScopedIphSession() = default;
+
+  ScopedIphSession(const ScopedIphSession&) = delete;
+  ScopedIphSession& operator=(const ScopedIphSession&) = delete;
 };
 
 using SearchResultIdWithPositionIndices =

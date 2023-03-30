@@ -38,9 +38,9 @@ class Vp8Decoder : public VideoDecoder {
   // Parses next frame from IVF stream and decodes the frame. This method will
   // place the Y, U, and V values into the respective vectors and update the
   // size with the display area size of the decoded frame.
-  VideoDecoder::Result DecodeNextFrame(std::vector<char>& y_plane,
-                                       std::vector<char>& u_plane,
-                                       std::vector<char>& v_plane,
+  VideoDecoder::Result DecodeNextFrame(std::vector<uint8_t>& y_plane,
+                                       std::vector<uint8_t>& u_plane,
+                                       std::vector<uint8_t>& v_plane,
                                        gfx::Size& size,
                                        const int frame_number) override;
 
@@ -62,7 +62,7 @@ class Vp8Decoder : public VideoDecoder {
   // Refreshes |ref_frames_| slots and returns the CAPTURE buffers that
   // can be reused for VIDIOC_QBUF ioctl call.
   std::set<int> RefreshReferenceSlots(const Vp8FrameHeader& frame_hdr,
-                                      MmapedBuffer* buffer,
+                                      MmappedBuffer* buffer,
                                       std::set<uint32_t> queued_buffer_ids);
 
   // Manages buffers holding reference frames and return buffer indexes
@@ -78,7 +78,7 @@ class Vp8Decoder : public VideoDecoder {
   const std::unique_ptr<Vp8Parser> vp8_parser_;
 
   // Reference frames currently in use.
-  std::array<scoped_refptr<MmapedBuffer>, kNumVp8ReferenceBuffers> ref_frames_;
+  std::array<scoped_refptr<MmappedBuffer>, kNumVp8ReferenceBuffers> ref_frames_;
 };
 
 }  // namespace v4l2_test

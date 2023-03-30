@@ -56,6 +56,9 @@
 #import "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/synced_sessions/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/distant_tab.h"
+#import "ios/chrome/browser/synced_sessions/synced_sessions.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
@@ -72,7 +75,6 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_ui_delegate.h"
-#import "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -371,9 +373,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       [[TableViewImageItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
 
-  historyItem.image = UseSymbols() ? DefaultSymbolWithPointSize(
-                                         kHistorySymbol, kSymbolActionPointSize)
-                                   : [UIImage imageNamed:@"show_history"];
+  historyItem.image =
+      DefaultSymbolWithPointSize(kHistorySymbol, kSymbolActionPointSize);
   historyItem.textColor = [UIColor colorNamed:kBlueColor];
   historyItem.accessibilityIdentifier =
       kRecentTabsShowFullHistoryCellAccessibilityIdentifier;
@@ -700,14 +701,16 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   // Init|_signinPromoViewMediator` if nil.
   if (!self.signinPromoViewMediator && self.browserState) {
     self.signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-        initWithAccountManagerService:ChromeAccountManagerServiceFactory::
-                                          GetForBrowserState(self.browserState)
-                          authService:AuthenticationServiceFactory::
-                                          GetForBrowserState(self.browserState)
-                          prefService:self.browserState->GetPrefs()
-                          accessPoint:signin_metrics::AccessPoint::
-                                          ACCESS_POINT_RECENT_TABS
-                            presenter:self];
+              initWithBrowser:self.browser
+        accountManagerService:ChromeAccountManagerServiceFactory::
+                                  GetForBrowserState(self.browserState)
+                  authService:AuthenticationServiceFactory::GetForBrowserState(
+                                  self.browserState)
+                  prefService:self.browserState->GetPrefs()
+                  accessPoint:signin_metrics::AccessPoint::
+                                  ACCESS_POINT_RECENT_TABS
+                    presenter:self
+           baseViewController:self];
     self.signinPromoViewMediator.consumer = self;
   }
 

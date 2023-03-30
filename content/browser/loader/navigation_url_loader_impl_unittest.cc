@@ -238,7 +238,9 @@ class NavigationURLLoaderImplTest : public testing::Test {
             absl::nullopt /* web_bundle_token */,
             blink::mojom::NavigationInitiatorActivationAndAdStatus::
                 kDidNotStartWithTransientActivation,
-            false /* is_container_initiated */);
+            false /* is_container_initiated */,
+            false /* is_fullscreen_requested */,
+            false /* has_storage_access */);
 
     auto common_params = blink::CreateCommonNavigationParams();
     common_params->url = url;
@@ -286,6 +288,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
         nullptr /* service_worker_handle */,
         nullptr /* prefetched_signed_exchange_cache */, delegate,
         mojo::NullRemote() /* cookie_access_obsever */,
+        mojo::NullRemote() /* trust_token_observer */,
         mojo::NullRemote() /* url_loader_network_observer */,
         /*devtools_observer=*/mojo::NullRemote(), std::move(interceptors));
   }

@@ -299,7 +299,7 @@ fn generate_for_third_party(args: &clap::ArgMatches, paths: &paths::ChromiumPath
 fn generate_for_std(_args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> ExitCode {
     // Load config file, which applies rustenv and cfg flags to some std crates.
     let config_file_contents = std::fs::read_to_string(paths.std_config_file).unwrap();
-    let config: config::ConfigFile = toml::de::from_str(&config_file_contents).unwrap();
+    let config: config::BuildConfig = toml::de::from_str(&config_file_contents).unwrap();
 
     // Run `cargo metadata` from the std package in the Rust source tree (which
     // is a workspace).
@@ -337,6 +337,15 @@ fn generate_for_std(_args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> E
     // libtest is the root of the std crate dependency tree, so start there.
     let mut dependencies =
         deps::collect_dependencies(&command.exec().unwrap(), Some(vec!["test".to_string()]), None);
+
+    // Remove dev dependencies since tests aren't run. Also remove build deps
+    // since we configure flags and env vars manually. Include libtest
+    // explicitly since, as the root of collect_dependencies(), it doesn't get a
+    // dependency_kinds entry.
+    dependencies.retain(|dep| {
+        dep.package_name == "test"
+            || dep.dependency_kinds.contains_key(&deps::DependencyKind::Normal)
+    });
 
     dependencies.sort_unstable_by(|a, b| {
         a.package_name.cmp(&b.package_name).then(a.version.cmp(&b.version))
@@ -389,38 +398,7 @@ fn generate_for_std(_args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> E
         }
     }
 
-    // Load extra cfg flags and environment variables needed while building std
-    // crates.
-    //
-    // TODO(crbug.com/1368806):
-    // * Supply `-Zforce-unstable-if-unmarked` to all std crates, which ensures deps
-    //   of std aren't visible to consumers.
-    let mut extra_gn = HashMap::new();
-    for (lib, config) in config.per_lib_config {
-        let mut rustflags = String::new();
-        let mut rustenv = String::new();
-        if !config.cfg.is_empty() {
-            rustflags = "rustflags = [".to_string();
-            rustflags.extend(config.cfg.into_iter().map(|cfg| format!("\"--cfg={cfg}\",")));
-            rustflags.push(']');
-        }
-        if !config.env.is_empty() {
-            rustenv = "rustenv = [".to_string();
-            rustenv.extend(config.env.into_iter().map(|env| format!("\"{env}\",")));
-            rustenv.push(']');
-        }
-
-        let strs = [rustflags.as_str(), rustenv.as_str()];
-        let extra = strs.join("\n");
-
-        assert!(
-            !extra.is_empty(),
-            "if a config entry was present, we should've generated something..."
-        );
-        extra_gn.insert(lib, extra);
-    }
-
-    let build_file = gn::build_file_from_std_deps(dependencies.iter(), paths, &extra_gn);
+    let build_file = gn::build_file_from_std_deps(dependencies.iter(), paths, &config);
     write_build_file(&paths.std_build.join("BUILD.gn"), &build_file).unwrap();
 
     ExitCode::SUCCESS

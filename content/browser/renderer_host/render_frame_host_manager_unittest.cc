@@ -37,6 +37,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/common/features.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
@@ -843,9 +844,15 @@ TEST_P(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   request = main_test_rfh()->frame_tree_node()->navigation_request();
   CHECK(request);
 
-  // The same RenderViewHost should be reused.
+  // The same RenderFrameHost should be reused, unless RenderDocument for all
+  // frames is enabled, which will create a new speculative RenderFrameHost.
+  // In that case, view-source mode enabling will be done on the new RenderFrame
+  // instead. To capture that, create a new EnableViewSourceLocalFrame for the
+  // new RenderFrame.
+  EnableViewSourceLocalFrame local_frame2(contents());
   navigation->ReadyToCommit();
-  EXPECT_FALSE(contents()->GetSpeculativePrimaryMainFrame());
+  EXPECT_EQ(ShouldCreateNewHostForAllFrames(),
+            !!contents()->GetSpeculativePrimaryMainFrame());
   EXPECT_EQ(last_rfh, contents()->GetPrimaryMainFrame());
 
   navigation->Commit();
@@ -854,7 +861,11 @@ TEST_P(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
 
   // New message should be sent out to make sure to enter view-source mode.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(local_frame.IsViewSourceModeEnabled());
+  if (ShouldCreateNewHostForAllFrames()) {
+    EXPECT_TRUE(local_frame2.IsViewSourceModeEnabled());
+  } else {
+    EXPECT_TRUE(local_frame.IsViewSourceModeEnabled());
+  }
 }
 
 // Tests the Init function by checking the initial RenderViewHost.
@@ -1100,11 +1111,15 @@ TEST_P(RenderFrameHostManagerTest, WebUIWasReused) {
   WebUIImpl* web_ui = main_test_rfh()->web_ui();
   EXPECT_TRUE(web_ui);
 
-  // Navigate to another WebUI page which should be same-site and keep the
-  // current WebUI.
+  // Navigate to another WebUI page which should be same-site the same WebUI
+  // object is reused if the RenderFrameHost is reused.
   const GURL kUrl2(GetWebUIURL("foo/bar"));
   contents()->NavigateAndCommit(kUrl2);
-  EXPECT_EQ(web_ui, main_test_rfh()->web_ui());
+  if (ShouldCreateNewHostForAllFrames()) {
+    EXPECT_NE(web_ui, main_test_rfh()->web_ui());
+  } else {
+    EXPECT_EQ(web_ui, main_test_rfh()->web_ui());
+  }
 }
 
 // Tests that a WebUI is correctly cleaned up when navigating from a chrome://
@@ -1448,9 +1463,8 @@ TEST_P(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
             rfh2->GetRenderViewHost()->opener_frame_token());
 }
 
-// Test guest navigation behavior when navigating across sites.  With site
-// isolation for guests, we should swap guest SiteInstances, otherwise the
-// guest SiteInstance should be reused.
+// Test guest navigation behavior when navigating across sites.  Since guests
+// support site isolation, we should swap guest SiteInstances as usual.
 TEST_P(RenderFrameHostManagerTest, GuestNavigations) {
   // Create a custom StoragePartitionConfig for the guest SiteInstance. The
   // resulting SiteInstance should become associated with this
@@ -1488,29 +1502,22 @@ TEST_P(RenderFrameHostManagerTest, GuestNavigations) {
   EXPECT_EQ(first_instance->GetStoragePartitionConfig(), kGuestPartitionConfig);
   EXPECT_TRUE(first_instance->IsGuest());
 
-  // Without site isolation for guests, we should stay in the same initial
-  // RenderFrameHost and SiteInstance.  With site isolation for guests, we have
-  // to swap SiteInstances and RenderFrameHosts, since the initial SiteInstance
-  // (`instance`) has an empty site and process lock, whereas the navigation
-  // needs a SiteInstance with the site URL that corresponds to `kUrl1`.  Note
-  // that even in that case, there will be no speculative RenderFrameHost since
-  // the new RenderFrameHost will be committed right away due to the early
-  // commit optimization. This behavior may change if the early commit
-  // optimization is removed in https://crbug.com/1072817.
-  if (SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled()) {
-    EXPECT_NE(first_instance, initial_instance);
-    EXPECT_NE(host, initial_host);
-    // This test may run without strict site isolation, e.g. on Android.  In
-    // that case, the navigation will end up in a default SiteInstance.
-    if (AreAllSitesIsolatedForTesting()) {
-      EXPECT_EQ("http://google.com/",
-                first_instance->GetSiteInfo().site_url().spec());
-    } else {
-      EXPECT_TRUE(first_instance->IsDefaultSiteInstance());
-    }
+  // We have to swap SiteInstances and RenderFrameHosts, since the initial
+  // SiteInstance (`instance`) has an empty site and process lock, whereas the
+  // navigation needs a SiteInstance with the site URL that corresponds to
+  // `kUrl1`.  Note that there will be no speculative RenderFrameHost in that
+  // case, since the new RenderFrameHost will be committed right away due to
+  // the early commit optimization. This behavior may change if the early
+  // commit optimization is removed in https://crbug.com/1072817.
+  EXPECT_NE(first_instance, initial_instance);
+  EXPECT_NE(host, initial_host);
+  // This test may run without strict site isolation, e.g. on Android.  In
+  // that case, the navigation will end up in a default SiteInstance.
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_EQ("http://google.com/",
+              first_instance->GetSiteInfo().site_url().spec());
   } else {
-    EXPECT_EQ(first_instance, initial_instance);
-    EXPECT_EQ(host, initial_host);
+    EXPECT_TRUE(first_instance->IsDefaultSiteInstance());
   }
   EXPECT_FALSE(manager->speculative_frame_host());
   EXPECT_EQ(host, manager->current_frame_host());
@@ -1522,9 +1529,8 @@ TEST_P(RenderFrameHostManagerTest, GuestNavigations) {
   EXPECT_TRUE(host->GetSiteInstance()->HasSite());
 
   // 2) Second navigation. ------------------------
-  // Navigate to a different site. If site isolation for guests is enabled, and
-  // strict site isolation is also enabled, this will swap processes.
-  // Otherwise, the guest will stay in the same process.
+  // Navigate to a different site. If strict site isolation is enabled, this
+  // will swap processes. Otherwise, the guest will stay in the same process.
   const GURL kUrl2("http://www.chromium.org");
   const url::Origin kInitiatorOrigin =
       url::Origin::Create(GURL("https://initiator.example.com"));
@@ -1538,9 +1544,8 @@ TEST_P(RenderFrameHostManagerTest, GuestNavigations) {
   host = NavigateToEntry(manager, &entry2);
 
   // The first RenderFrameHost will be reused only when there's no site
-  // isolation for guests (or no site isolation between the two sites).
-  if (SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled() &&
-      AreAllSitesIsolatedForTesting()) {
+  // isolation between the two sites.
+  if (AreAllSitesIsolatedForTesting()) {
     EXPECT_NE(host, manager->current_frame_host());
     EXPECT_TRUE(manager->speculative_frame_host());
   } else {
@@ -1554,9 +1559,7 @@ TEST_P(RenderFrameHostManagerTest, GuestNavigations) {
   ASSERT_TRUE(host);
   EXPECT_TRUE(host->GetSiteInstance()->IsGuest());
 
-  // We should swap SiteInstances with site isolation for guests.
-  if (SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled() &&
-      AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting()) {
     EXPECT_NE(host->GetSiteInstance(), first_instance);
     EXPECT_EQ("http://chromium.org/",
               host->GetSiteInstance()->GetSiteInfo().site_url().spec());
@@ -2882,6 +2885,17 @@ TEST_P(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
 // Simulates two simultaneous navigations involving one WebUI where the current
 // RenderFrameHost commits.
 TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
+  if (ShouldCreateNewHostForAllFrames()) {
+    // This test involves starting a navigation while another navigation is
+    // committing, which might lead to deletion of a pending commit RFH, which
+    // will crash when RenderDocument is enabled. Skip the test if so.
+    // TODO(https://crbug.com/1220337): Update this test to work under
+    // navigation queueing, which will prevent the deletion of the pending
+    // commit RFH but still fails because this test waits for the new navigation
+    // to get to the ReadyToCommit stage before finishing the commit of the
+    // pending commit RFH.
+    return;
+  }
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
@@ -2934,6 +2948,17 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
 // Simulates two simultaneous navigations involving one WebUI where the new,
 // cross-site RenderFrameHost commits.
 TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
+  if (ShouldCreateNewHostForAllFrames()) {
+    // This test involves starting a navigation while another navigation is
+    // committing, which might lead to deletion of a pending commit RFH, which
+    // will crash when RenderDocument is enabled. Skip the test if so.
+    // TODO(https://crbug.com/1220337): Update this test to work under
+    // navigation queueing, which will prevent the deletion of the pending
+    // commit RFH but still fails because this test waits for the new navigation
+    // to get to the ReadyToCommit stage before finishing the commit of the
+    // pending commit RFH.
+    return;
+  }
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
@@ -2982,6 +3007,17 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
 // Simulates two simultaneous navigations involving two WebUIs where the current
 // RenderFrameHost commits.
 TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
+  if (ShouldCreateNewHostForAllFrames()) {
+    // This test involves starting a navigation while another navigation is
+    // committing, which might lead to deletion of a pending commit RFH, which
+    // will crash when RenderDocument is enabled. Skip the test if so.
+    // TODO(https://crbug.com/1220337): Update this test to work under
+    // navigation queueing, which will prevent the deletion of the pending
+    // commit RFH but still fails because this test waits for the new navigation
+    // to get to the ReadyToCommit stage before finishing the commit of the
+    // pending commit RFH.
+    return;
+  }
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo"));
 
@@ -3038,6 +3074,17 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
 // Simulates two simultaneous navigations involving two WebUIs where the new,
 // cross-site RenderFrameHost commits.
 TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
+  if (ShouldCreateNewHostForAllFrames()) {
+    // This test involves starting a navigation while another navigation is
+    // committing, which might lead to deletion of a pending commit RFH, which
+    // will crash when RenderDocument is enabled. Skip the test if so.
+    // TODO(https://crbug.com/1220337): Update this test to work under
+    // navigation queueing, which will prevent the deletion of the pending
+    // commit RFH but still fails because this test waits for the new navigation
+    // to get to the ReadyToCommit stage before finishing the commit of the
+    // pending commit RFH.
+    return;
+  }
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
@@ -3084,6 +3131,14 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
 }
 
 TEST_P(RenderFrameHostManagerTest, CanCommitOrigin) {
+  if (ShouldCreateNewHostForAllFrames() &&
+      !ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
+    // This test involves starting multiple navigations consecutively, which
+    // might lead to deletion of a pending commit RFH, which will crash when
+    // RenderDocument is enabled. Skip the test if so, unless navigation
+    // queueing is enabled.
+    return;
+  }
   const GURL kUrl("http://a.com/");
   const GURL kUrlBar("http://a.com/bar");
 
@@ -3248,17 +3303,22 @@ TEST_P(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
 
   // The current WebUI should still be in place.
   EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_FALSE(GetPendingFrameHost(manager));
+  EXPECT_EQ(ShouldCreateNewHostForAllFrames(), !!GetPendingFrameHost(manager));
 
   // Prepare to commit, update the navigating RenderFrameHost.
   web_ui_navigation->ReadyToCommit();
 
   EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_FALSE(GetPendingFrameHost(manager));
+  EXPECT_EQ(ShouldCreateNewHostForAllFrames(), !!GetPendingFrameHost(manager));
 
-  // The RenderFrameHost committed and used the same WebUI object.
+  // The RenderFrameHost committed and used the same WebUI object if the
+  // RenderFrameHost is reused.
   web_ui_navigation->Commit();
-  EXPECT_EQ(web_ui, host->web_ui());
+  if (ShouldCreateNewHostForAllFrames()) {
+    EXPECT_NE(web_ui, manager->current_frame_host()->web_ui());
+  } else {
+    EXPECT_EQ(web_ui, manager->current_frame_host()->web_ui());
+  }
 }
 
 // Tests that the correct intermediary and final navigation states are reached

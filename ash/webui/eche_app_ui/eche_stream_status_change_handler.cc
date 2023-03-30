@@ -5,16 +5,26 @@
 #include "ash/webui/eche_app_ui/eche_stream_status_change_handler.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/webui/eche_app_ui/apps_launch_info_provider.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
+#include "ash/webui/eche_app_ui/mojom/eche_app.mojom-shared.h"
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
 
 namespace ash {
 namespace eche_app {
 
-EcheStreamStatusChangeHandler::EcheStreamStatusChangeHandler() = default;
+EcheStreamStatusChangeHandler::EcheStreamStatusChangeHandler(
+    AppsLaunchInfoProvider* apps_launch_info_provider,
+    EcheConnectionStatusHandler* eche_connection_status_handler)
+    : apps_launch_info_provider_(apps_launch_info_provider),
+      eche_connection_status_handler_(eche_connection_status_handler) {
+  eche_connection_status_handler_->AddObserver(this);
+}
 
-EcheStreamStatusChangeHandler::~EcheStreamStatusChangeHandler() = default;
+EcheStreamStatusChangeHandler::~EcheStreamStatusChangeHandler() {
+  eche_connection_status_handler_->RemoveObserver(this);
+}
 
 void EcheStreamStatusChangeHandler::StartStreaming() {
   PA_LOG(INFO) << "echeapi EcheStreamStatusChangeHandler StartStreaming";
@@ -28,8 +38,18 @@ void EcheStreamStatusChangeHandler::OnStreamStatusChanged(
   NotifyStreamStatusChanged(status);
 
   if (status == mojom::StreamStatus::kStreamStatusStarted) {
-    base::UmaHistogramEnumeration("Eche.StreamEvent",
-                                  mojom::StreamStatus::kStreamStatusStarted);
+    if (features::IsEcheNetworkConnectionStateEnabled() &&
+        apps_launch_info_provider_->GetConnectionStatusForUi() ==
+            mojom::ConnectionStatus::kConnectionStatusFailed &&
+        apps_launch_info_provider_->entry_point() ==
+            mojom::AppStreamLaunchEntryPoint::NOTIFICATION) {
+      base::UmaHistogramEnumeration(
+          "Eche.StreamEvent.FromNotification.PreviousNetworkCheckFailed.Result",
+          mojom::StreamStatus::kStreamStatusStarted);
+    } else {
+      base::UmaHistogramEnumeration("Eche.StreamEvent",
+                                    mojom::StreamStatus::kStreamStatusStarted);
+    }
   }
 }
 
@@ -38,6 +58,10 @@ void EcheStreamStatusChangeHandler::SetStreamActionObserver(
   PA_LOG(INFO) << "echeapi EcheDisplayStreamHandler SetStreamActionObserver";
   observer_remote_.reset();
   observer_remote_.Bind(std::move(observer));
+}
+
+void EcheStreamStatusChangeHandler::OnRequestCloseConnnection() {
+  CloseStream();
 }
 
 void EcheStreamStatusChangeHandler::AddObserver(Observer* observer) {

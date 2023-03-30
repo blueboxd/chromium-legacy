@@ -59,7 +59,6 @@
   /* Tangible sync style details are found in go/tangible-sync-ui */
   .tangible-sync-style cr-button {
     --cr-button-height: 36px;
-    font-family: 'Google Sans', arial, sans-serif;
     font-size: 0.75rem;
   }
 
@@ -115,6 +114,7 @@
             --theme-text-color:[[profileThemeInfo.themeFrameTextColor]];">
   <cr-icon-button id="backButton" iron-icon="cr:arrow-back"
       on-click="onBackClick_" aria-label$="[[getBackButtonAriaLabel_()]]"
+      title$="[[getBackButtonAriaLabel_()]]"
       disabled="[[profileCreationInProgress]]">
   </cr-icon-button>
   <div id="avatarContainer">

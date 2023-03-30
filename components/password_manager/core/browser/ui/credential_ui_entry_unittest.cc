@@ -199,4 +199,33 @@ TEST(CredentialUIEntryTest, CredentialUIEntryInsecureHelpers) {
   EXPECT_TRUE(reused_entry.IsReused());
 }
 
+TEST(CredentialUIEntryTest, TestGetAffiliatedDomainsWithDuplicates) {
+  PasswordForm form1;
+  form1.signon_realm = "https://g.com/";
+  form1.url = GURL("https://g.com/");
+
+  PasswordForm form2;
+  form2.signon_realm = "https://g.com/";
+  form2.url = GURL("https://g.com/");
+
+  CredentialUIEntry entry = CredentialUIEntry({form1, form2});
+  EXPECT_THAT(entry.GetAffiliatedDomains(),
+              ElementsAre(ExpectDomain("g.com", form1.url)));
+}
+
+TEST(CredentialUIEntryTest, TestGetAffiliatedDuplicatesWithDifferentUrls) {
+  PasswordForm form1;
+  form1.signon_realm = "https://g.com/";
+  form1.url = GURL("https://g.com/login/");
+
+  PasswordForm form2;
+  form2.signon_realm = "https://g.com/";
+  form2.url = GURL("https://g.com/sign%20in/");
+
+  CredentialUIEntry entry = CredentialUIEntry({form1, form2});
+  EXPECT_THAT(entry.GetAffiliatedDomains(),
+              UnorderedElementsAre(ExpectDomain("g.com", form1.url),
+                                   ExpectDomain("g.com", form2.url)));
+}
+
 }  // namespace password_manager

@@ -40,7 +40,6 @@
 #include "net/base/features.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_posix.h"
 #include "net/base/port_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
@@ -494,8 +493,8 @@ std::unique_ptr<NetworkService> NetworkService::Create(
 
 // static
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
-  auto network_service = std::make_unique<NetworkService>(
-      std::make_unique<service_manager::BinderRegistry>());
+  auto network_service =
+      std::make_unique<NetworkService>(nullptr /* binder_registry */);
   network_service->InitMockNetworkChangeNotifierForTesting();  // IN-TEST
   return network_service;
 }
@@ -769,6 +768,10 @@ void NetworkService::ParseHeaders(
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     ParseHeadersCallback callback) {
   std::move(callback).Run(PopulateParsedHeaders(headers.get(), url));
+}
+
+void NetworkService::EnableDataUseUpdates(bool enable) {
+  data_use_updates_enabled_ = enable;
 }
 
 #if BUILDFLAG(IS_CT_SUPPORTED)

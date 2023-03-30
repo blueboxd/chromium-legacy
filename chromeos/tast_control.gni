@@ -230,18 +230,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1361078
   "shelf.HotseatSmoke",
 
-  # https://crbug.com/1362184
-  "dlp.DataLeakPreventionRulesListClipboardHistory.ash",
-  "dlp.DataLeakPreventionRulesListPrinting.ash_blocked",
-  "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
-  "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
-  "dlp.DataLeakPreventionRulesListClipboardOmni",
-  "dlp.DataLeakPreventionRulesListPrinting.ash_allowed",
-  "dlp.DataLeakPreventionRulesListPrinting.ash_blocked",
-  "dlp.DataLeakPreventionRulesListPrivacyScreen",
-  "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
-  "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
-
   # https://crbug.com/1365284
   "crostini.RestartApp.clamshell_stable",
 
@@ -327,8 +315,9 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.AppVscode.bullseye_clamshell_stable",
   "crostini.AppVscode.clamshell_stable",
 
-  # https://crbug.com/1424388
-  "health.ProbeFanInfo",
+  # https://crbug.com/1427905
+  "inputs.VirtualKeyboardHandwriting.floating",
+  "inputs.VirtualKeyboardTypingUserMode.incognito",
 
   # READ COMMENT AT TOP BEFORE ADDING NEW TESTS HERE.
 ]
@@ -356,10 +345,11 @@ tast_disabled_tests_from_lacros_all = [
   "lacros.AudioRecord",
 
   # https://crbug.com/1422603
-  "inputs.PhysicalKeyboardAutocorrect",
-  "inputs.PhysicalKeyboardShapeBasedChineseTyping",
-  "inputs.VirtualKeyboardTypingOmnibox",
-  "inputs.PhysicalKeyboardShapeBasedChineseTyping",
-  "inputs.PhysicalKeyboardZhuyinTyping",
-  "inputs.VirtualKeyboardDeadKeys",
+  "tast.inputs.PhysicalKeyboardAutocorrect.*@jacuzzi",
+  "tast.inputs.PhysicalKeyboardShapeBasedChineseTyping.*@jacuzzi",
+  "tast.inputs.VirtualKeyboardTypingOmnibox.*@jacuzzi",
+  "tast.inputs.PhysicalKeyboardZhuyinTyping.*@jacuzzi",
+  "tast.inputs.VirtualKeyboardDeadKeys.*@jacuzzi",
+  "tast.inputs.PhysicalKeyboardShapeBasedChineseTyping.array_lacros",
+  "tast.inputs.VirtualKeyboardSpeech.lacros",
 ]

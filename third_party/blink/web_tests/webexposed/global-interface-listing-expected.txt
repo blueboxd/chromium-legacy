@@ -1997,6 +1997,8 @@ interface Document : Node
     method getElementsByTagNameNS
     method getSelection
     method hasFocus
+    method hasPrivateToken
+    method hasRedemptionRecord
     method hasStorageAccess
     method importNode
     method open
@@ -4013,6 +4015,7 @@ interface HTMLIFrameElement : HTMLElement
     getter marginWidth
     getter name
     getter policy
+    getter privateToken
     getter referrerPolicy
     getter sandbox
     getter scrolling
@@ -4035,6 +4038,7 @@ interface HTMLIFrameElement : HTMLElement
     setter marginWidth
     setter name
     setter policy
+    setter privateToken
     setter referrerPolicy
     setter sandbox
     setter scrolling
@@ -5520,6 +5524,7 @@ interface MLGraphBuilder
     method maxPool2d
     method min
     method mul
+    method pad
     method relu
     method resample2d
     method reshape
@@ -6957,6 +6962,7 @@ interface PerformanceScriptTiming : PerformanceEntry
     getter desiredExecutionStart
     getter executionStart
     getter forcedStyleAndLayoutDuration
+    getter pauseDuration
     getter sourceLocation
     getter type
     getter window
@@ -7312,23 +7318,17 @@ interface RTCIceTransport : EventTarget
     attribute @@toStringTag
     getter gatheringState
     getter ongatheringstatechange
-    getter onicecandidate
     getter onselectedcandidatepairchange
     getter onstatechange
     getter role
     getter state
-    method addRemoteCandidate
     method constructor
-    method gather
     method getLocalCandidates
     method getLocalParameters
     method getRemoteCandidates
     method getRemoteParameters
     method getSelectedCandidatePair
-    method start
-    method stop
     setter ongatheringstatechange
-    setter onicecandidate
     setter onselectedcandidatepairchange
     setter onstatechange
 interface RTCPeerConnection : EventTarget
@@ -11404,20 +11404,6 @@ interface Worklet
     attribute @@toStringTag
     method addModule
     method constructor
-interface WorkletAnimation
-    attribute @@toStringTag
-    getter animatorName
-    getter currentTime
-    getter effect
-    getter playState
-    getter playbackRate
-    getter startTime
-    getter timeline
-    method cancel
-    method constructor
-    method pause
-    method play
-    setter playbackRate
 interface WritableStream
     attribute @@toStringTag
     getter locked
@@ -11451,6 +11437,7 @@ interface XMLHttpRequest : XMLHttpRequestEventTarget
     attribute OPENED
     attribute UNSENT
     getter onreadystatechange
+    getter privateTokenOperationError
     getter readyState
     getter response
     getter responseText
@@ -11469,6 +11456,7 @@ interface XMLHttpRequest : XMLHttpRequestEventTarget
     method open
     method overrideMimeType
     method send
+    method setPrivateToken
     method setRequestHeader
     setter onreadystatechange
     setter responseType
@@ -11700,7 +11688,9 @@ interface XRPlaneSet
     method values
 interface XRPose
     attribute @@toStringTag
+    getter angularVelocity
     getter emulatedPosition
+    getter linearVelocity
     getter transform
     method constructor
 interface XRProjectionLayer : XRCompositionLayer
@@ -12058,7 +12048,6 @@ interface webkitURL
 [NAMESPACES]
 namespace CSS
     attribute @@toStringTag
-    getter animationWorklet
     getter highlights
     getter layoutWorklet
     getter paintWorklet

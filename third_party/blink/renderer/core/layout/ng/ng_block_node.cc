@@ -15,13 +15,10 @@
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
-#include "third_party/blink/renderer/core/layout/layout_table.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
@@ -182,9 +179,9 @@ NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
     CreateAlgorithmAndRun<NGGridLayoutAlgorithm>(params, callback);
   } else if (box.IsLayoutReplaced()) {
     CreateAlgorithmAndRun<NGReplacedLayoutAlgorithm>(params, callback);
-  } else if (box.IsLayoutNGFieldset()) {
+  } else if (box.IsFieldset()) {
     CreateAlgorithmAndRun<NGFieldsetLayoutAlgorithm>(params, callback);
-  } else if (box.IsLayoutNGFrameSet()) {
+  } else if (box.IsFrameSet()) {
     CreateAlgorithmAndRun<NGFrameSetLayoutAlgorithm>(params, callback);
   }
   // If there's a legacy layout box, we can only do block fragmentation if
@@ -194,7 +191,6 @@ NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
   else if (GetFlowThread(box) && style.SpecifiesColumns()) {
     CreateAlgorithmAndRun<NGColumnLayoutAlgorithm>(params, callback);
   } else if (UNLIKELY(!box.Parent() && params.node.IsPaginatedRoot())) {
-    DCHECK(RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
     CreateAlgorithmAndRun<NGPageLayoutAlgorithm>(params, callback);
   } else {
     CreateAlgorithmAndRun<NGBlockLayoutAlgorithm>(params, callback);
@@ -864,29 +860,13 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
         << "Forced block size wasn't the fragment's block size?";
     input.override_inline_size = fragment.InlineSize();
     input.override_block_size = fragment.BlockSize();
-    if (RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled()) {
-      input.border_padding_for_replaced =
-          physical_fragment.Borders() + physical_fragment.Padding();
-    }
+    input.border_padding_for_replaced =
+        physical_fragment.Borders() + physical_fragment.Padding();
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
     if (box_->NeedsLayout())
       box_->LayoutIfNeeded();
     else
       box_->ForceLayout();
-
-#if DCHECK_IS_ON()
-    if (!RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled()) {
-      // Assert that legacy uses the size NG forces above. But legacy sends
-      // LayoutUnit to float and back, which can slightly change the result. So
-      // give a 1px cushion.
-      PhysicalSize difference =
-          PhysicalSize(box_->Size()) - physical_fragment.Size();
-      DCHECK_LE(difference.width.Abs(), LayoutUnit(1))
-          << box_->Size() << " " << physical_fragment.Size();
-      DCHECK_LE(difference.height.Abs(), LayoutUnit(1))
-          << box_->Size() << " " << physical_fragment.Size();
-    }
-#endif
   }
 
   // If we miss the cache for one result (fragment), we need to clear the
@@ -1230,7 +1210,7 @@ NGBlockNode NGBlockNode::GetRenderedLegend() const {
   if (!IsFieldsetContainer())
     return nullptr;
   return NGBlockNode(
-      LayoutFieldset::FindInFlowLegend(*To<LayoutBlock>(box_.Get())));
+      LayoutNGFieldset::FindInFlowLegend(*To<LayoutBlock>(box_.Get())));
 }
 
 NGBlockNode NGBlockNode::GetFieldsetContent() const {
@@ -1378,11 +1358,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     block->SetLayoutOverflowFromLayoutResults();
   }
 
-  // Replaced elements already have |LayoutBox::UpdateAfterLayout| called when
-  // we force a layout for them inside |NGBlockNode::FinishLayout|.
-  if (RuntimeEnabledFeatures::LayoutNGUnifyUpdateAfterLayoutEnabled() ||
-      !box_->IsLayoutReplaced())
-    box_->UpdateAfterLayout();
+  box_->UpdateAfterLayout();
 
   if (needs_full_invalidation)
     box_->ClearNeedsLayoutWithFullPaintInvalidation();

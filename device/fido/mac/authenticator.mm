@@ -66,13 +66,25 @@ void TouchIdAuthenticator::GetPlatformCredentialInfoForRequest(
             ? credential_store_.FindResidentCredentials(request.rp_id)
             : credential_store_.FindCredentialsFromCredentialDescriptorList(
                   request.rp_id, request.allow_list);
-
     if (!credentials) {
       FIDO_LOG(ERROR) << "Failed to fetch credentials from CredentialStore";
       std::move(callback).Run(/*credentials=*/{},
                               device::FidoRequestHandlerBase::
                                   RecognizedCredential::kNoRecognizedCredential);
       return;
+    }
+    std::vector<DiscoverableCredentialMetadata> result;
+    if (base::FeatureList::IsEnabled(
+            kWebAuthnMacPlatformAuthenticatorOptionalUv) ||
+        request.allow_list.empty()) {
+      // With `kWebAuthnMacPlatformAuthenticatorOptionalUv`, always report the
+      // list of credentials, because the UI will show a confirmation prompt for
+      // one randomly chosen credential and run through the same pre-select flow
+      // as for empty allow lists.
+      for (const auto& credential : *credentials) {
+        result.emplace_back(
+            AuthenticatorType::kTouchID, request.rp_id, credential.credential_id,
+            credential.metadata.ToPublicKeyCredentialUserEntity());
     }
     std::vector<DiscoverableCredentialMetadata> result;
     if (base::FeatureList::IsEnabled(
@@ -95,6 +107,7 @@ void TouchIdAuthenticator::GetPlatformCredentialInfoForRequest(
                   kNoRecognizedCredential
             : device::FidoRequestHandlerBase::RecognizedCredential::
                   kHasRecognizedCredential);
+    }
   }
 }
 

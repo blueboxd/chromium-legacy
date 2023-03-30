@@ -9,6 +9,7 @@
 #include "base/barrier_closure.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_model_delegate.h"
@@ -75,9 +76,10 @@ class StoragePartitionSizeEstimator : private CookiesTreeModel::Observer,
 
     content::StoragePartition* storage_partition =
         profile_->GetStoragePartition(storage_partition_config);
-    BrowsingDataModel::BuildFromDisk(
+    BrowsingDataModel::BuildFromNonDefaultStoragePartition(
         storage_partition,
-        ChromeBrowsingDataModelDelegate::CreateForProfile(profile_),
+        ChromeBrowsingDataModelDelegate::CreateForStoragePartition(
+            profile_, storage_partition),
         base::BindOnce(&StoragePartitionSizeEstimator::BrowsingDataModelLoaded,
                        weak_ptr_factory_.GetWeakPtr()));
 
@@ -131,7 +133,7 @@ class StoragePartitionSizeEstimator : private CookiesTreeModel::Observer,
     complete_callback_.Reset();
   }
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   base::OnceCallback<void(int64_t)> complete_callback_;
   base::RepeatingClosure model_loaded_closure_;
   std::unique_ptr<BrowsingDataModel> browsing_data_model_;

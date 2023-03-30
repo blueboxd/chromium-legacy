@@ -231,8 +231,7 @@ class SitePerProcessProgrammaticScrollTest : public SitePerProcessBrowserTest {
   void RunCommandAndWaitForResponse(FrameTreeNode* node,
                                     const std::string& command,
                                     const std::string& response) {
-    ASSERT_EQ(response,
-              EvalJs(node, command, content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+    ASSERT_EQ(response, EvalJs(node, command));
   }
 
   gfx::Rect GetRectFromString(const std::string& str) {
@@ -839,13 +838,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   key_event.SetType(blink::WebKeyboardEvent::Type::kKeyUp);
   rwhv_child->GetRenderWidgetHost()->ForwardKeyboardEvent(key_event);
 
-  double scrolled_y =
-      EvalJs(root,
-             "waitForScrollDownPromise.then((scrolled_y) => {"
-             "  window.domAutomationController.send(scrolled_y);"
-             "});",
-             content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
-          .ExtractDouble();
+  double scrolled_y = EvalJs(root, "waitForScrollDownPromise").ExtractDouble();
   EXPECT_GT(scrolled_y, 0.0);
 }
 

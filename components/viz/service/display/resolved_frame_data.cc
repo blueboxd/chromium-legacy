@@ -75,6 +75,10 @@ void ResolvedFrameData::SetFullDamageForNextAggregation() {
   previous_frame_index_ = kInvalidFrameIndex;
 }
 
+uint32_t ResolvedFrameData::GetClientNamespaceId() const {
+  return static_cast<uint32_t>(child_resource_id_);
+}
+
 void ResolvedFrameData::ForceReleaseResource() {
   // Resources for future frames are stored under a new child id going forward.
   resource_provider_->DestroyChild(child_resource_id_);
@@ -162,6 +166,9 @@ void ResolvedFrameData::UpdateForActiveFrame(
         }
 
         referenced_resources.push_back(resource_id);
+
+        // Update `ResolvedQuadData::remapped_resources` to have the remapped
+        // display resource_id.
         resource_id = iter->second;
       }
     }

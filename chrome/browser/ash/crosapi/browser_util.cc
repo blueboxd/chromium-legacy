@@ -14,6 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/values_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -290,6 +291,8 @@ const char kProfileDataBackwardMigrationCompletedForUserPref[] =
 // This pref is to record whether the user clicks "Go to files" button
 // on error page of the data migration.
 const char kGotoFilesPref[] = "lacros.goto_files";
+const char kProfileMigrationCompletionTimeForUserPref[] =
+    "lacros.profile_migration_completion_time_for_user";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kLaunchOnLoginPref, /*default_value=*/false);
@@ -306,6 +309,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(
       kProfileDataBackwardMigrationCompletedForUserPref, base::Value::Dict());
   registry->RegisterListPref(kGotoFilesPref);
+  registry->RegisterDictionaryPref(kProfileMigrationCompletionTimeForUserPref,
+                                   base::Value::Dict());
 }
 
 base::FilePath GetUserDataDir() {
@@ -422,11 +427,6 @@ bool IsLacrosEnabledForMigration(const User* user,
 }
 
 bool IsProfileMigrationEnabled() {
-  if (base::FeatureList::IsEnabled(
-          ash::features::kLacrosProfileMigrationForceOff)) {
-    return false;
-  }
-
   const UserManager* user_manager = UserManager::Get();
   if (!user_manager) {
     return false;
@@ -437,7 +437,16 @@ bool IsProfileMigrationEnabled() {
     return false;
   }
 
-  return IsLacrosEnabledForMigration(user, PolicyInitState::kAfterInit);
+  return IsProfileMigrationEnabledWithUserAndPolicyInitState(
+      user, PolicyInitState::kAfterInit);
+}
+
+bool IsProfileMigrationEnabledWithUserAndPolicyInitState(
+    const user_manager::User* user,
+    PolicyInitState policy_init_state) {
+  return !base::FeatureList::IsEnabled(
+             ash::features::kLacrosProfileMigrationForceOff) &&
+         !IsAshWebBrowserEnabledForMigration(user, policy_init_state);
 }
 
 bool IsProfileMigrationAvailable() {
@@ -741,13 +750,14 @@ bool DoesMetadataSupportNewAccountManager(base::Value* metadata) {
   if (!metadata)
     return false;
 
-  base::Value* version = metadata->FindPath("content.version");
-  if (!version || !version->is_string())
+  std::string* version_str =
+      metadata->GetDict().FindStringByDottedPath("content.version");
+  if (!version_str) {
     return false;
+  }
 
-  std::string version_str = version->GetString();
   std::vector<std::string> versions_str = base::SplitString(
-      version_str, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      *version_str, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (versions_str.size() != 4)
     return false;
 
@@ -1081,6 +1091,38 @@ void ClearProfileMigrationCompletedForUser(PrefService* local_state,
     base::Value::Dict& dict = update.Get();
     dict.Remove(user_id_hash);
   }
+}
+
+void SetProfileMigrationCompletionTimeForUser(PrefService* local_state,
+                                              const std::string& user_id_hash) {
+  ScopedDictPrefUpdate update(local_state,
+                              kProfileMigrationCompletionTimeForUserPref);
+  update->Set(user_id_hash, base::TimeToValue(base::Time::Now()));
+}
+
+absl::optional<base::Time> GetProfileMigrationCompletionTimeForUser(
+    PrefService* local_state,
+    const std::string& user_id_hash) {
+  const auto* pref =
+      local_state->FindPreference(kProfileMigrationCompletionTimeForUserPref);
+
+  if (!pref) {
+    return absl::nullopt;
+  }
+
+  const base::Value* value = pref->GetValue();
+  DCHECK(value->is_dict());
+
+  return base::ValueToTime(value->GetDict().Find(user_id_hash));
+}
+
+void ClearProfileMigrationCompletionTimeForUser(
+    PrefService* local_state,
+    const std::string& user_id_hash) {
+  ScopedDictPrefUpdate update(local_state,
+                              kProfileMigrationCompletionTimeForUserPref);
+  base::Value::Dict& dict = update.Get();
+  dict.Remove(user_id_hash);
 }
 
 void SetProfileDataBackwardMigrationCompletedForUser(

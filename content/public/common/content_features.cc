@@ -88,6 +88,11 @@ BASE_FEATURE(kBackForwardCache,
              "BackForwardCache",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable showing a page preview during back/forward navigations.
+BASE_FEATURE(kBackForwardTransitions,
+             "BackForwardTransitions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables reporting ResourceTiming entries for document, who initiated a
 // cancelled navigation in one of their <iframe>.
 BASE_FEATURE(kResourceTimingForCancelledNavigationInFrame,
@@ -206,14 +211,6 @@ BASE_FEATURE(kBrowserVerifiedUserActivationKeyboard,
 BASE_FEATURE(kBrowserVerifiedUserActivationMouse,
              "BrowserVerifiedUserActivationMouse",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Compute the NavigationDownloadPolicy bit about sandbox flags from the browser
-// process side. This is a fix for https://crbug.com/1357366. The feature flag
-// is used as a temporary kill switch in case it breaks something important on
-// stable. To be removed by M111.
-BASE_FEATURE(kBrowserSideDownloadPolicySandbox,
-             "BrowserSideDownloadPolicySandbox",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
@@ -746,11 +743,6 @@ BASE_FEATURE(kMojoVideoCaptureSecondary,
              "MojoVideoCaptureSecondary",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// When enable, iframe does not implicit capture mouse event.
-BASE_FEATURE(kMouseSubframeNoImplicitCapture,
-             "MouseSubframeNoImplicitCapture",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When NavigationNetworkResponseQueue is enabled, the browser will schedule
 // some tasks related to navigation network responses in a kHighest priority
 // queue.
@@ -1018,6 +1010,10 @@ const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>::Option
             "all_only_if_service_worker_not_started",
         },
         {
+            ServiceWorkerBypassFetchHandlerTarget::kAllWithRaceNetworkRequest,
+            "all_with_race_network_request",
+        },
+        {
             ServiceWorkerBypassFetchHandlerTarget::kSubResource,
             "sub_resource",
         },
@@ -1096,13 +1092,6 @@ BASE_FEATURE(kSecurePaymentConfirmationDebug,
              "SecurePaymentConfirmationDebug",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Remove the 'rp' field from the output SPC
-// CollectedClientAdditionalPaymentData dictionary. See
-// https://crbug.com/1356224 .
-BASE_FEATURE(kSecurePaymentConfirmationRemoveRpField,
-             "SecurePaymentConfirmationRemoveRpField",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Make sendBeacon throw for a Blob with a non simple type.
 BASE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType,
              "SendBeaconThrowForBlobWithNonSimpleType",
@@ -1127,6 +1116,12 @@ BASE_FEATURE(kSharedArrayBuffer,
 BASE_FEATURE(kSharedArrayBufferOnDesktop,
              "SharedArrayBufferOnDesktop",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Kill switch for creating first-party StorageKeys in
+// RenderFrameHostImpl::CalculateStorageKey for frames with extension URLs.
+BASE_FEATURE(kShouldAllowFirstPartyStorageKeyOverrideFromEmbedder,
+             "ShouldAllowFirstPartyStorageKeyOverrideFromEmbedder",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Signed Exchange Reporting for distributors
 // https://www.chromestatus.com/feature/5687904902840320
@@ -1208,11 +1203,6 @@ const base::FeatureParam<base::TimeDelta>
     kSiteIsolationForCrossOriginOpenerPolicyExpirationTimeoutParam{
         &kSiteIsolationForCrossOriginOpenerPolicy, "expiration_timeout",
         base::Days(7)};
-
-// This feature turns on site isolation support in <webview> guests.
-BASE_FEATURE(kSiteIsolationForGuests,
-             "SiteIsolationForGuests",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, OOPIFs will not try to reuse compatible processes from
 // unrelated tabs.
@@ -1507,6 +1497,12 @@ BASE_FEATURE(kRequestDesktopSiteExceptions,
 // when desktop user agent is used.
 BASE_FEATURE(kRequestDesktopSiteZoom,
              "RequestDesktopSiteZoom",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Text autosizing uses heuristics to inflate text sizes on devices with
+// small screens. This feature is for disabling these heuristics.
+BASE_FEATURE(kForceOffTextAutosizing,
+             "ForceOffTextAutosizing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Screen Capture API support for Android

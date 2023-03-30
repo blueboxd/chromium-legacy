@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Докоснете, за да се върнете към <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2091887806945687916">Звук</translation>
+<translation id="2117655453726830283">Следващият слайд</translation>
 <translation id="2148716181193084225">днес</translation>
 <translation id="216989819110952009">Макар зелените очила да предпазваха очите им, отначало Дороти и приятелите ѝ бяха заслепени от</translation>
 <translation id="2176704795966505152">Показване на опцията за промяна на мащаба в главното меню</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">Разгънато – кликнете за свиване.</translation>
 <translation id="2586657967955657006">Буферна памет</translation>
 <translation id="2597457036804169544">Без прилагане на тъмната тема към сайтовете</translation>
+<translation id="2606760465469169465">Автоматично потвърждаване</translation>
 <translation id="2621115761605608342">Разрешаване на JavaScript за конкретен сайт.</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2677748264148917807">Излизане</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">Нулиране на разрешенията</translation>
 <translation id="301521992641321250">Автоматично блокирано</translation>
 <translation id="3069226013421428034">Разрешаване на влизането с профили от трети страни за конкретен сайт.</translation>
+<translation id="310297983047869047">Предишният слайд</translation>
 <translation id="3109724472072898302">Свито</translation>
 <translation id="3114012059975132928">Видеоплейър</translation>
 <translation id="3115898365077584848">Показване на информацията</translation>
@@ -188,6 +191,7 @@
 <translation id="4440642537584213025">Разгъване на „<ph name="TARGET_DESCRIPTION" />“</translation>
 <translation id="4468959413250150279">Спиране на звука за конкретен сайт.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# „бисквитка“}other{# „бисквитки“}}</translation>
+<translation id="4478158430052450698">Улесняване на персонализирането на мащаба за различните сайтове</translation>
 <translation id="4479647676395637221">Извеждане на запитване, преди да се разреши на сайтовете да използват камерата (препоръчително)</translation>
 <translation id="4505788138578415521">URL адресът е разгънат</translation>
 <translation id="4534723447064627427">За да разрешите на <ph name="APP_NAME" /> да осъществява достъп до микрофона ви, той трябва да бъде включен и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
@@ -218,11 +222,11 @@
 <translation id="509133520954049755">Заявяване на изглед за настолни компютри</translation>
 <translation id="5100237604440890931">Свито – кликнете за разгъване.</translation>
 <translation id="5123685120097942451">Раздел в режим „инкогнито“</translation>
-<translation id="5134599672855298214">Заявяване на изглед за мобилни устройства (препоръчително)</translation>
 <translation id="5186036860380548585">Опцията е в горната част на екрана</translation>
 <translation id="5197729504361054390">Избраните от вас контакти ще бъдат споделени със сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Последно посещение: днес</translation>
 <translation id="5225463052809312700">Включване на камерата</translation>
+<translation id="5229337741799419985">Тази настройка работи, без да разкрива самоличността ви или да разрешава на сайтовете да виждат историята ви на сърфиране</translation>
 <translation id="5234764350956374838">Отхвърляне</translation>
 <translation id="5264323282659631142">Премахване на „<ph name="CHIP_LABEL" />“</translation>
 <translation id="528192093759286357">Плъзнете пръст от горната част на екрана и докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
@@ -309,6 +313,7 @@
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6689172468748959065">Снимки на потребителския профил</translation>
 <translation id="6697925417670533197">Активни изтегляния</translation>
+<translation id="6701547804986694515">Сайтовете, които посещавате, могат да запазват информация в Chrome, която потвърждава, че не сте робот. Докато сърфирате, сайтовете могат да направят справка с Chrome и да потвърдят чрез по-рано посетен от вас сайт, че най-вероятно сте истински човек</translation>
 <translation id="6722828510648505498">Блокиране на подканите за вход от услуги за идентифициране.</translation>
 <translation id="6746124502594467657">Придвижване надолу</translation>
 <translation id="6749077623962119521">Да се нулират ли разрешенията?</translation>
@@ -426,6 +431,7 @@
 <translation id="8751914237388039244">Избор на изображение</translation>
 <translation id="8801436777607969138">Блокиране на JavaScript за конкретен сайт.</translation>
 <translation id="8803526663383843427">Когато е включено</translation>
+<translation id="8805385115381080995">Сърфирането е по-бързо, тъй като е по-малко вероятно даден сайт да поиска да потвърдите, че сте истински човек</translation>
 <translation id="8816026460808729765">Блокиране на достъпа на сайтовете до сензорите</translation>
 <translation id="8823559166155093873">Блокиране на „бисквитките“</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -449,5 +455,6 @@
 <translation id="9162462602695099906">Тази страница е опасна</translation>
 <translation id="9201023452444595544">Всички офлайн данни ще бъдат изчистени</translation>
 <translation id="930525582205581608">Да се забрави ли този сайт?</translation>
+<translation id="947156494302904893">Сайтовете, които посещавате, могат да потвърдят, че сте истински човек, а не робот</translation>
 <translation id="967624055006145463">Съхранени данни</translation>
 </translationbundle>

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -68,10 +69,20 @@ void IdentityRequestDialogController::ShowFailureDialog(
     WebContents* rp_web_contents,
     const std::string& top_frame_for_display,
     const std::string& idp_for_display,
+    const IdentityProviderMetadata& idp_metadata,
     DismissCallback dismiss_callback) {
   if (!is_interception_enabled_) {
     std::move(dismiss_callback).Run(DismissReason::kOther);
   }
+}
+
+std::string IdentityRequestDialogController::GetTitle() const {
+  return std::string();
+}
+
+absl::optional<std::string> IdentityRequestDialogController::GetSubtitle()
+    const {
+  return absl::nullopt;
 }
 
 void IdentityRequestDialogController::ShowIdpSigninFailureDialog(

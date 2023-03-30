@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fidl/fuchsia.ui.input3/cpp/fidl.h>
 #include <fuchsia/input/virtualkeyboard/cpp/fidl.h>
-#include <fuchsia/ui/input3/cpp/fidl.h>
 #include <lib/fit/function.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
@@ -15,13 +15,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/test/browser_test.h"
+#include "fuchsia_web/common/test/frame_for_test.h"
 #include "fuchsia_web/common/test/frame_test_util.h"
 #include "fuchsia_web/common/test/test_navigation_listener.h"
 #include "fuchsia_web/webengine/browser/context_impl.h"
 #include "fuchsia_web/webengine/browser/frame_impl.h"
 #include "fuchsia_web/webengine/browser/mock_virtual_keyboard.h"
 #include "fuchsia_web/webengine/features.h"
-#include "fuchsia_web/webengine/test/frame_for_test.h"
 #include "fuchsia_web/webengine/test/scenic_test_helper.h"
 #include "fuchsia_web/webengine/test/scoped_connection_checker.h"
 #include "fuchsia_web/webengine/test/test_data.h"
@@ -73,7 +73,8 @@ class VirtualKeyboardTest : public WebEngineBrowserTest {
 
     // Ensure that the fuchsia.ui.input3.Keyboard service is connected.
     component_context_->additional_services()
-        ->RemovePublicService<fuchsia::ui::input3::Keyboard>();
+        ->RemovePublicService<fuchsia_ui_input3::Keyboard>(
+            fidl::DiscoverableProtocolName<fuchsia_ui_input3::Keyboard>);
     keyboard_input_checker_.emplace(component_context_->additional_services());
 
     fuchsia::web::NavigationControllerPtr controller;
@@ -134,7 +135,7 @@ class VirtualKeyboardTest : public WebEngineBrowserTest {
   ScenicTestHelper scenic_test_helper_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  absl::optional<EnsureConnectedChecker<fuchsia::ui::input3::Keyboard>>
+  absl::optional<EnsureConnectedChecker<fuchsia_ui_input3::Keyboard>>
       keyboard_input_checker_;
 
   // Fake virtual keyboard services for the InputMethod to use.

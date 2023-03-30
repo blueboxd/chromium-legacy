@@ -62,6 +62,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.DeepScanEvent" enum="SBDeepScanEvent"
+    expires_after="2024-03-28">
+  <owner>drubery@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records events related to user interaction with deep scanning prompts. This
+    is recorded a few times during the process of each prompt for deep scanning:
+    - Once when the prompt is shown. - Once when the prompt is
+    accepted/bypassed. - Once when the scan is completed, either through
+    cancelation or completion.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DeepScanTrigger" enum="SBDeepScanTriggers"
     expires_after="2023-08-08">
   <owner>drubery@chromium.org</owner>
@@ -173,7 +186,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestDuration" units="ms"
-    expires_after="2023-07-23">
+    expires_after="2023-09-24">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -358,7 +371,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.MalwareDeepScanResult.{trigger}"
-    enum="SBClientDownloadCheckResult" expires_after="2023-04-28">
+    enum="SBClientDownloadCheckResult" expires_after="2024-04-28">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -371,8 +384,9 @@ chromium-metrics-reviews@google.com.
     be missing.
   </summary>
   <token key="trigger">
-    <variant name="AdvancedProtectionPrompt"
-        summary="Advanced Protection user selected 'Scan'"/>
+    <variant name="ConsumerPrompt"
+        summary="Advanced Protection or Enhanced Protection user selected
+                 'Scan'"/>
     <variant name="Policy" summary="Triggered by enterprise policy"/>
     <variant name="Unknown" summary="Unknown trigger"/>
   </token>
@@ -636,6 +650,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records events in the phishing classifier including reasons that prevents
     phishing detection to complete on the renderer side.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ClassifyThresholdsResult"
+    enum="SBClientDetectionClassifyThresholdsResult" expires_after="2024-03-17">
+  <owner>andysjlim@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records the result of classification in visual TfLite model thresholds
+    comparison on the browser side
   </summary>
 </histogram>
 

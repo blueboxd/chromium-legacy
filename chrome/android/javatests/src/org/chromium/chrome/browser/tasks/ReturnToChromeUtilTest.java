@@ -13,9 +13,9 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.c
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -178,8 +178,7 @@ public class ReturnToChromeUtilTest {
     @SmallTest
     @Feature({"ReturnToChrome", "RenderTest"})
     // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + START_SURFACE_RETURN_TIME_SECONDS_PARAM + "/0"
-            + "/start_surface_variation/single"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisabledTest(message = "https://crbug.com/1023079, crbug.com/1063984")
     public void testInitialScrollIndex() throws Exception {

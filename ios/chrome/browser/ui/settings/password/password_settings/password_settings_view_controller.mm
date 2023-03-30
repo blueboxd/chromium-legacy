@@ -18,9 +18,11 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/common/ui/util/image_util.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
@@ -32,6 +34,9 @@
 #endif
 
 namespace {
+
+// Padding between the "N" text and the surrounding symbol.
+const CGFloat kNewFeatureIconPadding = 2.5;
 
 // Sections of the password settings UI.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -92,6 +97,10 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
 // Indicates the state of the account storage switch.
 @property(nonatomic, assign)
     PasswordSettingsAccountStorageState accountStorageState;
+
+// Indicates whether the account storage switch should contain an icon
+// indicating a new feature. This doesn't mean the switch itself is shown.
+@property(nonatomic, assign) BOOL showAccountStorageNewFeatureIcon;
 
 // Indicates the signed in account.
 @property(nonatomic, copy) NSString* signedInAccount;
@@ -236,6 +245,33 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
       [switchCell.switchView addTarget:self
                                 action:@selector(accountStorageSwitchChanged:)
                       forControlEvents:UIControlEventValueChanged];
+
+      if (!_showAccountStorageNewFeatureIcon) {
+        break;
+      }
+
+      // Add new feature icon, vertically centered with the text.
+      [self.delegate accountStorageNewFeatureIconDidShow];
+      NSTextAttachment* iconAttachment = [[NSTextAttachment alloc] init];
+      iconAttachment.image = [PasswordSettingsViewController newFeatureIcon];
+      CGSize iconSize = iconAttachment.image.size;
+      iconAttachment.bounds = CGRectMake(
+          0, (switchCell.textLabel.font.capHeight - iconSize.height) / 2,
+          iconSize.width, iconSize.height);
+      NSMutableAttributedString* textAndIcon =
+          [[NSMutableAttributedString alloc]
+              initWithAttributedString:switchCell.textLabel.attributedText];
+      [textAndIcon appendAttributedString:[[NSAttributedString alloc]
+                                              initWithString:@" "]];
+      [textAndIcon appendAttributedString:
+                       [NSAttributedString
+                           attributedStringWithAttachment:iconAttachment]];
+      switchCell.textLabel.attributedText = textAndIcon;
+      switchCell.accessibilityLabel = [NSString
+          stringWithFormat:@"%@, %@, %@", switchCell.textLabel.text,
+                           l10n_util::GetNSString(
+                               IDS_IOS_NEW_FEATURE_ACCESSIBILITY_LABEL),
+                           switchCell.detailTextLabel.text];
       break;
     }
     case ItemTypeManagedSavePasswords: {
@@ -513,6 +549,10 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
   }
 }
 
+- (void)setShowAccountStorageNewFeatureIcon:(BOOL)show {
+  _showAccountStorageNewFeatureIcon = show;
+}
+
 - (void)setPasswordsInOtherAppsEnabled:(BOOL)enabled {
   if (_passwordsInOtherAppsEnabled.has_value() &&
       _passwordsInOtherAppsEnabled.value() == enabled) {
@@ -634,7 +674,8 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
       return;
     }
     case PasswordSettingsAccountStorageStateOptedIn:
-    case PasswordSettingsAccountStorageStateOptedOut: {
+    case PasswordSettingsAccountStorageStateOptedOut:
+    case PasswordSettingsAccountStorageStateDisabledByPolicy: {
       if (!hadItem) {
         [self.tableViewModel addItem:self.accountStorageItem
              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
@@ -642,6 +683,9 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
 
       self.accountStorageItem.on = self.accountStorageState ==
                                    PasswordSettingsAccountStorageStateOptedIn;
+      self.accountStorageItem.enabled =
+          self.accountStorageState !=
+          PasswordSettingsAccountStorageStateDisabledByPolicy;
 
       if (self.modelLoadStatus != ModelLoadComplete) {
         return;
@@ -766,6 +810,37 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
     [self.tableView reloadSections:indexSet
                   withRowAnimation:UITableViewRowAnimationAutomatic];
   }
+}
+
++ (UIImage*)newFeatureIcon {
+  UIFontDescriptor* fontDescriptor = [UIFontDescriptor
+      preferredFontDescriptorWithTextStyle:UIFontTextStyleCaption1];
+  fontDescriptor = [fontDescriptor
+      fontDescriptorWithDesign:UIFontDescriptorSystemDesignRounded];
+  fontDescriptor = [fontDescriptor fontDescriptorByAddingAttributes:@{
+    UIFontDescriptorTraitsAttribute :
+        @{UIFontWeightTrait : [NSNumber numberWithFloat:UIFontWeightHeavy]}
+  }];
+
+  UILabel* label = [[UILabel alloc] init];
+  label.font = [UIFont fontWithDescriptor:fontDescriptor size:0.0];
+  label.text = l10n_util::GetNSString(IDS_IOS_NEW_LABEL_FEATURE_BADGE);
+  label.translatesAutoresizingMaskIntoConstraints = NO;
+  label.textColor = [UIColor colorNamed:kPrimaryBackgroundColor];
+
+  UIImageView* image = [[UIImageView alloc]
+      initWithImage:DefaultSymbolWithPointSize(
+                        @"seal.fill",
+                        label.font.pointSize + 2 * kNewFeatureIconPadding)];
+  image.tintColor = [UIColor colorNamed:kBlue600Color];
+  image.translatesAutoresizingMaskIntoConstraints = NO;
+  [image addSubview:label];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [image.centerXAnchor constraintEqualToAnchor:label.centerXAnchor],
+    [image.centerYAnchor constraintEqualToAnchor:label.centerYAnchor]
+  ]];
+  return ImageFromView(image, [UIColor clearColor], UIEdgeInsetsZero);
 }
 
 @end

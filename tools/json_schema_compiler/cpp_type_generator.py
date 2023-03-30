@@ -35,6 +35,14 @@ class CppTypeGenerator(object):
       self._default_namespace = list(model.namespaces.values())[0]
     self._namespace_resolver = namespace_resolver
 
+  def GetOptionalReturnType(self, typename, support_errors=False):
+    """ Composes a C++ return type to be used as a return value. Wraps the
+    typename in an optional, for the regular case, or uses a base::expected for
+    when it should support string errors.
+    """
+    return (('base::expected<{typename}, std::u16string>'
+        if support_errors else 'absl::optional<{typename}>')
+          .format(typename=typename))
 
   def IsEnumModernised(self, type_):
     """ Determines if a given enum type belongs to a namespace set with the
@@ -55,6 +63,16 @@ class CppTypeGenerator(object):
       return '{enum_name}kNone'.format(enum_name=prefix)
 
     return '%s_NONE' % self.FollowRef(type_).unix_name.upper()
+
+  def GetEnumDefaultValue(self, type_, current_namespace):
+    """Gets the representation for an enum default initialised, which is the
+    typename with a default initialiser. e.g. MyEnum().
+    """
+    namespace = ('%s::' % type_.namespace.unix_name
+      if current_namespace and current_namespace != type_.namespace else '')
+
+    return '{namespace}{typename}()'.format(
+      namespace=namespace,typename=cpp_util.Classname(type_.name))
 
   def FormatStringForEnumValue(self, name):
     """Formats a string enum entry to the common constant format favoured by the
@@ -91,8 +109,8 @@ class CppTypeGenerator(object):
     """Gets the enum value in the given model.Property indicating the last value
     for the type.
     """
-    if self.IsEnumModernised(type_):
-      return 'kLast'
+    # TODO(crbug.com/1421546): This function should be deleted once all enums
+    # are migrated to scoped ones.
     return '%s_LAST' % self.FollowRef(type_).unix_name.upper()
 
   def GetEnumValue(self, type_, enum_value, full_name=True):
@@ -221,12 +239,29 @@ class CppTypeGenerator(object):
       c.Concat(cpp_util.CloseNamespace(cpp_namespace))
     return c
 
-  def GenerateIncludes(self, include_soft=False):
+  def GenerateIncludes(self, include_soft=False, generate_error_messages=False):
     """Returns the #include lines for self._default_namespace.
     """
     c = Code()
-    if self._default_namespace.manifest_keys:
+
+    # The inclusion of the StringPiece header is dependent on either the
+    # presence of enums, or manifest keys.
+    include_string_piece = (self._default_namespace.manifest_keys or
+        any(type_.property_type is PropertyType.ENUM for type_ in
+            self._default_namespace.types.values()))
+
+    if include_string_piece:
       c.Append('#include "base/strings/string_piece.h"')
+
+    # The header for `base::expected` should be included whenever error messages
+    # are supposed to be returned, which only occurs with object, choices, or
+    # functions.
+    if (generate_error_messages and (
+        len(self._default_namespace.functions.values()) or
+        any(type_.property_type in
+            [PropertyType.OBJECT, PropertyType.CHOICES] for type_ in
+            self._default_namespace.types.values()))):
+      c.Append('#include "base/types/expected.h"')
 
     # Note: It's possible that there are multiple dependencies from the same
     # API. Make sure to only include them once.

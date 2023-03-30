@@ -66,6 +66,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".USER_EVENT" summary="USER_EVENT"/>
   <variant name=".WALLET_METADATA" summary="WALLET_METADATA"/>
   <variant name=".WEB_APP" summary="WEB_APP"/>
+  <variant name=".WEBAUTHN_CREDENTIAL" summary="WEBAUTHN_CREDENTIAL"/>
   <variant name=".WIFI_CONFIGURATION" summary="WIFI_CONFIGURATION"/>
   <variant name=".WORKSPACE_DESK" summary="WORKSPACE_DESK"/>
 </variants>
@@ -83,6 +84,12 @@ chromium-metrics-reviews@google.com.
   <variant name=".MigratedLast28Days"
       summary="Includes data for users that went through migration during the
                last 28 days (wrt recording the metrics)."/>
+  <variant name=".MigratedLast90Days"
+      summary="Includes data for users that went through migration during the
+               last 90 days (wrt recording the metrics)."/>
+  <variant name=".MigratedLast180Days"
+      summary="Includes data for users that went through migration during the
+               last 180 days (wrt recording the metrics)."/>
   <variant name=".MigratedLastDay"
       summary="Includes data for users that went through migration during the
                last day (wrt recording the metrics)."/>
@@ -207,7 +214,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.BookmarksGUIDDuplicates" enum="BookmarksGUIDDuplicates"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>mastiz@chromium.org</owner>
   <owner>rushans@google.com</owner>
   <component>Services&gt;Sync</component>
@@ -369,7 +376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.Crypto.NigoriKeyDerivationDuration.{Method}" units="ms"
-    expires_after="2023-05-01">
+    expires_after="2023-11-01">
   <owner>mmoskvitin@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -395,7 +402,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.CryptographerReady" enum="SyncCryptographerReadyState"
-    expires_after="2023-07-09">
+    expires_after="2023-09-24">
   <owner>mmoskvitin@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -639,7 +646,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.KeystoreDecryptionFailed"
-    enum="SyncKeystoreDecryptionFailure" expires_after="2023-05-06">
+    enum="SyncKeystoreDecryptionFailure" expires_after="2023-11-06">
   <owner>mmoskvitin@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -1197,7 +1204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.RecordedUserEventType" enum="SyncUserEventType"
-    expires_after="2023-05-07">
+    expires_after="2023-11-07">
   <owner>mmoskvitin@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -1523,6 +1530,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Sync.TrustedVaultErrorShownOnFirstTimeSync" enum="Boolean"
+    expires_after="2023-09-15">
+  <owner>mmoskvitin@google.com</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records whether user action was required to fetch trusted vault keys upon
+    first sync (i.e. after signin). Recorded only if trusted vault passphrase
+    type is used and at most once per browser/profile lifetime.
+  </summary>
+</histogram>
+
 <histogram
     name="Sync.TrustedVaultErrorShownOnStartup{TrustedVaultTimeSinceMigrationSuffix}"
     enum="Boolean" expires_after="2023-07-15">
@@ -1578,7 +1597,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Sync.TrustedVaultHintDegradedRecoverabilityChangedReason2"
     enum="TrustedVaultHintDegradedRecoverabilityChangedReason"
-    expires_after="2023-07-23">
+    expires_after="2023-09-24">
   <owner>mmrashad@google.com</owner>
   <owner>mmoskvitin@google.com</owner>
   <component>Services&gt;Sync</component>
@@ -1704,7 +1723,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.TrustedVaultURLFetchResponse{Reason}"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-05-01">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-11-01">
   <owner>mmoskvitin@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>

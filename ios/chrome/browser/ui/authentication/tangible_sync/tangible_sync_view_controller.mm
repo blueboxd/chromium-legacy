@@ -7,8 +7,8 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "components/signin/public/base/signin_metrics.h"
+#import "ios/chrome/browser/shared/ui/elements/instruction_view.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
-#import "ios/chrome/browser/ui/elements/instruction_view.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -107,29 +107,15 @@ UIView* IconViewWithImage(NSString* image_name, BOOL custom_symbol) {
     l10n_util::GetNSString(IDS_IOS_TANGIBLE_SYNC_DATA_TYPE_AUTOFILL),
     l10n_util::GetNSString(IDS_IOS_TANGIBLE_SYNC_DATA_TYPE_HISTORY),
   ];
-  InstructionView* instructionView = nil;
-  if (UseSymbols()) {
-    NSArray<UIView*>* imageViews = @[
-      IconViewWithImage(kBookmarksSymbol, /*custom_symbol=*/NO),
-      IconViewWithImage(kPasswordSymbol, /*custom_symbol=*/YES),
-      IconViewWithImage(kRecentTabsSymbol, /*custom_symbol=*/YES),
-    ];
-    instructionView =
-        [[InstructionView alloc] initWithList:dataTypeNames
-                                        style:InstructionViewStyleDefault
-                                    iconViews:imageViews];
-  } else {
-    NSArray<UIImage*>* dataTypeIcons = @[
-      [UIImage imageNamed:@"tangible_sync_bookmarks"],
-      [UIImage imageNamed:@"tangible_sync_autofill"],
-      [UIImage imageNamed:@"tangible_sync_history"],
-    ];
-    instructionView =
-        [[InstructionView alloc] initWithList:dataTypeNames
-                                        style:InstructionViewStyleDefault
-                                        icons:dataTypeIcons];
-  }
-  DCHECK(instructionView);
+  NSArray<UIView*>* imageViews = @[
+    IconViewWithImage(kBookmarksSymbol, /*custom_symbol=*/NO),
+    IconViewWithImage(kPasswordSymbol, /*custom_symbol=*/YES),
+    IconViewWithImage(kRecentTabsSymbol, /*custom_symbol=*/YES),
+  ];
+  InstructionView* instructionView =
+      [[InstructionView alloc] initWithList:dataTypeNames
+                                      style:InstructionViewStyleDefault
+                                  iconViews:imageViews];
   instructionView.tapListener = self;
   instructionView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.specificContentView addSubview:instructionView];

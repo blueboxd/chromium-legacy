@@ -268,7 +268,14 @@ export class SearchContainer extends EventTarget {
     if (!this.pathDisplay_) {
       return;
     }
-    this.pathDisplay_.path = this.getSelectedPath_(state);
+    const path = this.getSelectedPath_(state);
+    if (path) {
+      this.pathDisplay_.removeAttribute('hidden');
+      this.pathDisplay_.path = path;
+    } else {
+      this.pathDisplay_.path = '';
+      this.pathDisplay_.setAttribute('hidden', '');
+    }
   }
 
   /**
@@ -277,17 +284,14 @@ export class SearchContainer extends EventTarget {
    */
   private getSelectedPath_(state: State): string {
     const keys = state.currentDirectory?.selection?.keys;
-    if (!keys) {
+    if (!keys || keys.length !== 1) {
       return '';
     }
-    const fileData = state.allEntries[keys[0]!];
-    if (!fileData) {
-      return '';
-    }
-    const entry = fileData.entry;
+    const entry = state.allEntries[keys[0]!]?.entry;
     if (!entry) {
       return '';
     }
+    // TODO(b:274559834): Improve efficiency of these computations.
     const parts: PathComponent[] =
         PathComponent.computeComponentsFromEntry(entry, this.volumeManager_);
     return parts.map(p => p.name).join('/');

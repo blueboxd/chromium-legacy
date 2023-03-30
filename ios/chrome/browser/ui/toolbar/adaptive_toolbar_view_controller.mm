@@ -12,18 +12,15 @@
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/ui/util/animation_util.h"
-#import "ios/chrome/browser/shared/ui/util/force_touch_long_press_gesture_recognizer.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
-#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_menus_provider.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ui/base/device_form_factor.h"
@@ -57,7 +54,6 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
 
 @dynamic view;
 @synthesize buttonFactory = _buttonFactory;
-@synthesize longPressDelegate = _longPressDelegate;
 @synthesize loading = _loading;
 @synthesize isNTP = _isNTP;
 
@@ -119,22 +115,14 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
   [self addLayoutGuideCenterToButtons];
 
   // Add navigation popup menu triggers.
-  if (UseSymbols()) {
-    [self configureMenuProviderForButton:self.view.backButton
-                              buttonType:AdaptiveToolbarButtonTypeBack];
-    [self configureMenuProviderForButton:self.view.forwardButton
-                              buttonType:AdaptiveToolbarButtonTypeForward];
-    [self configureMenuProviderForButton:self.view.openNewTabButton
-                              buttonType:AdaptiveToolbarButtonTypeNewTab];
-    [self configureMenuProviderForButton:self.view.tabGridButton
-                              buttonType:AdaptiveToolbarButtonTypeTabGrid];
-  } else {
-    [self addLongPressGestureToView:self.view.backButton];
-    [self addLongPressGestureToView:self.view.forwardButton];
-    [self addLongPressGestureToView:self.view.openNewTabButton];
-    [self addLongPressGestureToView:self.view.tabGridButton];
-    [self addLongPressGestureToView:self.view.toolsMenuButton];
-  }
+  [self configureMenuProviderForButton:self.view.backButton
+                            buttonType:AdaptiveToolbarButtonTypeBack];
+  [self configureMenuProviderForButton:self.view.forwardButton
+                            buttonType:AdaptiveToolbarButtonTypeForward];
+  [self configureMenuProviderForButton:self.view.openNewTabButton
+                            buttonType:AdaptiveToolbarButtonTypeNewTab];
+  [self configureMenuProviderForButton:self.view.tabGridButton
+                            buttonType:AdaptiveToolbarButtonTypeTabGrid];
 
   [self updateLayoutBasedOnTraitCollection];
 }
@@ -277,72 +265,8 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
 
 #pragma mark - PopupMenuUIUpdating
 
-- (void)updateUIForMenuDisplayed:(PopupMenuType)popupType {
-  ToolbarButton* selectedButton = nil;
-  switch (popupType) {
-    case PopupMenuTypeNavigationForward:
-      selectedButton = self.view.forwardButton;
-      break;
-    case PopupMenuTypeNavigationBackward:
-      selectedButton = self.view.backButton;
-      break;
-    case PopupMenuTypeNewTab:
-      selectedButton = self.view.openNewTabButton;
-      break;
-    case PopupMenuTypeTabGrid:
-      selectedButton = self.view.tabGridButton;
-      break;
-    case PopupMenuTypeToolsMenu:
-      selectedButton = self.view.toolsMenuButton;
-      break;
-    case PopupMenuTypeTabStripTabGrid:
-      // ignore
-      break;
-  }
-
-  selectedButton.spotlighted = YES;
-
-  for (ToolbarButton* button in self.view.allButtons) {
-    button.dimmed = YES;
-  }
-}
-
-- (void)updateUIForMenuDismissed {
-  self.view.backButton.spotlighted = NO;
-  self.view.forwardButton.spotlighted = NO;
-  self.view.openNewTabButton.spotlighted = NO;
-  self.view.tabGridButton.spotlighted = NO;
-  self.view.toolsMenuButton.spotlighted = NO;
-
-  for (ToolbarButton* button in self.view.allButtons) {
-    button.dimmed = NO;
-  }
-}
-
-- (void)updateUIForIPHDisplayed:(PopupMenuType)popupType {
-  ToolbarButton* selectedButton = nil;
-  switch (popupType) {
-    case PopupMenuTypeNavigationForward:
-      selectedButton = self.view.forwardButton;
-      break;
-    case PopupMenuTypeNavigationBackward:
-      selectedButton = self.view.backButton;
-      break;
-    case PopupMenuTypeNewTab:
-      selectedButton = self.view.openNewTabButton;
-      break;
-    case PopupMenuTypeTabGrid:
-      selectedButton = self.view.tabGridButton;
-      break;
-    case PopupMenuTypeToolsMenu:
-      selectedButton = self.view.toolsMenuButton;
-      break;
-    case PopupMenuTypeTabStripTabGrid:
-      // ignore
-      break;
-  }
-
-  selectedButton.iphHighlighted = YES;
+- (void)updateUIForOverflowMenuIPHDisplayed {
+  self.view.toolsMenuButton.iphHighlighted = YES;
 }
 
 - (void)updateUIForIPHDismissed {
@@ -421,41 +345,6 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
     base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
   } else {
     NOTREACHED();
-  }
-}
-
-// Adds a LongPressGesture to the `view`, with target on -`handleLongPress:`.
-- (void)addLongPressGestureToView:(UIView*)view {
-  ForceTouchLongPressGestureRecognizer* gestureRecognizer =
-      [[ForceTouchLongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(handleGestureRecognizer:)];
-  gestureRecognizer.forceThreshold = 0.8;
-  [view addGestureRecognizer:gestureRecognizer];
-}
-
-// Handles the gseture recognizer on the views.
-- (void)handleGestureRecognizer:(UILongPressGestureRecognizer*)gesture {
-  if (gesture.state == UIGestureRecognizerStateBegan) {
-    if (gesture.view == self.view.backButton) {
-      [self.popupMenuCommandsHandler showNavigationHistoryBackPopupMenu];
-    } else if (gesture.view == self.view.forwardButton) {
-      [self.popupMenuCommandsHandler showNavigationHistoryForwardPopupMenu];
-    } else if (gesture.view == self.view.openNewTabButton) {
-      [self.popupMenuCommandsHandler showNewTabButtonPopup];
-    } else if (gesture.view == self.view.tabGridButton) {
-      [self.popupMenuCommandsHandler showTabGridButtonPopup];
-    } else if (gesture.view == self.view.toolsMenuButton) {
-      base::RecordAction(base::UserMetricsAction("MobileToolbarShowMenu"));
-      [self.popupMenuCommandsHandler showToolsMenuPopup];
-    }
-    TriggerHapticFeedbackForImpact(UIImpactFeedbackStyleHeavy);
-  } else if (gesture.state == UIGestureRecognizerStateEnded) {
-    [self.longPressDelegate
-        longPressEndedAtPoint:[gesture locationOfTouch:0 inView:nil]];
-  } else if (gesture.state == UIGestureRecognizerStateChanged) {
-    [self.longPressDelegate
-        longPressFocusPointChangedTo:[gesture locationOfTouch:0 inView:nil]];
   }
 }
 

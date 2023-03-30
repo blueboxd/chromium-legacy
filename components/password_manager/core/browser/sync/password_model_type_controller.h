@@ -31,6 +31,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
                                     public syncer::SyncServiceObserver,
                                     public signin::IdentityManager::Observer {
  public:
+  // TODO(crbug.com/1425033): Remove account_password_store_for_cleanup param.
   PasswordModelTypeController(
       std::unique_ptr<syncer::ModelTypeControllerDelegate>
           delegate_for_full_sync_mode,
@@ -50,8 +51,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
   // DataTypeController overrides.
   void LoadModels(const syncer::ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
-  void Stop(syncer::ShutdownReason shutdown_reason,
-            StopCallback callback) override;
+  void Stop(syncer::SyncStopMetadataFate fate, StopCallback callback) override;
   PreconditionState GetPreconditionState() const override;
   bool ShouldRunInTransportOnlyMode() const override;
 
@@ -68,9 +68,6 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
 
  private:
   void OnOptInStateMaybeChanged();
-
-  void MaybeClearStore(
-      scoped_refptr<PasswordStoreInterface> account_password_store_for_cleanup);
 
   const raw_ptr<PrefService> pref_service_;
   const raw_ptr<signin::IdentityManager> identity_manager_;

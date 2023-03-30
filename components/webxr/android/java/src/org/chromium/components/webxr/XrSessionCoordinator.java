@@ -8,16 +8,18 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.Surface;
 
-import org.chromium.base.ContextUtils;
+import androidx.annotation.IntDef;
+
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Provides static methods called by the XrDelegateImpl as well as JNI methods to the C/C++ code
@@ -31,6 +33,14 @@ import org.chromium.ui.base.WindowAndroid;
 public class XrSessionCoordinator {
     private static final String TAG = "XrSessionCoordinator";
     private static final boolean DEBUG_LOGS = false;
+
+    @IntDef({SessionType.NONE, SessionType.AR, SessionType.VR})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SessionType {
+        int NONE = 0;
+        int AR = 1;
+        int VR = 2;
+    }
 
     private long mNativeXrSessionCoordinator;
 
@@ -47,9 +57,13 @@ public class XrSessionCoordinator {
     // session.
     private static XrSessionCoordinator sActiveSessionInstance;
 
+    private @SessionType int mActiveSessionType = SessionType.NONE;
+
+    private static WebContents sWebContents;
+
     /** Whether there is a non-null valid {@link #sActiveSessionInstance}. */
-    private static ObservableSupplierImpl<Boolean> sActiveSessionAvailableSupplier =
-            new ObservableSupplierImpl<>();
+    private static XrSessionTypeSupplier sActiveSessionAvailableSupplier =
+            new XrSessionTypeSupplier(SessionType.NONE);
 
     // Helper, obtains android Activity out of passed in WebContents instance.
     // Equivalent to ChromeActivity.fromWebContents(), but does not require that
@@ -68,13 +82,18 @@ public class XrSessionCoordinator {
     }
 
     /**
-     * Gets the current application context.
+     * Gets the current application context. Should not be called until after a start*Session call
+     * has succeeded, but if called after an endSession call may return null.
      *
      * @return Context The application context.
      */
     @CalledByNative
     private static Context getApplicationContext() {
-        return ContextUtils.getApplicationContext();
+        if (sWebContents == null) {
+            return null;
+        }
+
+        return getActivity(sWebContents);
     }
 
     private XrSessionCoordinator(long nativeXrSessionCoordinator) {
@@ -84,27 +103,57 @@ public class XrSessionCoordinator {
         mNativeXrSessionCoordinator = nativeXrSessionCoordinator;
     }
 
-    @CalledByNative
-    private void startSession(final ArCompositorDelegateProvider compositorDelegateProvider,
-            final WebContents webContents, boolean useOverlay, boolean canRenderDomContent) {
-        if (DEBUG_LOGS) Log.i(TAG, "startSession");
-        XrImmersiveOverlay.Delegate overlayDelegate = ArClassProvider.getOverlayDelegate(
-                compositorDelegateProvider.create(webContents), useOverlay, canRenderDomContent);
-        sActiveSessionInstance = this;
-        sActiveSessionAvailableSupplier.set(true);
+    private void startSession(@SessionType int sessionType,
+            XrImmersiveOverlay.Delegate overlayDelegate, final WebContents webContents) {
+        assert (sActiveSessionInstance == null);
+        assert (sessionType != SessionType.NONE);
+
         mImmersiveOverlay = new XrImmersiveOverlay();
         mImmersiveOverlay.show(overlayDelegate, webContents, this);
+
+        sWebContents = webContents;
+        sActiveSessionInstance = this;
+        mActiveSessionType = sessionType;
+        sActiveSessionAvailableSupplier.set(sessionType);
+    }
+
+    @CalledByNative
+    private void startArSession(final ArCompositorDelegateProvider compositorDelegateProvider,
+            final WebContents webContents, boolean useOverlay, boolean canRenderDomContent) {
+        if (DEBUG_LOGS) Log.i(TAG, "startArSession");
+        // The higher levels should have guaranteed that we're only called if there isn't any other
+        // active session going on.
+        assert (sActiveSessionInstance == null);
+
+        XrImmersiveOverlay.Delegate overlayDelegate = ArClassProvider.getOverlayDelegate(
+                compositorDelegateProvider.create(webContents), useOverlay, canRenderDomContent);
+        startSession(SessionType.AR, overlayDelegate, webContents);
+    }
+
+    @CalledByNative
+    private void startVrSession(final WebContents webContents) {
+        if (DEBUG_LOGS) Log.i(TAG, "startVrSession");
+        // The higher levels should have guaranteed that we're only called if there isn't any other
+        // active session going on.
+        assert (sActiveSessionInstance == null);
+
+        XrImmersiveOverlay.Delegate overlayDelegate =
+                CardboardClassProvider.getOverlayDelegate(getActivity(webContents));
+        startSession(SessionType.VR, overlayDelegate, webContents);
     }
 
     @CalledByNative
     private void endSession() {
         if (DEBUG_LOGS) Log.i(TAG, "endSession");
         if (mImmersiveOverlay == null) return;
+        assert (sActiveSessionInstance == this);
 
         mImmersiveOverlay.cleanupAndExit();
         mImmersiveOverlay = null;
+        mActiveSessionType = SessionType.NONE;
         sActiveSessionInstance = null;
-        sActiveSessionAvailableSupplier.set(false);
+        sWebContents = null;
+        sActiveSessionAvailableSupplier.set(SessionType.NONE);
     }
 
     // Called from ArDelegateImpl
@@ -120,10 +169,10 @@ public class XrSessionCoordinator {
     }
 
     public static boolean hasActiveArSession() {
-        return sActiveSessionInstance != null;
+        return sActiveSessionInstance.mActiveSessionType == SessionType.AR;
     }
 
-    public static ObservableSupplier<Boolean> hasActiveArSessionSupplier() {
+    public static XrSessionTypeSupplier getActiveSessionTypeSupplier() {
         return sActiveSessionAvailableSupplier;
     }
 
@@ -152,7 +201,7 @@ public class XrSessionCoordinator {
 
     @CalledByNative
     private void onNativeDestroy() {
-        // ArCoreDevice's destructor ends sessions before destroying its native XrSessionCoordinator
+        // Native destructors should ends sessions before destroying the native XrSessionCoordinator
         // object.
         assert sActiveSessionInstance == null : "unexpected active session in onNativeDestroy";
 

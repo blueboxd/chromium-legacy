@@ -46,6 +46,7 @@ const base::flat_map<PackSpecPair, std::string>& GetAllLanguagePackDlcIds() {
           {{kHandwritingFeatureId, "et"}, "handwriting-et"},
           {{kHandwritingFeatureId, "fa"}, "handwriting-fa"},
           {{kHandwritingFeatureId, "fi"}, "handwriting-fi"},
+          {{kHandwritingFeatureId, "fil"}, "handwriting-fil"},
           {{kHandwritingFeatureId, "fr"}, "handwriting-fr"},
           {{kHandwritingFeatureId, "ga"}, "handwriting-ga"},
           {{kHandwritingFeatureId, "gu"}, "handwriting-gu"},
@@ -90,12 +91,12 @@ const base::flat_map<PackSpecPair, std::string>& GetAllLanguagePackDlcIds() {
           {{kHandwritingFeatureId, "te"}, "handwriting-te"},
           {{kHandwritingFeatureId, "th"}, "handwriting-th"},
           {{kHandwritingFeatureId, "ti"}, "handwriting-ti"},
-          {{kHandwritingFeatureId, "tl"}, "handwriting-tl"},
           {{kHandwritingFeatureId, "tr"}, "handwriting-tr"},
           {{kHandwritingFeatureId, "uk"}, "handwriting-uk"},
           {{kHandwritingFeatureId, "ur"}, "handwriting-ur"},
           {{kHandwritingFeatureId, "vi"}, "handwriting-vi"},
           {{kHandwritingFeatureId, "zh"}, "handwriting-zh"},
+          {{kHandwritingFeatureId, "zh-HK"}, "handwriting-zh-HK"},
 
           // Text-To-Speech.
           {{kTtsFeatureId, "bn-bd"}, "tts-bn-bd"},

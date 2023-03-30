@@ -56,6 +56,7 @@
 <translation id="2030769033451695672">Tryk for at vende tilbage til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2091887806945687916">Lyd</translation>
+<translation id="2117655453726830283">Næste dias</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="216989819110952009">Selv med øjnene beskyttet bag de grønne briller blev Dorothy og hendes venner først forblændet af den</translation>
 <translation id="2176704795966505152">Vis zoomindstilling i hovedmenuen</translation>
@@ -93,6 +94,7 @@
 <translation id="257931822824936280">Udvidet – klik for at skjule.</translation>
 <translation id="2586657967955657006">Udklipsholder</translation>
 <translation id="2597457036804169544">Anvend ikke Mørkt tema på websites</translation>
+<translation id="2606760465469169465">Automatisk verificering</translation>
 <translation id="2621115761605608342">Tillad JavaScript for et bestemt website.</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2677748264148917807">Forlad</translation>
@@ -113,6 +115,7 @@
 <translation id="3008272652534848354">Nulstil tilladelser</translation>
 <translation id="301521992641321250">Automatisk blokering</translation>
 <translation id="3069226013421428034">Tillad tredjepartslogin for et bestemt website.</translation>
+<translation id="310297983047869047">Forrige dias</translation>
 <translation id="3109724472072898302">Skjult</translation>
 <translation id="3114012059975132928">Videoafspiller</translation>
 <translation id="3115898365077584848">Vis info</translation>
@@ -188,6 +191,7 @@
 <translation id="4440642537584213025">Udvid <ph name="TARGET_DESCRIPTION" /></translation>
 <translation id="4468959413250150279">Slå lyden fra for et bestemt website.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# cookie}one{# cookie}other{# cookies}}</translation>
+<translation id="4478158430052450698">Gør det nemmere at tilpasse zoom på forskellige websites</translation>
 <translation id="4479647676395637221">Spørg, før websites bruger dit kamera (anbefales)</translation>
 <translation id="4505788138578415521">Webadressen er udvidet</translation>
 <translation id="4534723447064627427">Aktivér også din mikrofon i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give <ph name="APP_NAME" /> adgang til mikrofonen.</translation>
@@ -218,11 +222,11 @@
 <translation id="509133520954049755">Anmod om computervenlig visning</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
-<translation id="5134599672855298214">Anmod om mobilvenlig visning (anbefales)</translation>
 <translation id="5186036860380548585">Se valgmuligheden øverst på skærmen</translation>
 <translation id="5197729504361054390">De kontakter, du vælger, deles med <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Senest besøgt i dag</translation>
 <translation id="5225463052809312700">Slå kamera til</translation>
+<translation id="5229337741799419985">Denne indstilling fungerer uden at identificere dig eller give websites tilladelse til at se din browserhistorik</translation>
 <translation id="5234764350956374838">Luk</translation>
 <translation id="5264323282659631142">Fjern "<ph name="CHIP_LABEL" />"</translation>
 <translation id="528192093759286357">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
@@ -309,6 +313,7 @@
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6689172468748959065">Profilbilleder</translation>
 <translation id="6697925417670533197">Aktive downloads</translation>
+<translation id="6701547804986694515">Når du besøger et website, kan Chrome gemme oplysninger, der bekræfter, at du ikke er en bot. Når du derefter bruger nettet, kan websites ved hjælp af Chrome tjekke og verificere via et website, du tidligere har besøgt, at du sandsynligvis er en rigtig person</translation>
 <translation id="6722828510648505498">Bloker loginmeddelelser fra identitetstjenester</translation>
 <translation id="6746124502594467657">Flyt ned</translation>
 <translation id="6749077623962119521">Vil du nulstille tilladelserne?</translation>
@@ -426,6 +431,7 @@
 <translation id="8751914237388039244">Vælg et billede</translation>
 <translation id="8801436777607969138">Bloker JavaScript for et bestemt website.</translation>
 <translation id="8803526663383843427">Når funktionen er aktiveret</translation>
+<translation id="8805385115381080995">Dette skaber færre afbrydelser, når du bruger nettet, da det er mindre sandsynligt, at et website beder dig om at verificere, at du er en rigtig person</translation>
 <translation id="8816026460808729765">Bloker adgang til sensorer på websites</translation>
 <translation id="8823559166155093873">Bloker cookies</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -449,5 +455,6 @@
 <translation id="9162462602695099906">Denne side er farlig</translation>
 <translation id="9201023452444595544">Alle offlinedata ryddes</translation>
 <translation id="930525582205581608">Vil du glemme dette website?</translation>
+<translation id="947156494302904893">Websites, du besøger, kan verificere, at du er en rigtig person og ikke en bot</translation>
 <translation id="967624055006145463">Lagrede data</translation>
 </translationbundle>

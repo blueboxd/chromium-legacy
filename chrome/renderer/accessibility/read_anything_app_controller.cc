@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -315,6 +314,17 @@ void ReadAnythingAppController::AccessibilityEventReceived(
     const std::vector<ui::AXTreeUpdate>& updates,
     const std::vector<ui::AXEvent>& events) {
   model_.AccessibilityEventReceived(tree_id, updates, this);
+
+  if (model_.loading() || tree_id != model_.active_tree_id()) {
+    return;
+  }
+
+  for (auto& event : events) {
+    if (event.event_type == ax::mojom::Event::kDocumentSelectionChanged &&
+        event.event_from == ax::mojom::EventFrom::kUser) {
+      PostProcessSelection();
+    }
+  }
 }
 
 void ReadAnythingAppController::OnActiveAXTreeIDChanged(
@@ -329,14 +339,13 @@ void ReadAnythingAppController::OnActiveAXTreeIDChanged(
   // Delete all pending updates on the formerly active AXTree.
   // TODO(crbug.com/1266555): If distillation is in progress, cancel the
   // distillation request.
-#if DCHECK_IS_ON()
-  DCHECK(model_.pending_updates().empty() ||
-         model_.pending_updates_bundle_id() == previous_active_tree_id);
-#endif
   model_.ClearPendingUpdates();
-#if DCHECK_IS_ON()
-  model_.SetPendingUpdatesBundleId(ui::AXTreeIDUnknown());
-#endif
+
+  // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
+  // replace this function call with firing an event.
+  std::string script = "chrome.readAnything.showLoading();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
+  model_.SetLoading(true);
 
   // When the UI first constructs, this function may be called before tree_id
   // has been added to the tree list in AccessibilityEventReceived. In that
@@ -373,18 +382,18 @@ void ReadAnythingAppController::OnAtomicUpdateFinished(
       tree->GetAXTreeID() != model_.active_tree_id()) {
     return;
   }
-  bool need_to_distill = false;
   bool need_to_draw = false;
   for (Change change : changes) {
     switch (change.type) {
       case NODE_CREATED:
       case SUBTREE_CREATED:
-        need_to_distill = true;
-        break;
+        Distill();
+        return;
       case NODE_REPARENTED:
       case SUBTREE_REPARENTED:
         if (base::Contains(model_.content_node_ids(), change.node->id())) {
-          need_to_distill = true;
+          Distill();
+          return;
         } else if (base::Contains(model_.display_node_ids(),
                                   change.node->id())) {
           need_to_draw = true;
@@ -394,9 +403,7 @@ void ReadAnythingAppController::OnAtomicUpdateFinished(
         break;
     }
   }
-  if (need_to_distill) {
-    Distill();
-  } else if (need_to_draw) {
+  if (need_to_draw) {
     Draw();
   }
 }
@@ -409,10 +416,6 @@ void ReadAnythingAppController::Distill() {
   ui::AXTreeSerializer<const ui::AXNode*> serializer(tree_source.get());
   ui::AXTreeUpdate snapshot;
   CHECK(serializer.SerializeChanges(tree->root(), &snapshot));
-  // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
-  // replace this function call with firing an event.
-  std::string script = "chrome.readAnything.showLoading();";
-  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
   model_.SetDistillationInProgress(true);
   distiller_->Distill(*tree, snapshot, model_.active_ukm_source_id());
 }
@@ -437,27 +440,53 @@ void ReadAnythingAppController::OnAXTreeDistilled(
       !model_.ContainsTree(tree_id) || tree_id == ui::AXTreeIDUnknown()) {
     return;
   }
-  model_.ResetSelection();
   if (!model_.content_node_ids().empty()) {
     // If there are content_node_ids, this means the AXTree was successfully
-    // distilled. Post-process in preparation to display the distilled content.
-    PostProcessDistillableAXTree();
-  } else if (model_.has_selection()) {
-    // Otherwise, if there is a selection, post-process the AXTree to display
-    // the selected content.
-    PostProcessAXTreeWithSelection();
-  } else {
-    // TODO(crbug.com/1266555): Display a UI giving user instructions if the
-    // tree was not distillable.
+    // distilled.
+    ComputeDisplayNodeIdsForDistilledTree();
   }
 
-  Draw();
+  // Draw selection (if one exists) and the content.
+  PostProcessSelection();
+
+  // TODO(crbug.com/1266555): If no content nodes were identified, the
+  // controller should handle drawing the empty state (like how it handles the
+  // loading state) instead of the JS.
+
   // Once drawing is complete, unserialize all of the pending updates on the
   // active tree and send out a new distillation request.
-  model_.UnserializePendingUpdates();
-#if DCHECK_IS_ON()
-  model_.SetPendingUpdatesBundleId(ui::AXTreeIDUnknown());
-#endif
+  model_.UnserializePendingUpdates(tree_id);
+}
+
+void ReadAnythingAppController::PostProcessSelection() {
+  DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
+  DCHECK(model_.ContainsTree(model_.active_tree_id()));
+
+  // If the previous selection was inside the distilled content, that means we
+  // are currently displaying the distilled content in Read Anything. We may not
+  // need to redraw the distilled content if the user's new selection is inside
+  // the distilled content.
+  // If the previous selection was outside the distilled content, we will always
+  // redraw either a) the new selected content or b) the original distilled
+  // content if the new selection is inside that or if the selection was
+  // cleared.
+  bool need_to_draw = !model_.SelectionInsideDisplayNodes();
+
+  // Save the current selection
+  model_.UpdateSelection();
+
+  // If the main panel selection contains content outside of the distilled
+  // content, we need to find the selected nodes to display instead of the
+  // distilled content.
+  if (model_.has_selection() && !model_.SelectionInsideDisplayNodes()) {
+    need_to_draw = true;
+    ComputeSelectionNodeIds();
+  }
+
+  if (need_to_draw) {
+    Draw();
+  }
+  DrawSelection();
 }
 
 void ReadAnythingAppController::Draw() {
@@ -465,9 +494,17 @@ void ReadAnythingAppController::Draw() {
   // replace this function call with firing an event.
   std::string script = "chrome.readAnything.updateContent();";
   render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
+  model_.SetLoading(false);
 }
 
-void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
+void ReadAnythingAppController::DrawSelection() {
+  // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
+  // replace this function call with firing an event.
+  std::string script = "chrome.readAnything.updateSelection();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
+}
+
+void ReadAnythingAppController::ComputeSelectionNodeIds() {
   DCHECK(model_.has_selection());
   DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
   DCHECK(model_.ContainsTree(model_.active_tree_id()));
@@ -479,20 +516,14 @@ void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
   ui::AXNode* end_node = model_.GetAXNode(model_.end_node_id());
   DCHECK(end_node);
 
-  // If start node or end node is ignored, go to the nearest unignored node
-  // within the selection.
-  if (start_node->IsIgnored()) {
-    start_node = start_node->GetNextUnignoredInTreeOrder();
-    DCHECK(start_node);
-    model_.SetStart(start_node->id(), 0);
-  }
-  if (end_node->IsIgnored()) {
-    end_node = end_node->GetPreviousUnignoredInTreeOrder();
-    model_.SetEnd(end_node->id(), end_node->GetTextContentLengthUTF8());
+  // If start node or end node is ignored, the selection was invalid.
+  if (start_node->IsIgnored() || end_node->IsIgnored()) {
+    return;
   }
 
-  // Display nodes are the nodes which will be displayed by the rendering
-  // algorithm of Read Anything app.ts. We wish to create a subtree which
+  // Selection nodes are the nodes which will be displayed by the rendering
+  // algorithm of Read Anything app.ts if there is a selection that contains
+  // content outside of the distilled content. We wish to create a subtree which
   // stretches from start node to end node with tree root as the root.
 
   // Add all ancestor ids of start node, including the start node itself. This
@@ -501,22 +532,29 @@ void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
       start_node->GetAncestorsCrossingTreeBoundaryAsQueue();
   while (!ancestors.empty()) {
     ui::AXNodeID ancestor_id = ancestors.front()->id();
-    model_.InsertDisplayNode(ancestor_id);
     ancestors.pop();
+    if (!model_.IsNodeIgnoredForReadAnything(ancestor_id)) {
+      model_.InsertSelectionNode(ancestor_id);
+    }
   }
 
   // Do a pre-order walk of the tree from the start node to the end node and add
-  // all nodes to the list of display node ids.
-  ui::AXNode* next_node = start_node;
-  DCHECK(!start_node->IsIgnored());
-  DCHECK(!end_node->IsIgnored());
-  while (next_node != end_node) {
+  // all nodes to the list.
+  // TODO(crbug.com/1266555): Right now, we are going from start node to an
+  // unignored node that is before or equal to the end node. This condition was
+  // changed from next_node != end node because when a paragraph is selected
+  // with a triple click, we sometimes pass the end node, causing a SEGV_ACCERR.
+  // We need to investigate this case in more depth.
+  ui::AXNode* next_node = start_node->GetNextUnignoredInTreeOrder();
+  while (next_node && next_node->CompareTo(*end_node) <= 0) {
+    if (!model_.IsNodeIgnoredForReadAnything(next_node->id())) {
+      model_.InsertSelectionNode(next_node->id());
+    }
     next_node = next_node->GetNextUnignoredInTreeOrder();
-    model_.InsertDisplayNode(next_node->id());
   }
 }
 
-void ReadAnythingAppController::PostProcessDistillableAXTree() {
+void ReadAnythingAppController::ComputeDisplayNodeIdsForDistilledTree() {
   DCHECK(!model_.content_node_ids().empty());
 
   // Display nodes are the nodes which will be displayed by the rendering
@@ -552,7 +590,7 @@ void ReadAnythingAppController::PostProcessDistillableAXTree() {
         break;
       }
       ancestors.pop();
-      if (!IsNodeIgnoredForReadAnything(ancestor_id)) {
+      if (!model_.IsNodeIgnoredForReadAnything(ancestor_id)) {
         model_.InsertDisplayNode(ancestor_id);
       }
     }
@@ -566,7 +604,7 @@ void ReadAnythingAppController::PostProcessDistillableAXTree() {
     }
     while (next_node != deepest_last_child) {
       next_node = next_node->GetNextUnignoredInTreeOrder();
-      if (!IsNodeIgnoredForReadAnything(next_node->id())) {
+      if (!model_.IsNodeIgnoredForReadAnything(next_node->id())) {
         model_.InsertDisplayNode(next_node->id());
       }
     }
@@ -675,9 +713,12 @@ std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
   std::vector<ui::AXNodeID> child_ids;
   ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
   DCHECK(ax_node);
+  const std::set<ui::AXNodeID>* node_ids = model_.selection_node_ids().empty()
+                                               ? &model_.display_node_ids()
+                                               : &model_.selection_node_ids();
   for (auto it = ax_node->UnignoredChildrenBegin();
        it != ax_node->UnignoredChildrenEnd(); ++it) {
-    if (base::Contains(model_.display_node_ids(), it->id())) {
+    if (base::Contains(*node_ids, it->id())) {
       child_ids.push_back(it->id());
     }
   }
@@ -699,7 +740,7 @@ std::string ReadAnythingAppController::GetLanguage(
     ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
   DCHECK(ax_node);
-  if (NodeIsContentNode(ax_node_id)) {
+  if (model_.NodeIsContentNode(ax_node_id)) {
     return ax_node->GetLanguage();
   }
   return ax_node->GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
@@ -758,15 +799,6 @@ bool ReadAnythingAppController::IsOverline(ui::AXNodeID ax_node_id) const {
   return ax_node->HasTextStyle(ax::mojom::TextStyle::kOverline);
 }
 
-bool ReadAnythingAppController::IsNodeIgnoredForReadAnything(
-    ui::AXNodeID ax_node_id) const {
-  ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
-  DCHECK(ax_node);
-  // Ignore interactive elements.
-  ax::mojom::Role role = ax_node->GetRole();
-  return ui::IsControl(role) || ui::IsSelect(role);
-}
-
 void ReadAnythingAppController::OnConnected() {
   mojo::PendingReceiver<read_anything::mojom::PageHandlerFactory>
       page_handler_factory_receiver =
@@ -800,6 +832,11 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
   // TODO(crbug.com/1266555): Consider how to show this in a more user-friendly
   // way.
   if (model_.distillation_in_progress()) {
+    return;
+  }
+
+  // Ignore the selection if it's collapsed, which is created by a simple click.
+  if ((anchor_offset == focus_offset) && (anchor_node_id == focus_node_id)) {
     return;
   }
 
@@ -841,9 +878,16 @@ void ReadAnythingAppController::SetContentForTesting(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   ui::AXTreeUpdate snapshot =
       GetSnapshotFromV8SnapshotLite(isolate, v8_snapshot_lite);
+  ui::AXEvent selectionEvent;
+  selectionEvent.event_type = ax::mojom::Event::kDocumentSelectionChanged;
+  selectionEvent.event_from = ax::mojom::EventFrom::kUser;
   AccessibilityEventReceived(snapshot.tree_data.tree_id, {snapshot}, {});
   OnActiveAXTreeIDChanged(snapshot.tree_data.tree_id, ukm::kInvalidSourceId);
   OnAXTreeDistilled(snapshot.tree_data.tree_id, content_node_ids);
+
+  // Trigger a selection event (for testing selections).
+  AccessibilityEventReceived(snapshot.tree_data.tree_id, {snapshot},
+                             {selectionEvent});
 }
 
 AXTreeDistiller* ReadAnythingAppController::SetDistillerForTesting(
@@ -856,9 +900,4 @@ void ReadAnythingAppController::SetPageHandlerForTesting(
     mojo::PendingRemote<read_anything::mojom::PageHandler> page_handler) {
   page_handler_.reset();
   page_handler_.Bind(std::move(page_handler));
-}
-
-bool ReadAnythingAppController::NodeIsContentNode(
-    ui::AXNodeID ax_node_id) const {
-  return base::Contains(model_.content_node_ids(), ax_node_id);
 }

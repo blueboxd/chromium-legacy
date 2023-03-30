@@ -10,13 +10,12 @@
 #include "components/profile_metrics/browser_profile_type.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/common/chrome_constants.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 BASE_FEATURE(kSystemProfileSelectionDefaultNone,
              "SystemProfileSelectionDefaultNone",
-             base::FeatureState::FEATURE_DISABLED_BY_DEFAULT);
+             base::FeatureState::FEATURE_ENABLED_BY_DEFAULT);
 
 bool AreKeyedServicesDisabledForProfileByDefault(const Profile* profile) {
   if (profile && profile->IsSystemProfile()) {

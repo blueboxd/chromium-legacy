@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/shared/ui/elements/home_waiting_view.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_image_item.h"
@@ -55,7 +56,6 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
-#import "ios/chrome/browser/ui/elements/home_waiting_view.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
@@ -163,6 +163,23 @@ bool IsPasswordCheckTappable(PasswordCheckUIState passwordCheckState) {
     case PasswordCheckStateError:
       return false;
   }
+}
+
+// TODO(crbug.com/1426463): Remove when CredentialUIEntry operator== is fixed.
+template <typename T>
+bool AreNotesEqual(const T& lhs, const T& rhs) {
+  return base::ranges::equal(lhs, rhs, {},
+                             &password_manager::CredentialUIEntry::note,
+                             &password_manager::CredentialUIEntry::note);
+}
+
+bool AreNotesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
+                   const std::vector<password_manager::AffiliatedGroup>& rhs) {
+  return base::ranges::equal(
+      lhs, rhs,
+      AreNotesEqual<base::span<const password_manager::CredentialUIEntry>>,
+      &password_manager::AffiliatedGroup::GetCredentials,
+      &password_manager::AffiliatedGroup::GetCredentials);
 }
 
 template <typename T>
@@ -324,6 +341,9 @@ UIColor* GetPasswordCheckStatusTrailingImageTintColor(
   TableViewTextItem* _setUpOnDeviceEncryptionItem;
   // The list of the user's saved passwords.
   std::vector<password_manager::CredentialUIEntry> _passwords;
+  // Boolean indicating that passwords are being saved in an account if YES,
+  // and locally if NO.
+  BOOL _savingPasswordsToAccount;
   // The list of the user's blocked sites.
   std::vector<password_manager::CredentialUIEntry> _blockedSites;
   // The list of the user's saved grouped passwords.
@@ -943,7 +963,7 @@ UIColor* GetPasswordCheckStatusTrailingImageTintColor(
   TableViewLinkHeaderFooterItem* header =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeLinkHeader];
 
-  if ([self.delegate isSyncingPasswords]) {
+  if (_savingPasswordsToAccount) {
     header.text =
         l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT_HEADER);
 
@@ -1288,8 +1308,11 @@ UIColor* GetPasswordCheckStatusTrailingImageTintColor(
   } else {
     // The CredentialUIEntry equality operator ignores the password stores, but
     // this UI cares, c.f. password_manager::ShouldShowLocalOnlyIcon().
+    // The CredentialUIEntry equality operator ignores password notes, but the
+    // UI should be updated so that any changes to just notes are visible.
     if (_passwords == passwords && _blockedSites == blockedSites &&
-        AreStoresEqual(_passwords, passwords)) {
+        AreStoresEqual(_passwords, passwords) &&
+        AreNotesEqual(_passwords, passwords)) {
       return;
     }
 
@@ -1298,6 +1321,14 @@ UIColor* GetPasswordCheckStatusTrailingImageTintColor(
 
     [self updatePasswordManagerUI];
   }
+}
+
+- (void)setSavingPasswordsToAccount:(BOOL)savingPasswordsToAccount {
+  if (_savingPasswordsToAccount == savingPasswordsToAccount) {
+    return;
+  }
+  _savingPasswordsToAccount = savingPasswordsToAccount;
+  [self reloadData];
 }
 
 - (void)setAffiliatedGroups:
@@ -1314,9 +1345,12 @@ UIColor* GetPasswordCheckStatusTrailingImageTintColor(
   } else {
     // The AffiliatedGroup equality operator ignores the password stores, but
     // this UI cares, see password_manager::ShouldShowLocalOnlyIcon().
+    // The AffiliatedGroup equality operator ignores password notes, but the UI
+    // should be updated so that any changes to just notes are visible.
     if (_affiliatedGroups == affiliatedGroups &&
         _blockedSites == blockedSites &&
-        AreStoresEqual(_affiliatedGroups, affiliatedGroups)) {
+        AreStoresEqual(_affiliatedGroups, affiliatedGroups) &&
+        AreNotesEqual(_affiliatedGroups, affiliatedGroups)) {
       return;
     }
 

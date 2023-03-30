@@ -11,6 +11,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accelerators_util.h"
+#include "ash/public/mojom/accelerator_configuration.mojom-shared.h"
 #include "ash/public/mojom/accelerator_configuration.mojom.h"
 #include "ash/public/mojom/accelerator_info.mojom.h"
 #include "base/containers/contains.h"
@@ -145,13 +146,37 @@ bool AshAcceleratorConfiguration::IsMutable() const {
 
 bool AshAcceleratorConfiguration::IsDeprecated(
     const ui::Accelerator& accelerator) const {
-  return deprecated_accelerators_.contains(accelerator);
+  return deprecated_accelerators_to_id_.Find(accelerator);
+}
+
+const AcceleratorAction* AshAcceleratorConfiguration::FindAcceleratorAction(
+    const ui::Accelerator& accelerator) const {
+  // If the accelerator is deprecated, return the action ID first.
+  const AcceleratorAction* deprecated_action_id =
+      deprecated_accelerators_to_id_.Find(accelerator);
+  if (deprecated_action_id) {
+    return deprecated_action_id;
+  }
+
+  return accelerator_to_id_.Find(accelerator);
 }
 
 AcceleratorConfigResult AshAcceleratorConfiguration::AddUserAccelerator(
     AcceleratorActionId action_id,
     const ui::Accelerator& accelerator) {
-  return AcceleratorConfigResult::kActionLocked;
+  CHECK(::features::IsShortcutCustomizationEnabled());
+  const AcceleratorConfigResult result =
+      DoAddAccelerator(action_id, accelerator);
+
+  if (result == AcceleratorConfigResult::kSuccess) {
+    UpdateAndNotifyAccelerators();
+  }
+
+  VLOG(1) << "AddAccelerator called for ActionID: " << action_id
+          << ", Accelerator: " << accelerator.GetShortcutText()
+          << " returned: " << static_cast<int>(result);
+
+  return result;
 }
 
 AcceleratorConfigResult AshAcceleratorConfiguration::RemoveAccelerator(
@@ -233,10 +258,15 @@ AcceleratorConfigResult AshAcceleratorConfiguration::RestoreAllDefaults() {
   accelerators_.clear();
   id_to_accelerators_.clear();
   accelerator_to_id_.Clear();
+  deprecated_accelerators_to_id_.Clear();
+  actions_with_deprecations_.clear();
 
   // TODO(jimmyxgong): Reset the prefs here too.
   id_to_accelerators_ = default_id_to_accelerators_cache_;
   accelerator_to_id_ = default_accelerators_to_id_cache_;
+
+  deprecated_accelerators_to_id_ = default_deprecated_accelerators_to_id_cache_;
+  actions_with_deprecations_ = default_actions_with_deprecations_cache_;
 
   UpdateAndNotifyAccelerators();
 
@@ -251,7 +281,7 @@ void AshAcceleratorConfiguration::Initialize() {
 void AshAcceleratorConfiguration::Initialize(
     base::span<const AcceleratorData> accelerators) {
   accelerators_.clear();
-  deprecated_accelerators_.clear();
+  deprecated_accelerators_to_id_.Clear();
   id_to_accelerators_.clear();
   accelerator_to_id_.Clear();
   default_accelerators_to_id_cache_.Clear();
@@ -293,10 +323,15 @@ void AshAcceleratorConfiguration::InitializeDeprecatedAccelerators(
   }
 
   for (const auto& data : deprecated_accelerators) {
-    deprecated_accelerators_.emplace(data.keycode, data.modifiers);
+    deprecated_accelerators_to_id_.InsertNew(
+        {{data.keycode, data.modifiers},
+         static_cast<AcceleratorAction>(data.action)});
   }
 
-  AddAccelerators(deprecated_accelerators);
+  // Cache a copy of the default deprecated accelerators.
+  default_actions_with_deprecations_cache_ = actions_with_deprecations_;
+  default_deprecated_accelerators_to_id_cache_ = deprecated_accelerators_to_id_;
+  UpdateAndNotifyAccelerators();
 }
 
 void AshAcceleratorConfiguration::AddAccelerators(
@@ -310,7 +345,16 @@ AcceleratorConfigResult AshAcceleratorConfiguration::DoRemoveAccelerator(
     const ui::Accelerator& accelerator) {
   DCHECK(::features::IsShortcutCustomizationEnabled());
 
-  AcceleratorAction* found_id = accelerator_to_id_.Find(accelerator);
+  // If the accelerator is deprecated, remove it.
+  const AcceleratorAction* deprecated_action_id =
+      deprecated_accelerators_to_id_.Find(accelerator);
+  if (deprecated_action_id && *deprecated_action_id == action_id) {
+    deprecated_accelerators_to_id_.Erase(accelerator);
+    actions_with_deprecations_.erase(action_id);
+    return AcceleratorConfigResult::kSuccess;
+  }
+
+  const AcceleratorAction* found_id = accelerator_to_id_.Find(accelerator);
   auto found_accelerators_iter = id_to_accelerators_.find(action_id);
   if (found_accelerators_iter == id_to_accelerators_.end() || !found_id) {
     return AcceleratorConfigResult::kNotFound;
@@ -324,6 +368,37 @@ AcceleratorConfigResult AshAcceleratorConfiguration::DoRemoveAccelerator(
   // Remove accelerator from reverse lookup map.
   accelerator_to_id_.Erase(accelerator);
 
+  return AcceleratorConfigResult::kSuccess;
+}
+
+AcceleratorConfigResult AshAcceleratorConfiguration::DoAddAccelerator(
+    AcceleratorActionId action_id,
+    const ui::Accelerator& accelerator) {
+  CHECK(::features::IsShortcutCustomizationEnabled());
+
+  const auto& accelerators_iter = id_to_accelerators_.find(action_id);
+  if (accelerators_iter == id_to_accelerators_.end()) {
+    return AcceleratorConfigResult::kNotFound;
+  }
+
+  // Check if `accelerator` is already used, in-use or deprecated. If so
+  // remove/disable it.
+  const auto* conflict_action_id = FindAcceleratorAction(accelerator);
+  if (conflict_action_id) {
+    const AcceleratorConfigResult remove_result =
+        DoRemoveAccelerator(*conflict_action_id, accelerator);
+    if (remove_result != AcceleratorConfigResult::kSuccess) {
+      return remove_result;
+    }
+  }
+
+  // Add the accelerator.
+  auto& accelerators = accelerators_iter->second;
+  accelerators.push_back(accelerator);
+  accelerator_to_id_.InsertNew(
+      {accelerator, static_cast<AcceleratorAction>(action_id)});
+
+  // TODO(jimmyxgong): Update prefs to match updated state.
   return AcceleratorConfigResult::kSuccess;
 }
 
@@ -371,9 +446,16 @@ bool AshAcceleratorConfiguration::IsValid(uint32_t id) const {
 }
 
 void AshAcceleratorConfiguration::UpdateAndNotifyAccelerators() {
+  // Re-populate `accelerators_` which contains all currently available
+  // accelerators and deprecated accelerators, if present.
   accelerators_.clear();
-  accelerators_.reserve(accelerator_to_id_.size());
+  accelerators_.reserve(accelerator_to_id_.size() +
+                        deprecated_accelerators_to_id_.size());
   for (const auto& [accel, action_id] : accelerator_to_id_) {
+    accelerators_.push_back(accel);
+  }
+
+  for (const auto& [accel, action_id] : deprecated_accelerators_to_id_) {
     accelerators_.push_back(accel);
   }
 

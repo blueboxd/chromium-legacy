@@ -6,9 +6,9 @@
 
 #include "base/test/gtest_util.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/common/permissions_policy/permissions_policy_mojom_traits.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -33,14 +33,9 @@ TEST(OriginWithPossibleWildcardsTest, DoesMatchOrigin) {
       std::make_tuple(url::Origin::Create(GURL("https://foo.com")),
                       url::Origin::Create(GURL("https://bar.foo.com")), false,
                       false, "Different subdomain, no wildcard"),
-      std::make_tuple(url::Origin::Create(GURL("https://foo.com")),
-                      url::Origin(), false, false,
-                      "Origin to opaque, no wildcard"),
       std::make_tuple(url::Origin(),
                       url::Origin::Create(GURL("https://foo.com")), false,
                       false, "Opaque to origin, no wildcard"),
-      std::make_tuple(url::Origin(), url::Origin(), false, false,
-                      "Opaque to opaque, no wildcard"),
       std::make_tuple(url::Origin::Create(GURL("file:///test")),
                       url::Origin::Create(GURL("file:///test")), false, true,
                       "File, no wildcard"),
@@ -78,7 +73,7 @@ TEST(OriginWithPossibleWildcardsTest, DoesMatchOrigin) {
                       url::Origin::Create(GURL("https://foo.com")), true, false,
                       "Opaque to origin, w/ wildcard"),
       std::make_tuple(url::Origin::Create(GURL("file:///test")),
-                      url::Origin::Create(GURL("file:///test")), true, false,
+                      url::Origin::Create(GURL("file:///test")), true, true,
                       "File, w/ wildcard"),
       std::make_tuple(url::Origin::Create(GURL("http://192.168.1.1")),
                       url::Origin::Create(GURL("http://192.168.1.1")), true,
@@ -101,89 +96,107 @@ TEST(OriginWithPossibleWildcardsTest, DoesMatchOrigin) {
 }
 
 TEST(OriginWithPossibleWildcardsTest, Parse) {
-  // Tuple of {serialized value, type, origin, wildcard, description}.
+  // Tuple of {serialized value, type, scheme, host, port, wildcard,
+  // description}.
   const auto& values = {
       std::make_tuple("https://foo.com",
-                      OriginWithPossibleWildcards::NodeType::kHeader,
-                      "https://foo.com", false,
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "foo.com", 443, false,
                       "Origin without subdomain wildcard in header"),
+      std::make_tuple("http://foo.com",
+                      OriginWithPossibleWildcards::NodeType::kHeader, "http",
+                      "foo.com", 80, false,
+                      "Insecure origin without subdomain wildcard in header"),
       std::make_tuple("https://foo.com",
                       OriginWithPossibleWildcards::NodeType::kAttribute,
-                      "https://foo.com", false,
+                      "https", "foo.com", 443, false,
                       "Origin without subdomain wildcard in attribute"),
       std::make_tuple(
-          "https://*.foo.com", OriginWithPossibleWildcards::NodeType::kHeader,
-          "https://foo.com", true, "Origin with subdomain wildcard in header"),
+          "http://foo.com", OriginWithPossibleWildcards::NodeType::kAttribute,
+          "http", "foo.com", 80, false,
+          "Insecure origin without subdomain wildcard in attribute"),
+      std::make_tuple("https://*.foo.com",
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "foo.com", 443, true,
+                      "Origin with subdomain wildcard in header"),
+      std::make_tuple("http://*.foo.com",
+                      OriginWithPossibleWildcards::NodeType::kHeader, "http",
+                      "foo.com", 80, true,
+                      "Insecure origin with subdomain wildcard in header"),
       std::make_tuple("https://*.foo.com",
                       OriginWithPossibleWildcards::NodeType::kAttribute,
-                      "https://%2A.foo.com", false,
+                      "https", "%2A.foo.com", 443, false,
                       "Origin with subdomain wildcard in attribute"),
+      std::make_tuple("http://*.foo.com",
+                      OriginWithPossibleWildcards::NodeType::kAttribute, "http",
+                      "%2A.foo.com", 80, false,
+                      "Insecure origin with subdomain wildcard in attribute"),
       std::make_tuple("*://foo.com",
-                      OriginWithPossibleWildcards::NodeType::kHeader, "null",
+                      OriginWithPossibleWildcards::NodeType::kHeader, "", "", 0,
                       false, "Origin with scheme wildcard in header"),
       std::make_tuple("*://foo.com",
-                      OriginWithPossibleWildcards::NodeType::kAttribute, "null",
-                      false, "Origin with scheme wildcard in attribute"),
-      std::make_tuple(
-          "https://*", OriginWithPossibleWildcards::NodeType::kHeader,
-          "https://%2A", false, "Origin with host wildcard in header"),
+                      OriginWithPossibleWildcards::NodeType::kAttribute, "", "",
+                      0, false, "Origin with scheme wildcard in attribute"),
+      std::make_tuple("https://*",
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "%2A", 443, false, "Origin with host wildcard in header"),
       std::make_tuple(
           "https://*", OriginWithPossibleWildcards::NodeType::kAttribute,
-          "https://%2A", false, "Origin with host wildcard in attribute"),
+          "https", "%2A", 443, false, "Origin with host wildcard in attribute"),
       std::make_tuple("https://*.com",
-                      OriginWithPossibleWildcards::NodeType::kHeader,
-                      "https://%2A.com", false,
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "%2A.com", 443, false,
                       "Origin with non-registerable host wildcard in header"),
       std::make_tuple(
           "https://*.com", OriginWithPossibleWildcards::NodeType::kAttribute,
-          "https://%2A.com", false,
+          "https", "%2A.com", 443, false,
           "Origin with non-registerable host wildcard in attribute"),
       std::make_tuple("https://*.appspot.com",
-                      OriginWithPossibleWildcards::NodeType::kHeader,
-                      "https://%2A.appspot.com", false,
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "%2A.appspot.com", 443, false,
                       "Origin with only private tld host wildcard in header"),
       std::make_tuple(
           "https://*.appspot.com",
-          OriginWithPossibleWildcards::NodeType::kAttribute,
-          "https://%2A.appspot.com", false,
+          OriginWithPossibleWildcards::NodeType::kAttribute, "https",
+          "%2A.appspot.com", 443, false,
           "Origin with only private tld host wildcard in attribute"),
       std::make_tuple("https://*.foo.appspot.com",
-                      OriginWithPossibleWildcards::NodeType::kHeader,
-                      "https://foo.appspot.com", true,
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "foo.appspot.com", 443, true,
                       "Origin with private tld host wildcard in header"),
       std::make_tuple("https://*.foo.appspot.com",
                       OriginWithPossibleWildcards::NodeType::kAttribute,
-                      "https://%2A.foo.appspot.com", false,
+                      "https", "%2A.foo.appspot.com", 443, false,
                       "Origin with private tld host wildcard in attribute"),
       std::make_tuple("https://*.example.test",
-                      OriginWithPossibleWildcards::NodeType::kHeader,
-                      "https://example.test", true,
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "example.test", 443, true,
                       "Origin with unknown tld host wildcard in header"),
       std::make_tuple("https://*.example.test",
                       OriginWithPossibleWildcards::NodeType::kAttribute,
-                      "https://%2A.example.test", false,
+                      "https", "%2A.example.test", 443, false,
                       "Origin with unknown tld host wildcard in attribute"),
       std::make_tuple("https://foo.com:*",
-                      OriginWithPossibleWildcards::NodeType::kHeader, "null",
+                      OriginWithPossibleWildcards::NodeType::kHeader, "", "", 0,
                       false, "Origin with port wildcard in header"),
       std::make_tuple("https://foo.com:*",
-                      OriginWithPossibleWildcards::NodeType::kAttribute, "null",
-                      false, "Origin with port wildcard in attribute"),
+                      OriginWithPossibleWildcards::NodeType::kAttribute, "", "",
+                      0, false, "Origin with port wildcard in attribute"),
       std::make_tuple("https://bar.*.foo.com",
-                      OriginWithPossibleWildcards::NodeType::kHeader,
-                      "https://bar.%2A.foo.com", false,
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "bar.%2A.foo.com", 443, false,
                       "Origin with improper subdomain wildcard in header"),
       std::make_tuple("https://bar.*.foo.com",
                       OriginWithPossibleWildcards::NodeType::kAttribute,
-                      "https://bar.%2A.foo.com", false,
+                      "https", "bar.%2A.foo.com", 443, false,
                       "Origin with improper subdomain wildcard in attribute"),
       std::make_tuple("https://*.*.foo.com",
-                      OriginWithPossibleWildcards::NodeType::kHeader,
-                      "https://%2A.%2A.foo.com", false,
+                      OriginWithPossibleWildcards::NodeType::kHeader, "https",
+                      "%2A.%2A.foo.com", 443, false,
                       "Origin with two subdomain wildcards in header"),
       std::make_tuple("https://*.*.foo.com",
                       OriginWithPossibleWildcards::NodeType::kAttribute,
-                      "https://%2A.%2A.foo.com", false,
+                      "https", "%2A.%2A.foo.com", 443, false,
                       "Origin with two subdomain wildcards in attribute"),
   };
   for (const auto& value : values) {
@@ -191,10 +204,20 @@ TEST(OriginWithPossibleWildcardsTest, Parse) {
         OriginWithPossibleWildcards::Parse(std::get<0>(value),
                                            std::get<1>(value));
     SCOPED_TRACE(std::get<4>(value));
-    EXPECT_EQ(std::get<2>(value),
-              origin_with_possible_wildcards.origin.Serialize());
-    EXPECT_EQ(std::get<3>(value),
-              origin_with_possible_wildcards.has_subdomain_wildcard);
+    if (strlen(std::get<2>(value))) {
+      EXPECT_EQ(std::get<2>(value),
+                origin_with_possible_wildcards->csp_source.scheme);
+      EXPECT_EQ(std::get<3>(value),
+                origin_with_possible_wildcards->csp_source.host);
+      EXPECT_EQ(std::get<4>(value),
+                origin_with_possible_wildcards->csp_source.port);
+      EXPECT_EQ("", origin_with_possible_wildcards->csp_source.path);
+      EXPECT_EQ(std::get<5>(value),
+                origin_with_possible_wildcards->csp_source.is_host_wildcard);
+      EXPECT_FALSE(origin_with_possible_wildcards->csp_source.is_port_wildcard);
+    } else {
+      EXPECT_FALSE(origin_with_possible_wildcards);
+    }
   }
 }
 
@@ -209,7 +232,6 @@ TEST(OriginWithPossibleWildcardsTest, Serialize) {
                       "Origin with improper subdomain wildcard"),
       std::make_tuple("https://%2A.com", false, "https://%2A.com",
                       "Origin with non-registerable subdomain wildcard"),
-      std::make_tuple("null", false, "null", "Opaque origin"),
   };
   for (const auto& value : values) {
     const auto& origin_with_possible_wildcards = OriginWithPossibleWildcards(
@@ -220,25 +242,28 @@ TEST(OriginWithPossibleWildcardsTest, Serialize) {
 }
 
 TEST(OriginWithPossibleWildcardsTest, Constructors) {
-  OriginWithPossibleWildcards a;
-  OriginWithPossibleWildcards b(url::Origin(), false);
-  OriginWithPossibleWildcards c(b);
+  OriginWithPossibleWildcards a(url::Origin::Create(GURL("https://google.com")),
+                                false);
+  OriginWithPossibleWildcards b(
+      url::Origin::Create(GURL("https://google.com:443")), false);
+  OriginWithPossibleWildcards c(url::Origin::Create(GURL("https://google.com")),
+                                true);
   OriginWithPossibleWildcards d = c;
-  EXPECT_NE(a, b);
-  EXPECT_EQ(b, c);
+  EXPECT_EQ(a, b);
+  EXPECT_NE(b, c);
   EXPECT_EQ(c, d);
-  mojo::test::SerializeAndDeserialize<mojom::OriginWithPossibleWildcards>(a, b);
+  EXPECT_TRUE(
+      mojo::test::SerializeAndDeserialize<network::mojom::CSPSource>(a, b));
   EXPECT_EQ(a, b);
 }
 
 TEST(OriginWithPossibleWildcardsTest, Opaque) {
   EXPECT_DCHECK_DEATH(OriginWithPossibleWildcards(url::Origin(), true));
-  OriginWithPossibleWildcards original(url::Origin(), false);
-  original.has_subdomain_wildcard = true;
+  EXPECT_DCHECK_DEATH(OriginWithPossibleWildcards(url::Origin(), false));
+  OriginWithPossibleWildcards original;
   OriginWithPossibleWildcards copy;
-  EXPECT_FALSE(
-      mojo::test::SerializeAndDeserialize<mojom::OriginWithPossibleWildcards>(
-          original, copy));
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<network::mojom::CSPSource>(
+      original, copy));
 }
 
 }  // namespace blink

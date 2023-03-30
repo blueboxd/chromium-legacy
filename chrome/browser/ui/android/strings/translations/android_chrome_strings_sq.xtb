@@ -283,6 +283,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="2581165646603367611">Kjo do të pastrojë kukit, memorien e përkohshme dhe të dhënat e tjera të sajteve që Chrome nuk i konsideron si të rëndësishme.</translation>
 <translation id="2587052924345400782">Një version më i ri është i disponueshëm</translation>
 <translation id="2593272815202181319">Me hapësirë fikse</translation>
+<translation id="2603212228005142861">Identifikohu për të menaxhuar preferencat e tua</translation>
 <translation id="2604446170045642109">Mund ta çaktivizosh temën e errët për sajtet te cilësimet.</translation>
 <translation id="2612676031748830579">Numri i kartës</translation>
 <translation id="2625189173221582860">Fjalëkalimi u kopjua</translation>
@@ -476,6 +477,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="3587596251841506391">Ndihmo në përmirësimin e sigurisë në ueb</translation>
 <translation id="3597179440835065298">Merr sugjerime më të mira</translation>
 <translation id="3602290021589620013">Pamje paraprake</translation>
+<translation id="360901359071773787">Të fshihen 15 minutat e fundit?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Menaxho dritaret</translation>
 <translation id="3631987586758005671">Po ndahet te <ph name="DEVICE_NAME" /></translation>
@@ -821,6 +823,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5517095782334947753">Ke faqeshënues, historik, fjalëkalime dhe cilësime të tjera nga <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Kur provat janë aktive dhe nëse Chrome të ka vendosur rastësisht në një provë aktive, historiku yt i shfletimit ndikon te reklamat që shikon dhe tek interesat sipas përllogaritjes më poshtë. Për të mbrojtur privatësinë tënde, Chrome fshin interesat e tua në vazhdimësi çdo muaj.</translation>
 <translation id="5524843473235508879">Ridrejtimi u bllokua.</translation>
+<translation id="554297709083131118">Të dhënat e mëposhtme nga 15 minutat e fundit do të fshihen</translation>
 <translation id="5548606607480005320">Kontrolli i sigurisë</translation>
 <translation id="5555525474779371165">Zgjidh mbrojtjen me "Shfletimin e sigurt"</translation>
 <translation id="5556459405103347317">Ringarko</translation>
@@ -1075,6 +1078,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6824899148643461612">Skeda <ph name="TAB_TITLE" /> është zgjedhur</translation>
 <translation id="6828070228333235514">Ndalo monitorimin e çmimit</translation>
 <translation id="6830728435402077660">Jo e sigurt</translation>
+<translation id="6831043979455480757">Përkthe</translation>
 <translation id="6833996806551876956">Prova e "Nismës për mjedis uebi privat"</translation>
 <translation id="6836206421467243968">Restauro grupin e skedave "<ph name="TITLE_OF_GROUP" />" si një grup të ri të skedave në sfond.</translation>
 <translation id="6846298663435243399">Po ngarkohet...</translation>
@@ -1242,6 +1246,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7707922173985738739">Përdor të dhënat celulare</translation>
 <translation id="7709094866268987903">Interesat që hoqe do të shfaqen këtu</translation>
 <translation id="7709918231054955894">Merr të gjitha skedat e tua</translation>
+<translation id="772434085369393266">Përmirësoji navigimet në HTTPS dhe paralajmëro përpara ngarkimit të sajteve që nuk e mbështesin atë. Nuk mund ta ndryshosh këtë cilësim sepse ke të aktivizuar "Mbrojtjen e përparuar".</translation>
 <translation id="7725024127233776428">Faqet që shënon shfaqen këtu</translation>
 <translation id="7757787379047923882">Teksti u nda nga <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Karta SD <ph name="SD_CARD_NUMBER" /></translation>
@@ -1260,6 +1265,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="78270725016672455">Kompjuteri yt kërkon ta regjistrojë këtë pajisje për t'u identifikuar në një faqe</translation>
 <translation id="7844171778363018843">Nuk janë zgjedhur të dhëna për t'u sinkronizuar</translation>
 <translation id="7846296061357476882">Shërbimet e Google</translation>
+<translation id="7847228556075070294">Historiku, kukit dhe të dhënat e tjera u fshinë</translation>
 <translation id="784934925303690534">Shtrirja kohore</translation>
 <translation id="7851858861565204677">Pajisjet e tjera</translation>
 <translation id="7853202427316060426">Aktiviteti</translation>
@@ -1439,6 +1445,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="869891660844655955">Data e skadimit</translation>
 <translation id="8699120352855309748">Mos ofro t'i përkthesh këto gjuhë</translation>
 <translation id="8712637175834984815">E kuptova</translation>
+<translation id="8723453889042591629">Përktheje me shpejtësi këtë faqe. Për ta modifikuar këtë shkurtore, preke dhe mbaje shtypur.</translation>
 <translation id="8725066075913043281">Provo sërish</translation>
 <translation id="8746155870861185046">Shpërndaj theksimin</translation>
 <translation id="874726034427945498">Për të parë sugjerime më të mira në shiritin e adresës, sinkronizo skedat dhe historikun</translation>
@@ -1491,6 +1498,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8989968390305463310">Historiku yt i shfletimit ndikon te reklamat që shikon dhe tek interesat sipas përllogaritjes më poshtë. Për të mbrojtur privatësinë tënde, Chrome fshin automatikisht interesat e tua në vazhdimësi çdo muaj. Interesat mund të rifreskohen, përveçse nëse ti i heq ato.</translation>
 <translation id="8993760627012879038">Hap një skedë të re në "Modalitetin e fshehtë"</translation>
 <translation id="8996847606757455498">Zgjidh një ofrues tjetër</translation>
+<translation id="8998289560386111590">Nuk ofrohet në pajisjen tënde</translation>
 <translation id="8998729206196772491">Po identifikohesh me një llogari të menaxhuar nga <ph name="MANAGED_DOMAIN" /> dhe po i jep administratorit të saj kontroll mbi të dhënat e tua të Chrome. Duke dalë nga Chrome do të fshihen të dhënat e tua nga kjo pajisje, por do të mbeten të ruajtura në llogarinë tënde të Google.</translation>
 <translation id="9022774213089566801">Të vizituara shpesh</translation>
 <translation id="9022871169049522985">Sajtet dhe reklamuesit mund të matin performancën e reklamave të tyre</translation>

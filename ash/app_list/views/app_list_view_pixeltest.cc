@@ -10,6 +10,8 @@
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/assistant/test/assistant_ash_test_base.h"
+#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
@@ -17,6 +19,9 @@
 #include "ash/test/pixel/ash_pixel_differ.h"
 #include "ash/test/pixel/ash_pixel_test_init_params.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/run_loop.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
@@ -183,6 +188,70 @@ TEST_P(AppListViewPixelRTLTest, GradientZone) {
       GetPrimaryShelf()->navigation_widget()));
 }
 
+class LauncherSearchIphParams {
+ public:
+  LauncherSearchIphParams(bool rtl, bool dark_theme)
+      : rtl_(rtl), dark_theme_(dark_theme) {}
+
+  static std::string ToTestSuffix(
+      const testing::TestParamInfo<LauncherSearchIphParams>& info) {
+    std::string suffix;
+    suffix.append(info.param.rtl() ? "rtl" : "ltr");
+    suffix.append("_");
+    suffix.append(info.param.dark_theme() ? "dark" : "light");
+    return suffix;
+  }
+
+  bool rtl() const { return rtl_; }
+  bool dark_theme() const { return dark_theme_; }
+
+ private:
+  bool rtl_;
+  bool dark_theme_;
+};
+
+class AppListViewLauncherSearchIphTest
+    : public AssistantAshTestBase,
+      public testing::WithParamInterface<LauncherSearchIphParams> {
+ public:
+  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+      const override {
+    pixel_test::InitParams init_params;
+    init_params.under_rtl = GetParam().rtl();
+    return init_params;
+  }
+
+  void SetUp() override {
+    AssistantAshTestBase::SetUp();
+
+    DarkLightModeController::Get()->SetDarkModeEnabledForTest(
+        GetParam().dark_theme());
+
+    AppListTestHelper* test_helper = GetAppListTestHelper();
+    test_helper->ShowAppList();
+    GetAppListTestHelper()->search_model()->SetWouldTriggerLauncherSearchIph(
+        true);
+    GetAppListTestHelper()->GetSearchBoxView()->SetIsIphAllowed(true);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(RTL,
+                         AppListViewLauncherSearchIphTest,
+                         testing::Values(LauncherSearchIphParams(false, false),
+                                         LauncherSearchIphParams(false, true),
+                                         LauncherSearchIphParams(true, false),
+                                         LauncherSearchIphParams(true, true)),
+                         &LauncherSearchIphParams::ToTestSuffix);
+
+TEST_P(AppListViewLauncherSearchIphTest, Basic) {
+  // Wait re-layout for adding IPH view.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "launcher_search_iph", /*revision_number=*/0,
+      GetAppListTestHelper()->GetSearchBoxView()));
+}
+
 class AppListViewTabletPixelTest
     : public AshTestBase,
       public testing::WithParamInterface</*tablet_mode=*/bool> {
@@ -257,6 +326,15 @@ TEST_P(AppListViewTabletPixelTest, BottomGradientZone) {
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "tablet_launcher_bottom_gradient_zone",
       /*revision_number=*/0, GetAppListTestHelper()->GetAppsContainerView()));
+}
+
+TEST_P(AppListViewTabletPixelTest, SearchBoxViewActive) {
+  raw_ptr<SearchBoxView> search_box_view =
+      GetAppListTestHelper()->GetSearchBoxView();
+  search_box_view->SetSearchBoxActive(true, ui::EventType::ET_UNKNOWN);
+
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "search_box_view_active", /*revision_number=*/0, search_box_view));
 }
 
 }  // namespace ash

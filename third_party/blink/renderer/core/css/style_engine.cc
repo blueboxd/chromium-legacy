@@ -34,6 +34,7 @@
 #include "base/hash/hash.h"
 #include "base/ranges/algorithm.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
 #include "third_party/blink/renderer/core/css/check_pseudo_has_cache_scope.h"
@@ -102,6 +103,7 @@
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
@@ -1207,7 +1209,9 @@ void StyleEngine::InvalidateElementAffectedByHas(
         StyleChangeReasonForTracing::Create(
             blink::style_change_reason::kStyleInvalidator));
 
-    PossiblyScheduleNthPseudoInvalidations(element);
+    if (GetRuleFeatureSet().UsesHasInsideNth()) {
+      PossiblyScheduleNthPseudoInvalidations(element);
+    }
   }
 
   if (element.AffectedByNonSubjectHas()) {
@@ -3856,25 +3860,6 @@ void StyleEngine::MarkForLayoutTreeChangesAfterDetach() {
     }
   }
   parent_for_detached_subtree_ = nullptr;
-}
-
-void StyleEngine::ReportUseOfLegacyLayoutWithContainerQueries() {
-  DCHECK(!HasFullNGFragmentationSupport());
-
-  // Only report once.
-  if (legacy_layout_query_container_) {
-    return;
-  }
-
-  legacy_layout_query_container_ = true;
-
-  ConsoleMessage* console_message = MakeGarbageCollected<ConsoleMessage>(
-      mojom::blink::ConsoleMessageSource::kRendering,
-      mojom::blink::ConsoleMessageLevel::kWarning,
-      String::Format(
-          "Using container queries or units with printing, or in combination "
-          "with tables inside multicol will not work correctly."));
-  GetDocument().AddConsoleMessage(console_message);
 }
 
 bool StyleEngine::AllowSkipStyleRecalcForScope() const {

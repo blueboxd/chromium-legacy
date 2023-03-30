@@ -185,12 +185,13 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
                     message_receiver_.get(),
                     multidevice_feature_access_manager_.get())
               : nullptr),
-      ping_manager_(
-          features::IsPhoneHubPingOnBubbleOpenEnabled()
-              ? std::make_unique<PingManagerImpl>(connection_manager_.get(),
-                                                  message_receiver_.get(),
-                                                  message_sender_.get())
-              : nullptr) {}
+      ping_manager_(features::IsPhoneHubPingOnBubbleOpenEnabled()
+                        ? std::make_unique<PingManagerImpl>(
+                              connection_manager_.get(),
+                              feature_status_provider_.get(),
+                              message_receiver_.get(),
+                              message_sender_.get())
+                        : nullptr) {}
 
 PhoneHubManagerImpl::~PhoneHubManagerImpl() = default;
 
@@ -277,6 +278,18 @@ AppStreamManager* PhoneHubManagerImpl::GetAppStreamManager() {
 void PhoneHubManagerImpl::GetHostLastSeenTimestamp(
     base::OnceCallback<void(absl::optional<base::Time>)> callback) {
   connection_manager_->GetHostLastSeenTimestamp(std::move(callback));
+}
+
+eche_app::EcheConnectionStatusHandler*
+PhoneHubManagerImpl::GetEcheConnectionStatusHandler() {
+  return eche_connection_status_handler_;
+}
+
+void PhoneHubManagerImpl::SetEcheConnectionStatusHandler(
+    eche_app::EcheConnectionStatusHandler* eche_connection_status_handler) {
+  eche_connection_status_handler_ = eche_connection_status_handler;
+  recent_apps_interaction_handler_->SetConnectionStatusHandler(
+      eche_connection_status_handler_);
 }
 
 // NOTE: These should be destroyed in the opposite order of how these objects

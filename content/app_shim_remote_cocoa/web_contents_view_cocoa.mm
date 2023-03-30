@@ -20,7 +20,6 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
 #include "base/files/file_util.h"
@@ -164,8 +163,10 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   info->location_in_view =
       gfx::PointF(viewPoint.x, viewFrame.size.height - viewPoint.y);
 
-  NSPoint screenPoint = [self.window convertPointToScreen:windowPoint];
-  NSRect screenFrame = self.window.screen.frame;
+  NSPoint screenPoint =
+      ui::ConvertPointFromWindowToScreen([self window], windowPoint);
+  NSScreen* screen = [[self window] screen];
+  NSRect screenFrame = [screen frame];
   info->location_in_screen =
       gfx::PointF(screenPoint.x, screenFrame.size.height - screenPoint.y);
 
@@ -258,7 +259,12 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
       endDragAt:screenPoint
       operation:ui::DragDropTypes::NSDragOperationToDragOperation(operation)];
 
-  WebDragSource* currentDragSource = _dragSource.get();
+  NSPoint localPoint = NSZeroPoint;
+  if (self.window) {
+    NSPoint basePoint =
+        ui::ConvertPointFromScreenToWindow(self.window, screenPoint);
+    localPoint = [self convertPoint:basePoint fromView:nil];
+  }
 
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)kPasteboardClearDelay),

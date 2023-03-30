@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'f3d0f929f461effa86ac27716bd304ba7d534445',
+  'pdfium_revision': '0a6944ead30013f9fc19969fae69f0adc671142c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -331,7 +331,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Fuchsia sdk
   # and whatever else without interference from each other.
-  'fuchsia_version': 'version:12.20230329.2.1',
+  'fuchsia_version': 'version:12.20230329.3.1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -431,7 +431,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '666e350672007347d6606ba18aa98ce43084f55b',
+  'dawn_revision': '0d937955dcb6129cb655afa494c501a5b7b28c8e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -790,7 +790,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    '1f4cedf700855b52b9f55f3224b518f072848381',
+    '44372c7b8fb9172f3091ea879a0423d398be631b',
     'condition': 'checkout_android and checkout_src_internal',
   },
 

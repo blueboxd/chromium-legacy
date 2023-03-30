@@ -1005,10 +1005,12 @@ absl::optional<VmInfo> CrostiniManager::GetVmInfo(std::string vm_name) {
   return absl::nullopt;
 }
 
-void CrostiniManager::AddRunningVmForTesting(std::string vm_name) {
+void CrostiniManager::AddRunningVmForTesting(std::string vm_name,
+                                             uint32_t cid) {
+  guest_os::GuestId id(guest_os::VmType::TERMINA, vm_name, "");
   guest_os::GuestOsSessionTracker::GetForProfile(profile_)
       ->AddGuestForTesting(  // IN-TEST
-          guest_os::GuestId{guest_os::VmType::TERMINA, vm_name, "unused"});
+          id, guest_os::GuestInfo{id, cid, {}, {}, {}, {}});
   running_vms_[std::move(vm_name)] = VmInfo{VmState::STARTED};
 }
 
@@ -1180,13 +1182,13 @@ void CrostiniManager::AddRunningContainerForTesting(std::string vm_name,
                                                     ContainerInfo info,
                                                     bool notify) {
   auto* tracker = guest_os::GuestOsSessionTracker::GetForProfile(profile_);
+  absl::optional<guest_os::GuestInfo> vm_info = tracker->GetInfo(
+      guest_os::GuestId{guest_os::VmType::TERMINA, vm_name, ""});
+  CHECK(vm_info);
   guest_os::GuestId id{guest_os::VmType::TERMINA, vm_name, info.name};
-  guest_os::GuestInfo guest_info{id,
-                                 0,
-                                 info.username,
-                                 info.homedir,
-                                 info.ipv4_address,
-                                 info.sftp_vsock_port};
+  guest_os::GuestInfo guest_info{
+      id,           vm_info->cid,      info.username,
+      info.homedir, info.ipv4_address, info.sftp_vsock_port};
   tracker->AddGuestForTesting(id, guest_info, notify);  // IN-TEST
 }
 
@@ -2164,20 +2166,6 @@ void CrostiniManager::UninstallPackageOwningFile(
   GetCiceroneClient()->UninstallPackageOwningFile(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnUninstallPackageOwningFile,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void CrostiniManager::GetContainerSshKeys(
-    const guest_os::GuestId& container_id,
-    GetContainerSshKeysCallback callback) {
-  vm_tools::concierge::ContainerSshKeysRequest request;
-  request.set_vm_name(container_id.vm_name);
-  request.set_container_name(container_id.container_name);
-  request.set_cryptohome_id(CryptohomeIdForProfile(profile_));
-
-  GetConciergeClient()->GetContainerSshKeys(
-      std::move(request),
-      base::BindOnce(&CrostiniManager::OnGetContainerSshKeys,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -3378,18 +3366,6 @@ void CrostiniManager::OnInstallLinuxPackage(
   }
 
   std::move(callback).Run(CrostiniResult::SUCCESS);
-}
-
-void CrostiniManager::OnGetContainerSshKeys(
-    GetContainerSshKeysCallback callback,
-    absl::optional<vm_tools::concierge::ContainerSshKeysResponse> response) {
-  if (!response) {
-    LOG(ERROR) << "Failed to get ssh keys. Empty response.";
-    std::move(callback).Run(/*success=*/false, "", "", "");
-    return;
-  }
-  std::move(callback).Run(/*success=*/true, response->container_public_key(),
-                          response->host_private_key(), response->hostname());
 }
 
 void CrostiniManager::RemoveCrostini(std::string vm_name,

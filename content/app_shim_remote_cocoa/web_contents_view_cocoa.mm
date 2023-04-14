@@ -20,6 +20,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
 #include "base/files/file_util.h"
@@ -259,6 +260,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
       endDragAt:screenPoint
       operation:ui::DragDropTypes::NSDragOperationToDragOperation(operation)];
 
+  WebDragSource* currentDragSource = _dragSource.get();
   NSPoint localPoint = NSZeroPoint;
   if (self.window) {
     NSPoint basePoint =

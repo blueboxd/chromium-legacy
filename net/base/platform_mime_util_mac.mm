@@ -160,12 +160,10 @@ void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
   } else {
     // Huh? Give up.
     base::FilePath::StringType ext;
-    if (GetPlatformPreferredExtensionForMimeType(mime_type, &ext))
+    if (GetPlatformPreferredExtensionForMimeType(mime_type, &ext)) {
       extensions->insert(ext);
+    }
   }
-#endif  // (BUILDFLAG(IS_MAC) && MAC_OS_X_VERSION_MIN_REQUIRED <
-        // MAC_OS_VERSION_11_0) || (BUILDFLAG(IS_IOS) &&
-        // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_14_0)
 }
 
 }  // namespace net

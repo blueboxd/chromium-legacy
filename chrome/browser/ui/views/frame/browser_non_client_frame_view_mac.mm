@@ -186,15 +186,6 @@ void BrowserNonClientFrameViewMac::LayoutWebAppWindowTitle(
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
-  if (web_app_frame_toolbar()) {
-    if(!(@available(macOS 10.10, *)))
-      return 0; 
-    DCHECK(browser_view()->GetIsWebAppType());
-    if (ShouldHideTopUIForFullscreen())
-      return 0;
-    return web_app_frame_toolbar()->GetPreferredSize().height() +
-            kWebAppMenuMargin * 2;
-  }
   if (!browser_view()->GetTabStripVisible())
     return 0;
 

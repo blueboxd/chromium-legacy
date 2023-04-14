@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -44,7 +46,6 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.download.DownloadTestRule;
@@ -62,6 +63,7 @@ import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
@@ -585,10 +587,11 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenuCoordinator menu = ContextMenuUtils.openContextMenu(tab, "testLink");
 
-        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
-                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_save_link_as,
-                R.id.contextmenu_copy_link_text, R.id.contextmenu_copy_link_address,
-                R.id.contextmenu_share_link, R.id.contextmenu_read_later};
+        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab_in_group,
+                R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
+                R.id.contextmenu_save_link_as, R.id.contextmenu_copy_link_text,
+                R.id.contextmenu_copy_link_address, R.id.contextmenu_share_link,
+                R.id.contextmenu_read_later};
         expectedItems = addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems,
                 new Integer[] {R.id.contextmenu_open_in_ephemeral_tab});
         assertMenuItemsAreEqual(menu, expectedItems);
@@ -696,12 +699,12 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenuCoordinator menu = ContextMenuUtils.openContextMenu(tab, "testImageLink");
 
-        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
-                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
-                R.id.contextmenu_save_link_as, R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
-                R.id.contextmenu_share_image, R.id.contextmenu_share_link,
-                R.id.contextmenu_copy_image};
+        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab_in_group,
+                R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
+                R.id.contextmenu_copy_link_address, R.id.contextmenu_save_link_as,
+                R.id.contextmenu_save_image, R.id.contextmenu_open_image_in_new_tab,
+                R.id.contextmenu_search_by_image, R.id.contextmenu_share_image,
+                R.id.contextmenu_share_link, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
@@ -720,12 +723,12 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenuCoordinator menu = ContextMenuUtils.openContextMenu(tab, "testImageLink");
 
-        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
-                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
-                R.id.contextmenu_save_link_as, R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
-                R.id.contextmenu_share_image, R.id.contextmenu_share_link,
-                R.id.contextmenu_copy_image};
+        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab_in_group,
+                R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
+                R.id.contextmenu_copy_link_address, R.id.contextmenu_save_link_as,
+                R.id.contextmenu_save_image, R.id.contextmenu_open_image_in_new_tab,
+                R.id.contextmenu_search_with_google_lens, R.id.contextmenu_share_image,
+                R.id.contextmenu_share_link, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
@@ -748,12 +751,12 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenuCoordinator menu = ContextMenuUtils.openContextMenu(tab, "testImageLink");
 
-        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
-                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
-                R.id.contextmenu_save_link_as, R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
-                R.id.contextmenu_search_with_google_lens, R.id.contextmenu_share_link,
-                R.id.contextmenu_copy_image};
+        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab_in_group,
+                R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
+                R.id.contextmenu_copy_link_address, R.id.contextmenu_save_link_as,
+                R.id.contextmenu_save_image, R.id.contextmenu_open_image_in_new_tab,
+                R.id.contextmenu_share_image, R.id.contextmenu_search_with_google_lens,
+                R.id.contextmenu_share_link, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
@@ -1005,7 +1008,7 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
             }
         }
 
-        Assert.assertThat("Populated menu items were:" + getMenuTitles(menu), actualItems,
+        assertThat("Populated menu items were:" + getMenuTitles(menu), actualItems,
                 Matchers.containsInAnyOrder(expectedItems));
     }
 

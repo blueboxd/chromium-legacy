@@ -13,20 +13,23 @@ namespace ash {
 
 namespace {
 
-enum class KeyboardType {
-  kExternal = 0,
-  kExternalChromeOS,
-  kInternal,
+enum class PointerSensitivity {
+  kLowest = 1,
+  kLow = 2,
+  kMedium = 3,
+  kHigh = 4,
+  kHighest = 5,
+  kMaxValue = kHighest,
 };
 
-KeyboardType GetKeyboardType(const mojom::Keyboard& keyboard) {
+std::string GetKeyboardMetricsPrefix(const mojom::Keyboard& keyboard) {
   if (!keyboard.is_external) {
-    return KeyboardType::kInternal;
+    return "ChromeOS.Settings.Device.Keyboard.Internal.";
   } else if (keyboard.meta_key == mojom::MetaKey::kLauncher ||
              keyboard.meta_key == mojom::MetaKey::kSearch) {
-    return KeyboardType::kExternalChromeOS;
+    return "ChromeOS.Settings.Device.Keyboard.ExternalChromeOS.";
   } else {
-    return KeyboardType::kExternal;
+    return "ChromeOS.Settings.Device.Keyboard.External.";
   }
 }
 
@@ -45,38 +48,222 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardInitialMetrics(
   auto iter = recorded_keyboards_.find(account_id);
 
   if (iter != recorded_keyboards_.end() &&
-      base::Contains(iter->second, keyboard.id)) {
+      base::Contains(iter->second, keyboard.device_key)) {
     return;
   }
-  recorded_keyboards_[account_id].insert(keyboard.id);
+  recorded_keyboards_[account_id].insert(keyboard.device_key);
 
-  const KeyboardType keyboard_type = GetKeyboardType(keyboard);
-  switch (keyboard_type) {
-    case KeyboardType::kExternal:
-      base::UmaHistogramBoolean(
-          "ChromeOS.Settings.Device.Keyboard.External.BlockMetaFKeyRewrites."
-          "Initial",
-          keyboard.settings->suppress_meta_fkey_rewrites);
-      base::UmaHistogramBoolean(
-          "ChromeOS.Settings.Device.Keyboard.External.TopRowAreFKeys.Initial",
-          keyboard.settings->top_row_are_fkeys);
-      break;
-    case KeyboardType::kExternalChromeOS:
-      base::UmaHistogramBoolean(
-          "ChromeOS.Settings.Device.Keyboard.ExternalChromeOS."
-          "BlockMetaFKeyRewrites.Initial",
-          keyboard.settings->suppress_meta_fkey_rewrites);
-      base::UmaHistogramBoolean(
-          "ChromeOS.Settings.Device.Keyboard.ExternalChromeOS.TopRowAreFKeys."
-          "Initial",
-          keyboard.settings->top_row_are_fkeys);
-      break;
-    case KeyboardType::kInternal:
-      base::UmaHistogramBoolean(
-          "ChromeOS.Settings.Device.Keyboard.Internal.TopRowAreFKeys.Initial",
-          keyboard.settings->top_row_are_fkeys);
-      break;
+  const std::string keyboard_metrics_prefix =
+      GetKeyboardMetricsPrefix(keyboard);
+
+  base::UmaHistogramBoolean(keyboard_metrics_prefix + "TopRowAreFKeys.Initial",
+                            keyboard.settings->top_row_are_fkeys);
+  // Only record BlockMetaFKeyRewrites when keyboard is external/external
+  // chromeos.
+  if (keyboard.is_external) {
+    base::UmaHistogramBoolean(
+        keyboard_metrics_prefix + "BlockMetaFKeyRewrites.Initial",
+        keyboard.settings->suppress_meta_fkey_rewrites);
   }
+}
+
+void InputDeviceSettingsMetricsManager::RecordKeyboardChangedMetrics(
+    const mojom::Keyboard& keyboard,
+    const mojom::KeyboardSettings& old_settings) {
+  const std::string keyboard_metrics_prefix =
+      GetKeyboardMetricsPrefix(keyboard);
+
+  if (keyboard.settings->top_row_are_fkeys != old_settings.top_row_are_fkeys) {
+    base::UmaHistogramBoolean(
+        keyboard_metrics_prefix + "TopRowAreFKeys.Changed",
+        keyboard.settings->top_row_are_fkeys);
+  }
+  // Only record BlockMetaFKeyRewrites when keyboard is external/external
+  // chromeos.
+  if (keyboard.is_external && keyboard.settings->suppress_meta_fkey_rewrites !=
+                                  old_settings.suppress_meta_fkey_rewrites) {
+    base::UmaHistogramBoolean(
+        keyboard_metrics_prefix + "BlockMetaFKeyRewrites.Changed",
+        keyboard.settings->suppress_meta_fkey_rewrites);
+  }
+}
+
+void InputDeviceSettingsMetricsManager::RecordMouseInitialMetrics(
+    const mojom::Mouse& mouse) {
+  // Only record the metrics once for each mouse.
+  const auto account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+  auto iter = recorded_mice_.find(account_id);
+
+  if (iter != recorded_mice_.end() &&
+      base::Contains(iter->second, mouse.device_key)) {
+    return;
+  }
+  recorded_mice_[account_id].insert(mouse.device_key);
+
+  PointerSensitivity sensitivity =
+      static_cast<PointerSensitivity>(mouse.settings->sensitivity);
+
+  base::UmaHistogramBoolean(
+      "ChromeOS.Settings.Device.Mouse.AccelerationEnabled.Initial",
+      mouse.settings->acceleration_enabled);
+  base::UmaHistogramBoolean(
+      "ChromeOS.Settings.Device.Mouse.ReverseScrolling.Initial",
+      mouse.settings->reverse_scrolling);
+  base::UmaHistogramEnumeration(
+      "ChromeOS.Settings.Device.Mouse.Sensitivity.Initial", sensitivity);
+  base::UmaHistogramBoolean(
+      "ChromeOS.Settings.Device.Mouse.SwapPrimaryButtons.Initial",
+      mouse.settings->swap_right);
+  // TODO(yyhyyh@): Add scroll settings metrics.
+}
+
+void InputDeviceSettingsMetricsManager::RecordMouseChangedMetrics(
+    const mojom::Mouse& mouse,
+    const mojom::MouseSettings& old_settings) {
+  if (mouse.settings->acceleration_enabled !=
+      old_settings.acceleration_enabled) {
+    base::UmaHistogramBoolean(
+        "ChromeOS.Settings.Device.Mouse.AccelerationEnabled.Changed",
+        mouse.settings->acceleration_enabled);
+  }
+  if (mouse.settings->reverse_scrolling != old_settings.reverse_scrolling) {
+    base::UmaHistogramBoolean(
+        "ChromeOS.Settings.Device.Mouse.ReverseScrolling.Changed",
+        mouse.settings->reverse_scrolling);
+  }
+  if (mouse.settings->sensitivity != old_settings.sensitivity) {
+    PointerSensitivity sensitivity =
+        static_cast<PointerSensitivity>(mouse.settings->sensitivity);
+    base::UmaHistogramEnumeration(
+        "ChromeOS.Settings.Device.Mouse.Sensitivity.Changed", sensitivity);
+  }
+  if (mouse.settings->swap_right != old_settings.swap_right) {
+    base::UmaHistogramBoolean(
+        "ChromeOS.Settings.Device.Mouse.SwapPrimaryButtons.Changed",
+        mouse.settings->swap_right);
+  }
+  // TODO(yyhyyh@): Add scroll settings metrics.
+}
+
+void InputDeviceSettingsMetricsManager::RecordPointingStickInitialMetrics(
+    const mojom::PointingStick& pointing_stick) {
+  // Only record the metrics once for each pointing stick.
+  const auto account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+  auto iter = recorded_pointing_sticks_.find(account_id);
+
+  if (iter != recorded_pointing_sticks_.end() &&
+      base::Contains(iter->second, pointing_stick.device_key)) {
+    return;
+  }
+  recorded_pointing_sticks_[account_id].insert(pointing_stick.device_key);
+
+  PointerSensitivity sensitivity =
+      static_cast<PointerSensitivity>(pointing_stick.settings->sensitivity);
+
+  base::UmaHistogramBoolean(
+      "ChromeOS.Settings.Device.PointingStick.AccelerationEnabled.Initial",
+      pointing_stick.settings->acceleration_enabled);
+  base::UmaHistogramEnumeration(
+      "ChromeOS.Settings.Device.PointingStick.Sensitivity.Initial",
+      sensitivity);
+  base::UmaHistogramBoolean(
+      "ChromeOS.Settings.Device.PointingStick.SwapPrimaryButtons.Initial",
+      pointing_stick.settings->swap_right);
+}
+
+void InputDeviceSettingsMetricsManager::RecordPointingStickChangedMetrics(
+    const mojom::PointingStick& pointing_stick,
+    const mojom::PointingStickSettings& old_settings) {
+  if (pointing_stick.settings->acceleration_enabled !=
+      old_settings.acceleration_enabled) {
+    base::UmaHistogramBoolean(
+        "ChromeOS.Settings.Device.PointingStick.AccelerationEnabled.Changed",
+        pointing_stick.settings->acceleration_enabled);
+  }
+  if (pointing_stick.settings->sensitivity != old_settings.sensitivity) {
+    PointerSensitivity sensitivity =
+        static_cast<PointerSensitivity>(pointing_stick.settings->sensitivity);
+    base::UmaHistogramEnumeration(
+        "ChromeOS.Settings.Device.PointingStick.Sensitivity.Changed",
+        sensitivity);
+  }
+  if (pointing_stick.settings->swap_right != old_settings.swap_right) {
+    base::UmaHistogramBoolean(
+        "ChromeOS.Settings.Device.PointingStick.SwapPrimaryButtons.Changed",
+        pointing_stick.settings->swap_right);
+  }
+}
+
+void InputDeviceSettingsMetricsManager::RecordTouchpadInitialMetrics(
+    const mojom::Touchpad& touchpad) {
+  // Only record the metrics once for each Touchpad.
+  const auto account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+  auto iter = recorded_touchpads_.find(account_id);
+
+  if (iter != recorded_touchpads_.end() &&
+      base::Contains(iter->second, touchpad.device_key)) {
+    return;
+  }
+  recorded_touchpads_[account_id].insert(touchpad.device_key);
+
+  const std::string touchpad_metrics_prefix =
+      touchpad.is_external ? "ChromeOS.Settings.Device.Touchpad.External."
+                           : "ChromeOS.Settings.Device.Touchpad.Internal.";
+  PointerSensitivity sensitivity =
+      static_cast<PointerSensitivity>(touchpad.settings->sensitivity);
+
+  base::UmaHistogramBoolean(
+      touchpad_metrics_prefix + "AccelerationEnabled.Initial",
+      touchpad.settings->acceleration_enabled);
+  base::UmaHistogramBoolean(
+      touchpad_metrics_prefix + "ReverseScrolling.Initial",
+      touchpad.settings->reverse_scrolling);
+  base::UmaHistogramEnumeration(touchpad_metrics_prefix + "Sensitivity.Initial",
+                                sensitivity);
+  base::UmaHistogramBoolean(touchpad_metrics_prefix + "TapDragging.Initial",
+                            touchpad.settings->tap_dragging_enabled);
+  base::UmaHistogramBoolean(touchpad_metrics_prefix + "TapToClick.Initial",
+                            touchpad.settings->tap_to_click_enabled);
+  // TODO(yyhyyh@): Add haptic settings metrics.
+}
+
+void InputDeviceSettingsMetricsManager::RecordTouchpadChangedMetrics(
+    const mojom::Touchpad& touchpad,
+    const mojom::TouchpadSettings& old_settings) {
+  const std::string touchpad_metrics_prefix =
+      touchpad.is_external ? "ChromeOS.Settings.Device.Touchpad.External."
+                           : "ChromeOS.Settings.Device.Touchpad.Internal.";
+  if (touchpad.settings->acceleration_enabled !=
+      old_settings.acceleration_enabled) {
+    base::UmaHistogramBoolean(
+        touchpad_metrics_prefix + "AccelerationEnabled.Changed",
+        touchpad.settings->acceleration_enabled);
+  }
+  if (touchpad.settings->reverse_scrolling != old_settings.reverse_scrolling) {
+    base::UmaHistogramBoolean(
+        touchpad_metrics_prefix + "ReverseScrolling.Changed",
+        touchpad.settings->reverse_scrolling);
+  }
+  if (touchpad.settings->sensitivity != old_settings.sensitivity) {
+    PointerSensitivity sensitivity =
+        static_cast<PointerSensitivity>(touchpad.settings->sensitivity);
+    base::UmaHistogramEnumeration(
+        touchpad_metrics_prefix + "Sensitivity.Changed", sensitivity);
+  }
+  if (touchpad.settings->tap_dragging_enabled !=
+      old_settings.tap_dragging_enabled) {
+    base::UmaHistogramBoolean(touchpad_metrics_prefix + "TapDragging.Changed",
+                              touchpad.settings->tap_dragging_enabled);
+  }
+  if (touchpad.settings->tap_to_click_enabled !=
+      old_settings.tap_to_click_enabled) {
+    base::UmaHistogramBoolean(touchpad_metrics_prefix + "TapToClick.Changed",
+                              touchpad.settings->tap_to_click_enabled);
+  }
+  // TODO(yyhyyh@): Add haptic settings metrics.
 }
 
 }  // namespace ash

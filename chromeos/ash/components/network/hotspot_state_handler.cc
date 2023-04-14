@@ -62,6 +62,11 @@ HotspotStateHandler::GetHotspotState() const {
   return hotspot_state_;
 }
 
+const absl::optional<hotspot_config::mojom::DisableReason>
+HotspotStateHandler::GetDisableReason() const {
+  return disable_reason_;
+}
+
 size_t HotspotStateHandler::GetHotspotActiveClientCount() const {
   return active_client_count_;
 }
@@ -104,14 +109,12 @@ void HotspotStateHandler::UpdateHotspotStatus(const base::Value::Dict& status) {
       ShillTetheringStateToMojomState(*state);
   if (mojom_state != hotspot_state_) {
     hotspot_state_ = mojom_state;
+    UpdateDisableReason(status);
     NotifyHotspotStatusChanged();
   }
 
   if (mojom_state != hotspot_config::mojom::HotspotState::kEnabled) {
     active_client_count_ = 0;
-    if (mojom_state == hotspot_config::mojom::HotspotState::kDisabled) {
-      UpdateDisableReason(status);
-    }
     return;
   }
   size_t active_client_count = GetActiveClientCount(status);
@@ -126,6 +129,7 @@ void HotspotStateHandler::UpdateDisableReason(const base::Value::Dict& status) {
   const std::string* idle_reason =
       status.FindString(shill::kTetheringStatusIdleReasonProperty);
   if (!idle_reason) {
+    disable_reason_ = absl::nullopt;
     NET_LOG(EVENT) << "HotspotStateHandler: No string value for: "
                    << shill::kTetheringStatusIdleReasonProperty << " in "
                    << shill::kTetheringStatusProperty;
@@ -135,7 +139,7 @@ void HotspotStateHandler::UpdateDisableReason(const base::Value::Dict& status) {
   if (*idle_reason != shill::kTetheringIdleReasonInitialState) {
     hotspot_config::mojom::DisableReason disable_reason =
         ShillTetheringIdleReasonToMojomState(*idle_reason);
-    NotifyHotspotTurnedOff(disable_reason);
+    disable_reason_ = disable_reason;
   }
 }
 

@@ -26,6 +26,7 @@ aggregate_vector_icons("views_vector_icons") {
     "checkbox_active.icon",
     "checkbox_active_cr2023.icon",
     "checkbox_normal.icon",
+    "checkbox_normal_cr2023.icon",
     "close.icon",
     "drag_general_selection.icon",
     "eye.icon",
@@ -535,6 +536,7 @@ component("views") {
     "//ui/color",
     "//ui/color:mixers",
     "//ui/display",
+    "//ui/gfx:native_widget_types",
     "//ui/latency",
     "//ui/lottie",
     "//ui/native_theme",
@@ -1094,6 +1096,12 @@ source_set("test_support") {
       "win/test_support/fake_ipen_device.h",
       "win/test_support/fake_ipen_device_statics.cc",
       "win/test_support/fake_ipen_device_statics.h",
+      "win/test_support/fake_ipen_pointer_point_statics.cc",
+      "win/test_support/fake_ipen_pointer_point_statics.h",
+      "win/test_support/fake_ipointer_point.cc",
+      "win/test_support/fake_ipointer_point.h",
+      "win/test_support/fake_ipointer_point_properties.cc",
+      "win/test_support/fake_ipointer_point_properties.h",
     ]
   }
   if (is_mac) {

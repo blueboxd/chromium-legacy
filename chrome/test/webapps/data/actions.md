@@ -20,7 +20,7 @@ The tables in this file are parsed as action templates for critical user journey
 
 TODO(dmurph): Possibly this table up into markdown-header section.
 
-| # Action base name | Argument Types | Output Actions | Unique Identifier (next: 160) | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
+| # Action base name | Argument Types | Output Actions | Unique Identifier (next: 163) | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
 | --- | --- | --- | --- | --- | --- | --- |
 | # Badging |
 | check_app_badge_empty | Site |  | 2 | Not Implemented | Check that the 'badge' on the app icon is empty |  |
@@ -98,7 +98,7 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | check_platform_shortcut_and_icon | Site |  | 7 | Implemented | The icon of the platform shortcut (on the desktop) is correct | cliffordcheng@, doc |
 | check_run_on_os_login_disabled | Site |  | 107 | Implemented | Check run on os login is disabled. | phillis@ |
 | check_run_on_os_login_enabled | Site |  | 106 | Implemented | Check run on os login is enabled. | phillis@ |
-| check_tab_created |  |  | 22 | Implemented | A tab was created in a chrome browser window |  |
+| check_tab_created | Number |  | 22 | Implemented | A given number of tabs were created in a chrome browser window |  |
 | check_tab_not_created |  |  | 94 | Implemented | A tab was not created by the last state change action | cliffordcheng@, P1 |
 | check_user_cannot_set_run_on_os_login | Site | check_user_cannot_set_run_on_os_login_app_settings($1) & check_user_cannot_set_run_on_os_login_app_home($1) | 159 | Parameterized | Check an user is unable to change the run on os login state from UI surfaces due to policy.  | dibyapal@ |
 | check_user_cannot_set_run_on_os_login_app_settings | Site | | 158 | Implemented | Check user can't change the app's run_on_os_login state from the app settings page. | |
@@ -143,6 +143,7 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | sync_turn_off |  |  | 41 | Implemented | Turn chrome sync off for "Apps": chrome://settings/syncSetup/advanced |  |
 | sync_turn_on |  |  | 42 | Implemented | Turn chrome sync on for "Apps": chrome://settings/syncSetup/advanced |  |
 | switch_incognito_profile |  |  | 73 | Implemented | Switch to using incognito mode | P2 |
+| switch_active_profile | ProfileName |  | 160 | Implemented | Switch to using a different profile |  |
 | # File handling |
 | check_site_handles_file | Site, FileExtension |  | 118 | Implemented |  |  |
 | check_site_not_handles_file | Site, FileExtension |  | 122 | Implemented |  |  |
@@ -152,6 +153,8 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | check_files_loaded_in_site | Site, FilesOptions |  | 126 | Not Implemented | Check that the appropriate file contents have loaded in in PWA windows. |  |
 | add_file_handling_policy_approval | Site |  | 124 | Not Implemented |  |  |
 | remove_file_handling_policy_approval | Site |  | 125 | Not Implemented |  |  |
+| enable_file_handling | Site |  | 161 | Implemented |  |  |
+| disable_file_handling | Site |  | 162 | Implemented |  |  |
 | # Window Controls Overlay
 | check_window_controls_overlay_toggle | Site, IsShown |  | 112 | WIP |  |  |
 | check_window_controls_overlay | Site, IsOn |  | 113 | WIP |  |  |

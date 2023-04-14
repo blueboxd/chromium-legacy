@@ -213,14 +213,10 @@ class PersonalDataManager : public KeyedService,
   // Autofill address profiles to their account.
   virtual bool IsEligibleForAddressAccountStorage() const;
 
-  // Migrates a given kLocalOrSyncable `profile` to source kAccount. This has
-  // multiple side-effects for the profile:
-  // - It is stored in a different backend.
-  // - It receives a new GUID.
-  // Like all database operations, the migration happens asynchronously.
-  // `profile` (the kLocalOrSyncable one) will not be available in the
-  // PersonalDataManager anymore once the migrating has finished.
-  void MigrateProfileToAccount(const AutofillProfile& profile);
+  // Users based in unsupported countries and profiles with a country value set
+  // to an unsupported country are not eligible for account storage. This
+  // function determines if the `country_code` is eligible.
+  bool IsCountryEligibleForAccountStorage(base::StringPiece country_code) const;
 
   // Adds `iban` to the web database as a local IBAN. Returns the guid of
   // `iban` if the add is successful, or an empty string otherwise.
@@ -538,6 +534,10 @@ class PersonalDataManager : public KeyedService,
   // Does nothing if the strike database is not available.
   void AddStrikeToBlockProfileMigration(const std::string& guid);
 
+  // Adds enough strikes to the profile identified by `guid` to block migrations
+  // for it.
+  void AddMaxStrikesToBlockProfileMigration(const std::string& guid);
+
   // Removes potential strikes to block a profile identified by its `guid` for
   // migrations. Does nothing if the strike database is not available.
   void RemoveStrikesToBlockProfileMigration(const std::string& guid);
@@ -571,6 +571,9 @@ class PersonalDataManager : public KeyedService,
 
   // Returns true if Sync is enabled for `model_type`.
   bool IsSyncEnabledFor(syncer::ModelType model_type) const;
+
+  // Returns true if payments mandatory re-auth is enabled.
+  bool IsAutofillPaymentMethodsMandatoryReauthEnabled();
 
   // Used to automatically import addresses without a prompt. Should only be
   // set to true in tests.

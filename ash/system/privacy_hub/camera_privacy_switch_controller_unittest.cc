@@ -37,6 +37,8 @@ namespace ash {
 
 namespace {
 
+using Sensor = SensorDisabledNotificationDelegate::Sensor;
+
 class MockSwitchAPI : public CameraPrivacySwitchAPI {
  public:
   MOCK_METHOD(void,
@@ -693,7 +695,7 @@ TEST_P(PrivacyHubCameraControllerTest, NotificationText) {
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(
           IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES,
-          app2, app1),
+          app1, app2),
       notification->message());
 
   // Launch app3 that's also accessing camera, a notification should be
@@ -718,7 +720,7 @@ TEST_P(PrivacyHubCameraControllerTest, NotificationText) {
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(
           IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES,
-          app3, app1),
+          app1, app3),
       notification->message());
 }
 
@@ -737,8 +739,8 @@ TEST_P(PrivacyHubCameraControllerTest, MetricCollection) {
                 false),
             0);
 
-  CameraPrivacySwitchController::SetAndLogCameraPreferenceFromNotification(
-      false);
+  PrivacyHubNotificationController::SetAndLogSensorPreferenceFromNotification(
+      Sensor::kCamera, false);
   EXPECT_EQ(histogram_tester_.GetBucketCount(
                 privacy_hub_metrics::
                     kPrivacyHubCameraEnabledFromNotificationHistogram,
@@ -750,8 +752,8 @@ TEST_P(PrivacyHubCameraControllerTest, MetricCollection) {
                 false),
             1);
 
-  CameraPrivacySwitchController::SetAndLogCameraPreferenceFromNotification(
-      true);
+  PrivacyHubNotificationController::SetAndLogSensorPreferenceFromNotification(
+      Sensor::kCamera, true);
   EXPECT_EQ(histogram_tester_.GetBucketCount(
                 privacy_hub_metrics::
                     kPrivacyHubCameraEnabledFromNotificationHistogram,

@@ -1202,12 +1202,13 @@ void RasterImplementation::CopySharedImage(const gpu::Mailbox& source_mailbox,
 void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
                                        int dst_x_offset,
                                        int dst_y_offset,
+                                       int dst_plane_index,
                                        GLenum texture_target,
-                                       GLuint row_bytes,
-                                       const SkImageInfo& src_info,
-                                       const void* src_pixels) {
+                                       const SkPixmap& src_sk_pixmap) {
   TRACE_EVENT0("gpu", "RasterImplementation::WritePixels");
-  DCHECK_GE(row_bytes, src_info.minRowBytes());
+  const auto& src_info = src_sk_pixmap.info();
+  const auto& src_row_bytes = src_sk_pixmap.rowBytes();
+  DCHECK_GE(src_row_bytes, src_info.minRowBytes());
 
   // Get the size of the SkColorSpace while maintaining 8-byte alignment.
   GLuint pixels_offset = 0;
@@ -1216,7 +1217,7 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
         src_info.colorSpace()->writeToMemory(nullptr), sizeof(uint64_t));
   }
 
-  GLuint src_size = src_info.computeByteSize(row_bytes);
+  GLuint src_size = src_sk_pixmap.computeByteSize();
   GLuint total_size =
       pixels_offset +
       base::bits::AlignUp(src_size, static_cast<GLuint>(sizeof(uint64_t)));
@@ -1238,12 +1239,14 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
     size_t bytes_written = src_info.colorSpace()->writeToMemory(address);
     DCHECK_LE(bytes_written, pixels_offset);
   }
-  memcpy(static_cast<uint8_t*>(address) + pixels_offset, src_pixels, src_size);
+  memcpy(static_cast<uint8_t*>(address) + pixels_offset, src_sk_pixmap.addr(),
+         src_size);
 
   helper_->WritePixelsINTERNALImmediate(
-      dst_x_offset, dst_y_offset, src_info.width(), src_info.height(),
-      row_bytes, src_info.colorType(), src_info.alphaType(), shm_id, shm_offset,
-      pixels_offset, dest_mailbox.name);
+      dst_x_offset, dst_y_offset, dst_plane_index, src_info.width(),
+      src_info.height(), src_row_bytes, src_info.colorType(),
+      src_info.alphaType(), shm_id, shm_offset, pixels_offset,
+      dest_mailbox.name);
 }
 
 namespace {

@@ -198,7 +198,7 @@ void ExtensionSessionsTest::CreateSessionModels() {
   syncer::DataTypeActivationRequest request;
   request.error_handler = base::DoNothing();
   request.cache_guid = kTestCacheGuid;
-  request.authenticated_account_id = CoreAccountId("SomeAccountId");
+  request.authenticated_account_id = CoreAccountId::FromGaiaId("SomeAccountId");
 
   sync_sessions::SessionSyncService* service =
       SessionSyncServiceFactory::GetForProfile(browser()->profile());
@@ -211,6 +211,11 @@ void ExtensionSessionsTest::CreateSessionModels() {
       request, sync_start_future.GetCallback());
   syncer::MockModelTypeWorker worker(
       sync_pb::ModelTypeState(), sync_start_future.Get()->type_processor.get());
+
+  // ClientTagBasedModelTypeProcessor requires connecting before other
+  // interactions with the worker happen.
+  sync_start_future.Get()->type_processor->ConnectSync(
+      worker.MakeForwardingCommitQueue());
 
   const base::Time time_now = base::Time::Now();
   syncer::SyncDataList initial_data;

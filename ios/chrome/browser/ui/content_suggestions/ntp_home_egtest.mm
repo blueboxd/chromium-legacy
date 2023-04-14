@@ -1104,12 +1104,9 @@ id<GREYMatcher> notPracticallyVisible() {
 
 // Test that signing in and signing out results in the NTP scrolled to the top
 // and not in some unexpected layout state.
-- (void)testSignInSignOutScrolledToTop {
-  // Test fails on iPads, see TODO:(crbug.com/1427123).
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test is disabled on iPads.");
-  }
-
+// TODO(crbug.com/1433014): Non-stop animation on discover feed after signing
+// out.
+- (void)FLAKY_testSignInSignOutScrolledToTop {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPLogo()]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
@@ -1322,11 +1319,6 @@ id<GREYMatcher> notPracticallyVisible() {
 // Tests that content suggestions are hidden for supervised users on sign-in.
 // When the supervised user signs out the active policy should apply to the NTP.
 - (void)testFeedHiddenForSupervisedUser {
-  // Test fails on iPads, see TODO:(crbug.com/1427123).
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test is disabled on iPads.");
-  }
-
   // Disable trending queries experiment to ensure that the Discover feed is
   // visible when first opening the NTP.
   // TODO(crbug.com/1350826): Adapt the test with launch of trending queries.

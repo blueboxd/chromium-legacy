@@ -44,13 +44,14 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Needed only for backend migration.
   void PurgeForMigration(ModelTypeSet undesired_types) override;
 
-  void Stop(ShutdownReason reason) override;
+  void Stop(SyncStopMetadataFate metadata_fate) override;
   ModelTypeSet GetActiveDataTypes() const override;
   ModelTypeSet GetPurgedDataTypes() const override;
   ModelTypeSet GetActiveProxyDataTypes() const override;
   State state() const override;
+  ModelTypeSet GetTypesWithPendingDownloadForInitialSync() const override;
 
-  // |ModelLoadManagerDelegate| implementation.
+  // `ModelLoadManagerDelegate` implementation.
   void OnAllDataTypesReadyForConfigure() override;
   // No-op if the type is not connected or has already failed.
   void OnSingleDataTypeWillStop(ModelType type,
@@ -75,12 +76,12 @@ class DataTypeManagerImpl : public DataTypeManager,
   };
   using DataTypeConfigStateMap = std::map<ModelType, DataTypeConfigState>;
 
-  // Return model types in |state_map| that match |state|.
+  // Return model types in `state_map` that match `state`.
   static ModelTypeSet GetDataTypesInState(
       DataTypeConfigState state,
       const DataTypeConfigStateMap& state_map);
 
-  // Set state of |types| in |state_map| to |state|.
+  // Set state of `types` in `state_map` to `state`.
   static void SetDataTypesState(DataTypeConfigState state,
                                 ModelTypeSet types,
                                 DataTypeConfigStateMap* state_map);
@@ -92,7 +93,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // value of DataTypeController::GetPreconditionState().
   void UpdatePreconditionErrors();
 
-  // Update precondition state for |type|, such that data_type_status_table_
+  // Update precondition state for `type`, such that `data_type_status_table_`
   // matches DataTypeController::GetPreconditionState(). Returns true if there
   // was an actual change.
   bool UpdatePreconditionError(ModelType type);
@@ -117,13 +118,11 @@ class DataTypeManagerImpl : public DataTypeManager,
   DataTypeConfigStateMap BuildDataTypeConfigStateMap(
       const ModelTypeSet& types_being_configured) const;
 
-  // Start configuration of next set of types in |configuration_types_queue_|
+  // Start configuration of next set of types in `configuration_types_queue_`
   // (if any exist, does nothing otherwise).
   void StartNextConfiguration();
   void ConfigurationCompleted(ModelTypeSet succeeded_configuration_types,
                               ModelTypeSet failed_configuration_types);
-
-  void StopImpl(ShutdownReason reason);
 
   ModelTypeSet GetEnabledTypes() const;
 
@@ -137,9 +136,9 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // The set of types whose initial download of sync data has completed.
   // Note: This class mostly doesn't handle control types (i.e. NIGORI) -
-  // |controllers_| doesn't contain an entry for NIGORI, and by the time this
+  // `controllers_` doesn't contain an entry for NIGORI, and by the time this
   // class gets instantiated, NIGORI is already up and running. It still has to
-  // be maintained as part of |downloaded_types_|, however, since in some edge
+  // be maintained as part of `downloaded_types_`, however, since in some edge
   // cases (notably PurgeForMigration()), this class might have to trigger a
   // re-download of NIGORI data.
   // TODO(crbug.com/1422901): Consider removing this; see bug for details.
@@ -163,7 +162,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   ModelTypeSet force_redownload_types_;
 
   // Whether an attempt to reconfigure was made while we were busy configuring.
-  // The |preferred_types_| will reflect the newest set of requested types.
+  // The `preferred_types_` will reflect the newest set of requested types.
   bool needs_reconfigure_ = false;
 
   // The last time Restart() was called.

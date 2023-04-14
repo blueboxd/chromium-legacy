@@ -161,7 +161,8 @@ AbortSignal::AbortSignal(ExecutionContext* execution_context)
     : AbortSignal(execution_context, SignalType::kInternal) {}
 
 AbortSignal::AbortSignal(ExecutionContext* execution_context,
-                         SignalType signal_type) {
+                         SignalType signal_type)
+    : LazyActiveScriptWrappable<AbortSignal>({}) {
   DCHECK_NE(signal_type, SignalType::kComposite);
   InitializeCommon(execution_context, signal_type);
 
@@ -172,7 +173,8 @@ AbortSignal::AbortSignal(ExecutionContext* execution_context,
 }
 
 AbortSignal::AbortSignal(ScriptState* script_state,
-                         HeapVector<Member<AbortSignal>>& source_signals) {
+                         HeapVector<Member<AbortSignal>>& source_signals)
+    : LazyActiveScriptWrappable<AbortSignal>({}) {
   DCHECK(RuntimeEnabledFeatures::AbortSignalCompositionEnabled());
   InitializeCommon(ExecutionContext::From(script_state),
                    SignalType::kComposite);
@@ -204,13 +206,6 @@ void AbortSignal::InitializeCommon(ExecutionContext* execution_context,
   } else {
     abort_algorithms_ =
         MakeGarbageCollected<UnremovableAbortAlgorithmCollection>();
-  }
-
-  if (RuntimeEnabledFeatures::AbortSignalCompositionEnabled() &&
-      signal_type_ == AbortSignal::SignalType::kComposite) {
-    // Composite signals need to be kept alive when they have relevant event
-    // listeners or pending algorithms.
-    RegisterActiveScriptWrappable();
   }
 }
 
@@ -431,6 +426,7 @@ bool AbortSignal::HasPendingActivity() const {
     return false;
   }
   DCHECK(RuntimeEnabledFeatures::AbortSignalCompositionEnabled());
+  CHECK(composition_manager_);
   // Settled signals cannot signal abort, so they can be GCed.
   if (composition_manager_->IsSettled()) {
     return false;
@@ -448,6 +444,15 @@ bool AbortSignal::CanAbort() const {
     return !composition_manager_->IsSettled();
   }
   return true;
+}
+
+void AbortSignal::ActiveScriptWrappableBaseConstructed() {
+  if (RuntimeEnabledFeatures::AbortSignalCompositionEnabled() &&
+      signal_type_ == AbortSignal::SignalType::kComposite) {
+    // Composite signals need to be kept alive when they have relevant event
+    // listeners or pending algorithms.
+    RegisterActiveScriptWrappable();
+  }
 }
 
 AbortSignal::AlgorithmHandle::AlgorithmHandle(AbortSignal::Algorithm* algorithm)

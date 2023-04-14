@@ -353,7 +353,8 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, PRE_RemoveRecords) {
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// crbug.com/1429828: Test is flaky on Mac and Linux
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_RemoveRecords DISABLED_RemoveRecords
 #else
 #define MAYBE_RemoveRecords RemoveRecords
@@ -400,7 +401,8 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, PRE_CheckSessionOnly) {
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// crbug.com/1429828: Test is flaky on Mac and Linux
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_CheckSessionOnly DISABLED_CheckSessionOnly
 #else
 #define MAYBE_CheckSessionOnly CheckSessionOnly
@@ -414,7 +416,8 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, MAYBE_CheckSessionOnly) {
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// crbug.com/1429828: Test is flaky on Mac and Linux
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_RemoveHistory DISABLED_RemoveHistory
 #else
 #define MAYBE_RemoveHistory RemoveHistory
@@ -473,7 +476,8 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, MAYBE_RemoveHistory) {
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// crbug.com/1429828: Test is flaky on Mac and Linux
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_TreeModelDeletion DISABLED_TreeModelDeletion
 #else
 #define MAYBE_TreeModelDeletion TreeModelDeletion
@@ -481,8 +485,11 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, MAYBE_RemoveHistory) {
 IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, MAYBE_TreeModelDeletion) {
   // Check that removing cookies and storage API usage via the CookiesTreeModel
   // also removes the associated access records.
+  content::CookieChangeObserver cookie_observer(
+      chrome_test_utils::GetActiveWebContents(this), 9);
   NavigateToTopLevelPage();
   NavigateToEmbeddedPage();
+  cookie_observer.Wait();
 
   auto cookies = GetAllCookies();
   auto records = GetAllAccessRecords();
@@ -523,7 +530,8 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, MAYBE_TreeModelDeletion) {
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// crbug.com/1429828: Test is flaky on Mac and Linux
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_MultipleAccesses DISABLED_MultipleAccesses
 #else
 #define MAYBE_MultipleAccesses MultipleAccesses
@@ -558,7 +566,8 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, MAYBE_MultipleAccesses) {
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// crbug.com/1429828: Test is flaky on Mac and Linux
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_TabClosed DISABLED_TabClosed
 #else
 #define MAYBE_TabClosed TabClosed
@@ -653,7 +662,8 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditSessionRestoreBrowserTest,
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1431000): Failing consistently on Linux Wayland.
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX)
 #define MAYBE_RestoreSession DISABLED_RestoreSession
 #else
 #define MAYBE_RestoreSession RestoreSession

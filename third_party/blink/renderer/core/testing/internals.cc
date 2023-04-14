@@ -346,7 +346,7 @@ class TestReadableStreamSource : public UnderlyingSourceBase {
         return std::make_unique<Optimizer>(
             context->GetTaskRunner(TaskType::kInternalDefault),
             CrossThreadBindOnce(&TestReadableStreamSource::Detach,
-                                WrapCrossThreadWeakPersistent(this)),
+                                MakeUnwrappingCrossThreadWeakHandle(this)),
             type_);
     }
   }
@@ -560,7 +560,7 @@ class TestWritableStreamSink final : public UnderlyingSinkBase {
     return std::make_unique<Optimizer>(
         context->GetTaskRunner(TaskType::kInternalDefault),
         CrossThreadBindOnce(&TestWritableStreamSink::Detach,
-                            WrapCrossThreadWeakPersistent(this)),
+                            MakeUnwrappingCrossThreadWeakHandle(this)),
         optimizer_flag_, type_);
   }
 
@@ -3135,10 +3135,11 @@ String Internals::getCurrentCursorInfo() {
     result.AppendNumber(bitmap.width());
     result.Append('x');
     result.AppendNumber(bitmap.height());
-  }
-  if (cursor.image_scale_factor() != 1) {
-    result.Append(" scale=");
-    result.AppendNumber(cursor.image_scale_factor(), 8);
+
+    if (cursor.image_scale_factor() != 1.0f) {
+      result.Append(" scale=");
+      result.AppendNumber(cursor.image_scale_factor(), 8);
+    }
   }
 
   return result.ToString();

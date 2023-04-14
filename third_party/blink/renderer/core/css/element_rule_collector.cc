@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
-#include "third_party/blink/renderer/core/css/css_style_sheet_ids.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -57,6 +56,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -255,7 +255,7 @@ void AggregateRulePerfData(
   for (const auto& rule_stats : rules_statistics) {
     CumulativeRulePerfKey key{
         rule_stats.rule->Selector().SelectorText(),
-        CSSStyleSheetIds::IdForCSSStyleSheet(style_sheet)};
+        IdentifiersFactory::IdForCSSStyleSheet(style_sheet)};
     auto it = map.find(key);
     if (it == map.end()) {
       CumulativeRulePerfData data{
@@ -992,14 +992,14 @@ void ElementRuleCollector::DidMatchRule(
         // When there is no default @namespace, *::selection and *|*::selection
         // are stored without the star, so we are universal if there’s nothing
         // before (e.g. x::selection) and nothing after (e.g. y ::selection).
-        universal = selector.IsLastInTagHistory();
-      } else if (const CSSSelector* next = selector.TagHistory()) {
+        universal = selector.IsLastInComplexSelector();
+      } else if (const CSSSelector* next = selector.NextSimpleSelector()) {
         // When there is a default @namespace, ::selection and *::selection (not
         // universal) are stored as g_null_atom|*::selection, |*::selection (not
         // universal) is stored as g_empty_atom|*::selection, and *|*::selection
         // (the only universal form) is stored as g_star_atom|*::selection.
         universal =
-            next->IsLastInTagHistory() &&
+            next->IsLastInComplexSelector() &&
             CSSSelector::GetPseudoId(next->GetPseudoType()) == dynamic_pseudo &&
             selector.Match() == CSSSelector::kTag &&
             selector.TagQName().LocalName().IsNull() &&

@@ -29,6 +29,9 @@ class GetOpenDeviceRequestCallbacks final : public UserMediaRequest::Callbacks {
 
 }  // namespace
 
+MediaStreamTrack::MediaStreamTrack()
+    : ActiveScriptWrappable<MediaStreamTrack>({}) {}
+
 String ContentHintToString(
     const WebMediaStreamTrack::ContentHintType& content_hint) {
   switch (content_hint) {
@@ -76,8 +79,9 @@ MediaStreamTrack* MediaStreamTrack::FromTransferredState(
 
   auto* window =
       DynamicTo<LocalDOMWindow>(ExecutionContext::From(script_state));
-  if (!window)
+  if (!window) {
     return nullptr;
+  }
 
   UserMediaClient* user_media_client = UserMediaClient::From(window);
   if (!user_media_client) {
@@ -99,7 +103,7 @@ MediaStreamTrack* MediaStreamTrack::FromTransferredState(
       MakeGarbageCollected<GetOpenDeviceRequestCallbacks>(),
       IdentifiableSurface());
   if (!request) {
-      return nullptr;
+    return nullptr;
   }
 
   // TODO(1288839): Create a TransferredMediaStreamTrack implementing interfaces

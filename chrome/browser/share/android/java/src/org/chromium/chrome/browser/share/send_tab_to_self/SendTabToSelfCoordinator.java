@@ -10,12 +10,12 @@ import android.content.Context;
 import androidx.annotation.StringRes;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.chrome.browser.ui.signin.R;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator.EntryPoint;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
@@ -24,6 +24,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.List;
@@ -115,17 +116,18 @@ public class SendTabToSelfCoordinator {
                 String accountEmail, Callback<GoogleServiceAuthError> onSignInErrorCallback) {
             SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(mProfile);
             Account account = AccountUtils.createAccountFromName(accountEmail);
-            signinManager.signin(account, new SigninManager.SignInCallback() {
-                @Override
-                public void onSignInComplete() {
-                    mOnSignInCompleteCallback.run();
-                }
+            signinManager.signin(account, SigninAccessPoint.SEND_TAB_TO_SELF_PROMO,
+                    new SigninManager.SignInCallback() {
+                        @Override
+                        public void onSignInComplete() {
+                            mOnSignInCompleteCallback.run();
+                        }
 
-                @Override
-                public void onSignInAborted() {
-                    // TODO(crbug.com/1219434) Consider calling onSignInErrorCallback here.
-                }
-            });
+                        @Override
+                        public void onSignInAborted() {
+                            // TODO(crbug.com/1219434) Consider calling onSignInErrorCallback here.
+                        }
+                    });
         }
 
         @Override
@@ -216,7 +218,7 @@ public class SendTabToSelfCoordinator {
 
         /** Returns the cancel button string for the bottom sheet dialog. */
         @Override
-        public @StringRes int getCancelButton() {
+        public @StringRes int getDismissButton() {
             return R.string.cancel;
         }
     }

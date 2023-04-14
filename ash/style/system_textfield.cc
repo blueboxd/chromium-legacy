@@ -4,7 +4,9 @@
 
 #include "ash/style/system_textfield.h"
 
+#include "ash/style/ash_color_id.h"
 #include "ash/style/system_textfield_controller.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "system_textfield.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -143,6 +145,11 @@ void SystemTextfield::SetShowFocusRing(bool show) {
   views::FocusRing::Get(this)->SchedulePaint();
 }
 
+void SystemTextfield::SetShowBackground(bool show) {
+  show_background_ = show;
+  UpdateBackground();
+}
+
 void SystemTextfield::RestoreText() {
   SetText(restored_text_content_);
 }
@@ -252,9 +259,13 @@ void SystemTextfield::UpdateTextColor() {
 void SystemTextfield::UpdateBackground() {
   // Create a themed rounded rect background when the mouse hovers on the
   // textfield or the textfield is focused.
-  if (IsMouseHovered() || HasFocus()) {
+  if (IsMouseHovered() || HasFocus() || show_background_) {
+    ui::ColorId default_hover_state_color_id =
+        chromeos::features::IsJellyrollEnabled()
+            ? cros_tokens::kCrosSysHoverOnSubtle
+            : static_cast<ui::ColorId>(kColorAshControlBackgroundColorInactive);
     SetBackground(views::CreateThemedRoundedRectBackground(
-        background_color_id_.value_or(cros_tokens::kCrosSysHoverOnSubtle),
+        background_color_id_.value_or(default_hover_state_color_id),
         kCornerRadius));
     return;
   }

@@ -57,7 +57,8 @@ class PrivacySandboxService : public KeyedService {
     kM1Consent = 3,
     kM1NoticeROW = 4,
     kM1NoticeEEA = 5,
-    kMaxValue = kM1NoticeEEA,
+    kM1NoticeRestricted = 6,
+    kMaxValue = kM1NoticeRestricted,
   };
 
   // An exhaustive list of actions related to showing & interacting with the
@@ -118,7 +119,10 @@ class PrivacySandboxService : public KeyedService {
     // User migrated from EEA to ROW, and had already previously finished the
     // EEA consent flow.
     kEEAFlowCompletedBeforeRowMigration = 6,
-    kMaxValue = kEEAFlowCompletedBeforeRowMigration,
+    // User migrated from ROW to EEA, but had already disabled Topics from
+    // settings.
+    kROWFlowCompletedAndTopicsDisabledBeforeEEAMigration = 7,
+    kMaxValue = kROWFlowCompletedAndTopicsDisabledBeforeEEAMigration,
   };
 
   PrivacySandboxService(

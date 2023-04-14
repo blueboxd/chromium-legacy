@@ -11,11 +11,13 @@ import static org.chromium.chrome.browser.browserservices.intents.BrowserService
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_SIDE_SHEET_MAXIMIZED;
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE;
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW;
 
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Handler;
 import android.view.Gravity;
 import android.view.View;
@@ -40,7 +42,9 @@ import org.chromium.ui.base.LocalizationUtils;
  * class should be owned by the CustomTabActivity.
  */
 public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrategy {
-    private static final float MINIMAL_WIDTH_RATIO = 0.33f;
+    private static final int WINDOW_WIDTH_EXPANDED_CUTOFF_DP = 840;
+    private static final float MINIMAL_WIDTH_RATIO_EXPANDED = 0.33f;
+    private static final float MINIMAL_WIDTH_RATIO_MEDIUM = 0.5f;
     private static final NoAnimator NO_ANIMATOR = new NoAnimator();
 
     private final @Px int mUnclampedInitialWidth;
@@ -135,14 +139,17 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
     boolean toggleMaximize(boolean animate) {
         mIsMaximized = !mIsMaximized;
         if (mIsMaximized) {
+            if (shouldDrawDividerLine()) resetCoordinatorLayoutInsets();
             setTopMargins(0, 0);
         } else {
+            if (shouldDrawDividerLine()) drawDividerLine();
             updateShadowOffset();
         }
 
         AnimatorUpdateListener updateListener;
         WindowManager.LayoutParams windowLayout = mActivity.getWindow().getAttributes();
         int displayWidth = mVersionCompat.getDisplayWidth();
+        int clampedInitialWidth = calculateWidth(mUnclampedInitialWidth);
         int start;
         int end;
         if (mSheetOnRight) {
@@ -150,11 +157,11 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
             setWindowWidth(displayWidth);
             int xOffset = mVersionCompat.getXOffset();
             start = windowLayout.x;
-            end = (mIsMaximized ? 0 : displayWidth - mUnclampedInitialWidth) + xOffset;
+            end = (mIsMaximized ? 0 : displayWidth - clampedInitialWidth) + xOffset;
             updateListener = (anim) -> setWindowX((int) anim.getAnimatedValue());
         } else {
             start = windowLayout.width;
-            end = calculateWidth(mIsMaximized ? displayWidth : mUnclampedInitialWidth);
+            end = mIsMaximized ? displayWidth : clampedInitialWidth;
             updateListener = (anim) -> setWindowWidth((int) anim.getAnimatedValue());
         }
         // Keep the WebContents invisible during the animation to hide the jerky visual artifacts
@@ -330,8 +337,12 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
     }
 
     private int calculateWidth(int unclampedWidth) {
-        int width = mVersionCompat.getDisplayWidth();
-        return MathUtils.clamp(unclampedWidth, width, (int) (width * MINIMAL_WIDTH_RATIO));
+        int displayWidth = mVersionCompat.getDisplayWidth();
+        int displayWidthDp = mVersionCompat.getDisplayWidthDp();
+        float minWidthRatio = displayWidthDp < WINDOW_WIDTH_EXPANDED_CUTOFF_DP
+                ? MINIMAL_WIDTH_RATIO_MEDIUM
+                : MINIMAL_WIDTH_RATIO_EXPANDED;
+        return MathUtils.clamp(unclampedWidth, displayWidth, (int) (displayWidth * minWidthRatio));
     }
 
     private float calculateElevation() {
@@ -356,19 +367,25 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
     }
 
     @Override
-    protected void drawDividerLine(CustomTabToolbar toolbar) {
+    protected void drawDividerLine() {
         int width =
                 mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_outline_width);
         int leftDividerInset = mSheetOnRight ? width : 0;
         int rightDividerInset = !mSheetOnRight ? width : 0;
 
-        drawDividerLine(leftDividerInset, 0, rightDividerInset, toolbar);
+        drawDividerLineBase(leftDividerInset, 0, rightDividerInset);
     }
 
     @Override
     protected boolean shouldDrawDividerLine() {
-        return SysUtils.isLowEndDevice()
-                || mDecorationType == ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
+        boolean notMaxWidthSideSheet =
+                calculateWidth(mUnclampedInitialWidth) != mVersionCompat.getDisplayWidth();
+        // Elevation shadows are only rendered properly on devices >= Android Q
+        return notMaxWidthSideSheet
+                && (SysUtils.isLowEndDevice()
+                        || mDecorationType == ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER
+                        || (mDecorationType == ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW
+                                && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q));
     }
 
     @Override

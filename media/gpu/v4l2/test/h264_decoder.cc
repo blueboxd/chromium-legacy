@@ -460,10 +460,7 @@ VideoDecoder::Result H264Decoder::StartNewFrame(
   struct v4l2_ext_controls ext_ctrls = {
       .count = (sizeof(ctrls) / sizeof(ctrls[0])), .controls = ctrls};
 
-  if (!v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls)) {
-    VLOG(4) << "VIDIOC_S_EXT_CTRLS failed.";
-    return VideoDecoder::kError;
-  }
+  v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls);
 
   memset(v4l2_decode_param->dpb, 0, sizeof(v4l2_decode_param->dpb));
   size_t i = 0;
@@ -646,10 +643,7 @@ VideoDecoder::Result H264Decoder::FinishFrame(
   struct v4l2_ext_controls ext_ctrls = {
       .count = (sizeof(ctrls) / sizeof(ctrls[0])), .controls = ctrls};
 
-  if (!v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls)) {
-    VLOG(4) << "VIDIOC_S_EXT_CTRLS failed.";
-    return VideoDecoder::kError;
-  }
+  v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls);
 
   // Picture is a reference picture.
   // H.264 section 8.2.4.
@@ -713,10 +707,7 @@ VideoDecoder::Result H264Decoder::FinishFrame(
       return VideoDecoder::kError;
     }
 
-    if (!v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_)) {
-      VLOG(4) << "MEDIA_REQUEST_IOC_QUEUE failed.";
-      return VideoDecoder::kError;
-    }
+    v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_);
 
     // If the outputted picture is not a reference picture, it doesn't have
     // to remain in the DPB and can be removed.
@@ -773,32 +764,26 @@ std::unique_ptr<H264Decoder> H264Decoder::Create(
   constexpr uint32_t kDriverCodecFourcc = V4L2_PIX_FMT_H264_SLICE;
 
   auto v4l2_ioctl = std::make_unique<V4L2IoctlShim>(kDriverCodecFourcc);
-  uint32_t uncompressed_fourcc = V4L2_PIX_FMT_NV12;
 
-  if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
-                                      uncompressed_fourcc)) {
-    // Fall back to MM21 for MediaTek platforms
-    uncompressed_fourcc = V4L2_PIX_FMT_MM21;
-
-    if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
-                                        uncompressed_fourcc)) {
-      LOG(ERROR) << "Device doesn't support the provided FourCCs.";
-      return nullptr;
-    }
+  if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc)) {
+    LOG(ERROR) << "Device doesn't support "
+               << media::FourccToString(kDriverCodecFourcc) << ".";
+    return nullptr;
   }
 
   // TODO(stevecho): might need to consider using more than 1 file descriptor
   // (fd) & buffer with the output queue for 4K60 requirement.
   // https://buganizer.corp.google.com/issues/202214561#comment31
   auto OUTPUT_queue = std::make_unique<V4L2Queue>(
-      V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, kDriverCodecFourcc, coded_size.value(),
-      V4L2_MEMORY_MMAP, kNumberOfBuffersInOutputQueue);
+      V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, coded_size.value(), V4L2_MEMORY_MMAP,
+      kNumberOfBuffersInOutputQueue);
+  OUTPUT_queue->set_fourcc(kDriverCodecFourcc);
 
   // TODO(stevecho): enable V4L2_MEMORY_DMABUF memory for CAPTURE queue.
   // https://www.kernel.org/doc/html/v5.10/userspace-api/media/v4l/pixfmt-v4l2-mplane.html#c.V4L.v4l2_plane_pix_format
   auto CAPTURE_queue = std::make_unique<V4L2Queue>(
-      V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, uncompressed_fourcc,
-      coded_size.value(), V4L2_MEMORY_MMAP, kNumberOfBuffersInCaptureQueue);
+      V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, coded_size.value(), V4L2_MEMORY_MMAP,
+      kNumberOfBuffersInCaptureQueue);
 
   return base::WrapUnique(
       new H264Decoder(std::move(parser), std::move(v4l2_ioctl),
@@ -846,10 +831,8 @@ VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
     return VideoDecoder::kEOStream;
 
   uint32_t buffer_id;
-  if (!v4l2_ioctl_->DQBuf(CAPTURE_queue_, &buffer_id)) {
-    VLOG(4) << "VIDIOC_DQBUF failed for CAPTURE queue";
-    return VideoDecoder::kError;
-  }
+  v4l2_ioctl_->DQBuf(CAPTURE_queue_, &buffer_id);
+
   // Keeps track of which indices are currently dequeued in the
   // CAPTURE queue. This will be used to determine which indices
   // can/cannot be refreshed.
@@ -860,9 +843,9 @@ VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
          "buffers";
 
   scoped_refptr<MmappedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
-  size = CAPTURE_queue_->display_size();
-  ConvertToYUV(y_plane, u_plane, v_plane, size, buffer->mmapped_planes(),
-               CAPTURE_queue_->coded_size(), CAPTURE_queue_->fourcc());
+  ConvertToYUV(y_plane, u_plane, v_plane, OUTPUT_queue_->resolution(),
+               buffer->mmapped_planes(), CAPTURE_queue_->resolution(),
+               CAPTURE_queue_->fourcc());
 
   const std::set<uint32_t> reusable_buffer_slots =
       GetReusableReferenceSlots(*CAPTURE_queue_->GetBuffer(buffer_id).get(),
@@ -879,16 +862,11 @@ VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
     CAPTURE_queue_->QueueBufferId(reusable_buffer_slot);
   }
 
-  if (!v4l2_ioctl_->DQBuf(OUTPUT_queue_, &buffer_id)) {
-    VLOG(4) << "VIDIOC_DQBUF failed for OUTPUT queue.";
-    return VideoDecoder::kError;
-  }
+  v4l2_ioctl_->DQBuf(OUTPUT_queue_, &buffer_id);
+
   CHECK_EQ(buffer_id, uint32_t(0)) << "OUTPUT Queue Index not zero";
 
-  if (!v4l2_ioctl_->MediaRequestIocReinit(OUTPUT_queue_)) {
-    VLOG(4) << "MEDIA_REQUEST_IOC_REINIT failed.";
-    return VideoDecoder::kError;
-  }
+  v4l2_ioctl_->MediaRequestIocReinit(OUTPUT_queue_);
 
   return VideoDecoder::kOk;
 }

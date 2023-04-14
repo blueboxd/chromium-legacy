@@ -192,21 +192,18 @@ TEST_F(TabGroupsApiUnitTest, TabStripModelWithNoTabGroupFails) {
                                         /* foreground */ true);
   }
 
-  // create an extension and test that tab group methods fail.
+  // Create an extension and test that the tab group query method skips the
+  // unsupported tab strip without throwing an error.
   scoped_refptr<const Extension> extension = CreateTabGroupsExtension();
 
   const char* kTitleQueryInfo = R"([{"title": "Sample title"}])";
-  auto function = base::MakeRefCounted<TabGroupsQueryFunction>();
-  function->set_extension(extension);
+  base::Value::List groups_list =
+      RunTabGroupsQueryFunction(profile(), extension.get(), kTitleQueryInfo);
 
-  std::string error = api_test_utils::RunFunctionAndReturnError(
-      function.get(), kTitleQueryInfo, browser2->profile());
-  EXPECT_EQ(tabs_constants::kTabStripDoesNotSupportTabGroupsError, error);
+  ASSERT_EQ(0u, groups_list.size());
 
   tab_strip_model2->CloseAllTabs();
 }
-// cbld unit_tests && ./out/Default/unit_tests
-// --gtest_filter="*TabStripModelWithNoTabGroupFails*"
 
 // Test that querying groups by title returns the correct groups.
 TEST_F(TabGroupsApiUnitTest, TabGroupsQueryTitle) {

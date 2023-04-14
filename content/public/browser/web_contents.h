@@ -486,7 +486,6 @@ class WebContents : public PageNavigator,
       base::OnceCallback<void(const ui::AXTreeUpdate&)>;
   virtual void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
                                      ui::AXMode ax_mode,
-                                     bool exclude_offscreen,
                                      size_t max_nodes,
                                      base::TimeDelta timeout) = 0;
 
@@ -1393,6 +1392,14 @@ class WebContents : public PageNavigator,
       PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate = absl::nullopt) = 0;
+
+  // May be called when the embedder believes that it is likely that the user
+  // will perform a back navigation due to the trigger indicated by `predictor`
+  // (e.g. they're hovering over a back button). `disposition` indicates where
+  // the navigation is predicted to happen (which could differ from where the
+  // navigation actually happens).
+  virtual void BackNavigationLikely(PreloadingPredictor predictor,
+                                    WindowOpenDisposition disposition) = 0;
 
   // Returns a scope object that needs to be owned by caller in order to
   // disallow custom cursors. Custom cursors are diallowed in this web contents

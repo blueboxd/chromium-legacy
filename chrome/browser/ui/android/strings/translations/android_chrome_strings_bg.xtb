@@ -65,7 +65,6 @@
 <translation id="1298077576058087471">Спестете до 60% данни – прочетете днешните новини</translation>
 <translation id="1303339473099049190">Тази парола не бе намерена. Проверете дали е написана правилно и опитайте отново.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Изпратено от <ph name="DEVICE_NAME" /></translation>
-<translation id="1310482092992808703">Групиране на раздели</translation>
 <translation id="1311657260431405215">Този QR код не е URL адрес: <ph name="QRCODEVALUE" /></translation>
 <translation id="1316212908214730110">chrome_stylized_highlight_</translation>
 <translation id="1320912611264252795">Папките за потока за запазване на отметка са отворени на пълната височина</translation>
@@ -108,6 +107,7 @@
 <translation id="1493287004536771723">Следвате <ph name="SITE_NAME" /></translation>
 <translation id="1502010315804028179">За да управлявате паролите си, актуализирайте услугите за Google Play</translation>
 <translation id="1506061864768559482">Търсеща машина</translation>
+<translation id="1508960385613684700">Ръководство за поверителност <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="1513352483775369820">Отметки и посетени сайтове</translation>
 <translation id="1513814250881909472">Включете синхронизирането, за да получите разделите от другите си устройства</translation>
 <translation id="1513858653616922153">Изтриване на паролата</translation>
@@ -162,6 +162,7 @@
 <translation id="1910950723001426294">Списъкът с опции за споделяне е затворен.</translation>
 <translation id="1919130412786645364">Разрешаване на влизането в Chrome</translation>
 <translation id="1922362554271624559">Предложени езици</translation>
+<translation id="1924255092154549435">Разделът е разгънат</translation>
 <translation id="1925021887439448749">Въведете персонализиран уеб адрес</translation>
 <translation id="1928696683969751773">Актуализации</translation>
 <translation id="19288952978244135">Отворете отново Chrome.</translation>
@@ -385,7 +386,6 @@
 <translation id="3083194063661536258">Не сте в профила си. Бутон. Отваря диалоговия прозорец за вход в профила и включване на синхронизирането.</translation>
 <translation id="3091010850649238832">Показване на съдържанието в буферната памет</translation>
 <translation id="3098745985164956033">Някои изображения се изпращат до Google с цел подобряване на описанията за вас</translation>
-<translation id="3104179992611025423">Браузърът се управлява от родителите ви</translation>
 <translation id="3114507951000454849">Прочетете днешните новини <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">свързано с(ъс)</translation>
 <translation id="3123734510202723619">Съобщения</translation>
@@ -456,6 +456,7 @@
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за предложеното съдържание</translation>
 <translation id="3495219333887281978">Долният лист за вход в профила е отворен на половината височина.</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
+<translation id="350276055892098337">Сортиране по най-стари</translation>
 <translation id="3507132249039706973">Режимът за стандартна защита е включен</translation>
 <translation id="3509330069915219067">Офлайн сте. Chrome не може да провери за актуализации.</translation>
 <translation id="3513704683820682405">Обогатена реалност</translation>
@@ -542,6 +543,7 @@
 <translation id="3999683152997576765">Можете да виждате и премахвате темите, към които имате интерес и които сайтовете използват, за да ви показват реклами. Chrome прогнозира интересите ви въз основа на скорошната ви история на сърфиране.</translation>
 <translation id="4000212216660919741">Начална страница в офлайн режим</translation>
 <translation id="4016425174436051808">Следенето не е възможно. Нещо се обърка.</translation>
+<translation id="4024768890073681126">Браузърът се управлява от родител</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ч}other{# ч}}</translation>
 <translation id="4035877632587724847">Забраняване</translation>
 <translation id="4036177530563778041">Лесно продължавайте оттам, откъдето сте прекъснали</translation>
@@ -576,6 +578,7 @@
 <translation id="4177222230309051052">Получете всичките си отметки</translation>
 <translation id="4177501066905053472">Рекламни теми</translation>
 <translation id="4181841719683918333">Езици</translation>
+<translation id="4188221736490993796">Сортиране от Я до А</translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="4196597275619698563">Създаване на карта</translation>
 <translation id="4198423547019359126">Няма местоположения за изтегляне</translation>
@@ -641,6 +644,7 @@
 <translation id="4565377596337484307">Скриване на паролата</translation>
 <translation id="4572422548854449519">Вход в управляван профил</translation>
 <translation id="4576892426230499203">Опитайте с друга опция за потвърждаване</translation>
+<translation id="4577115723294378384">Сортиране от А до Я</translation>
 <translation id="4578289292431526768">Начало</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{преди # минута}other{преди # минути}}</translation>
 <translation id="4587589328781138893">Сайтове</translation>
@@ -664,6 +668,7 @@
 <translation id="4689792375321623175">Търс. на изобр. с Google <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4699172675775169585">Кеширани изображения и файлове</translation>
+<translation id="4710167854527459075">Сортиране по най-нови</translation>
 <translation id="4719927025381752090">Предложения за превод</translation>
 <translation id="4720023427747327413">Отваряне в <ph name="PRODUCT_NAME" /></translation>
 <translation id="47217992755561375">Преглед на водещите сайтове за вас</translation>
@@ -737,6 +742,7 @@
 <translation id="5001388021414335527">Следене на този сайт тук</translation>
 <translation id="5004416275253351869">Контроли за активността в Google</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
+<translation id="5010886807652684893">Детайлен изглед</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> иска да се свърже</translation>
 <translation id="5016205925109358554">Серифен</translation>
 <translation id="5017529052065664584">Последните 15 минути</translation>
@@ -765,6 +771,7 @@
 <translation id="5161254044473106830">Изисква се заглавие</translation>
 <translation id="5170568018924773124">Показване в папката</translation>
 <translation id="5171045022955879922">Търсете или въведете URL адрес</translation>
+<translation id="5174700554036517242">Разделът е върнат към първоначалната височина</translation>
 <translation id="5184329579814168207">Отваряне в Chrome</translation>
 <translation id="5191251636205085390">Научете повече за новите технологии, които имат за цел да заменят „бисквитките“ на трети страни, и как да ги контролирате</translation>
 <translation id="5193988420012215838">Копирано в буферната памет</translation>
@@ -794,6 +801,7 @@
 <translation id="5342314432463739672">Искания за разрешение</translation>
 <translation id="53537532693258630">Премахнатите от вас сайтове ще се показват тук</translation>
 <translation id="5355191726083956201">Режимът за подобрена защита е включен</translation>
+<translation id="5361107212971249203">текст</translation>
 <translation id="5368227114232678694">За да сърфирате частно на това устройство, изпробвайте режим „инкогнито“</translation>
 <translation id="5375577065097716013">Търсене на изобр. с Обектив <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">За да продължите, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ще сподели с този сайт името, имейл адреса и снимката на потребителския ви профил.</translation>
@@ -831,6 +839,7 @@
 <translation id="5561162485081632007">Открива опасни събития, когато се случват, и ви предупреждава за тях</translation>
 <translation id="5561549206367097665">Изчаква се връзка с мрежата…</translation>
 <translation id="5568069709869097550">Не може да се влезе</translation>
+<translation id="557018954714092179">Създаване на нова папка</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Винаги можете да изберете какво да се синхронизира от <ph name="BEGIN_LINK1" />настройките<ph name="END_LINK1" />.</translation>
 <translation id="5590372121997663538">Запомняне на този компютър</translation>
@@ -935,6 +944,7 @@
 <translation id="6138832295072039549">Тук можете да промените настройките си за сайта</translation>
 <translation id="6140709049082532940">Подобрена защита:</translation>
 <translation id="6140912465461743537">Държава/регион</translation>
+<translation id="6148266338772765473">Изключване на връзката</translation>
 <translation id="6150320133806434356">Отметката е запазена</translation>
 <translation id="6154478581116148741">Включете функцията за заключване на екрана от настройките, за да експортирате паролите си от това устройство</translation>
 <translation id="6159729262978459665">Изчиства историята от всички синхронизирани устройства.</translation>
@@ -1026,6 +1036,7 @@
 <translation id="6590680911007613645">Уверете се, че запазваната парола съвпада с тази за <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Настолен сайт</translation>
 <translation id="6594121454516132231">Вижте как Chrome ще ви предпазва от проследяване в различни сайтове, без да нарушава баланса на отворената мрежа</translation>
+<translation id="6594347733515723558">Сорт./преглед на опциите</translation>
 <translation id="6595046016124923392">Изображенията се изпращат до Google с цел подобряване на описанията за вас.</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="661266467055912436">Подобрява сигурността за вас и всички потребители в мрежата.</translation>
@@ -1191,6 +1202,7 @@
 <translation id="7454641608352164238">Няма достатъчно място</translation>
 <translation id="7455988709578031708">Въз основа на историята ви на сърфиране. Тази настройка е включена.</translation>
 <translation id="7456774706094330779">Разширено предварит. зареждане</translation>
+<translation id="7466431077154602932">Компактен изглед</translation>
 <translation id="7474822150871987353">Научавайте за теми в уебсайтовете, без да излизате от страницата. Изберете една или повече думи от страницата, за да ги потърсите.</translation>
 <translation id="7475192538862203634">Ако виждате това често, изпробвайте тези <ph name="BEGIN_LINK" />предложения<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD картата не е намерена. Някои файлове може да липсват.</translation>
@@ -1242,6 +1254,7 @@
 <translation id="7686086654630106285">Повече за предлаганите от сайтовете реклами</translation>
 <translation id="768618399695552958">Някои от страниците, които посещавате, са заредени предварително. Страниците може да се зареждат предварително чрез сървърите ни, когато връзките, които водят към съответните страници, са на сайт в Google.</translation>
 <translation id="7691043218961417207">Разгледайте съдържание, което да следите</translation>
+<translation id="7697383401610880082">Манипулатор за преместване с плъзгане</translation>
 <translation id="7698359219371678927">Създайте имейл в <ph name="APP_NAME" /></translation>
 <translation id="7707922173985738739">Използване на мобилни данни</translation>
 <translation id="7709094866268987903">Премахнатите от вас интереси ще се показват тук</translation>
@@ -1320,6 +1333,7 @@
 <translation id="8058746566562539958">Отваряне в нов раздел в Chrome</translation>
 <translation id="8062594758852531064">Разширено предварително зареждане:</translation>
 <translation id="8063895661287329888">Добавянето на отметката не бе успешно.</translation>
+<translation id="8066816452984416180">Бързо запазване на отметка към тази страница. За да редактирате този пряк път, докоснете и задръжте.</translation>
 <translation id="806745655614357130">Оставяне на данните отделно</translation>
 <translation id="8073388330009372546">Отваряне в нов раздел</translation>
 <translation id="8076492880354921740">Раздели</translation>
@@ -1351,6 +1365,7 @@
 <translation id="8216351761227087153">Гледане</translation>
 <translation id="8218622182176210845">Управление на профила ви</translation>
 <translation id="8223642481677794647">Меню на картата за емисията</translation>
+<translation id="8236097722223016103">Добавяне към отметките</translation>
 <translation id="8250920743982581267">Документи</translation>
 <translation id="8255617931166444521">Сайтовете могат да използват „бисквитките“ ви, за да следят активността ви при сърфиране само в собствените си уеб страници</translation>
 <translation id="8259179246279078674">Тъй като заредените предварително страници са шифровани, Google няма да получава информация за съдържанието им. Сървърите ни обаче ще научават за кои сайтове е извършено частно предварително зареждане. Тази информация се използва само за предварителното зареждане на страниците и не се свързва с други данни от профила ви в Google.</translation>

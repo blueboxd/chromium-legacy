@@ -110,19 +110,32 @@ class FakeKeyboardSettingsObserver : public mojom::KeyboardSettingsObserver {
   void OnKeyboardListUpdated(
       std::vector<::ash::mojom::KeyboardPtr> keyboards) override {
     keyboards_ = std::move(keyboards);
-    ++num_times_called_;
+    ++num_times_keyboard_list_updated_;
+  }
+
+  void OnKeyboardPoliciesUpdated(
+      ::ash::mojom::KeyboardPoliciesPtr keyboard_policies) override {
+    ++num_times_keyboard_policies_updated_;
   }
 
   const std::vector<::ash::mojom::KeyboardPtr>& keyboards() {
     return keyboards_;
   }
 
-  int num_times_called() { return num_times_called_; }
+  int num_times_keyboard_list_updated() {
+    return num_times_keyboard_list_updated_;
+  }
+
+  int num_times_keyboard_policies_updated() {
+    return num_times_keyboard_policies_updated_;
+  }
+
   mojo::Receiver<mojom::KeyboardSettingsObserver> receiver{this};
 
  private:
   std::vector<::ash::mojom::KeyboardPtr> keyboards_;
-  int num_times_called_ = 0;
+  int num_times_keyboard_list_updated_ = 0;
+  int num_times_keyboard_policies_updated_ = 0;
 };
 
 class FakeTouchpadSettingsObserver : public mojom::TouchpadSettingsObserver {
@@ -170,17 +183,26 @@ class FakeMouseSettingsObserver : public mojom::MouseSettingsObserver {
  public:
   void OnMouseListUpdated(std::vector<::ash::mojom::MousePtr> mice) override {
     mice_ = std::move(mice);
-    ++num_times_called_;
+    ++num_times_mouse_list_updated_;
+  }
+
+  void OnMousePoliciesUpdated(
+      ::ash::mojom::MousePoliciesPtr mouse_policies) override {
+    ++num_times_mouse_policies_updated_;
   }
 
   const std::vector<::ash::mojom::MousePtr>& mice() { return mice_; }
 
-  int num_times_called() { return num_times_called_; }
+  int num_times_mouse_list_updated() { return num_times_mouse_list_updated_; }
+  int num_times_mouse_policies_updated() {
+    return num_times_mouse_policies_updated_;
+  }
   mojo::Receiver<mojom::MouseSettingsObserver> receiver{this};
 
  private:
   std::vector<::ash::mojom::MousePtr> mice_;
-  int num_times_called_ = 0;
+  int num_times_mouse_list_updated_ = 0;
+  int num_times_mouse_policies_updated_ = 0;
 };
 
 class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
@@ -214,6 +236,12 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
       DeviceId id) override {
     return nullptr;
   }
+  const ::ash::mojom::KeyboardPolicies& GetKeyboardPolicies() override {
+    return *keyboard_policies_;
+  }
+  const ::ash::mojom::MousePolicies& GetMousePolicies() override {
+    return *mouse_policies_;
+  }
   void SetKeyboardSettings(
       DeviceId id,
       ::ash::mojom::KeyboardSettingsPtr settings) override {
@@ -236,6 +264,8 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
     ++num_times_set_pointing_stick_settings_called_;
   }
 
+  void OnLoginScreenFocusedPodChanged(const AccountId& account_id) override {}
+
   void AddKeyboard(::ash::mojom::KeyboardPtr keyboard) {
     keyboards_.push_back(std::move(keyboard));
     observer_->OnKeyboardConnected(*keyboards_.back());
@@ -251,6 +281,14 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
     auto temp_keyboard = std::move(*iter);
     keyboards_.erase(iter);
     observer_->OnKeyboardDisconnected(*temp_keyboard);
+  }
+  void SetKeyboardPolicies(::ash::mojom::KeyboardPoliciesPtr policies) {
+    keyboard_policies_ = std::move(policies);
+    observer_->OnKeyboardPoliciesUpdated(*keyboard_policies_);
+  }
+  void SetMousePolicies(::ash::mojom::MousePoliciesPtr policies) {
+    mouse_policies_ = std::move(policies);
+    observer_->OnMousePoliciesUpdated(*mouse_policies_);
   }
   void AddMouse(::ash::mojom::MousePtr mouse) {
     mice_.push_back(std::move(mouse));
@@ -317,6 +355,11 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
   std::vector<::ash::mojom::TouchpadPtr> touchpads_;
   std::vector<::ash::mojom::MousePtr> mice_;
   std::vector<::ash::mojom::PointingStickPtr> pointing_sticks_;
+  ::ash::mojom::KeyboardPoliciesPtr keyboard_policies_ =
+      ::ash::mojom::KeyboardPolicies::New();
+  ::ash::mojom::MousePoliciesPtr mouse_policies_ =
+      ::ash::mojom::MousePolicies::New();
+
   raw_ptr<InputDeviceSettingsController::Observer> observer_ = nullptr;
   int num_times_set_keyboard_settings_called_ = 0;
   int num_times_set_pointing_stick_settings_called_ = 0;
@@ -420,22 +463,42 @@ TEST_F(InputDeviceSettingsProviderTest, TestKeyboardSettingsObeserver) {
       fake_observer.receiver.BindNewPipeAndPassRemote());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, fake_observer.num_times_called());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_policies_updated());
   ExpectListsEqual(expected_keyboards, fake_observer.keyboards());
 
   expected_keyboards.push_back(kKeyboard2.Clone());
   controller_->AddKeyboard(kKeyboard2.Clone());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, fake_observer.num_times_called());
+  EXPECT_EQ(2, fake_observer.num_times_keyboard_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_policies_updated());
   ExpectListsEqual(expected_keyboards, fake_observer.keyboards());
 
   expected_keyboards.pop_back();
   controller_->RemoveKeyboard(kKeyboard2.id);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, fake_observer.num_times_called());
+  EXPECT_EQ(3, fake_observer.num_times_keyboard_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_policies_updated());
   ExpectListsEqual(expected_keyboards, fake_observer.keyboards());
+}
+
+TEST_F(InputDeviceSettingsProviderTest,
+       TestKeyboardSettingsObeserverPolicyUpdates) {
+  controller_->AddKeyboard(kKeyboard1.Clone());
+
+  FakeKeyboardSettingsObserver fake_observer;
+  provider_->ObserveKeyboardSettings(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_policies_updated());
+
+  controller_->SetKeyboardPolicies(::ash::mojom::KeyboardPolicies::New());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_list_updated());
+  EXPECT_EQ(2, fake_observer.num_times_keyboard_policies_updated());
 }
 
 TEST_F(InputDeviceSettingsProviderTest, TestDuplicatesRemoved) {
@@ -451,7 +514,8 @@ TEST_F(InputDeviceSettingsProviderTest, TestDuplicatesRemoved) {
       fake_observer.receiver.BindNewPipeAndPassRemote());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, fake_observer.num_times_called());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_policies_updated());
   ExpectListsEqual</*sorted=*/true>(expected_keyboards,
                                     fake_observer.keyboards());
 
@@ -460,14 +524,16 @@ TEST_F(InputDeviceSettingsProviderTest, TestDuplicatesRemoved) {
   controller_->AddKeyboard(keyboard2.Clone());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, fake_observer.num_times_called());
+  EXPECT_EQ(2, fake_observer.num_times_keyboard_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_policies_updated());
   ExpectListsEqual</*sorted=*/true>(expected_keyboards,
                                     fake_observer.keyboards());
 
   controller_->RemoveKeyboard(kKeyboard2.id);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, fake_observer.num_times_called());
+  EXPECT_EQ(3, fake_observer.num_times_keyboard_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_keyboard_policies_updated());
   ExpectListsEqual</*sorted=*/true>(expected_keyboards,
                                     fake_observer.keyboards());
 }
@@ -535,23 +601,44 @@ TEST_F(InputDeviceSettingsProviderTest, TestMouseSettingsObeserver) {
       fake_observer.receiver.BindNewPipeAndPassRemote());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, fake_observer.num_times_called());
+  EXPECT_EQ(1, fake_observer.num_times_mouse_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_mouse_policies_updated());
   ExpectListsEqual(expected_mice, fake_observer.mice());
 
   expected_mice.push_back(kMouse2.Clone());
   controller_->AddMouse(kMouse2.Clone());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, fake_observer.num_times_called());
+  EXPECT_EQ(2, fake_observer.num_times_mouse_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_mouse_policies_updated());
   ExpectListsEqual(expected_mice, fake_observer.mice());
 
   expected_mice.pop_back();
   controller_->RemoveMouse(kMouse2.id);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, fake_observer.num_times_called());
+  EXPECT_EQ(3, fake_observer.num_times_mouse_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_mouse_policies_updated());
   ExpectListsEqual(expected_mice, fake_observer.mice());
 }
+
+TEST_F(InputDeviceSettingsProviderTest,
+       TestMouseSettingsObeserverPolicyUpdates) {
+  controller_->AddMouse(kMouse1.Clone());
+
+  FakeMouseSettingsObserver fake_observer;
+  provider_->ObserveMouseSettings(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_observer.num_times_mouse_list_updated());
+  EXPECT_EQ(1, fake_observer.num_times_mouse_policies_updated());
+
+  controller_->SetMousePolicies(::ash::mojom::MousePolicies::New());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_observer.num_times_mouse_list_updated());
+  EXPECT_EQ(2, fake_observer.num_times_mouse_policies_updated());
+}
+
 TEST_F(InputDeviceSettingsProviderTest, TestTouchpadSettingsObeserver) {
   std::vector<::ash::mojom::TouchpadPtr> expected_touchpads;
   expected_touchpads.push_back(kTouchpad1.Clone());

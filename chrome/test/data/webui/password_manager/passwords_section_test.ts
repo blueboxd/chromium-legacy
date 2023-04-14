@@ -13,7 +13,7 @@ import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 import {TestSyncBrowserProxy} from './test_sync_browser_proxy.js';
-import {createAffiliatedDomain, createCredentialGroup, createPasswordEntry} from './test_util.js';
+import {createAffiliatedDomain, createCredentialGroup, createPasswordEntry, makePasswordManagerPrefs} from './test_util.js';
 
 /**
  * @param subsection The passwords subsection element that will be checked.
@@ -340,6 +340,7 @@ suite('PasswordsSectionTest', function() {
     })];
     syncProxy.syncInfo = {
       isEligibleForAccountStorage: true,
+      isSyncingPasswords: false,
     };
 
     const section = await createPasswordsSection();
@@ -366,6 +367,7 @@ suite('PasswordsSectionTest', function() {
     })];
     syncProxy.syncInfo = {
       isEligibleForAccountStorage: true,
+      isSyncingPasswords: false,
     };
 
     const section = await createPasswordsSection();
@@ -414,5 +416,62 @@ suite('PasswordsSectionTest', function() {
 
     // Now import passwords option is hidden.
     assertTrue(section.$.importPasswords.hidden);
+  });
+
+  test('add button hidden when pref disabled', async function() {
+    const section: PasswordsSectionElement =
+        document.createElement('passwords-section');
+    section.prefs = makePasswordManagerPrefs();
+    section.prefs.credentials_enable_service.value = false;
+    section.prefs.credentials_enable_service.enforcement =
+        chrome.settingsPrivate.Enforcement.ENFORCED;
+    document.body.appendChild(section);
+    await flushTasks();
+
+    assertFalse(isVisible(section.$.addPasswordButton));
+  });
+
+  test('import hidden when policy disabled', async function() {
+    const section: PasswordsSectionElement =
+        document.createElement('passwords-section');
+    section.prefs = makePasswordManagerPrefs();
+    section.prefs.credentials_enable_service.value = false;
+    section.prefs.credentials_enable_service.enforcement =
+        chrome.settingsPrivate.Enforcement.ENFORCED;
+    document.body.appendChild(section);
+    await flushTasks();
+
+    assertFalse(isVisible(section.$.importPasswords));
+  });
+
+  test('clicking move passwords opens move passwords dialog', async function() {
+    passwordManager.data.isOptedInAccountStorage = true;
+    passwordManager.data.groups = [createCredentialGroup({
+      name: 'test.com',
+      credentials: [createPasswordEntry({
+        username: 'user',
+        id: 0,
+        inProfileStore: true,
+        affiliatedDomains: [createAffiliatedDomain('test.com')],
+      })],
+    })];
+    passwordManager.setRequestCredentialsDetailsResponse(
+        passwordManager.data.groups[0]!.entries);
+    syncProxy.syncInfo = {
+      isEligibleForAccountStorage: true,
+      isSyncingPasswords: false,
+    };
+
+    const section = await createPasswordsSection();
+
+    assertTrue(isVisible(section.$.movePasswords));
+
+    section.$.movePasswords.click();
+    await flushTasks();
+
+    const movdeDialog =
+        section.shadowRoot!.querySelector('move-passwords-dialog');
+    assertTrue(!!movdeDialog);
+    assertTrue(movdeDialog.$.dialog.open);
   });
 });

@@ -36,7 +36,6 @@ class ProximityAuthSystem;
 }  // namespace proximity_auth
 
 class Profile;
-class PrefRegistrySimple;
 
 namespace ash {
 
@@ -62,14 +61,6 @@ class EasyUnlockService : public KeyedService,
   // Registers Easy Unlock profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Registers Easy Unlock local state entries.
-  // TODO(b/227674947): Delete this method and deprecate hardlock pref.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Removes the hardlock state for the given user.
-  // TODO(b/227674947): Delete this method and deprecate hardlock pref.
-  static void ResetLocalStateForUser(const AccountId& account_id);
-
   // Returns the ProximityAuthPrefManager, responsible for managing all
   // EasyUnlock preferences.
   virtual proximity_auth::ProximityAuthPrefManager*
@@ -89,11 +80,6 @@ class EasyUnlockService : public KeyedService,
   // Whether Easy Unlock is currently enabled for this user. Virtual to allow
   // override for testing.
   virtual bool IsEnabled() const;
-
-  // Returns true if ChromeOS login is enabled by the user.
-  // TODO(b/227674947): Delete this method and deprecate related pref now that
-  // sign in with Smart Lock is deprecated.
-  virtual bool IsChromeOSLoginEnabled() const;
 
   // To be called when EasyUnlockService is "warming up", for example, on screen
   // lock, after suspend, when the login screen is starting up, etc. During a

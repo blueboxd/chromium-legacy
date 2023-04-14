@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser.h"
@@ -63,7 +62,8 @@ gfx::Point TabScrubberChromeOS::GetStartPoint(
   // opposite edges of the tab, which should be at (overlap / 2).
   gfx::Rect tab_edges = tab_bounds;
   // For odd overlap values, be conservative and inset both edges rounding up.
-  tab_edges.Inset(gfx::Insets::VH(0, (TabStyle::GetTabOverlap() + 1) / 2));
+  tab_edges.Inset(
+      gfx::Insets::VH(0, (tab->tab_style()->GetTabOverlap() + 1) / 2));
   const int x = (direction == LEFT)
                     ? std::min(tab_bounds.x() + left, tab_edges.right())
                     : std::max(tab_bounds.right() - right, tab_edges.x());
@@ -92,7 +92,7 @@ void TabScrubberChromeOS::SynthesizedScrollEvent(float x_offset,
                         ui::EventTimeForNow(),
                         /*flags=*/0, x_offset,
                         /*y_offset=*/0.f, /*x_offset_ordinal=*/0.f,
-                        /*y_offset_original=*/0.f, kFingerCount);
+                        /*y_offset_ordinal=*/0.f, kFingerCount);
   OnScrollEvent(&event);
 }
 
@@ -331,7 +331,7 @@ void TabScrubberChromeOS::UpdateSwipeX(float x_offset) {
   float max = x_offset;
   if (x_offset < 0)
     std::swap(min, max);
-  swipe_x_ += base::clamp(
+  swipe_x_ += std::clamp(
       x_offset - (tab_strip_->GetTabCount() * 0.02f * x_offset), min, max);
 
   // In an RTL layout, everything is mirrored, i.e. the index of the first tab

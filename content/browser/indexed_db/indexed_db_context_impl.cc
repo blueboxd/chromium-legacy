@@ -897,6 +897,10 @@ std::vector<base::FilePath> IndexedDBContextImpl::GetStoragePaths(
 
 const base::FilePath IndexedDBContextImpl::GetDataPath(
     const storage::BucketLocator& bucket_locator) const {
+  if (is_incognito()) {
+    return base::FilePath();
+  }
+
   if (indexed_db::ShouldUseLegacyFilePath(bucket_locator)) {
     // First-party idb files for the default, for legacy reasons, are stored at:
     // {{storage_partition_path}}/IndexedDB/
@@ -1017,7 +1021,8 @@ void IndexedDBContextImpl::ShutdownOnIDBSequence() {
     auto delete_bucket = origins_to_purge_on_shutdown_.find(
                              bucket_locator.storage_key.origin()) !=
                          origins_to_purge_on_shutdown_.end();
-    if (!delete_bucket) {
+
+    if (!delete_bucket && bucket_locator.storage_key.IsThirdPartyContext()) {
       auto& bucket_site = bucket_locator.storage_key.top_level_site();
       for (const auto& origin_to_purge : origins_to_purge_on_shutdown_) {
         if (net::SchemefulSite(origin_to_purge) == bucket_site) {

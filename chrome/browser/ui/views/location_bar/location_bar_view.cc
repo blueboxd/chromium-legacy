@@ -105,6 +105,7 @@
 #include "extensions/common/feature_switch.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -115,6 +116,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
@@ -185,7 +187,7 @@ LocationBarView::LocationBarView(Browser* browser,
              !v->GetOmniboxPopupView()->IsOpen();
     });
     if (features::IsChromeRefresh2023()) {
-      views::FocusRing::Get(this)->SetOutsetFocusRingDisabled();
+      views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
     }
     views::InstallPillHighlightPathGenerator(this);
 
@@ -259,13 +261,12 @@ void LocationBarView::Init() {
   // Initiate the Omnibox additional-text label.
   if (OmniboxFieldTrial::RichAutocompletionShowAdditionalText()) {
     auto omnibox_additional_text_view = std::make_unique<views::Label>(
-        std::u16string(), ChromeTextContext::CONTEXT_OMNIBOX_DEEMPHASIZED,
-        views::style::STYLE_LINK);
+        std::u16string(), CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
     omnibox_additional_text_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    omnibox_additional_text_view->SetFontList(font_list);
     omnibox_additional_text_view->SetVisible(false);
     omnibox_additional_text_view_ =
         AddChildView(std::move(omnibox_additional_text_view));
+    omnibox_additional_text_view_->SetEnabledColorId(kColorOmniboxResultsUrl);
   }
 
   selected_keyword_view_ = AddChildView(std::make_unique<SelectedKeywordView>(
@@ -322,10 +323,7 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kCookieControls);
     params.types_enabled.push_back(
         PageActionIconType::kPaymentsOfferNotification);
-    if (base::FeatureList::IsEnabled(
-            performance_manager::features::kHighEfficiencyModeAvailable)) {
-      params.types_enabled.push_back(PageActionIconType::kHighEfficiency);
-    }
+    params.types_enabled.push_back(PageActionIconType::kHighEfficiency);
   }
   // Add icons only when feature is not enabled. Otherwise icons will
   // be added to the ToolbarPageActionIconContainerView.
@@ -347,8 +345,11 @@ void LocationBarView::Init() {
   if (browser_ && !is_popup_mode_)
     params.types_enabled.push_back(PageActionIconType::kBookmarkStar);
 
-  params.icon_color = icon_color;
-  params.between_icon_spacing = features::IsChromeRefresh2023() ? 8 : 0;
+  params.icon_color = OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
+                          ? color_provider->GetColor(kColorPageActionIcon)
+                          : icon_color;
+  params.between_icon_spacing =
+      OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ? 8 : 0;
   params.font_list = &font_list;
   params.browser = browser_;
   params.command_updater = command_updater();
@@ -585,10 +586,20 @@ void LocationBarView::Layout() {
   // Additionally, the text should be indented further if a chip is visible
   // and the lock icon is hidden. This is treated separately, because the
   // indentation constant has a distinct value.
-  if (chip_controller_ && chip_controller_->chip()->GetVisible() &&
-      ShouldChipOverrideLocationIcon()) {
+  if (ShouldChipOverrideLocationIcon()) {
     constexpr int kTextIndentLocationBarIconOverriddenDp = 8;
     leading_edit_item_padding += kTextIndentLocationBarIconOverriddenDp;
+  }
+
+  // CR23 location bar icons have solid borders. Add padding between their
+  // borders and the omnibox so that they don't touch/overlap. Pre-CR23 icons &
+  // the keyword text (both before and after CR23) don't have solid borders;
+  // they instead have invisible borders that provide sufficient padding. Don't
+  // add any more padding in those cases, as then the whitespace would be too
+  // large.
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() &&
+      !ShouldShowKeywordBubble()) {
+    leading_edit_item_padding += 5;
   }
 
   // We always subtract the left padding of the OmniboxView itself to allow for
@@ -606,15 +617,15 @@ void LocationBarView::Layout() {
   // positioned relative to them (e.g. the "bookmark added" bubble if the user
   // hits ctrl-d).
   const int vertical_padding =
-      features::IsChromeRefresh2023()
+      OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
           ? GetLayoutConstant(LOCATION_BAR_PAGE_INFO_ICON_VERTICAL_PADDING)
           : GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
   const int leading_decorations_edge_padding =
-      features::IsChromeRefresh2023()
+      OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
           ? GetLayoutConstant(LOCATION_BAR_LEADING_DECORATION_EDGE_PADDING)
           : edge_padding;
   const int trailing_decorations_edge_padding =
-      features::IsChromeRefresh2023()
+      OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
           ? GetLayoutConstant(LOCATION_BAR_TRAILING_DECORATION_EDGE_PADDING)
           : edge_padding;
 
@@ -787,8 +798,10 @@ void LocationBarView::OnThemeChanged() {
   if (!IsInitialized())
     return;
 
-  const SkColor icon_color =
-      GetColorProvider()->GetColor(kColorOmniboxResultsIcon);
+  const SkColor icon_color = GetColorProvider()->GetColor(
+      OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
+          ? kColorPageActionIcon
+          : kColorOmniboxResultsIcon);
   page_action_icon_controller_->SetIconColor(icon_color);
   for (ContentSettingImageView* image_view : content_setting_views_)
     image_view->SetIconColor(icon_color);
@@ -884,7 +897,24 @@ WebContents* LocationBarView::GetWebContents() {
 }
 
 SkColor LocationBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
-  return GetColorProvider()->GetColor(kColorOmniboxText);
+  // If keyword mode is active, then override the "surrounding foreground color"
+  // to ensure that the keyword mode separator has a distinct color. Otherwise,
+  // fall back to the usual omnibox text color to ensure UI consistency.
+  // In either case, all IconLabelBubbleViews situated within the location bar
+  // will inherit the selected "surrounding foreground color".
+  const auto color_id = ShouldShowKeywordBubble()
+                            ? kColorOmniboxKeywordSeparator
+                            : kColorOmniboxText;
+  return GetColorProvider()->GetColor(color_id);
+}
+
+SkAlpha LocationBarView::GetIconLabelBubbleSeparatorAlpha() const {
+  if (features::GetChromeRefresh2023Level() ==
+          features::ChromeRefresh2023Level::kLevel2 ||
+      base::FeatureList::IsEnabled(omnibox::kExpandedStateColors)) {
+    return 0xFF;
+  }
+  return IconLabelBubbleView::Delegate::GetIconLabelBubbleSeparatorAlpha();
 }
 
 SkColor LocationBarView::GetIconLabelBubbleBackgroundColor() const {
@@ -1406,11 +1436,15 @@ void LocationBarView::OnLocationIconDragged(const ui::MouseEvent& event) {
 
 SkColor LocationBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  ui::ColorId id = kColorOmniboxSecurityChipDefault;
+  ui::ColorId id = OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
+                       ? kColorOmniboxText
+                       : kColorOmniboxSecurityChipDefault;
   if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT)
     id = kColorOmniboxTextDimmed;
   else if (security_level == security_state::SECURE)
-    id = kColorOmniboxSecurityChipSecure;
+    id = OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
+             ? kColorOmniboxText
+             : kColorOmniboxSecurityChipSecure;
   else if (security_level == security_state::DANGEROUS)
     id = kColorOmniboxSecurityChipDangerous;
   return GetColorProvider()->GetColor(id);

@@ -60,8 +60,8 @@
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_pref_manager.h"
 #include "ash/wm/desks/desks_restore_util.h"
-#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_controller.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
+#include "ash/wm/float/tablet_mode_tuck_education.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
@@ -88,6 +88,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   CameraEffectsController::RegisterProfilePrefs(registry);
   CaptureModeController::RegisterProfilePrefs(registry);
   CellularSetupNotifier::RegisterProfilePrefs(registry);
+  chromeos::MultitaskMenuNudgeController::RegisterProfilePrefs(registry);
   contextual_tooltip::RegisterProfilePrefs(registry);
   ClipboardNudgeController::RegisterProfilePrefs(registry);
   ColorPaletteController::RegisterPrefs(registry);
@@ -114,13 +115,13 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   PaletteTray::RegisterProfilePrefs(registry);
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
   PciePeripheralNotificationController::RegisterProfilePrefs(registry);
-  PersistentDesksBarController::RegisterProfilePrefs(registry);
   PrivacyHubController::RegisterProfilePrefs(registry);
   PrivacyScreenController::RegisterProfilePrefs(registry);
   ProjectorControllerImpl::RegisterProfilePrefs(registry);
   quick_pair::Mediator::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
   SnoopingProtectionController::RegisterProfilePrefs(registry);
+  TabletModeTuckEducation::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry, for_test);
   UnifiedSystemTrayController::RegisterProfilePrefs(registry);
   MediaTray::RegisterProfilePrefs(registry);
@@ -128,7 +129,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   VPNListView::RegisterProfilePrefs(registry);
   WallpaperPrefManager::RegisterProfilePrefs(registry);
   WindowCycleController::RegisterProfilePrefs(registry);
-  chromeos::MultitaskMenuNudgeController::RegisterProfilePrefs(registry);
 
   // Provide prefs registered in the browser for ash_unittests.
   if (for_test) {
@@ -156,6 +156,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
   WallpaperPrefManager::RegisterLocalStatePrefs(registry);
   DetachableBaseHandler::RegisterPrefs(registry);
   PowerPrefs::RegisterLocalStatePrefs(registry);
+  PrivacyHubController::RegisterLocalStatePrefs(registry);
   DisplayPrefs::RegisterLocalStatePrefs(registry);
   LoginExpandedPublicAccountView::RegisterLocalStatePrefs(registry);
   LockStateController::RegisterPrefs(registry);

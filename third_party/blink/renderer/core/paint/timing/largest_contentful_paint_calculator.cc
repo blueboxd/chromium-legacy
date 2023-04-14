@@ -122,10 +122,10 @@ void LargestContentfulPaintCalculator::UpdateWebExposedLargestContentfulImage(
                         WebFeature::kLCPCandidateImageFromOriginDirtyStyle);
     }
 
-    TRACE_EVENT_MARK_WITH_TIMESTAMP2(kTraceCategories, kLCPCandidate,
-                                     largest_image->paint_time, "data",
-                                     ImageCandidateTraceData(largest_image),
-                                     "frame", ToTraceValue(window->GetFrame()));
+    TRACE_EVENT_MARK_WITH_TIMESTAMP2(
+        kTraceCategories, kLCPCandidate, largest_image->paint_time, "data",
+        ImageCandidateTraceData(largest_image), "frame",
+        GetFrameIdForTracing(window->GetFrame()));
   }
 }
 
@@ -156,10 +156,10 @@ void LargestContentfulPaintCalculator::UpdateWebExposedLargestContentfulText(
       is_triggered_by_soft_navigation);
 
   if (LocalDOMWindow* window = window_performance_->DomWindow()) {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP2(kTraceCategories, kLCPCandidate,
-                                     largest_text.paint_time, "data",
-                                     TextCandidateTraceData(largest_text),
-                                     "frame", ToTraceValue(window->GetFrame()));
+    TRACE_EVENT_MARK_WITH_TIMESTAMP2(
+        kTraceCategories, kLCPCandidate, largest_text.paint_time, "data",
+        TextCandidateTraceData(largest_text), "frame",
+        GetFrameIdForTracing(window->GetFrame()));
   }
 }
 
@@ -199,6 +199,16 @@ LargestContentfulPaintCalculator::ImageCandidateTraceData(
   value->SetBoolean("isMainFrame", window->GetFrame()->IsMainFrame());
   value->SetString("navigationId",
                    IdentifiersFactory::LoaderId(window->document()->Loader()));
+
+  value->SetDouble("imageDiscoveryTime",
+                   window_performance_->MonotonicTimeToDOMHighResTimeStamp(
+                       largest_image->media_timing->DiscoveryTime()));
+  value->SetDouble("imageLoadStart",
+                   window_performance_->MonotonicTimeToDOMHighResTimeStamp(
+                       largest_image->media_timing->LoadStart()));
+  value->SetDouble("imageLoadEnd",
+                   window_performance_->MonotonicTimeToDOMHighResTimeStamp(
+                       largest_image->media_timing->LoadEnd()));
 
   return value;
 }

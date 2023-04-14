@@ -23,21 +23,40 @@ constexpr char kProductNameShownOnlySuffix[] = "ProductDescriptionShown";
 constexpr char kArtImageShownOnlySuffix[] = "ArtImageShown";
 constexpr char kProductNameAndArtImageNotShownSuffix[] = "MetadataNotShown";
 
-// Struct that groups some metadata related information together. Used for
-// metrics logging.
+// Enum for different types of form events. Used for metrics logging.
+enum class CardMetadataLoggingEvent {
+  // Suggestion was shown.
+  kShown = 0,
+  // Suggestion was selected.
+  kSelected = 1,
+  kMaxValue = kSelected,
+};
+
+// Struct that groups metadata-related information together for some set of
+// credit cards. Used for metrics logging.
 struct CardMetadataLoggingContext {
-  bool IsCardMetadataShown() const {
-    return card_product_description_shown || card_art_image_shown;
-  }
+  CardMetadataLoggingContext();
+  CardMetadataLoggingContext(const CardMetadataLoggingContext&);
+  CardMetadataLoggingContext& operator=(const CardMetadataLoggingContext&);
+  ~CardMetadataLoggingContext();
 
   bool card_metadata_available = false;
   bool card_product_description_shown = false;
   bool card_art_image_shown = false;
+  // Keeps record of whether suggestions from issuers had metadata. If the value
+  // is true for a particular issuer, at least 1 card suggestion from the issuer
+  // had metadata. If it is false, none of the card suggestions from the issuer
+  // had metadata.
+  base::flat_map<std::string, bool> issuer_to_metadata_availability;
 };
 
 // Get the CardMetadataLoggingContext for the given credit cards.
 CardMetadataLoggingContext GetMetadataLoggingContext(
     const std::vector<CreditCard>& cards);
+
+void LogCardWithMetadataFormEventMetric(
+    CardMetadataLoggingEvent event,
+    const CardMetadataLoggingContext& context);
 
 // Log the latency between suggestions being shown and a suggestion was
 // selected, in milliseconds, and it is broken down by metadata availability

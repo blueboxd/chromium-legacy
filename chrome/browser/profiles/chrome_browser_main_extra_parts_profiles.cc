@@ -98,9 +98,9 @@
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
-#include "chrome/browser/permissions/last_tab_standing_tracker_factory.h"
 #include "chrome/browser/permissions/notification_permission_review_service_factory.h"
 #include "chrome/browser/permissions/notifications_engagement_service_factory.h"
+#include "chrome/browser/permissions/one_time_permissions_tracker_factory.h"
 #include "chrome/browser/permissions/origin_keyed_permission_action_service_factory.h"
 #include "chrome/browser/permissions/permission_actions_history_factory.h"
 #include "chrome/browser/permissions/permission_auditing_service_factory.h"
@@ -312,6 +312,7 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/telemetry/api/telemetry_extension_api_browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/api/chromeos_api_browser_context_keyed_service_factories.h"
 #endif
 #endif
@@ -462,6 +463,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   chrome_apps::api::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #if BUILDFLAG(IS_CHROMEOS)
+  chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chromeos_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif  // BUILDFLAG(IS_CHROMEOS)
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
@@ -673,11 +675,11 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   KAnonymityServiceFactory::GetInstance();
   LanguageModelManagerFactory::GetInstance();
-  if (base::FeatureList::IsEnabled(
-          permissions::features::kOneTimeGeolocationPermission)) {
-    LastTabStandingTrackerFactory::GetInstance();
-  }
 #if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(permissions::features::kOneTimePermission)) {
+    OneTimePermissionsTrackerFactory::GetInstance();
+  }
+
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
   captions::LiveCaptionControllerFactory::GetInstance();
 #endif

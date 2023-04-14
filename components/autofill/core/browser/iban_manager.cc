@@ -43,28 +43,58 @@ bool IBANManager::OnGetSingleFieldSuggestions(
     }
   }
 
-  if (personal_data_manager_) {
-    std::vector<IBAN*> ibans = personal_data_manager_->GetLocalIBANs();
-    if (!ibans.empty()) {
-      // Rank the IBANs by ranking score (see AutoFillDataModel for details).
-      base::Time comparison_time = AutofillClock::Now();
-      if (ibans.size() > 1) {
-        base::ranges::sort(
-            ibans, [comparison_time](const IBAN* iban0, const IBAN* iban1) {
-              return iban0->HasGreaterRankingThan(iban1, comparison_time);
-            });
-      }
-      SendIBANSuggestions(
-          ibans, QueryHandler(field.global_id(), autoselect_first_suggestion,
-                              field.value, handler));
-      return true;
+  if (!personal_data_manager_ ||
+      !personal_data_manager_->IsAutofillCreditCardEnabled()) {
+    return false;
+  }
+
+  std::vector<IBAN*> ibans = personal_data_manager_->GetLocalIBANs();
+  if (!ibans.empty()) {
+    // Rank the IBANs by ranking score (see AutoFillDataModel for details).
+    base::Time comparison_time = AutofillClock::Now();
+    if (ibans.size() > 1) {
+      base::ranges::sort(
+          ibans, [comparison_time](const IBAN* iban0, const IBAN* iban1) {
+            return iban0->HasGreaterRankingThan(iban1, comparison_time);
+          });
     }
+    SendIBANSuggestions(
+        ibans, QueryHandler(field.global_id(), autoselect_first_suggestion,
+                            field.value, handler));
+    return true;
   }
   return false;
 }
 
 base::WeakPtr<IBANManager> IBANManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void IBANManager::UmaRecorder::OnIbanSuggestionsShown(
+    FieldGlobalId field_global_id) {
+  // Log metrics related to the IBAN-related suggestions in the popup.
+  autofill_metrics::LogIndividualIbanSuggestionsEvent(
+      autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionsShown);
+  if (most_recent_suggestions_shown_field_global_id_ != field_global_id) {
+    autofill_metrics::LogIndividualIbanSuggestionsEvent(
+        autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionsShownOnce);
+  }
+
+  most_recent_suggestions_shown_field_global_id_ = field_global_id;
+}
+
+void IBANManager::UmaRecorder::OnIbanSuggestionSelected() {
+  // We log every time the IBAN suggestion is selected.
+  autofill_metrics::LogIndividualIbanSuggestionsEvent(
+      autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionSelected);
+  if (most_recent_suggestion_selected_field_global_id_ !=
+      most_recent_suggestions_shown_field_global_id_) {
+    autofill_metrics::LogIndividualIbanSuggestionsEvent(
+        autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionSelectedOnce);
+  }
+
+  most_recent_suggestion_selected_field_global_id_ =
+      most_recent_suggestions_shown_field_global_id_;
 }
 
 void IBANManager::SendIBANSuggestions(const std::vector<IBAN*>& ibans,
@@ -98,10 +128,21 @@ void IBANManager::SendIBANSuggestions(const std::vector<IBAN*>& ibans,
     }
   }
 
+  if (suggested_ibans.empty()) {
+    return;
+  }
+
   // Return suggestions to query handler.
   query_handler.handler_->OnSuggestionsReturned(
       query_handler.field_id_, query_handler.autoselect_first_suggestion_,
       AutofillSuggestionGenerator::GetSuggestionsForIBANs(suggested_ibans));
+
+  uma_recorder_.OnIbanSuggestionsShown(query_handler.field_id_);
+}
+
+void IBANManager::OnSingleFieldSuggestionSelected(const std::u16string& value,
+                                                  int frontend_id) {
+  uma_recorder_.OnIbanSuggestionSelected();
 }
 
 }  // namespace autofill

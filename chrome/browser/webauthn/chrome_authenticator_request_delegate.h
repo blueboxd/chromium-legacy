@@ -86,10 +86,6 @@ class ChromeWebAuthenticationDelegate
       content::BrowserContext* browser_context,
       const url::Origin& caller_origin) override;
 #endif
-#if BUILDFLAG(IS_WIN)
-  void OperationSucceeded(content::BrowserContext* browser_context,
-                          bool used_win_api) override;
-#endif
 #if BUILDFLAG(IS_MAC)
   absl::optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig(
       content::BrowserContext* browser_context) override;
@@ -123,7 +119,7 @@ class ChromeAuthenticatorRequestDelegate
     virtual void CableV2ExtensionSeen(
         base::span<const uint8_t> server_link_data) = 0;
 
-    virtual void ConfiguringCable(device::CableRequestType request_type) {}
+    virtual void ConfiguringCable(device::FidoRequestType request_type) {}
 
     virtual void AccountSelectorShown(
         const std::vector<device::AuthenticatorGetAssertionResponse>&
@@ -170,7 +166,7 @@ class ChromeAuthenticatorRequestDelegate
       base::OnceCallback<void(bool)> callback) override;
   void ConfigureCable(
       const url::Origin& origin,
-      device::CableRequestType request_type,
+      device::FidoRequestType request_type,
       absl::optional<device::ResidentKeyRequirement> resident_key_requirement,
       base::span<const device::CableDiscoveryData> pairings_from_extension,
       device::FidoDiscoveryFactory* discovery_factory) override;

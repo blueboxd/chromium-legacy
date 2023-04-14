@@ -98,6 +98,24 @@ TEST_F(
                             .ParentAccessCallbackReceivedFnCalled);
     });
 
+var ParentAccessDisabledTest = class extends testing.Test {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://parent-access/test_loader.html?module=' +
+        'chromeos/parent_access/parent_access_disabled_test.js&host=test';
+  }
+
+  /** @param {string} testName The name of the test to run. */
+  runMochaTest(testName) {
+    runMochaTest(parent_access_disabled_tests.suiteName, testName);
+  }
+}
+
+TEST_F('ParentAccessDisabledTest', 'TestOkButton', function() {
+  this.runMochaTest(parent_access_disabled_tests.TestNames.TestOkButton);
+});
+
+
 var ParentAccessUITest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
@@ -179,4 +197,30 @@ TEST_F('ParentAccessWebviewManagerTest', 'BlockAccessTokenTest', function() {
 
 TEST_F('ParentAccessWebviewManagerTest', 'AllowRequestFnTest', function() {
   this.runMochaTest(webview_manager_tests.TestNames.AllowRequestFnTest);
+});
+
+var ExtensionApprovalsTest = class extends PolymerTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://parent-access/test_loader.html?module=' +
+        'chromeos/parent_access/extension_approvals_test.js&host=test';
+  }
+
+  /** @param {string} testName The name of the test to run. */
+  runMochaTest(testName) {
+    runMochaTest(extension_approvals_tests.suiteName, testName);
+  }
+};
+
+TEST_F('ExtensionApprovalsTest', 'TestNoPermissions', function() {
+  this.runMochaTest(extension_approvals_tests.TestNames.TestNoPermissions);
+});
+
+TEST_F('ExtensionApprovalsTest', 'TestWithPermissions', function() {
+  this.runMochaTest(extension_approvals_tests.TestNames.TestWithPermissions);
+});
+
+TEST_F('ExtensionApprovalsTest', 'TestWithPermissionDetails', function() {
+  this.runMochaTest(
+      extension_approvals_tests.TestNames.TestWithPermissionDetails);
 });

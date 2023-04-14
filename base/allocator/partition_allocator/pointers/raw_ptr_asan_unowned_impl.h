@@ -25,6 +25,12 @@ bool LikelySmuggledScalar(const volatile void* ptr);
 
 template <bool IsAdjustablePtr>
 struct RawPtrAsanUnownedImpl {
+  // The first two are needed for correctness. The last one isn't technically a
+  // must, but better to set it.
+  static constexpr bool kMustZeroOnInit = true;
+  static constexpr bool kMustZeroOnMove = true;
+  static constexpr bool kMustZeroOnDestruct = true;
+
   // Wraps a pointer.
   template <typename T>
   PA_ALWAYS_INLINE static constexpr T* WrapRawPtr(T* ptr) {
@@ -112,9 +118,13 @@ struct RawPtrAsanUnownedImpl {
 
   template <typename T>
   static void ProbeForLowSeverityLifetimeIssue(T* wrapped_ptr) {
-    if (wrapped_ptr && !LikelySmuggledScalar(wrapped_ptr) &&
-        !EndOfAliveAllocation(wrapped_ptr, IsAdjustablePtr)) {
-      reinterpret_cast<const volatile uint8_t*>(wrapped_ptr)[0];
+    if (wrapped_ptr) {
+      const volatile void* probe_ptr =
+          reinterpret_cast<const volatile void*>(wrapped_ptr);
+      if (!LikelySmuggledScalar(probe_ptr) &&
+          !EndOfAliveAllocation(probe_ptr, IsAdjustablePtr)) {
+        reinterpret_cast<const volatile uint8_t*>(probe_ptr)[0];
+      }
     }
   }
 

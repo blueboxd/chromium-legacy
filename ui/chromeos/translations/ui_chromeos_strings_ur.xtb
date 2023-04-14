@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">توثیق کا سرٹیفکیٹ مقامی طور پر مسترد کر دیا گیا</translation>
 <translation id="1775381402323441512">ویڈیو کی معلومات</translation>
 <translation id="180035236176489073">ان فائلوں تک رسائی کیلئے آپ کا آن لائن ہونا ضروری ہے۔</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{‏ID کے ساتھ ایکسٹینشن}other{‏IDs کے ساتھ ایکسٹینشنز}}</translation>
 <translation id="1807938677607439181">سبھی فائلیں</translation>
 <translation id="1810764548349082891">کوئی پیش منظر دستیاب نہیں ہے</translation>
 <translation id="1812302367230252929">امہاری نقل حرفی</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">موضوع کے متبادل نام سے مماثل اندراج غلط ہے</translation>
 <translation id="1838709767668011582">‏Google سائٹ</translation>
 <translation id="1853795129690976061">‏اس فولڈر کا اشتراک Linux کے ساتھ کر دیا گیا ہے</translation>
-<translation id="1859422890169495746">‏یہ Chromebook</translation>
 <translation id="1864756863218646478">فائل تلاش نہیں کی جا سکی۔</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، منسلک کریں</translation>
 <translation id="1920670151694390848">ملیالم نقل حرفی</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">سیارہ</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> کو خارج کر دیا گیا ہے۔</translation>
 <translation id="2307462900900812319">نیٹ ورک کنفیگر کریں</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{‏ID والی ایک ایکسٹینشن <ph name="BEGIN_LIST" /><ph name="END_LIST" /> کا پتہ نہیں لگایا جا سکا۔ اپنے منتظم سے رابطہ کریں۔}other{‏IDs والی ایکسٹینشنز <ph name="BEGIN_LIST" /><ph name="END_LIST" /> کا پتہ نہیں لگایا جا سکا۔ اپنے منتظم سے رابطہ کریں۔}}</translation>
 <translation id="2325650632570794183">‏فائل کی یہ قسم تعاون یافتہ نہیں ہے۔ اس قسم کی فائل کو کھول سکنے والی ایپ تلاش کرنے کیلئے براہ کرم Chrome ویب اسٹور ملاحظہ کریں۔</translation>
 <translation id="2326539130272988168">بلغاریائی</translation>
 <translation id="2337715497728194187">‏Bruschetta کے ساتھ اشتراک کریں</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">غیر محفوظ</translation>
 <translation id="3291218047831493686">‏SIM لاک کی ترتیب تبدیل کرنے کے لیے اس نیٹ ورک سے منسلک ہوں</translation>
 <translation id="3293023191599135697">‏WEP نیٹ ورکس تعاون یافتہ نہیں ہیں</translation>
+<translation id="3295006446256079333">یہ والیوم</translation>
 <translation id="3295357220137379386">آلہ مصروف ہے</translation>
 <translation id="3296763833017966289">جارجی</translation>
 <translation id="3307875152560779385">يُوکرينی</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">دیکھیں</translation>
 <translation id="485316830061041779">جرمن</translation>
+<translation id="4862885579661885411">فائلز کی ترتیبات</translation>
 <translation id="4867079195717347957">نزولی ترتیب میں کالم ترتیب دینے کیلئے کلک کریں۔</translation>
 <translation id="4867297348137739678">گزشتہ ہفتہ</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> بائٹس</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کاپی کئے جا رہے ہیں...</translation>
 <translation id="7375951387215729722">فائل کی فہرست کو نزولی ترتیب میں <ph name="COLUMN_NAME" /> کے لحاظ سے ترتیب دیا گیا۔</translation>
 <translation id="7377161162143020057">منتظم کی پالیسی کے تحت اس فائل کو کاپی کرنا مسدود ہے</translation>
-<translation id="7392500733467492920">اسے تلاش نہیں کیا جا سکتا۔ اپنے منتظم سے رابطہ کریں۔</translation>
 <translation id="7402503521691663770">‏ChromeOS Flex آلات</translation>
 <translation id="7408870451288633753">چیک</translation>
 <translation id="7417453074306512035">ایتھوپیائی کی بورڈ</translation>

@@ -15,12 +15,12 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/profile_ui_test_utils.h"
+#include "chrome/browser/ui/startup/first_run_test_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -99,58 +100,12 @@ static base::Value GetJSONAsValue(base::StringPiece json) {
   return base::Value::FromUniquePtrValue(std::move(value));
 }
 
-// Updates command line flags to make the test believe that we are on a fresh
-// install. Intended to be called from the test body. Note that if a sentinel
-// file exists (e.g. a PRE_Test ran) this method might have no effect.
-void SetIsFirstRun(bool is_first_run) {
-  // We want this to be functional when called from the test body because
-  // enabling the FRE to run in the pre-test setup would prevent opening the
-  // browser that the test fixtures rely on.
-  // So are manipulating flags here instead of during `SetUpX` methods on
-  // purpose.
-  if (first_run::IsChromeFirstRun() == is_first_run) {
-    return;
-  }
-
-  if (is_first_run) {
-    // This switch is added by InProcessBrowserTest
-    base::CommandLine::ForCurrentProcess()->RemoveSwitch(switches::kNoFirstRun);
-  } else {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kNoFirstRun);
-  }
-
-  first_run::ResetCachedSentinelDataForTesting();
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    EXPECT_EQ(is_first_run, first_run::IsChromeFirstRun());
-  }
-}
-
-bool GetFirstRunFinishedPrefValue() {
-  return g_browser_process->local_state()->GetBoolean(prefs::kFirstRunFinished);
-}
-
-base::OnceCallback<void(bool)> ExpectProceed(bool expected_proceed_value) {
-  return base::BindLambdaForTesting([expected_proceed_value](bool actual) {
-    EXPECT_EQ(expected_proceed_value, actual);
-  });
-}
-
 }  // namespace
 
-class FirstRunServiceBrowserTest : public InProcessBrowserTest {
+class FirstRunServiceBrowserTest : public FirstRunServiceBrowserTestBase {
  public:
   void SetUpOnMainThread() override {
-    // We can remove flags and state suppressing the first run only after the
-    // browsertest's initial browser is opened. Otherwise we would have to
-    // close the FRE and reset its state before each individual test.
-    SetIsFirstRun(true);
-
-    // Also make sure we will do another attempt at creating the service now
-    // that the first run state changed.
-    ASSERT_FALSE(
-        FirstRunServiceFactory::GetForBrowserContextIfExists(profile()));
-    FirstRunServiceFactory::GetInstance()->Disassociate(profile());
+    FirstRunServiceBrowserTestBase::SetUpOnMainThread();
 
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
@@ -174,12 +129,6 @@ class FirstRunServiceBrowserTest : public InProcessBrowserTest {
     return identity_test_env_adaptor_->identity_test_env();
   }
 
-  Profile* profile() const { return browser()->profile(); }
-
-  FirstRunService* fre_service() const {
-    return FirstRunServiceFactory::GetForBrowserContext(profile());
-  }
-
  protected:
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
     IdentityTestEnvironmentProfileAdaptor::
@@ -195,16 +144,12 @@ class FirstRunServiceBrowserTest : public InProcessBrowserTest {
   // otherwise. Find a way to get it not to hang instead?
   profiles::testing::ScopedNonEnterpriseDomainSetterForTesting
       non_enterprise_domain_setter_;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // Only Dice guards the FRE behind a feature flag.
-  base::test::ScopedFeatureList scoped_feature_list_{kForYouFre};
-#endif
 };
 
 IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
                        OpenFirstRunIfNeededOpensPicker) {
   base::HistogramTester histogram_tester;
-  base::RunLoop run_loop;
+  base::test::TestFuture<bool> proceed_future;
   bool expected_fre_finished = true;
   bool expected_proceed = false;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -214,12 +159,21 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
 #endif
 
   ASSERT_TRUE(fre_service()->ShouldOpenFirstRun());
-  fre_service()->OpenFirstRunIfNeeded(
-      FirstRunService::EntryPoint::kOther,
-      ExpectProceed(expected_proceed).Then(run_loop.QuitClosure()));
+  fre_service()->OpenFirstRunIfNeeded(FirstRunService::EntryPoint::kOther,
+                                      proceed_future.GetCallback());
 
   profiles::testing::WaitForPickerWidgetCreated();
   EXPECT_FALSE(GetFirstRunFinishedPrefValue());
+
+  histogram_tester.ExpectUniqueSample("ProfilePicker.FirstRun.ServiceCreated",
+                                      true, 1);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  histogram_tester.ExpectUniqueSample(
+      "Profile.LacrosPrimaryProfileFirstRunEntryPoint",
+      FirstRunService::EntryPoint::kOther, 1);
+#endif
+  histogram_tester.ExpectUniqueSample("ProfilePicker.FirstRun.EntryPoint",
+                                      FirstRunService::EntryPoint::kOther, 1);
 
   // We don't expect synthetic trials to be registered here, since no group
   // is configured with the feature. For the positive test case, see
@@ -229,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
   EXPECT_FALSE(variations::HasSyntheticTrial("ForYouFreSynthetic"));
 
   ProfilePicker::Hide();
-  run_loop.Run();
+  EXPECT_EQ(expected_proceed, proceed_future.Get());
 
   EXPECT_EQ(expected_fre_finished, GetFirstRunFinishedPrefValue());
   EXPECT_NE(expected_fre_finished, fre_service()->ShouldOpenFirstRun());
@@ -239,6 +193,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "ProfilePicker.FirstRun.ExitStatus",
       ProfilePicker::FirstRunExitStatus::kQuitEarly, 1);
+  histogram_tester.ExpectTotalCount("ProfilePicker.FirstRun.FinishReason", 0);
 #elif BUILDFLAG(ENABLE_DICE_SUPPORT)
   histogram_tester.ExpectUniqueSample(
       "Signin.SignIn.Offered",
@@ -247,30 +202,10 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "ProfilePicker.FirstRun.ExitStatus",
       ProfilePicker::FirstRunExitStatus::kQuitAtEnd, 1);
+  histogram_tester.ExpectUniqueSample("ProfilePicker.FirstRun.FinishReason",
+                                      /*kFinishedFlow*/ 1, 1);
 #endif
 }
-
-#if BUILDFLAG(IS_MAC)
-IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
-                       CloseChromeWithKeyboardShortcut) {
-  base::RunLoop run_loop;
-  base::HistogramTester histogram_tester;
-
-  ASSERT_TRUE(fre_service()->ShouldOpenFirstRun());
-  fre_service()->OpenFirstRunIfNeeded(
-      FirstRunService::EntryPoint::kOther,
-      ExpectProceed(false).Then(run_loop.QuitClosure()));
-  profiles::testing::WaitForPickerWidgetCreated();
-
-  ProfilePicker::GetViewForTesting()->AcceleratorPressed(
-      ui::Accelerator(ui::VKEY_Q, ui::EF_COMMAND_DOWN));
-  histogram_tester.ExpectBucketCount(
-      "ProfilePicker.FirstRun.ExitStatus",
-      ProfilePicker::FirstRunExitStatus::kAbandonedFlow, 1);
-  profiles::testing::WaitForPickerClosed();
-  run_loop.Run();
-}
-#endif
 
 IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
                        OpenFirstRunIfNeededCalledTwice) {
@@ -278,24 +213,22 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
   // first time should be aborted (called with false) and replaced by the
   // callback passed to it the second time, which will be later called with
   // true on DICE and false on Lacros because it will quit early in the process.
-  base::RunLoop first_run_loop;
-  base::RunLoop second_run_loop;
+  base::test::TestFuture<bool> first_proceed_future;
+  base::test::TestFuture<bool> second_proceed_future;
   base::HistogramTester histogram_tester;
 
   ASSERT_TRUE(fre_service()->ShouldOpenFirstRun());
-  fre_service()->OpenFirstRunIfNeeded(
-      FirstRunService::EntryPoint::kOther,
-      ExpectProceed(false).Then(first_run_loop.QuitClosure()));
+  fre_service()->OpenFirstRunIfNeeded(FirstRunService::EntryPoint::kOther,
+                                      first_proceed_future.GetCallback());
   profiles::testing::WaitForPickerWidgetCreated();
 
-  bool second_proceed = true;
+  bool expected_second_proceed = true;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  second_proceed = false;
+  expected_second_proceed = false;
 #endif
-  fre_service()->OpenFirstRunIfNeeded(
-      FirstRunService::EntryPoint::kOther,
-      ExpectProceed(second_proceed).Then(second_run_loop.QuitClosure()));
-  first_run_loop.Run();
+  fre_service()->OpenFirstRunIfNeeded(FirstRunService::EntryPoint::kOther,
+                                      second_proceed_future.GetCallback());
+  EXPECT_FALSE(first_proceed_future.Get());
 
   histogram_tester.ExpectBucketCount(
       "ProfilePicker.FirstRun.ExitStatus",
@@ -303,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
 
   ProfilePicker::Hide();
   profiles::testing::WaitForPickerClosed();
-  second_run_loop.Run();
+  EXPECT_EQ(expected_second_proceed, second_proceed_future.Get());
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -318,10 +251,8 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
       account_id, signin::ConsentLevel::kSync);
   base::HistogramTester histogram_tester;
 
-  auto* profile_manager = g_browser_process->profile_manager();
-  Profile* primary_profile =
-      profile_manager->GetProfile(profile_manager->GetPrimaryUserProfilePath());
-  EXPECT_TRUE(ShouldOpenFirstRun(primary_profile));
+  ASSERT_TRUE(profile()->IsMainProfile());
+  EXPECT_TRUE(ShouldOpenFirstRun(profile()));
 
   ASSERT_TRUE(fre_service());
 
@@ -343,10 +274,8 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
   EXPECT_FALSE(
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
 
-  auto* profile_manager = g_browser_process->profile_manager();
-  Profile* primary_profile =
-      profile_manager->GetProfile(profile_manager->GetPrimaryUserProfilePath());
-  EXPECT_TRUE(ShouldOpenFirstRun(primary_profile));
+  ASSERT_TRUE(profile()->IsMainProfile());
+  EXPECT_TRUE(ShouldOpenFirstRun(profile()));
 
   ASSERT_TRUE(fre_service());
 
@@ -381,10 +310,8 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
       ->device_settings_lacros()
       ->UpdateDeviceSettings(std::move(device_settings));
 
-  auto* profile_manager = g_browser_process->profile_manager();
-  Profile* primary_profile =
-      profile_manager->GetProfile(profile_manager->GetPrimaryUserProfilePath());
-  EXPECT_TRUE(ShouldOpenFirstRun(primary_profile));
+  ASSERT_TRUE(profile()->IsMainProfile());
+  EXPECT_TRUE(ShouldOpenFirstRun(profile()));
 
   ASSERT_TRUE(fre_service());
 
@@ -399,44 +326,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest, ShouldOpenFirstRun) {
-  EXPECT_TRUE(ShouldOpenFirstRun(profile()));
-  EXPECT_NE(nullptr, fre_service());
-
-  SetIsFirstRun(false);
-  EXPECT_FALSE(ShouldOpenFirstRun(profile()));
-
-  SetIsFirstRun(true);
-  EXPECT_TRUE(ShouldOpenFirstRun(profile()));
-
-  g_browser_process->local_state()->SetBoolean(prefs::kFirstRunFinished, true);
-  EXPECT_FALSE(ShouldOpenFirstRun(profile()));
-}
-
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-
-IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest, CompletedOnIntro) {
-  base::HistogramTester histogram_tester;
-  base::RunLoop run_loop;
-
-  fre_service()->OpenFirstRunIfNeeded(
-      FirstRunService::EntryPoint::kOther,
-      ExpectProceed(true).Then(run_loop.QuitClosure()));
-
-  profiles::testing::WaitForPickerWidgetCreated();
-  profiles::testing::WaitForPickerLoadStop(GURL(chrome::kChromeUIIntroURL));
-
-  content::WebContents* web_contents =
-      ProfilePicker::GetWebViewForTesting()->GetWebContents();
-  web_contents->GetWebUI()->ProcessWebUIMessage(
-      web_contents->GetURL(), "continueWithoutAccount", base::Value::List());
-  profiles::testing::WaitForPickerClosed();
-  run_loop.Run();
-
-  histogram_tester.ExpectUniqueSample(
-      "ProfilePicker.FirstRun.ExitStatus",
-      ProfilePicker::FirstRunExitStatus::kCompleted, 1);
-}
 
 class FirstRunServiceNotForYouBrowserTest : public FirstRunServiceBrowserTest {
  public:
@@ -486,10 +376,9 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceCohortBrowserTest,
   EXPECT_FALSE(local_state->HasPrefPath(prefs::kFirstRunStudyGroup));
   EXPECT_FALSE(variations::HasSyntheticTrial("ForYouFreSynthetic"));
 
-  base::RunLoop run_loop;
-  fre_service()->OpenFirstRunIfNeeded(
-      FirstRunService::EntryPoint::kOther,
-      ExpectProceed(true).Then(run_loop.QuitClosure()));
+  base::test::TestFuture<bool> proceed_future;
+  fre_service()->OpenFirstRunIfNeeded(FirstRunService::EntryPoint::kOther,
+                                      proceed_future.GetCallback());
 
   // Opening the FRE triggers recording of the group.
   EXPECT_EQ(kStudyTestGroupName1,
@@ -501,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceCohortBrowserTest,
   profiles::testing::WaitForPickerWidgetCreated();
   ProfilePicker::Hide();
   profiles::testing::WaitForPickerClosed();
-  run_loop.Run();
+  EXPECT_TRUE(proceed_future.Get());
 }
 IN_PROC_BROWSER_TEST_F(FirstRunServiceCohortBrowserTest,
                        GroupRegisteredAfterFre) {
@@ -536,6 +425,47 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceCohortBrowserTest, GroupViaPrefs) {
   // The registered group is read from the prefs, not from the feature param.
   EXPECT_TRUE(variations::IsInSyntheticTrialGroup("ForYouFreSynthetic",
                                                   kStudyTestGroupName2));
+}
+
+class FirstRunServiceControlBrowserTest : public FirstRunServiceBrowserTest {
+ public:
+  static constexpr char kStudyTestGroupName[] = "control";
+
+  FirstRunServiceControlBrowserTest() {
+    variations::SyntheticTrialsActiveGroupIdProvider::GetInstance()
+        ->ResetForTesting();
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {
+            {kForYouFreSyntheticTrialRegistration,
+             {{"group_name", kStudyTestGroupName}}},
+        },
+        {kForYouFre});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+IN_PROC_BROWSER_TEST_F(FirstRunServiceControlBrowserTest, PRE_Control) {
+  EXPECT_EQ(nullptr, FirstRunServiceFactory::GetForBrowserContext(profile()));
+
+  // The FRE is directly marked finished and we join the indicated cohort.
+  PrefService* local_state = g_browser_process->local_state();
+  EXPECT_TRUE(local_state->GetBoolean(prefs::kFirstRunFinished));
+  EXPECT_EQ(kStudyTestGroupName,
+            local_state->GetString(prefs::kFirstRunStudyGroup));
+
+  EXPECT_TRUE(variations::HasSyntheticTrial("ForYouFreSynthetic"));
+  EXPECT_TRUE(variations::IsInSyntheticTrialGroup("ForYouFreSynthetic",
+                                                  kStudyTestGroupName));
+}
+IN_PROC_BROWSER_TEST_F(FirstRunServiceControlBrowserTest, Control) {
+  EXPECT_EQ(nullptr, FirstRunServiceFactory::GetForBrowserContext(profile()));
+
+  // On subsequent startups, we continue the registration.
+  EXPECT_TRUE(variations::HasSyntheticTrial("ForYouFreSynthetic"));
+  EXPECT_TRUE(variations::IsInSyntheticTrialGroup("ForYouFreSynthetic",
+                                                  kStudyTestGroupName));
 }
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -686,19 +616,18 @@ class FirstRunServiceFeatureParamsBrowserTest
 
 IN_PROC_BROWSER_TEST_P(FirstRunServiceFeatureParamsBrowserTest, CloseProceeds) {
   base::HistogramTester histogram_tester;
-  base::RunLoop run_loop;
+  base::test::TestFuture<bool> proceed_future;
 
   ASSERT_TRUE(fre_service());
   EXPECT_TRUE(fre_service()->ShouldOpenFirstRun());
-  fre_service()->OpenFirstRunIfNeeded(
-      FirstRunService::EntryPoint::kOther,
-      ExpectProceed(GetParam().expected_proceed).Then(run_loop.QuitClosure()));
+  fre_service()->OpenFirstRunIfNeeded(FirstRunService::EntryPoint::kOther,
+                                      proceed_future.GetCallback());
 
   profiles::testing::WaitForPickerWidgetCreated();
   EXPECT_FALSE(GetFirstRunFinishedPrefValue());
 
   ProfilePicker::Hide();
-  run_loop.Run();
+  EXPECT_EQ(GetParam().expected_proceed, proceed_future.Get());
 
   EXPECT_TRUE(GetFirstRunFinishedPrefValue());
   EXPECT_FALSE(fre_service()->ShouldOpenFirstRun());

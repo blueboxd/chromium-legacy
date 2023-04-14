@@ -258,7 +258,7 @@ class CORE_EXPORT LocalFrame final
   void DidBufferLoadWhileInBackForwardCache(size_t num_bytes) override;
 
   void DidChangeThemeColor(bool update_theme_color_cache);
-  void DidChangeBackgroundColor(SkColor background_color, bool color_adjust);
+  void DidChangeBackgroundColor(SkColor4f background_color, bool color_adjust);
 
   // Returns false if detaching child frames reentrantly detached `this`.
   bool DetachChildren();
@@ -865,8 +865,9 @@ class CORE_EXPORT LocalFrame final
       const BFCacheBlockingFeatureAndLocations&,
       const BFCacheBlockingFeatureAndLocations&);
 
-  // Sets a ResourceCacheImpl.
-  void SetResourceCacheImpl(ResourceCacheImpl*);
+  // Binds a ResourceCache. Creates a new ResourceCache when there is no
+  // existing one.
+  void BindResourceCache(mojo::PendingReceiver<mojom::blink::ResourceCache>);
 
   // Sets a ResourceCache hosted by another frame in a different renderer.
   void SetResourceCacheRemote(mojo::PendingRemote<mojom::blink::ResourceCache>);

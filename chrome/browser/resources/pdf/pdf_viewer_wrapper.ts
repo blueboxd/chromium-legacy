@@ -9,7 +9,7 @@ export {AnnotationTool} from './annotation_tool.js';
 // </if>
 export {Bookmark} from './bookmark_type.js';
 export {BrowserApi, ZoomBehavior} from './browser_api.js';
-export {FittingType, Point, SaveRequestType} from './constants.js';
+export {FittingType, Point, Rect, SaveRequestType} from './constants.js';
 export {PluginController} from './controller.js';
 export {ChangePageAndXyDetail, ChangePageDetail, ChangePageOrigin, ChangeZoomDetail, NavigateDetail, ViewerBookmarkElement} from './elements/viewer-bookmark.js';
 export {ViewerDocumentOutlineElement} from './elements/viewer-document-outline.js';
@@ -31,7 +31,7 @@ export {GestureDetector, PinchEventDetail} from './gesture_detector.js';
 export {PdfPluginElement} from './internal_plugin.js';
 export {record, recordFitTo, resetForTesting, UserAction} from './metrics.js';
 export {NavigatorDelegate, PdfNavigator, WindowOpenDisposition} from './navigator.js';
-export {OpenPdfParamsParser} from './open_pdf_params_parser.js';
+export {OpenPdfParamsParser, ViewMode} from './open_pdf_params_parser.js';
 export {getFilenameFromURL, PdfViewerElement} from './pdf_viewer.js';
 export {PdfViewerBaseElement} from './pdf_viewer_base.js';
 export {shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';

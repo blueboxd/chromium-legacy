@@ -1470,22 +1470,6 @@ void ExecuteScriptAsyncWithoutUserGesture(const ToRenderFrameHost& adapter,
       base::UTF8ToUTF16(script), base::NullCallback());
 }
 
-bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
-                                const std::string& script, int* result) {
-  DCHECK(result);
-  std::unique_ptr<base::Value> value;
-  // Prerendering pages will never have user gesture.
-  bool user_gesture = adapter.render_frame_host()->GetLifecycleState() !=
-                      RenderFrameHost::LifecycleState::kPrerendering;
-  if (ExecuteScriptHelper(adapter.render_frame_host(), script, user_gesture,
-                          ISOLATED_WORLD_ID_GLOBAL, &value) &&
-      value && value->is_int() && result) {
-    *result = value->GetInt();
-    return true;
-  }
-  return false;
-}
-
 bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
                                  const std::string& script, bool* result) {
   DCHECK(result);
@@ -3661,8 +3645,9 @@ void DevToolsInspectorLogWatcher::DispatchProtocolMessage(
     base::span<const uint8_t> message) {
   base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
                                 message.size());
-  auto parsed_message = base::JSONReader::Read(message_str);
-  absl::optional<int> command_id = parsed_message->FindIntPath("id");
+  auto parsed_message =
+      std::move(base::JSONReader::Read(message_str)->GetDict());
+  absl::optional<int> command_id = parsed_message.FindInt("id");
   if (command_id.has_value()) {
     switch (command_id.value()) {
       case kEnableLogMessageId:
@@ -3677,12 +3662,14 @@ void DevToolsInspectorLogWatcher::DispatchProtocolMessage(
     return;
   }
 
-  std::string* notification = parsed_message->FindStringPath("method");
+  std::string* notification = parsed_message.FindString("method");
   if (notification && *notification == "Log.entryAdded") {
-    std::string* text = parsed_message->FindStringPath("params.entry.text");
+    std::string* text =
+        parsed_message.FindStringByDottedPath("params.entry.text");
     DCHECK(text);
     last_message_ = *text;
-    std::string* url = parsed_message->FindStringPath("params.entry.url");
+    std::string* url =
+        parsed_message.FindStringByDottedPath("params.entry.url");
     if (url) {
       last_url_ = GURL(*url);
     }

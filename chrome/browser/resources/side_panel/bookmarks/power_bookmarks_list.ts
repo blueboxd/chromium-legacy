@@ -67,6 +67,7 @@ export enum SearchAction {
 export interface SortOption {
   sortOrder: SortOrder;
   label: string;
+  lowerLabel: string;
 }
 
 export interface PowerBookmarksListElement {
@@ -110,11 +111,8 @@ export class PowerBookmarksListElement extends PolymerElement {
 
       labels_: {
         type: Array,
-        value: () => [{
-          label: loadTimeData.getString('priceTrackingLabel'),
-          icon: 'bookmarks:price-tracking',
-          active: false,
-        }],
+        value: () => [],
+        computed: 'computePriceTrackingLabel_(trackedProductInfos_.*)',
       },
 
       activeSortIndex_: {
@@ -128,18 +126,27 @@ export class PowerBookmarksListElement extends PolymerElement {
             [{
               sortOrder: SortOrder.kNewest,
               label: loadTimeData.getString('sortNewest'),
+              lowerLabel: loadTimeData.getString('sortNewestLower'),
             },
              {
                sortOrder: SortOrder.kOldest,
                label: loadTimeData.getString('sortOldest'),
+               lowerLabel: loadTimeData.getString('sortOldestLower'),
+             },
+             {
+               sortOrder: SortOrder.kLastOpened,
+               label: loadTimeData.getString('sortLastOpened'),
+               lowerLabel: loadTimeData.getString('sortLastOpenedLower'),
              },
              {
                sortOrder: SortOrder.kAlphabetical,
                label: loadTimeData.getString('sortAlphabetically'),
+               lowerLabel: loadTimeData.getString('sortAlphabetically'),
              },
              {
                sortOrder: SortOrder.kReverseAlphabetical,
                label: loadTimeData.getString('sortReverseAlphabetically'),
+               lowerLabel: loadTimeData.getString('sortReverseAlphabetically'),
              }],
       },
 
@@ -371,6 +378,23 @@ export class PowerBookmarksListElement extends PolymerElement {
     this.set(`trackedProductInfos_.${bookmarkId}`, null);
   }
 
+  // TODO(emshack): Once there is more than one bookmark power, remove this
+  // logic and always display the price tracking label button.
+  private computePriceTrackingLabel_() {
+    const showLabel =
+        Object.keys(this.trackedProductInfos_)
+            .some(key => this.get(`trackedProductInfos_.${key}`) !== null);
+    if (showLabel) {
+      return [{
+        label: loadTimeData.getString('priceTrackingLabel'),
+        icon: 'bookmarks:price-tracking',
+        active: false,
+      }];
+    } else {
+      return [];
+    }
+  }
+
   /**
    * Returns the index of the given node id in the currently shown bookmarks,
    * or -1 if not shown.
@@ -547,6 +571,10 @@ export class PowerBookmarksListElement extends PolymerElement {
     return loadTimeData.getStringF('sortByType', sortType.label);
   }
 
+  private getSortMenuItemLowerLabel_(sortType: SortOption): string {
+    return loadTimeData.getStringF('sortByType', sortType.lowerLabel);
+  }
+
   private sortMenuItemIsSelected_(sortType: SortOption): boolean {
     return this.sortTypes_[this.activeSortIndex_].sortOrder ===
         sortType.sortOrder;
@@ -640,6 +668,10 @@ export class PowerBookmarksListElement extends PolymerElement {
       }
     }
     return false;
+  }
+
+  private shouldShowEmptySearchState_() {
+    return this.hasActiveLabels_() || !!this.searchQuery_;
   }
 
   private shouldHideHeader_(): boolean {
@@ -897,6 +929,8 @@ export class PowerBookmarksListElement extends PolymerElement {
   private getEmptyTitle_(): string {
     if (this.guestMode_) {
       return loadTimeData.getString('emptyTitleGuest');
+    } else if (this.shouldShowEmptySearchState_()) {
+      return loadTimeData.getString('emptyTitleSearch');
     } else {
       return loadTimeData.getString('emptyTitle');
     }
@@ -905,9 +939,22 @@ export class PowerBookmarksListElement extends PolymerElement {
   private getEmptyBody_(): string {
     if (this.guestMode_) {
       return loadTimeData.getString('emptyBodyGuest');
+    } else if (this.shouldShowEmptySearchState_()) {
+      return loadTimeData.getString('emptyBodySearch');
     } else {
       return loadTimeData.getString('emptyBody');
     }
+  }
+
+  private getEmptyImagePath_(): string {
+    return this.shouldShowEmptySearchState_() ? '' :
+                                                './images/bookmarks_empty.svg';
+  }
+
+  private getEmptyImagePathDark_(): string {
+    return this.shouldShowEmptySearchState_() ?
+        '' :
+        './images/bookmarks_empty_dark.svg';
   }
 
   /**

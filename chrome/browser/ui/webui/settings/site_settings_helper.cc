@@ -802,16 +802,17 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
   *display_name = GetDisplayNameForGURL(profile, origin);
 
   if (info.metadata.session_model == content_settings::SessionModel::OneTime) {
-    DCHECK_EQ(content_type, ContentSettingsType::GEOLOCATION);
+    DCHECK(
+        permissions::PermissionUtil::CanPermissionBeAllowedOnce(content_type));
     DCHECK_EQ(result.content_setting, CONTENT_SETTING_ALLOW);
     return CONTENT_SETTING_DEFAULT;
   }
   return result.content_setting;
 }
 
-std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
-    HostContentSettingsMap* map,
-    ContentSettingsType content_type) {
+std::vector<ContentSettingPatternSource>
+GetSingleOriginExceptionsForContentType(HostContentSettingsMap* map,
+                                        ContentSettingsType content_type) {
   ContentSettingsForOneType entries;
   map->GetSettingsForOneType(content_type, &entries);
   // Exclude any entries that don't represent a single webby top-frame origin.

@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/default_clock.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/history_clusters_util.h"
@@ -22,6 +23,10 @@ namespace {
 bool ShouldAddVisitToCluster(const history::VisitRow& new_visit,
                              const std::u16string& search_terms,
                              const InProgressCluster& in_progress_cluster) {
+  if (in_progress_cluster.cleaned_up) {
+    return false;
+  }
+
   if ((new_visit.visit_time - in_progress_cluster.last_visit_time) >
       GetConfig().cluster_navigation_time_cutoff) {
     return false;
@@ -109,6 +114,13 @@ InProgressCluster::InProgressCluster() = default;
 InProgressCluster::~InProgressCluster() = default;
 InProgressCluster::InProgressCluster(const InProgressCluster&) = default;
 
+CachedEngagementScore::CachedEngagementScore(float score,
+                                             base::Time expiry_time)
+    : score(score), expiry_time(expiry_time) {}
+CachedEngagementScore::~CachedEngagementScore() = default;
+CachedEngagementScore::CachedEngagementScore(const CachedEngagementScore&) =
+    default;
+
 ContextClustererHistoryServiceObserver::ContextClustererHistoryServiceObserver(
     history::HistoryService* history_service,
     TemplateURLService* template_url_service,
@@ -117,7 +129,9 @@ ContextClustererHistoryServiceObserver::ContextClustererHistoryServiceObserver(
     : history_service_(history_service),
       template_url_service_(template_url_service),
       optimization_guide_decider_(optimization_guide_decider),
+      engagement_score_cache_(GetConfig().engagement_score_cache_size),
       engagement_score_provider_(engagement_score_provider),
+      url_for_display_cache_(GetConfig().url_for_display_cache_size),
       clock_(base::DefaultClock::GetInstance()) {
   if (history_service_) {
     history_service_observation_.Observe(history_service_);
@@ -138,6 +152,9 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
     history::HistoryService* history_service,
     const history::URLRow& url_row,
     const history::VisitRow& new_visit) {
+  TRACE_EVENT0("browser",
+               "ContextClusteringHistoryServiceObserver::OnURLVisited");
+
   ScopedVisitProcessingTimer url_visited_processing_timer(
       VisitProcessingStage::kUrlVisited);
 
@@ -271,19 +288,21 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
       return;
     }
 
-    // As `in_progress_cluster` does not have a persisted cluster ID yet, add
-    // the ClusterVisit to the vector of visits that needs to get persisted.
-    in_progress_cluster.unpersisted_visits.push_back(std::move(cluster_visit));
-
     if (is_new_cluster) {
       // Cluster creation is async. Reserve next cluster ID and wait to persist
       // items until it comes back in `OnPersistedClusterIdReceived()`.
-      history_service->ReserveNextClusterId(
+      history_service->ReserveNextClusterIdWithVisit(
+          std::move(cluster_visit),
           base::BindOnce(&ContextClustererHistoryServiceObserver::
                              OnPersistedClusterIdReceived,
                          weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
                          *cluster_id),
           &task_tracker_);
+    } else {
+      // As `in_progress_cluster` does not have a persisted cluster ID yet, add
+      // the ClusterVisit to the vector of visits that needs to get persisted.
+      in_progress_cluster.unpersisted_visits.push_back(
+          std::move(cluster_visit));
     }
   }
 }
@@ -291,6 +310,8 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
 void ContextClustererHistoryServiceObserver::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
+  TRACE_EVENT0("browser",
+               "ContextClusteringHistoryServiceObserver::OnURLsDeleted");
   ScopedVisitProcessingTimer urls_deleted_processing_timer(
       VisitProcessingStage::kUrlsDeleted);
 
@@ -329,6 +350,9 @@ void ContextClustererHistoryServiceObserver::OnURLsDeleted(
 }
 
 void ContextClustererHistoryServiceObserver::CleanUpClusters() {
+  TRACE_EVENT0("browser",
+               "ContextClusteringHistoryServiceObserver::CleanUpClusters");
+
   ScopedVisitProcessingTimer clean_up_timer(
       VisitProcessingStage::kCleanUpTimer);
 
@@ -367,17 +391,29 @@ void ContextClustererHistoryServiceObserver::CleanUpClusters() {
 void ContextClustererHistoryServiceObserver::FinalizeCluster(
     int64_t cluster_id) {
   DCHECK(in_progress_clusters_.find(cluster_id) != in_progress_clusters_.end());
-
-  // Delete relevant visits from in-progress maps.
   auto& cluster = in_progress_clusters_.at(cluster_id);
-  for (const auto& visit_url : cluster.visit_urls) {
-    visit_url_to_cluster_map_.erase(visit_url);
-  }
-  for (const auto visit_id : cluster.visit_ids) {
-    visit_id_to_cluster_map_.erase(visit_id);
+
+  // Delete relevant visits from in-progress maps. However, if the cluster was
+  // already meant for clean up, the entries should have been deleted already
+  // and anything in these maps are from newer clusters.
+  if (!cluster.cleaned_up) {
+    for (const auto& visit_url : cluster.visit_urls) {
+      visit_url_to_cluster_map_.erase(visit_url);
+    }
+    for (const auto visit_id : cluster.visit_ids) {
+      visit_id_to_cluster_map_.erase(visit_id);
+    }
   }
 
-  in_progress_clusters_.erase(cluster_id);
+  // Only delete the cluster if the persisted cluster ID is not needed because
+  // clusters are not being persisted or the persisted cluster ID has been
+  // received and there are unpersisted visits.
+  if (!ShouldUseNavigationContextClustersFromPersistence() ||
+      cluster.unpersisted_visits.empty()) {
+    in_progress_clusters_.erase(cluster_id);
+  } else {
+    cluster.cleaned_up = true;
+  }
 }
 
 void ContextClustererHistoryServiceObserver::OnPersistedClusterIdReceived(
@@ -388,6 +424,10 @@ void ContextClustererHistoryServiceObserver::OnPersistedClusterIdReceived(
                         start_time);
 
   auto cluster_it = in_progress_clusters_.find(cluster_id);
+  // This is expected to emit an entry if a cluster was cleaned up  (i.e. erased
+  // from `in_progress_clusters_` instead of flagged as `cleaned_up = true`)
+  // when it had no unpersisted visits left and the first visit of a cluster was
+  // already sent for persistence AND persistence is taking a long time.
   base::UmaHistogramBoolean(
       "History.Clusters.ContextClusterer.ClusterCleanedUpBeforePersistence",
       cluster_it == in_progress_clusters_.end());
@@ -396,18 +436,30 @@ void ContextClustererHistoryServiceObserver::OnPersistedClusterIdReceived(
   }
 
   cluster_it->second.persisted_cluster_id = persisted_cluster_id;
-  // Persist all visits we've seen so far.
-  history_service_->AddVisitsToCluster(
-      persisted_cluster_id, cluster_it->second.unpersisted_visits,
-      base::BindOnce(&LogDbLatencyHistogram,
-                     ContextClustererDbLatencyType::kAddVisitsToCluster,
-                     base::TimeTicks::Now()),
-      &task_tracker_);
 
-  // Clear these out since the visits have now been requested to be persisted.
-  // This is safe to clear here as the vector should have already been copied to
-  // the history DB thread in `AddVisitsToCluster()`.
-  cluster_it->second.unpersisted_visits.clear();
+  if (!cluster_it->second.unpersisted_visits.empty()) {
+    base::UmaHistogramCounts100(
+        "History.Clusters.ContextClusterer."
+        "NumUnpersistedVisitsBeforeClusterPersisted",
+        cluster_it->second.unpersisted_visits.size());
+
+    // Persist all visits we've seen so far.
+    history_service_->AddVisitsToCluster(
+        persisted_cluster_id, cluster_it->second.unpersisted_visits,
+        base::BindOnce(&LogDbLatencyHistogram,
+                       ContextClustererDbLatencyType::kAddVisitsToCluster,
+                       base::TimeTicks::Now()),
+        &task_tracker_);
+
+    // Clear these out since the visits have now been requested to be persisted.
+    // This is safe to clear here as the vector should have already been copied
+    // to the history DB thread in `AddVisitsToCluster()`.
+    cluster_it->second.unpersisted_visits.clear();
+  }
+
+  if (cluster_it->second.cleaned_up) {
+    FinalizeCluster(cluster_id);
+  }
 }
 
 history::ClusterVisit
@@ -423,12 +475,49 @@ ContextClustererHistoryServiceObserver::CreateClusterVisit(
           ? cluster_visit.normalized_url
           : ComputeURLForDeduping(cluster_visit.normalized_url);
   cluster_visit.url_for_display =
-      ComputeURLForDisplay(cluster_visit.normalized_url);
+      GetURLForDisplay(cluster_visit.normalized_url);
   if (engagement_score_provider_) {
     cluster_visit.engagement_score =
-        engagement_score_provider_->GetScore(cluster_visit.normalized_url);
+        GetEngagementScore(cluster_visit.normalized_url);
   }
   return cluster_visit;
+}
+
+float ContextClustererHistoryServiceObserver::GetEngagementScore(
+    const GURL& normalized_url) {
+  if (!GetConfig().use_engagement_score_cache) {
+    return engagement_score_provider_->GetScore(normalized_url);
+  }
+
+  std::string visit_host = normalized_url.host();
+  auto it = engagement_score_cache_.Peek(visit_host);
+  if (it != engagement_score_cache_.end() &&
+      it->second.expiry_time > clock_->Now()) {
+    return it->second.score;
+  }
+
+  float score = engagement_score_provider_->GetScore(normalized_url);
+  engagement_score_cache_.Put(
+      visit_host,
+      CachedEngagementScore(
+          score,
+          clock_->Now() + GetConfig().engagement_score_cache_refresh_duration));
+  return score;
+}
+
+std::u16string ContextClustererHistoryServiceObserver::GetURLForDisplay(
+    const GURL& normalized_url) {
+  if (!GetConfig().use_url_for_display_cache) {
+    return ComputeURLForDisplay(normalized_url);
+  }
+
+  auto it = url_for_display_cache_.Peek(normalized_url.spec());
+  if (it != url_for_display_cache_.end()) {
+    return it->second;
+  }
+  std::u16string url_for_display = ComputeURLForDisplay(normalized_url);
+  url_for_display_cache_.Put(normalized_url.spec(), url_for_display);
+  return url_for_display;
 }
 
 void ContextClustererHistoryServiceObserver::OverrideClockForTesting(

@@ -332,17 +332,26 @@ config("common_linker_setup") {
   }
 }
 
+# Flags that should be applied to building .exe files but not .dll files.
+config("exe_flags") {
+  rustflags = [ "-Ctarget-feature=+crt-static" ]
+}
+
 config("default_cfg_compiler") {
   # Emit table of address-taken functions for Control-Flow Guard (CFG).
   # This is needed to allow functions to be called by code that is built
   # with CFG enabled, such as system libraries.
   # The CFG guards are only emitted if |win_enable_cfg_guards| is enabled.
-  if (is_clang) {
-    if (win_enable_cfg_guards) {
+  if (win_enable_cfg_guards) {
+    if (is_clang) {
       cflags = [ "/guard:cf" ]
-    } else {
+    }
+    rustflags = [ "-Ccontrol-flow-guard" ]
+  } else {
+    if (is_clang) {
       cflags = [ "/guard:cf,nochecks" ]
     }
+    rustflags = [ "-Ccontrol-flow-guard=nochecks" ]
   }
 }
 
@@ -355,6 +364,7 @@ config("disable_guards_cfg_compiler") {
   if (is_clang) {
     cflags = [ "/guard:cf,nochecks" ]
   }
+  rustflags = [ "-Ccontrol-flow-guard=nochecks" ]
 }
 
 config("cfi_linker") {

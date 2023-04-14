@@ -18,7 +18,13 @@ namespace content {
 // Enables ADPF (Android Dynamic Performance Framework) for the browser IO
 // thread.
 BASE_DECLARE_FEATURE(kADPFForBrowserIOThread);
+#endif  // BUILDFLAG(IS_ANDROID)
 
+// When enabled, RenderFrameHostManager::CommitPending will also update the
+// visibility of all child views, not just that of the main frame.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kNavigationUpdatesChildViewsVisibility);
+
+#if BUILDFLAG(IS_ANDROID)
 // Unifies RenderWidgetHostViewAndroid with the other platforms in their usage
 // of OnShowWithPageVisibility. Disabling will revert the refactor and use the
 // direct ShowInternal path.
@@ -34,11 +40,12 @@ BASE_DECLARE_FEATURE(kOptimizeImmHideCalls);
 // proxy.
 BASE_DECLARE_FEATURE(kConsolidatedIPCForProxyCreation);
 
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kQueueNavigationsWhileWaitingForCommit);
-
 // When enabled, queues navigations instead of cancelling the previous
 // navigation if the previous navigation is already waiting for commit.
 // See https://crbug.com/838348 and https://crbug.com/1220337.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kQueueNavigationsWhileWaitingForCommit);
+
+// The levels for the kQueueNavigationsWhileWaitingForCommit feature.
 enum class NavigationQueueingFeatureLevel {
   // Feature is disabled.
   kNone,
@@ -66,6 +73,10 @@ CONTENT_EXPORT bool ShouldQueueNavigationsWhenPendingCommitRFHExists();
 // This is related to Citadel desktop protections. See
 // https://crbug.com/1286501.
 BASE_DECLARE_FEATURE(kRestrictCanAccessDataForOriginToUIThread);
+
+// When enabled, ensures that an unlocked process cannot access data for
+// sites that require a dedicated process.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kSiteIsolationCitadelEnforcement);
 
 // (crbug/1377753): Speculatively start service worker before BeforeUnload runs.
 BASE_DECLARE_FEATURE(kSpeculativeServiceWorkerStartup);

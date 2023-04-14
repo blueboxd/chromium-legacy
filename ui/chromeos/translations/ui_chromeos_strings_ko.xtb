@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">인증서가 로컬로 거부됨</translation>
 <translation id="1775381402323441512">동영상 정보</translation>
 <translation id="180035236176489073">이 파일에 액세스하려면 온라인 상태여야 합니다.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{다음 ID의 확장 프로그램을 찾을 수 없습니다.}other{다음 ID의 확장 프로그램을 찾을 수 없습니다.}}</translation>
 <translation id="1807938677607439181">모든 파일</translation>
 <translation id="1810764548349082891">미리보기 없음</translation>
 <translation id="1812302367230252929">암하라어(음역)</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">잘못된 제목 보조 이름 일치 항목</translation>
 <translation id="1838709767668011582">Google 사이트</translation>
 <translation id="1853795129690976061">Linux와 공유된 폴더입니다.</translation>
-<translation id="1859422890169495746">이 Chromebook</translation>
 <translation id="1864756863218646478">파일을 찾지 못했습니다.</translation>
 <translation id="1884013283844450420">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, 연결</translation>
 <translation id="1920670151694390848">말라얄람어(음역)</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">행성</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" />이(가) 제거되었습니다.</translation>
 <translation id="2307462900900812319">네트워크 설정</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{ID가 <ph name="BEGIN_LIST" /><ph name="END_LIST" />인 확장 프로그램을 찾을 수 없습니다. 관리자에게 문의하세요.}other{ID가 <ph name="BEGIN_LIST" /><ph name="END_LIST" />인 확장 프로그램을 찾을 수 없습니다. 관리자에게 문의하세요.}}</translation>
 <translation id="2325650632570794183">이 파일 형식은 지원되지 않습니다. Chrome 웹 스토어에서 이 파일 형식을 열 수 있는 앱을 검색하세요.</translation>
 <translation id="2326539130272988168">불가리아어</translation>
 <translation id="2337715497728194187">Bruschetta와 공유</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">비보안</translation>
 <translation id="3291218047831493686">SIM 잠금 설정을 변경하려면 이 네트워크에 연결하세요.</translation>
 <translation id="3293023191599135697">WEP 네트워크는 지원되지 않습니다.</translation>
+<translation id="3295006446256079333">이 볼륨</translation>
 <translation id="3295357220137379386">기기 사용량이 많습니다.</translation>
 <translation id="3296763833017966289">그루지야어</translation>
 <translation id="3307875152560779385">우크라이나어</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">보기</translation>
 <translation id="485316830061041779">독일어</translation>
+<translation id="4862885579661885411">파일 설정</translation>
 <translation id="4867079195717347957">열을 내림차순으로 정렬하려면 클릭하세요.</translation>
 <translation id="4867297348137739678">지난주</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" />바이트</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">항목 <ph name="NUMBER_OF_ITEMS" />개 복사 중...</translation>
 <translation id="7375951387215729722">파일 목록이 <ph name="COLUMN_NAME" /> 기준 내림차순으로 정렬되어 있습니다.</translation>
 <translation id="7377161162143020057">관리자 정책에 의해 이 파일의 복사가 차단되었습니다.</translation>
-<translation id="7392500733467492920">관리자에게 문의하세요.</translation>
 <translation id="7402503521691663770">ChromeOS Flex 기기</translation>
 <translation id="7408870451288633753">체코어</translation>
 <translation id="7417453074306512035">에티오피아어 키보드</translation>

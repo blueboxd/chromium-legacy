@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
@@ -967,11 +968,10 @@ void LocalFrame::HookBackForwardCacheEviction() {
               frame->EvictFromBackForwardCache(
                   mojom::blink::RendererEvictionReason::kJavaScriptExecution);
               if (base::FeatureList::IsEnabled(
-                      features::
-                          kBackForwardCacheNotReachedOnJavaScriptExecution)) {
-                // Adding |NOTREACHED()| here to make sure this is not happening
-                // in any tests, except for when this is expected.
-                NOTREACHED();
+                      features::kBackForwardCacheDWCOnJavaScriptExecution)) {
+                // Adding |DumpWithoutCrashing()| here to make sure this is not
+                // happening in any tests, except for when this is expected.
+                base::debug::DumpWithoutCrashing();
               }
             }
           });
@@ -1171,7 +1171,7 @@ void LocalFrame::DidChangeThemeColor(bool update_theme_color_cache) {
   GetLocalFrameHostRemote().DidChangeThemeColor(sk_color);
 }
 
-void LocalFrame::DidChangeBackgroundColor(SkColor background_color,
+void LocalFrame::DidChangeBackgroundColor(SkColor4f background_color,
                                           bool color_adjust) {
   DCHECK(!Tree().Parent());
   GetLocalFrameHostRemote().DidChangeBackgroundColor(background_color,
@@ -1214,12 +1214,6 @@ void LocalFrame::SetPrinting(bool printing,
   GetDocument()->SetPrinting(printing ? Document::kPrinting
                                       : Document::kFinishingPrinting);
   View()->AdjustMediaTypeForPrinting(printing);
-
-  if (!printing) {
-    // Don't get stuck with the legacy engine when no longer printing.
-    if (Element* root = GetDocument()->documentElement())
-      root->ResetForceLegacyLayoutForPrinting();
-  }
 
   if (TextAutosizer* text_autosizer = GetDocument()->GetTextAutosizer())
     text_autosizer->UpdatePageInfo();
@@ -2432,7 +2426,7 @@ void LocalFrame::OnTaskCompleted(base::TimeTicks start_time,
 
 void LocalFrame::MainFrameInteractive() {
   if (Page* page = GetPage()) {
-    page->GetV8CompileHints().GenerateData();
+    page->GetV8CrowdsourcedCompileHintsProducer().GenerateData();
   }
 }
 
@@ -3491,9 +3485,14 @@ void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
   }
 }
 
-void LocalFrame::SetResourceCacheImpl(ResourceCacheImpl* resource_cache) {
-  DCHECK(!resource_cache_);
-  resource_cache_ = resource_cache;
+void LocalFrame::BindResourceCache(
+    mojo::PendingReceiver<mojom::blink::ResourceCache> receiver) {
+  if (resource_cache_) {
+    resource_cache_->AddReceiver(std::move(receiver));
+  } else {
+    resource_cache_ =
+        MakeGarbageCollected<ResourceCacheImpl>(this, std::move(receiver));
+  }
 }
 
 void LocalFrame::SetResourceCacheRemote(

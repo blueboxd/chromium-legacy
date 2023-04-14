@@ -64,14 +64,17 @@ MATCHER_P2(MatchesEntry, url_matcher, is_read_matcher, "") {
 void ExpectAB(const sync_pb::ReadingListSpecifics& entryA,
               const sync_pb::ReadingListSpecifics& entryB,
               bool possible) {
+  ASSERT_TRUE(ReadingListEntry::IsSpecificsValid(entryA));
+  ASSERT_TRUE(ReadingListEntry::IsSpecificsValid(entryB));
+
   EXPECT_EQ(ReadingListSyncBridge::CompareEntriesForSync(entryA, entryB),
             possible);
   scoped_refptr<ReadingListEntry> a =
-      ReadingListEntry::FromReadingListSpecifics(entryA,
-                                                 base::Time::FromTimeT(10));
+      ReadingListEntry::FromReadingListValidSpecifics(
+          entryA, base::Time::FromTimeT(10));
   scoped_refptr<ReadingListEntry> b =
-      ReadingListEntry::FromReadingListSpecifics(entryB,
-                                                 base::Time::FromTimeT(10));
+      ReadingListEntry::FromReadingListValidSpecifics(
+          entryB, base::Time::FromTimeT(10));
   a->MergeWithEntry(*b);
   std::unique_ptr<sync_pb::ReadingListSpecifics> mergedEntry =
       a->AsReadingListSpecifics();
@@ -329,7 +332,7 @@ TEST_F(ReadingListSyncBridgeTest, DisableSyncWithUnspecifiedStorage) {
                             /*estimated_read_time=*/base::TimeDelta());
 
   ASSERT_EQ(1ul, model_->size());
-  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+  bridge()->ApplyDisableSyncChanges(bridge()->CreateMetadataChangeList());
   EXPECT_EQ(1ul, model_->size());
 }
 
@@ -340,7 +343,7 @@ TEST_F(ReadingListSyncBridgeTest, DisableSyncWithAccountStorage) {
                             /*estimated_read_time=*/base::TimeDelta());
 
   ASSERT_EQ(1ul, model_->size());
-  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+  bridge()->ApplyDisableSyncChanges(bridge()->CreateMetadataChangeList());
   EXPECT_EQ(0ul, model_->size());
 }
 
@@ -367,23 +370,10 @@ TEST_F(ReadingListSyncBridgeTest, DisableSyncWithAccountStorageAndOrphanData) {
   ASSERT_THAT(ReadAllDataFromModelTypeStore(underlying_in_memory_store_),
               SizeIs(1));
 
-  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+  bridge()->ApplyDisableSyncChanges(bridge()->CreateMetadataChangeList());
 
   EXPECT_THAT(ReadAllDataFromModelTypeStore(underlying_in_memory_store_),
               SizeIs(0));
-}
-
-TEST_F(ReadingListSyncBridgeTest, PauseSyncWithAccountStorage) {
-  ResetModelAndBridge(syncer::StorageType::kAccount);
-  model_->AddOrReplaceEntry(GURL("http://read.example.com/"), "read title",
-                            reading_list::ADDED_VIA_CURRENT_APP,
-                            /*estimated_read_time=*/base::TimeDelta());
-
-  ASSERT_EQ(1ul, model_->size());
-  // A null metadata change list means sync is paused (rather than permanently
-  // disabled).
-  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
-  EXPECT_EQ(1ul, model_->size());
 }
 
 TEST_F(ReadingListSyncBridgeTest, CompareEntriesForSync) {
@@ -516,4 +506,27 @@ TEST_F(ReadingListSyncBridgeTest, CompareEntriesForSync) {
       ExpectAB(entryB, entryA, false);
     }
   }
+}
+
+TEST_F(ReadingListSyncBridgeTest, EntityDataShouldBeValid) {
+  auto entry = base::MakeRefCounted<ReadingListEntry>(
+      GURL("http://example.com/"), "example title", AdvanceAndGetTime(&clock_));
+  std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
+      entry->AsReadingListSpecifics();
+  syncer::EntityData data;
+  *data.specifics.mutable_reading_list() = *specifics;
+
+  EXPECT_TRUE(bridge()->IsEntityDataValid(data));
+}
+
+TEST_F(ReadingListSyncBridgeTest, EntityDataShouldBeNotValid) {
+  auto entry = base::MakeRefCounted<ReadingListEntry>(
+      GURL("http://example.com/"), "example title", AdvanceAndGetTime(&clock_));
+  std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
+      entry->AsReadingListSpecifics();
+  *specifics->mutable_url() = "";
+  syncer::EntityData data;
+  *data.specifics.mutable_reading_list() = *specifics;
+
+  EXPECT_FALSE(bridge()->IsEntityDataValid(data));
 }

@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">ປະຕິເສດໃບຢັ້ງຢືນການຮັບຮອງກັບທີ່ແລ້ວ</translation>
 <translation id="1775381402323441512">ຂໍ້ມູນວິດີໂອ</translation>
 <translation id="180035236176489073">ທ່ານ​ຈະ​ຕ້ອງ​ອອນ​ລາຍ​ນ​໌​ເພື່ອເຂົ້າຫາໄຟລ​໌​ເຫຼົ່ານີ້​.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{ສ່ວນຂະຫຍາຍທີ່ມີ ID}other{ສ່ວນຂະຫຍາຍທີ່ມີ ID}}</translation>
 <translation id="1807938677607439181">ທຸກໄຟລ​໌​</translation>
 <translation id="1810764548349082891">ບໍ່ມີຕົວຢ່າງສະແດງ</translation>
 <translation id="1812302367230252929">ການແປທັບສັບພາສາອາມຮາຣິກ</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">ຂໍ້ມູນການຈັບຄູ່ຊື່ສຳຮອງຫົວຂໍ້ບໍ່ຖືກຕ້ອງ</translation>
 <translation id="1838709767668011582">ເວັບໄຊ Google</translation>
 <translation id="1853795129690976061">ມີການແບ່ງປັນໂຟນເດີນີ້ກັບ Linux</translation>
-<translation id="1859422890169495746">Chromebook ນີ້</translation>
 <translation id="1864756863218646478">ບໍ່​ສາ​ມາດພົບໄຟລ​໌ໄດ້​.</translation>
 <translation id="1884013283844450420">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ເຊື່ອມຕໍ່</translation>
 <translation id="1920670151694390848">ການແປທັບສັບພາສາມາລາຢາລຳ</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">ດາວເຄາະ</translation>
 <translation id="2305020378527873881">ຖອດ <ph name="VOLUME_NAME" /> ອອກແລ້ວ.</translation>
 <translation id="2307462900900812319">ປັບຕັ້ງຄ່າເຄືອຂ່າຍ</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{ບໍ່ພົບສ່ວນຂະຫຍາຍທີ່ມີ ID <ph name="BEGIN_LIST" /><ph name="END_LIST" />. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ.}other{ບໍ່ພົບສ່ວນຂະຫຍາຍທີ່ມີ ID <ph name="BEGIN_LIST" /><ph name="END_LIST" />. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ.}}</translation>
 <translation id="2325650632570794183">ປະເພດໄຟລ໌ນີ້ບໍ່ຖືກຮອງຮັບ. ກະລຸນາເຂົ້າໄປເບິ່ງ Chrome Web Store ເພື່ອຊອກຫາແອັບທີ່ສາມາດເປີດໄຟລ໌ປະເພດນີ້ໄດ້.</translation>
 <translation id="2326539130272988168">ບັງກາຣຽນ</translation>
 <translation id="2337715497728194187">ແບ່ງປັນກັບ Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">ບໍ່ປອດໄພ</translation>
 <translation id="3291218047831493686">ເຊື່ອມຕໍ່ຫາເຄືອຂ່າຍນີ້ເພື່ອປ່ຽນການຕັ້ງຄ່າການລັອກ SIM</translation>
 <translation id="3293023191599135697">ບໍ່ຮອງຮັບເຄືອຂ່າຍ WEP</translation>
+<translation id="3295006446256079333">ລະດັບສຽງນີ້</translation>
 <translation id="3295357220137379386">ອຸປະກອນບໍ່ຫວ່າງ</translation>
 <translation id="3296763833017966289">ພາສາຈໍເຈຍ</translation>
 <translation id="3307875152560779385">ພາສາຢູເຄຣນຽນ</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">ເບິ່ງ</translation>
 <translation id="485316830061041779">ພາສາເຢຍລະມັນ</translation>
+<translation id="4862885579661885411">ການຕັ້ງຄ່າໄຟລ໌</translation>
 <translation id="4867079195717347957">ຄລິກເພື່ອຮຽງລຳດັບຖັນແຕ່ໃຫຍ່ຫານ້ອຍ.</translation>
 <translation id="4867297348137739678">ອາທິດທີ່ຜ່ານມາ</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> ໄບຕ໌</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347">ກຳລັງສຳເນົາ <ph name="NUMBER_OF_ITEMS" /> ລາຍການ...</translation>
 <translation id="7375951387215729722">ລາຍການໄຟລ໌ທີ່ຮຽງລຳດັບຕາມ <ph name="COLUMN_NAME" /> ແຕ່ໃຫຍ່ຫານ້ອຍ.</translation>
 <translation id="7377161162143020057">ນະໂຍບາຍຂອງຜູ້ເບິ່ງແຍງລະບົບບລັອກການສຳເນົາໄຟລ໌ນີ້</translation>
-<translation id="7392500733467492920">ບໍ່ສາມາດຊອກຫາສະຖານທີ່ໄດ້. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ.</translation>
 <translation id="7402503521691663770">ອຸປະກອນ ChromeOS Flex</translation>
 <translation id="7408870451288633753">ພາສາເຊັກ</translation>
 <translation id="7417453074306512035">ຄີບອດພາສາເອທິໂອເປຍ</translation>

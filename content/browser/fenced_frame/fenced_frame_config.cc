@@ -71,6 +71,23 @@ FencedFrameConfig::FencedFrameConfig(const GURL& mapped_url)
                   VisibilityToContent::kTransparent),
       mode_(DeprecatedFencedFrameMode::kOpaqueAds) {}
 
+FencedFrameConfig::FencedFrameConfig(const GURL& mapped_url,
+                                     const gfx::Size& content_size,
+                                     bool is_ad_component)
+    : mapped_url_(absl::in_place,
+                  mapped_url,
+                  VisibilityToEmbedder::kOpaque,
+                  VisibilityToContent::kTransparent),
+      content_size_(absl::in_place,
+                    content_size,
+                    VisibilityToEmbedder::kTransparent,
+                    VisibilityToContent::kTransparent),
+      deprecated_should_freeze_initial_size_(absl::in_place,
+                                             false,
+                                             VisibilityToEmbedder::kTransparent,
+                                             VisibilityToContent::kOpaque),
+      is_ad_component_(is_ad_component) {}
+
 FencedFrameConfig::FencedFrameConfig(const GURL& urn_uuid,
                                      const GURL& mapped_url)
     : urn_uuid_(urn_uuid),
@@ -79,6 +96,12 @@ FencedFrameConfig::FencedFrameConfig(const GURL& urn_uuid,
                   VisibilityToEmbedder::kOpaque,
                   VisibilityToContent::kTransparent),
       mode_(DeprecatedFencedFrameMode::kOpaqueAds) {}
+
+FencedFrameConfig::FencedFrameConfig(const GURL& mapped_url,
+                                     bool is_ad_component)
+    : FencedFrameConfig(mapped_url) {
+  is_ad_component_ = is_ad_component;
+}
 
 FencedFrameConfig::FencedFrameConfig(
     const GURL& urn_uuid,
@@ -176,7 +199,8 @@ FencedFrameProperties::FencedFrameProperties(const FencedFrameConfig& config)
                        base::UnguessableToken::Create(),
                        VisibilityToEmbedder::kOpaque,
                        VisibilityToContent::kOpaque),
-      mode_(config.mode_) {
+      mode_(config.mode_),
+      is_ad_component_(config.is_ad_component_) {
   if (config.shared_storage_budget_metadata_) {
     shared_storage_budget_metadata_.emplace(
         &config.shared_storage_budget_metadata_->GetValueIgnoringVisibility(),
@@ -246,7 +270,10 @@ FencedFrameProperties::RedactFor(FencedFrameEntity entity) const {
     }
   }
 
-  if (fenced_frame_reporter_) {
+  if (fenced_frame_reporter_ || is_ad_component_) {
+    // An ad component should use its parent's fenced frame reporter. Even
+    // though it does not have a reporter in its `FencedFrameProperties`, this
+    // flag is still marked as true.
     redacted_properties.has_fenced_frame_reporting_ = true;
   }
 

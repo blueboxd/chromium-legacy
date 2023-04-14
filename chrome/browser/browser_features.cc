@@ -22,9 +22,12 @@ BASE_FEATURE(kClosedTabCache,
 
 // Destroy profiles when their last browser window is closed, instead of when
 // the browser exits.
+// On Lacros the feature is enabled only for secondary profiles, check the
+// implementation of `ProfileManager::ProfileInfo::FromUnownedProfile()`.
 BASE_FEATURE(kDestroyProfileOnBrowserClose,
              "DestroyProfileOnBrowserClose",
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
              base::FEATURE_ENABLED_BY_DEFAULT);
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -209,6 +212,12 @@ BASE_FEATURE(kRestartNetworkServiceUnsandboxedForFailedLaunch,
 BASE_FEATURE(kAppBoundEncryptionMetrics,
              "AppBoundEncryptionMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables locking the cookie database for profiles.
+// TODO(crbug.com/1430226): Remove after fully launched.
+BASE_FEATURE(kLockProfileCookieDatabase,
+             "LockProfileCookieDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enables showing the email of the flex org admin that setup CBCM in the

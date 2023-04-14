@@ -10,14 +10,30 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/omnibox/browser/actions/omnibox_action.h"
+#include "components/omnibox/browser/actions/omnibox_pedal.h"
+#include "components/omnibox/browser/actions/omnibox_pedal_concepts.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/fake_autocomplete_provider.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
+
+class FakeOmniboxAction : public OmniboxAction {
+ public:
+  explicit FakeOmniboxAction(OmniboxActionId id)
+      : OmniboxAction(LabelStrings(u"", u"", u"", u""), GURL{}, false),
+        id_(id) {}
+  OmniboxActionId ActionId() const override { return id_; }
+
+ private:
+  ~FakeOmniboxAction() override = default;
+  OmniboxActionId id_{};
+};
 
 void TestSetAllowedToBeDefault(int caseI,
                                const std::string input_text,
@@ -104,9 +120,18 @@ AutocompleteMatch CreateACMatchWithScoringSignals(
   return match;
 }
 
+// Use a test fixture to ensure that any scoped settings that are set during the
+// test are cleared after the test is terminated.
+class AutocompleteMatchTest : public testing::Test {
+ protected:
+  void TearDown() override {
+    RichAutocompletionParams::ClearParamsForTesting();
+  }
+};
+
 }  // namespace
 
-TEST(AutocompleteMatchTest, MoreRelevant) {
+TEST_F(AutocompleteMatchTest, MoreRelevant) {
   struct RelevantCases {
     int r1;
     int r2;
@@ -132,7 +157,7 @@ TEST(AutocompleteMatchTest, MoreRelevant) {
   }
 }
 
-TEST(AutocompleteMatchTest, MergeClassifications) {
+TEST_F(AutocompleteMatchTest, MergeClassifications) {
   // Merging two empty vectors should result in an empty vector.
   EXPECT_EQ(std::string(),
       AutocompleteMatch::ClassificationsToString(
@@ -202,7 +227,7 @@ TEST(AutocompleteMatchTest, MergeClassifications) {
                   "0,2," "1,0," "5,7," "6,1," "17,0"))));
 }
 
-TEST(AutocompleteMatchTest, GetMatchComponents) {
+TEST_F(AutocompleteMatchTest, GetMatchComponents) {
   struct MatchComponentsTestData {
     const std::string url;
     std::vector<std::string> input_terms;
@@ -275,7 +300,7 @@ TEST(AutocompleteMatchTest, GetMatchComponents) {
   }
 }
 
-TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
+TEST_F(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
   // This test does not need to verify url_formatter's functionality in-depth,
   // since url_formatter has its own unit tests. This test is to validate that
   // flipping feature flags and varying the trim_scheme parameter toggles the
@@ -318,7 +343,7 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
     test_case.Validate();
 }
 
-TEST(AutocompleteMatchTest, SupportsDeletion) {
+TEST_F(AutocompleteMatchTest, SupportsDeletion) {
   // A non-deletable match with no duplicates.
   AutocompleteMatch m(nullptr, 0, false,
                       AutocompleteMatchType::URL_WHAT_YOU_TYPED);
@@ -372,7 +397,7 @@ void CheckDuplicateCase(const DuplicateCase& duplicate_case) {
   EXPECT_TRUE(m2.stripped_destination_url.is_valid());
 }
 
-TEST(AutocompleteMatchTest, Duplicates) {
+TEST_F(AutocompleteMatchTest, Duplicates) {
   DuplicateCase cases[] = {
     { L"g", "http://www.google.com/",  "https://www.google.com/",    true },
     { L"g", "http://www.google.com/",  "http://www.google.com",      true },
@@ -424,7 +449,7 @@ TEST(AutocompleteMatchTest, Duplicates) {
     CheckDuplicateCase(caseI);
 }
 
-TEST(AutocompleteMatchTest, DedupeDriveURLs) {
+TEST_F(AutocompleteMatchTest, DedupeDriveURLs) {
   DuplicateCase cases[] = {
       // Document URLs pointing to the same document, perhaps with different
       // /edit points, hashes, or cgiargs, are deduped.
@@ -443,7 +468,7 @@ TEST(AutocompleteMatchTest, DedupeDriveURLs) {
     CheckDuplicateCase(caseI);
 }
 
-TEST(AutocompleteMatchTest, UpgradeMatchWithPropertiesFrom) {
+TEST_F(AutocompleteMatchTest, UpgradeMatchWithPropertiesFrom) {
   scoped_refptr<FakeAutocompleteProvider> bookmark_provider =
       new FakeAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
   scoped_refptr<FakeAutocompleteProvider> history_provider =
@@ -491,7 +516,7 @@ TEST(AutocompleteMatchTest, UpgradeMatchWithPropertiesFrom) {
   EXPECT_EQ(history_match.inline_autocompletion, u"preserve");
 }
 
-TEST(AutocompleteMatchTest, MergeScoringSignals) {
+TEST_F(AutocompleteMatchTest, MergeScoringSignals) {
   AutocompleteMatch match = CreateACMatchWithScoringSignals(
       /*typed_count*/ 3, /*visit_count*/ 10,
       /*elapsed_time_last_visit_secs*/ 100, /*shortcut_visit_count*/ 5,
@@ -549,7 +574,7 @@ TEST(AutocompleteMatchTest, MergeScoringSignals) {
   EXPECT_TRUE(match.scoring_signals.allowed_to_be_default_match());
 }
 
-TEST(AutocompleteMatchTest, SetAllowedToBeDefault) {
+TEST_F(AutocompleteMatchTest, SetAllowedToBeDefault) {
   // Test all combinations of:
   // 1) input text in ["goo", "goo ", "goo  "]
   // 2) input prevent_inline_autocomplete in [false, true]
@@ -591,13 +616,13 @@ TEST(AutocompleteMatchTest, SetAllowedToBeDefault) {
                             false);
 }
 
-TEST(AutocompleteMatchTest, SetAllowedToBeDefault_PrefixAutocompletion) {
+TEST_F(AutocompleteMatchTest, SetAllowedToBeDefault_PrefixAutocompletion) {
   // Verify that a non-empty prefix autocompletion will prevent an empty inline
   // autocompletion from bypassing the other default match requirements.
   TestSetAllowedToBeDefault(0, "xyz", true, "", "prefix", "", false);
 }
 
-TEST(AutocompleteMatchTest, TryRichAutocompletion) {
+TEST_F(AutocompleteMatchTest, TryRichAutocompletion) {
   auto test = [](const std::string input_text,
                  bool input_prevent_inline_autocomplete,
                  const std::string primary_text,
@@ -859,7 +884,7 @@ TEST(AutocompleteMatchTest, TryRichAutocompletion) {
   }
 }
 
-TEST(AutocompleteMatchTest, TryRichAutocompletionShortcutText) {
+TEST_F(AutocompleteMatchTest, TryRichAutocompletionShortcutText) {
   auto test = [](const std::string input_text, const std::string primary_text,
                  const std::string secondary_text,
                  const std::string shortcut_text, bool expected_return,
@@ -939,7 +964,7 @@ TEST(AutocompleteMatchTest, TryRichAutocompletionShortcutText) {
   }
 }
 
-TEST(AutocompleteMatchTest, BetterDuplicate) {
+TEST_F(AutocompleteMatchTest, BetterDuplicate) {
   const auto create_match = [](scoped_refptr<FakeAutocompleteProvider> provider,
                                int relevance) {
     return AutocompleteMatch{provider.get(), relevance, false,
@@ -987,4 +1012,98 @@ TEST(AutocompleteMatchTest, BetterDuplicate) {
   EXPECT_FALSE(
       AutocompleteMatch::BetterDuplicate(create_match(history_provider, 500),
                                          create_match(history_provider, 510)));
+}
+
+TEST_F(AutocompleteMatchTest, FilterOmniboxActions) {
+  scoped_refptr<FakeAutocompleteProvider> provider =
+      new FakeAutocompleteProvider(AutocompleteProvider::Type::TYPE_SEARCH);
+  const OmniboxAction::LabelStrings dummy_labels(u"", u"", u"", u"");
+
+  using OmniboxActionId::ACTION_IN_SUGGEST;
+  using OmniboxActionId::HISTORY_CLUSTERS;
+  using OmniboxActionId::PEDAL;
+
+  struct FilterOmniboxActionsTestData {
+    std::string test_name;
+    // This is what will get added to the AutocompleteMatch.
+    std::vector<OmniboxActionId> actions_attached_to_match;
+    // This is the filter. Order of elements specifies the preference.
+    std::vector<OmniboxActionId> allowed_actions;
+    // This is the expected result.
+    std::vector<OmniboxActionId> resulting_actions;
+  } test_cases[]{
+      {"have nothing, want nothing", {}, {}, {}},
+      {"have nothing, want Pedals", {}, {PEDAL}, {}},
+      {"have Pedals, want nothing", {PEDAL}, {}, {}},
+      {"have Pedals, want Pedals", {PEDAL}, {PEDAL}, {PEDAL}},
+      {"have Pedals, want History Clusters", {PEDAL}, {HISTORY_CLUSTERS}, {}},
+      {"have Pedals, want History Clusters, then Pedals",
+       {PEDAL},
+       {HISTORY_CLUSTERS, PEDAL},
+       {PEDAL}},
+      {"have Pedals and History Clusters, want History Clusters, then Pedals",
+       {PEDAL, HISTORY_CLUSTERS},
+       {HISTORY_CLUSTERS, PEDAL},
+       {HISTORY_CLUSTERS}},
+      {"have Pedals and History Clusters, want Pedals, then History Clusters",
+       {PEDAL, HISTORY_CLUSTERS},
+       {PEDAL, HISTORY_CLUSTERS},
+       {PEDAL}},
+      {"have Pedals and History Clusters, want Actions in Suggest",
+       {PEDAL, HISTORY_CLUSTERS},
+       {ACTION_IN_SUGGEST},
+       {}},
+      {"have Pedals and History Clusters, want Actions in Suggest, then Pedals",
+       {PEDAL, HISTORY_CLUSTERS},
+       {ACTION_IN_SUGGEST, PEDAL},
+       {PEDAL}},
+      {"have Pedals, Actions and History Clusters, want Pedals",
+       {ACTION_IN_SUGGEST, PEDAL, HISTORY_CLUSTERS},
+       {PEDAL},
+       {PEDAL}},
+      {"have multiple, want Actions, then History Clusters, then Pedals",
+       // Mix: 4 pedals, 3 history clusters, 2 actions.
+       {PEDAL, ACTION_IN_SUGGEST, HISTORY_CLUSTERS, PEDAL, ACTION_IN_SUGGEST,
+        HISTORY_CLUSTERS, PEDAL, HISTORY_CLUSTERS, PEDAL},
+       {ACTION_IN_SUGGEST, HISTORY_CLUSTERS, PEDAL},
+       {ACTION_IN_SUGGEST, ACTION_IN_SUGGEST}},
+      {"have multiple, want History Clusters, then Actions, then Pedals",
+       // Mix: 4 pedals, 3 history clusters, 2 actions.
+       {PEDAL, ACTION_IN_SUGGEST, HISTORY_CLUSTERS, PEDAL, ACTION_IN_SUGGEST,
+        HISTORY_CLUSTERS, PEDAL, HISTORY_CLUSTERS, PEDAL},
+       {HISTORY_CLUSTERS, ACTION_IN_SUGGEST, PEDAL},
+       {HISTORY_CLUSTERS, HISTORY_CLUSTERS, HISTORY_CLUSTERS}},
+      {"have multiple, want Pedals, then History Clusters, then Actions",
+       // Mix: 4 pedals, 3 history clusters, 2 actions.
+       {PEDAL, ACTION_IN_SUGGEST, HISTORY_CLUSTERS, PEDAL, ACTION_IN_SUGGEST,
+        HISTORY_CLUSTERS, PEDAL, HISTORY_CLUSTERS, PEDAL},
+       {PEDAL, HISTORY_CLUSTERS, ACTION_IN_SUGGEST},
+       {PEDAL, PEDAL, PEDAL, PEDAL}},
+      {"have multiple, want nothing",
+       // Mix: 4 pedals, 3 history clusters, 2 actions.
+       {PEDAL, ACTION_IN_SUGGEST, HISTORY_CLUSTERS, PEDAL, ACTION_IN_SUGGEST,
+        HISTORY_CLUSTERS, PEDAL, HISTORY_CLUSTERS, PEDAL},
+       {},
+       {}}};
+
+  for (const auto& test_case : test_cases) {
+    AutocompleteMatch match(provider.get(), 1, false,
+                            AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
+
+    // Populate match with requested actions.
+    for (auto& action_id : test_case.actions_attached_to_match) {
+      match.actions.push_back(
+          base::MakeRefCounted<FakeOmniboxAction>(action_id));
+    }
+
+    match.FilterOmniboxActions(test_case.allowed_actions);
+    EXPECT_EQ(match.actions.size(), test_case.resulting_actions.size())
+        << "while testing variant: " << test_case.test_name;
+
+    for (size_t index = 0u; index < match.actions.size(); ++index) {
+      EXPECT_EQ(match.actions[index]->ActionId(),
+                test_case.resulting_actions[index])
+          << "while testing variant: " << test_case.test_name;
+    }
+  }
 }

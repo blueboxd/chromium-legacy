@@ -617,19 +617,6 @@ void ClientControlledShellSurface::SetExtraTitle(
   }
 }
 
-void ClientControlledShellSurface::SetClientAccessibilityId(
-    int32_t accessibility_id) {
-  if (accessibility_id >= 0)
-    client_accessibility_id_ = accessibility_id;
-  else
-    client_accessibility_id_.reset();
-
-  if (widget_ && widget_->GetNativeWindow()) {
-    SetShellClientAccessibilityId(widget_->GetNativeWindow(),
-                                  client_accessibility_id_);
-  }
-}
-
 void ClientControlledShellSurface::RebindRootSurface(
     Surface* root_surface,
     bool can_minimize,
@@ -813,6 +800,13 @@ void ClientControlledShellSurface::SetFloat() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
+void ClientControlledShellSurface::OnWindowDestroying(aura::Window* window) {
+  if (client_controlled_state_) {
+    client_controlled_state_->ResetDelegate();
+    client_controlled_state_ = nullptr;
+  }
+  ShellSurfaceBase::OnWindowDestroying(window);
+}
 
 void ClientControlledShellSurface::OnWindowAddedToRootWindow(
     aura::Window* window) {
@@ -1142,7 +1136,6 @@ void ClientControlledShellSurface::InitializeWindowState(
   }
 
   auto* window = widget_->GetNativeWindow();
-  SetShellClientAccessibilityId(window, client_accessibility_id_);
   GrantPermissionToActivateIndefinitely(window);
 }
 
@@ -1313,8 +1306,10 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
 }
 
 void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {
-  if (client_controlled_state_)
+  if (client_controlled_state_) {
     client_controlled_state_->ResetDelegate();
+    client_controlled_state_ = nullptr;
+  }
   ShellSurfaceBase::OnSurfaceDestroying(surface);
 }
 

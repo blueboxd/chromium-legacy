@@ -162,8 +162,6 @@ CSSStringValue* ConsumeString(CSSParserTokenRange&);
 StringView ConsumeStringAsStringView(CSSParserTokenRange&);
 StringView ConsumeUrlAsStringView(CSSParserTokenRange&,
                                   const CSSParserContext&);
-StringView ConsumeUrlOrStringAsStringView(CSSParserTokenRange&,
-                                          const CSSParserContext&);
 cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange&,
                                   const CSSParserContext&);
 
@@ -340,6 +338,7 @@ bool ConsumeAnimationShorthand(
     const CSSParserContext&,
     bool use_legacy_parsing);
 
+CSSValue* ConsumeSingleTimelineAttachment(CSSParserTokenRange&);
 CSSValue* ConsumeSingleTimelineAxis(CSSParserTokenRange&);
 CSSValue* ConsumeSingleTimelineName(CSSParserTokenRange&,
                                     const CSSParserContext&);

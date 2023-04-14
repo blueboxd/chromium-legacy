@@ -72,9 +72,10 @@ BASE_DECLARE_FEATURE(kCommerceAllowLocalImages);
 BASE_DECLARE_FEATURE(kCommerceAllowOnDemandBookmarkUpdates);
 BASE_DECLARE_FEATURE(kCommerceAllowOnDemandBookmarkBatchUpdates);
 BASE_DECLARE_FEATURE(kCommerceAllowServerImages);
-BASE_DECLARE_FEATURE(kCommerceCoupons);
 BASE_DECLARE_FEATURE(kCommerceMerchantViewer);
 BASE_DECLARE_FEATURE(kCommerceMerchantViewerRegionLaunched);
+BASE_DECLARE_FEATURE(kCommerceProductInfoApiEnabled);
+BASE_DECLARE_FEATURE(kCommerceProductInfoApiEnabledRegionLaunched);
 extern const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory;
 BASE_DECLARE_FEATURE(kShoppingList);
 BASE_DECLARE_FEATURE(kShoppingListRegionLaunched);
@@ -336,6 +337,9 @@ extern const base::FeatureParam<bool> kReadyToFetchMerchantWidePromotion;
 // Feature params for code-based Rule-based Discount (RBD).
 extern const char kCodeBasedRuleDiscountParam[];
 extern const base::FeatureParam<bool> kCodeBasedRuleDiscount;
+extern const char kCodeBasedRuleDiscountCouponDeletionTimeParam[];
+extern const base::FeatureParam<base::TimeDelta>
+    kCodeBasedRuleDiscountCouponDeletionTime;
 
 // Check if a URL belongs to a partner merchant of any type of discount.
 bool IsPartnerMerchant(const GURL& url);

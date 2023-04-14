@@ -188,17 +188,18 @@ void OsIntegrationManager::SetSubsystems(WebAppSyncBridge* sync_bridge,
   auto shortcut_sub_manager = std::make_unique<ShortcutSubManager>(
       *profile_, *icon_manager, *registrar);
   auto file_handling_sub_manager = std::make_unique<FileHandlingSubManager>(
-      *profile_, *registrar, *sync_bridge);
+      profile_->GetPath(), *registrar, *sync_bridge);
   auto protocol_handling_sub_manager =
-      std::make_unique<ProtocolHandlingSubManager>(profile_, *registrar);
+      std::make_unique<ProtocolHandlingSubManager>(profile_->GetPath(),
+                                                   *registrar);
   auto shortcut_menu_handling_sub_manager =
       std::make_unique<ShortcutMenuHandlingSubManager>(
           profile_->GetPath(), *icon_manager, *registrar);
   auto run_on_os_login_sub_manager = std::make_unique<RunOnOsLoginSubManager>(
       *profile_, *registrar, *sync_bridge, *icon_manager);
   auto uninstallation_via_os_settings_sub_manager =
-      std::make_unique<UninstallationViaOsSettingsSubManager>(*profile_,
-                                                              *registrar);
+      std::make_unique<UninstallationViaOsSettingsSubManager>(
+          profile_->GetPath(), *registrar);
   sub_managers_.push_back(std::move(shortcut_sub_manager));
   sub_managers_.push_back(std::move(file_handling_sub_manager));
   sub_managers_.push_back(std::move(protocol_handling_sub_manager));
@@ -219,11 +220,6 @@ void OsIntegrationManager::Start() {
   file_handler_manager_->Start();
   if (protocol_handler_manager_)
     protocol_handler_manager_->Start();
-
-  // Start all sub managers that need to be started.
-  for (const auto& sub_manager : sub_managers_) {
-    sub_manager->Start();
-  }
 }
 
 void OsIntegrationManager::Synchronize(
@@ -258,11 +254,11 @@ void OsIntegrationManager::Synchronize(
 
   // Note: Sometimes the execute step is a no-op based on feature flags or if os
   // integration is disabled for testing. This logic is in the
-  // ExecuteAllSubManagerConfigurations method.
+  // StartSubManagerExecutionIfRequired method.
   base::RepeatingClosure configure_barrier;
   configure_barrier = base::BarrierClosure(
       sub_managers_.size(),
-      base::BindOnce(&OsIntegrationManager::ExecuteAllSubManagerConfigurations,
+      base::BindOnce(&OsIntegrationManager::StartSubManagerExecutionIfRequired,
                      weak_ptr_factory_.GetWeakPtr(), app_id, options,
                      std::move(desired_states), std::move(callback)));
 
@@ -637,7 +633,8 @@ void OsIntegrationManager::RegisterWebAppOsUninstallation(
     const AppId& app_id,
     const std::string& name) {
   if (ShouldRegisterUninstallationViaOsSettingsWithOs()) {
-    RegisterUninstallationViaOsSettingsWithOs(app_id, name, profile_);
+    RegisterUninstallationViaOsSettingsWithOs(app_id, name,
+                                              profile_->GetPath());
   }
 }
 
@@ -726,7 +723,7 @@ void OsIntegrationManager::UnregisterUrlHandlers(const AppId& app_id) {
 void OsIntegrationManager::UnregisterWebAppOsUninstallation(
     const AppId& app_id) {
   if (ShouldRegisterUninstallationViaOsSettingsWithOs()) {
-    UnregisterUninstallationViaOsSettingsWithOs(app_id, profile_);
+    UnregisterUninstallationViaOsSettingsWithOs(app_id, profile_->GetPath());
   }
 }
 
@@ -921,11 +918,11 @@ std::unique_ptr<ShortcutInfo> OsIntegrationManager::BuildShortcutInfo(
   return shortcut_manager_->BuildShortcutInfo(app_id);
 }
 
-void OsIntegrationManager::ExecuteAllSubManagerConfigurations(
+void OsIntegrationManager::StartSubManagerExecutionIfRequired(
     const AppId& app_id,
     absl::optional<SynchronizeOsOptions> options,
     std::unique_ptr<proto::WebAppOsIntegrationState> desired_states,
-    base::OnceClosure callback) {
+    base::OnceClosure on_all_execution_done) {
   // This can never be a use-case where we execute OS integration registration/
   // unregistration but do not update the WebAppOsIntegrationState proto in the
   // web_app DB.
@@ -940,14 +937,14 @@ void OsIntegrationManager::ExecuteAllSubManagerConfigurations(
 
   const WebApp* web_app = registrar_->GetAppById(app_id);
   if (!web_app) {
-    std::move(callback).Run();
+    std::move(on_all_execution_done).Run();
     return;
   }
 
   proto::WebAppOsIntegrationState* desired_states_ptr = desired_states.get();
   auto write_state_to_db = base::BindOnce(
       &OsIntegrationManager::WriteStateToDB, weak_ptr_factory_.GetWeakPtr(),
-      app_id, std::move(desired_states), std::move(callback));
+      app_id, std::move(desired_states), std::move(on_all_execution_done));
 
   if (g_suppress_os_hooks_for_testing_ || !AreSubManagersExecuteEnabled()) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
@@ -955,16 +952,30 @@ void OsIntegrationManager::ExecuteAllSubManagerConfigurations(
     return;
   }
 
-  auto write_state_barrier =
-      base::BarrierClosure(sub_managers_.size(), std::move(write_state_to_db));
+  ExecuteNextSubmanager(app_id, options, desired_states_ptr,
+                        web_app->current_os_integration_states(), /*index=*/0,
+                        std::move(write_state_to_db));
+}
 
-  const proto::WebAppOsIntegrationState current_state =
-      web_app->current_os_integration_states();
-
-  for (const auto& sub_manager : sub_managers_) {
-    sub_manager->Execute(app_id, options, *desired_states_ptr, current_state,
-                         write_state_barrier);
+void OsIntegrationManager::ExecuteNextSubmanager(
+    const AppId& app_id,
+    absl::optional<SynchronizeOsOptions> options,
+    proto::WebAppOsIntegrationState* desired_state,
+    const proto::WebAppOsIntegrationState current_state,
+    size_t index,
+    base::OnceClosure on_all_execution_done_db_write) {
+  CHECK(index < sub_managers_.size());
+  base::OnceClosure next_callback = base::OnceClosure();
+  if (index == sub_managers_.size() - 1) {
+    next_callback = std::move(on_all_execution_done_db_write);
+  } else {
+    next_callback = base::BindOnce(
+        &OsIntegrationManager::ExecuteNextSubmanager,
+        weak_ptr_factory_.GetWeakPtr(), app_id, options, desired_state,
+        current_state, index + 1, std::move(on_all_execution_done_db_write));
   }
+  sub_managers_[index]->Execute(app_id, options, *desired_state, current_state,
+                                std::move(next_callback));
 }
 
 void OsIntegrationManager::WriteStateToDB(

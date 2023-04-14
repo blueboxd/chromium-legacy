@@ -27,13 +27,13 @@
 #include "base/format_macros.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_constants.h"
@@ -531,8 +531,8 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadMimeType) {
 }
 
 bool IsValidRFC4122Ver4GUID(const std::string& guid) {
-  // base::IsValidGUID() doesn't restrict its validation to version (or subtype)
-  // 4 GUIDs as described in RFC 4122. So we check if base::IsValidGUID() thinks
+  // base::IsValidUuid() doesn't restrict its validation to version (or subtype)
+  // 4 GUIDs as described in RFC 4122. So we check if base::IsValidUuid() thinks
   // it's a valid GUID first, and then check the additional constraints.
   //
   // * Bits 4-7 of time_hi_and_version should be set to 0b0100 == 4
@@ -543,7 +543,7 @@ bool IsValidRFC4122Ver4GUID(const std::string& guid) {
   //
   // * All other bits should be random or pseudo random.
   //   => http://dilbert.com/strip/2001-10-25
-  return base::IsValidGUID(guid) && guid[14] == '4' &&
+  return base::IsValidUuid(guid) && guid[14] == '4' &&
          (guid[19] == '8' || guid[19] == '9' || guid[19] == 'A' ||
           guid[19] == 'B' || guid[19] == 'a' || guid[19] == 'b');
 }
@@ -2745,6 +2745,64 @@ TEST_F(HistoryBackendDBTest, MigrateContentAnnotationsAddHasUrlKeyedImage) {
     VisitContentAnnotations visit_content_annotations;
     db_->GetContentAnnotationsForVisit(visit_id, &visit_content_annotations);
     EXPECT_FALSE(visit_content_annotations.has_url_keyed_image);
+  }
+}
+
+TEST_F(HistoryBackendDBTest,
+       MigrateVisitsAddConsiderForNewTabPageMostVisitedColumn) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(62));
+
+  const VisitID visit_id = 1;
+  const URLID url_id = 2;
+  const base::Time visit_time(base::Time::Now());
+  // visit_id == referring_visit will trigger DCHECK_NE in UpdateVisitRow.
+  const VisitID referring_visit = 1;
+  const ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+  const SegmentID segment_id = 8;
+  const base::TimeDelta visit_duration(base::Seconds(45));
+
+  const char kInsertStatement[] =
+      "INSERT INTO visits "
+      "(id, url, visit_time, from_visit, transition, segment_id, "
+      "visit_duration) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+  // Open the old version of the DB and make sure the new columns don't exist
+  // yet.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    ASSERT_FALSE(db.DoesColumnExist("visits", "consider_for_ntp_most_visited"));
+
+    // Add entry to visits.
+    sql::Statement s(db.GetUniqueStatement(kInsertStatement));
+    s.BindInt64(0, visit_id);
+    s.BindInt64(1, url_id);
+    s.BindInt64(2, visit_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+    s.BindInt64(3, referring_visit);
+    s.BindInt64(4, transition);
+    s.BindInt64(5, segment_id);
+    s.BindInt64(6, visit_duration.InMicroseconds());
+
+    ASSERT_TRUE(s.Run());
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  // The version should have been updated.
+  ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 63);
+
+  VisitRow visit_row;
+  db_->GetRowForVisit(visit_id, &visit_row);
+  EXPECT_FALSE(visit_row.consider_for_ntp_most_visited);
+
+  DeleteBackend();
+
+  // Open the db manually again and make sure the new columns exist.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    EXPECT_TRUE(db.DoesColumnExist("visits", "consider_for_ntp_most_visited"));
   }
 }
 

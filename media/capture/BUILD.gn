@@ -334,6 +334,7 @@ component("capture_lib") {
     deps += [
       "//ash/constants",
       "//build/config/linux/libdrm",
+      "//chromeos/ash/components/mojo_service_manager",
       "//chromeos/components/sensors:sensors",
       "//chromeos/dbus/power",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
@@ -506,6 +507,10 @@ test("capture_unittests") {
       "IOSurface.framework",
     ]
     deps += [ "//third_party/ocmock" ]
+  }
+
+  if (is_ios) {
+    deps += [ "//media:unit_tests_bundle_data" ]
   }
 
   if (is_win) {

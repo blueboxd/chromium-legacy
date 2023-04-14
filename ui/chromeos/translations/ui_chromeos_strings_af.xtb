@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Stawingsertifikaat is plaaslik verwerp</translation>
 <translation id="1775381402323441512">Video-inligting</translation>
 <translation id="180035236176489073">Jy moet aanlyn wees om by hierdie lêers in te gaan.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{’n Uitbreiding met die ID}other{Uitbreidings met die ID’s}}</translation>
 <translation id="1807938677607439181">Alle lêers</translation>
 <translation id="1810764548349082891">Geen voorskou beskikbaar nie</translation>
 <translation id="1812302367230252929">Amhaarse transliterasie</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Ongeldige passinginskrywing vir onderwerp se alternatiewe naam</translation>
 <translation id="1838709767668011582">Google-werf</translation>
 <translation id="1853795129690976061">Hierdie vouer word met Linux gedeel</translation>
-<translation id="1859422890169495746">Hierdie Chromebook</translation>
 <translation id="1864756863218646478">Die lêer kon nie gevind word nie.</translation>
 <translation id="1884013283844450420">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, koppel</translation>
 <translation id="1920670151694390848">Malabaarse transliterasie</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planeet</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> is uitgegooi.</translation>
 <translation id="2307462900900812319">Stel netwerk op</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{’n Uitbreiding met die ID <ph name="BEGIN_LIST" /><ph name="END_LIST" /> kan nie opgespoor word nie. Kontak jou admin.}other{Uitbreidings met die ID’s <ph name="BEGIN_LIST" /><ph name="END_LIST" /> kan nie opgespoor word nie. Kontak jou admin.}}</translation>
 <translation id="2325650632570794183">Hierdie lêertipe word nie gesteun nie. Besoek asseblief die Chrome Webwinkel om 'n program te vind wat hierdie tipe lêer kan oopmaak.</translation>
 <translation id="2326539130272988168">Bulgaars</translation>
 <translation id="2337715497728194187">Deel met Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Onbeveilig</translation>
 <translation id="3291218047831493686">Koppel aan hierdie netwerk om SIM-slotinstelling te verander</translation>
 <translation id="3293023191599135697">WEP-netwerke word nie gesteun nie</translation>
+<translation id="3295006446256079333">Hierdie volume</translation>
 <translation id="3295357220137379386">Toestel is besig</translation>
 <translation id="3296763833017966289">Georgies</translation>
 <translation id="3307875152560779385">Oekraïens</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">Bekyk</translation>
 <translation id="485316830061041779">Duits</translation>
+<translation id="4862885579661885411">Lêers-instellings</translation>
 <translation id="4867079195717347957">Kies om die kolom in dalende volgorde te rangskik.</translation>
 <translation id="4867297348137739678">Verlede week</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> grepe</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347">Kopieer tans <ph name="NUMBER_OF_ITEMS" /> items …</translation>
 <translation id="7375951387215729722">Lêerlys is volgens <ph name="COLUMN_NAME" /> in dalende volgorde gerangskik.</translation>
 <translation id="7377161162143020057">Administrateursbeleid verhoed dat hierdie lêer gekopieer kan word</translation>
-<translation id="7392500733467492920">kan nie opgespoor word nie. Kontak jou administrateur.</translation>
 <translation id="7402503521691663770">Chrome OS Flex-toestelle</translation>
 <translation id="7408870451288633753">Tsjeggies</translation>
 <translation id="7417453074306512035">Etiopiese sleutelbord</translation>

@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Сертификат за потврду аутентичности је одбијен локално</translation>
 <translation id="1775381402323441512">Информације о видео датотеци</translation>
 <translation id="180035236176489073">Морате да будете на мрежи да бисте приступили овим датотекама.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Додатак са ИД-ом}one{Додаци са ИД-овима}few{Додаци са ИД-овима}other{Додаци са ИД-овима}}</translation>
 <translation id="1807938677607439181">Све датотеке</translation>
 <translation id="1810764548349082891">Преглед није доступан</translation>
 <translation id="1812302367230252929">транслитерација амхарског</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Неважећи унос подударања алтернативног назива субјекта</translation>
 <translation id="1838709767668011582">Google сајт</translation>
 <translation id="1853795129690976061">Овај фолдер се дели са Linux-ом</translation>
-<translation id="1859422890169495746">Овај Chromebook</translation>
 <translation id="1864756863218646478">Није могуће пронаћи датотеку.</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, повежи</translation>
 <translation id="1920670151694390848">транслитерација малајалама</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Планета</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> је избачен.</translation>
 <translation id="2307462900900812319">Конфигуриши мрежу</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Нисмо успели да пронађемо додатак са ИД-ом <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Обратите се администратору.}one{Нисмо успели да пронађемо додатке са ИД-овима <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Обратите се администратору.}few{Нисмо успели да пронађемо додатке са ИД-овима <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Обратите се администратору.}other{Нисмо успели да пронађемо додатке са ИД-овима <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Обратите се администратору.}}</translation>
 <translation id="2325650632570794183">Овај тип датотеке није подржан. Посетите Chrome веб-продавницу и пронађите апликацију која може да отвара овај тип датотеке.</translation>
 <translation id="2326539130272988168">бугарски</translation>
 <translation id="2337715497728194187">Делите са виртуелном машином Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Незаштићено</translation>
 <translation id="3291218047831493686">Повежите се на ову мрежу да бисте променили подешавање закључавања SIM картице</translation>
 <translation id="3293023191599135697">WEP мреже нису подржане</translation>
+<translation id="3295006446256079333">Ова количина</translation>
 <translation id="3295357220137379386">Уређај је заузет</translation>
 <translation id="3296763833017966289">грузијски</translation>
 <translation id="3307875152560779385">украјински</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase-ови</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="485316830061041779">немачки</translation>
+<translation id="4862885579661885411">Подешавања Фајлова</translation>
 <translation id="4867079195717347957">Кликните да бисте сортирали ставке у колони по опадајућем редоследу.</translation>
 <translation id="4867297348137739678">Последња недеља</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> бајт(ов)а</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Копирају се ставке (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7375951387215729722">Листа датотека је сортирана по опадајућем редоследу по критеријуму <ph name="COLUMN_NAME" />.</translation>
 <translation id="7377161162143020057">Смернице администратора блокирају копирање овог фајла</translation>
-<translation id="7392500733467492920">нисмо успели да пронађемо. Обратите се администратору.</translation>
 <translation id="7402503521691663770">Chrome OS Flex уређаји</translation>
 <translation id="7408870451288633753">чешки</translation>
 <translation id="7417453074306512035">Етиопљанска тастатура</translation>

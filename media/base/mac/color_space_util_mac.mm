@@ -279,7 +279,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
   base::ScopedCFTypeRef<CFTypeRef> gamma_level;
   base::ScopedCFTypeRef<CFTypeRef> ycbcr_matrix;
 
-  if (@available(macOS 12, *)) {
+  if (@available(macOS 12, iOS 15, *)) {
     color_primaries.reset(CVBufferCopyAttachment(
         image_buffer, kCVImageBufferColorPrimariesKey, nullptr));
     transfer_function.reset(CVBufferCopyAttachment(
@@ -289,6 +289,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
     ycbcr_matrix.reset(CVBufferCopyAttachment(
         image_buffer, kCVImageBufferYCbCrMatrixKey, nullptr));
   } else {
+#if !defined(__IPHONE_15_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
     color_primaries.reset(
         CVBufferGetAttachment(image_buffer, kCVImageBufferColorPrimariesKey,
                               nullptr),
@@ -303,6 +304,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
     ycbcr_matrix.reset(CVBufferGetAttachment(
                            image_buffer, kCVImageBufferYCbCrMatrixKey, nullptr),
                        base::scoped_policy::RETAIN);
+#endif
   }
 
   return GetCoreVideoColorSpaceInternal(color_primaries.get(),

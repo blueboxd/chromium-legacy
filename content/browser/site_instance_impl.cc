@@ -260,7 +260,7 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForFencedFrame(
         browser_context, embedder_site_instance->GetStoragePartitionConfig()));
   }
   DCHECK_EQ(embedder_site_instance->IsGuest(), site_instance->IsGuest());
-  site_instance->ReuseCurrentProcessIfPossible(
+  site_instance->ReuseExistingProcessIfPossible(
       embedder_site_instance->GetProcess());
   return site_instance;
 }
@@ -296,21 +296,39 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForTesting(
 }
 
 // static
-bool SiteInstanceImpl::ShouldAssignSiteForURL(const GURL& url) {
+bool SiteInstanceImpl::ShouldAssignSiteForUrlInfo(const UrlInfo& url_info) {
   // Only empty document schemes can leave SiteInstances unassigned.
-  if (!base::Contains(url::GetEmptyDocumentSchemes(), url.scheme())) {
+  if (!base::Contains(url::GetEmptyDocumentSchemes(), url_info.url.scheme())) {
     return true;
   }
 
-  // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
-  // still be used for a normal web site.
-  //
-  // TODO(alexmos):  Currently, we force other about: URLs to assign a site.
-  // This has been the legacy behavior, and it's unclear whether this matters
-  // one way or another, so we can consider changing this if there's a good
-  // motivation.
-  if (url.SchemeIs(url::kAboutScheme)) {
-    return !url.IsAboutBlank();
+  if (url_info.url.SchemeIs(url::kAboutScheme)) {
+    // TODO(alexmos):  Currently, we force about: URLs that are not about:blank
+    // to assign a site. This has been the legacy behavior, and it's unclear
+    // whether this matters one way or another, so we can consider changing
+    // this if there's a good motivation.
+    if (!url_info.url.IsAboutBlank()) {
+      return true;
+    }
+
+    // Check if the UrlInfo carries an inherited origin for about:blank, such
+    // as with a renderer-initiated about:blank navigation where the origin is
+    // taken from the navigation's initiator.  In such cases, the SiteInstance
+    // assignment must also honor a valid initiator origin (which could require
+    // a dedicated process), and hence it cannot be left unassigned.
+    //
+    // Note that starting an about:blank navigation from an opaque unique
+    // origin is safe to leave unassigned. Some Android tests currently rely on
+    // that behavior.
+    if (url_info.origin.has_value() &&
+        url_info.origin->GetTupleOrPrecursorTupleIfOpaque().IsValid()) {
+      return true;
+    }
+
+    // Otherwise, it is ok for about:blank to not "use up" a new SiteInstance.
+    // The SiteInstance can still be used for a normal web site. For example,
+    // this is used for newly-created tabs.
+    return false;
   }
 
   // Do not assign a site for other empty document schemes. One notable use of
@@ -395,29 +413,30 @@ bool SiteInstanceImpl::ShouldUseProcessPerSite() const {
   return has_site_ && site_info_.ShouldUseProcessPerSite(browser_context);
 }
 
-void SiteInstanceImpl::ReuseCurrentProcessIfPossible(
-    RenderProcessHost* current_process) {
+void SiteInstanceImpl::ReuseExistingProcessIfPossible(
+    RenderProcessHost* existing_process) {
   if (HasProcess())
     return;
 
-  // We should not reuse the current process if the destination uses
+  // We should not reuse `existing_process` if the destination uses
   // process-per-site. Note that this includes the case where the process for
-  // the site is not there yet (so we're going to create a new process).
-  // Note also that this does not apply for the reverse case: if the current
-  // process is used for a process-per-site site, it is ok to reuse this for the
-  // new page (regardless of the site).
+  // the site is not there yet (so we're going to create a new process).  Note
+  // also that this does not apply for the reverse case: if the existing process
+  // is used for a process-per-site site, it is ok to reuse this for the new
+  // page (regardless of the site).
   if (ShouldUseProcessPerSite())
     return;
 
   // Do not reuse the process if it's not suitable for this SiteInstance. For
   // example, this won't allow reusing a process if it's locked to a site that's
   // different from this SiteInstance's site.
-  if (!RenderProcessHostImpl::MayReuseAndIsSuitable(current_process, this))
+  if (!RenderProcessHostImpl::MayReuseAndIsSuitable(existing_process, this)) {
     return;
+  }
 
   // TODO(crbug.com/1055779): Don't try to reuse process if either of the
   // SiteInstances are cross-origin isolated (uses COOP/COEP).
-  SetProcessInternal(current_process);
+  SetProcessInternal(existing_process);
 }
 
 void SiteInstanceImpl::SetProcessInternal(RenderProcessHost* process) {
@@ -863,7 +882,8 @@ scoped_refptr<SiteInstance> SiteInstance::CreateForGuest(
 
 // static
 bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
-  return SiteInstanceImpl::ShouldAssignSiteForURL(url);
+  return SiteInstanceImpl::ShouldAssignSiteForUrlInfo(
+      UrlInfo(UrlInfoInit(url)));
 }
 
 bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {

@@ -928,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, MAYBE_LiveCaption) {
   EXPECT_TRUE(
       browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
   EXPECT_TRUE(GetLiveCaptionTitleLabel()->GetVisible());
-  EXPECT_EQ("Live Caption - English (United States)",
+  EXPECT_EQ("Live Caption - English",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 
   // Click the Live Caption toggle again to toggle it off.
@@ -948,7 +948,7 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, MAYBE_LiveCaption) {
   EXPECT_TRUE(ui_.WaitForDialogOpened());
   EXPECT_TRUE(ui_.IsDialogVisible());
   EXPECT_TRUE(GetLiveCaptionTitleLabel()->GetVisible());
-  EXPECT_EQ("Live Caption - English (United States)",
+  EXPECT_EQ("Live Caption - English",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 
   // Click the Live Caption toggle to toggle it off.
@@ -975,9 +975,11 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, MAYBE_LiveCaption) {
             GetLiveCaptionTitleLabel()->GetText());
 }
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64))
 // https://crbug.com/1222873
 // Flaky on all Mac bots: https://crbug.com/1274967
+// TODO(https://crbug.com/1425041): Renable on WinArm64 when live captioning is
+// enabled.
 #define MAYBE_LiveCaptionProgressUpdate DISABLED_LiveCaptionProgressUpdate
 #else
 #define MAYBE_LiveCaptionProgressUpdate LiveCaptionProgressUpdate
@@ -1039,12 +1041,15 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 
   OnSodaInstalled();
-  EXPECT_EQ("Live Caption - English (United States)",
+  EXPECT_EQ("Live Caption - English",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 }
 
 // TODO(crbug.com/1225531, crbug.com/1222873): Flaky.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+// TODO(https://crbug.com/1425041): Renable on WinArm64 when live captioning is
+// enabled.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64))
 #define MAYBE_LiveCaptionShowLanguage DISABLED_LiveCaptionShowLanguage
 #else
 #define MAYBE_LiveCaptionShowLanguage LiveCaptionShowLanguage
@@ -1071,7 +1076,7 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   // When Live Caption is enabled, the title should show the language.
   ClickEnableLiveCaptionOnDialog();
   EXPECT_TRUE(GetLiveCaptionTitleLabel()->GetVisible());
-  EXPECT_EQ("Live Caption - English (United States)",
+  EXPECT_EQ("Live Caption - English",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 
   // Close dialog and change live caption language. Reopen dialog.
@@ -1085,7 +1090,7 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
 
   // Live Caption is enabled so the title should show the new language.
   EXPECT_TRUE(GetLiveCaptionTitleLabel()->GetVisible());
-  EXPECT_EQ("Live Caption - German (Germany)",
+  EXPECT_EQ("Live Caption - German",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 
   // When Live Caption is disabled, the title should not show the language.

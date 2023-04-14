@@ -51,7 +51,8 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid_interface.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_anchor_query.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
@@ -74,10 +75,7 @@ static Length Negate(const Length& length) {
     return length;
   }
 
-  Length ret =
-      length.GetRoundToInt()
-          ? Length(-static_cast<int>(length.GetFloatValue()), length.GetType())
-          : Length(-length.GetFloatValue(), length.GetType());
+  Length ret = Length(-length.GetFloatValue(), length.GetType());
   ret.SetQuirk(length.Quirk());
   return ret;
 }
@@ -576,22 +574,27 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
     const LayoutObject* layout_object) {
   std::pair<const Length*, const Length*> positions;
   bool is_horizontal_property;
+  bool is_right_or_bottom;
   switch (property.PropertyID()) {
     case CSSPropertyID::kLeft:
-      positions = std::make_pair(&style.Left(), &style.Right());
+      positions = std::make_pair(&style.UsedLeft(), &style.UsedRight());
       is_horizontal_property = true;
+      is_right_or_bottom = false;
       break;
     case CSSPropertyID::kRight:
-      positions = std::make_pair(&style.Right(), &style.Left());
+      positions = std::make_pair(&style.UsedRight(), &style.UsedLeft());
       is_horizontal_property = true;
+      is_right_or_bottom = true;
       break;
     case CSSPropertyID::kTop:
-      positions = std::make_pair(&style.Top(), &style.Bottom());
+      positions = std::make_pair(&style.UsedTop(), &style.UsedBottom());
       is_horizontal_property = false;
+      is_right_or_bottom = false;
       break;
     case CSSPropertyID::kBottom:
-      positions = std::make_pair(&style.Bottom(), &style.Top());
+      positions = std::make_pair(&style.UsedBottom(), &style.UsedTop());
       is_horizontal_property = false;
+      is_right_or_bottom = true;
       break;
     default:
       NOTREACHED();
@@ -621,8 +624,18 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
               : box->ContainingBlockLogicalHeightForGetComputedStyle();
     }
 
-    return ZoomAdjustedPixelValue(ValueForLength(offset, containing_block_size),
-                                  style);
+    absl::optional<NGAnchorEvaluatorImpl> anchor_evaluator_storage;
+    NGAnchorEvaluatorImpl* anchor_evaluator = nullptr;
+    if (offset.HasAnchorQueries() && layout_object->IsOutOfFlowPositioned()) {
+      anchor_evaluator_storage.emplace(
+          NGAnchorEvaluatorImpl::BuildFromLayoutResult(*layout_object));
+      anchor_evaluator = &anchor_evaluator_storage.value();
+      anchor_evaluator->SetAxis(!is_horizontal_property, is_right_or_bottom,
+                                containing_block_size);
+    }
+
+    return ZoomAdjustedPixelValue(
+        ValueForLength(offset, containing_block_size, anchor_evaluator), style);
   }
 
   if (offset.IsAuto() && layout_object) {
@@ -1306,7 +1319,6 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   }
 
   FontDescription::Kerning kerning = style.GetFontDescription().GetKerning();
-  float size_adjust = style.GetFontDescription().SizeAdjust();
   FontDescription::FontVariantPosition variant_position =
       style.GetFontDescription().VariantPosition();
   OpticalSizing optical_sizing = style.GetFontDescription().FontOpticalSizing();
@@ -1314,7 +1326,7 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   if (kerning != FontDescription::kAutoKerning ||
       optical_sizing != kAutoOpticalSizing ||
       (RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled() &&
-       size_adjust != -1) ||
+       style.GetFontDescription().HasSizeAdjust()) ||
       (RuntimeEnabledFeatures::FontVariantPositionEnabled() &&
        variant_position != FontDescription::kNormalVariantPosition)) {
     return nullptr;
@@ -1872,19 +1884,16 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   const bool is_for_columns = direction == kForColumns;
   const ComputedGridTrackList& computed_grid_track_list =
       is_for_columns ? style.GridTemplateColumns() : style.GridTemplateRows();
-  const bool is_layout_grid = layout_object && layout_object->IsLayoutNGGrid();
+  const auto* grid = DynamicTo<LayoutNGGrid>(layout_object);
 
   // Handle the 'none' case.
   bool is_track_list_empty =
       !computed_grid_track_list.TrackList().RepeaterCount();
-  if (is_layout_grid && is_track_list_empty) {
+  if (grid && is_track_list_empty) {
     // For grids we should consider every listed track, whether implicitly or
     // explicitly created. Empty grids have a sole grid line per axis.
     const Vector<LayoutUnit>& positions =
-        is_for_columns
-            ? ToInterface<LayoutNGGridInterface>(layout_object)
-                  ->ColumnPositions()
-            : ToInterface<LayoutNGGridInterface>(layout_object)->RowPositions();
+        is_for_columns ? grid->ColumnPositions() : grid->RowPositions();
     is_track_list_empty = positions.size() == 1;
   }
 
@@ -1905,9 +1914,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
       computed_grid_track_list.auto_repeat_insertion_point;
   const NGGridTrackList& ng_track_list = computed_grid_track_list.TrackList();
 
-  if (is_layout_grid) {
-    const auto* grid = ToInterface<LayoutNGGridInterface>(layout_object);
-
+  if (grid) {
     // The number of auto repeat tracks. For 'repeat(auto-fill, [x][y])' this
     // will be 2, regardless of what auto-fill computes to. For subgrids, use
     // the number of grid line names specified on the track definition. For
@@ -1953,7 +1960,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   OrderedNamedLinesCollector collector(
       computed_grid_track_list.ordered_named_grid_lines,
       computed_grid_track_list.auto_repeat_ordered_named_grid_lines, is_subgrid,
-      is_layout_grid);
+      !!grid);
   PopulateGridTrackListForNonGrid(list, collector, ng_track_list, style);
   return list;
 }
@@ -2426,15 +2433,15 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimeline(
   }
   DCHECK(timeline.IsScroll());
   const StyleTimeline::ScrollData& scroll_data = timeline.GetScroll();
-  CSSValue* axis = scroll_data.HasDefaultAxis()
-                       ? nullptr
-                       : CSSIdentifierValue::Create(scroll_data.GetAxis());
   CSSValue* scroller =
       scroll_data.HasDefaultScroller()
           ? nullptr
           : CSSIdentifierValue::Create(scroll_data.GetScroller());
+  CSSValue* axis = scroll_data.HasDefaultAxis()
+                       ? nullptr
+                       : CSSIdentifierValue::Create(scroll_data.GetAxis());
 
-  return MakeGarbageCollected<cssvalue::CSSScrollValue>(axis, scroller);
+  return MakeGarbageCollected<cssvalue::CSSScrollValue>(scroller, axis);
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationTimelineList(
@@ -2448,11 +2455,15 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimelineList(
 
 CSSValue* ComputedStyleUtils::SingleValueForTimelineShorthand(
     const ScopedCSSName* name,
-    TimelineAxis axis) {
+    TimelineAxis axis,
+    TimelineAttachment attachment) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*ValueForCustomIdentOrNone(name));
   if (axis != TimelineAxis::kBlock) {
     list->Append(*CSSIdentifierValue::Create(axis));
+  }
+  if (attachment != TimelineAttachment::kLocal) {
+    list->Append(*CSSIdentifierValue::Create(attachment));
   }
   return list;
 }

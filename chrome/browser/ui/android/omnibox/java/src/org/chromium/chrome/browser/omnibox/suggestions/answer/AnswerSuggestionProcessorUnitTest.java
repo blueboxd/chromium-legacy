@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -34,13 +36,12 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
+import org.chromium.chrome.browser.omnibox.test.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.image_fetcher.ImageFetcher;
@@ -49,6 +50,7 @@ import org.chromium.components.omnibox.AnswerTextType;
 import org.chromium.components.omnibox.AnswerType;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
+import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.components.omnibox.SuggestionAnswer.ImageLine;
 import org.chromium.components.omnibox.SuggestionAnswer.TextField;
@@ -394,9 +396,9 @@ public class AnswerSuggestionProcessorUnitTest {
         Assert.assertNotEquals(icon2, newIcon2);
         Assert.assertNotEquals(icon3, newIcon3);
 
-        Assert.assertThat(newIcon1, instanceOf(BitmapDrawable.class));
-        Assert.assertThat(newIcon2, instanceOf(BitmapDrawable.class));
-        Assert.assertThat(newIcon3, instanceOf(BitmapDrawable.class));
+        assertThat(newIcon1, instanceOf(BitmapDrawable.class));
+        assertThat(newIcon2, instanceOf(BitmapDrawable.class));
+        assertThat(newIcon3, instanceOf(BitmapDrawable.class));
 
         Assert.assertEquals(mBitmap, ((BitmapDrawable) newIcon1).getBitmap());
         Assert.assertEquals(mBitmap, ((BitmapDrawable) newIcon2).getBitmap());

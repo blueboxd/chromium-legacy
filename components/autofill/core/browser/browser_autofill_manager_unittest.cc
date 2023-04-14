@@ -241,6 +241,23 @@ class MockTouchToFillDelegate : public TouchToFillDelegate {
               (override));
 };
 
+class MockFastCheckoutDelegate : public FastCheckoutDelegate {
+ public:
+  MockFastCheckoutDelegate() = default;
+  MockFastCheckoutDelegate(const MockFastCheckoutDelegate&) = delete;
+  MockFastCheckoutDelegate& operator=(const MockFastCheckoutDelegate&) = delete;
+  ~MockFastCheckoutDelegate() override = default;
+
+  MOCK_METHOD(bool,
+              TryToShowFastCheckout,
+              (const FormData& form,
+               const FormFieldData& field,
+               base::WeakPtr<AutofillManager> autofill_manager),
+              (override));
+  MOCK_METHOD(bool, IsShowingFastCheckoutUI, (), (const, override));
+  MOCK_METHOD(void, HideFastCheckout, (bool), (override));
+};
+
 void ExpectFilledField(const char* expected_label,
                        const char* expected_name,
                        const char* expected_value,
@@ -502,6 +519,11 @@ class BrowserAutofillManagerTest : public testing::Test {
     ON_CALL(touch_to_fill_delegate(), IsShowingTouchToFill())
         .WillByDefault(Return(false));
 
+    browser_autofill_manager_->set_fast_checkout_delegate(
+        std::make_unique<MockFastCheckoutDelegate>());
+    ON_CALL(fast_checkout_delegate(), IsShowingFastCheckoutUI())
+        .WillByDefault(Return(false));
+
     auto test_strike_database = std::make_unique<TestStrikeDatabase>();
     strike_database_ = test_strike_database.get();
     autofill_client_.set_test_strike_database(std::move(test_strike_database));
@@ -571,6 +593,11 @@ class BrowserAutofillManagerTest : public testing::Test {
   MockTouchToFillDelegate& touch_to_fill_delegate() {
     return *static_cast<MockTouchToFillDelegate*>(
         browser_autofill_manager_->touch_to_fill_delegate());
+  }
+
+  MockFastCheckoutDelegate& fast_checkout_delegate() {
+    return *static_cast<MockFastCheckoutDelegate*>(
+        browser_autofill_manager_->fast_checkout_delegate());
   }
 
   void GetAutofillSuggestions(const FormData& form,
@@ -8587,39 +8614,6 @@ TEST_F(BrowserAutofillManagerTest,
   }
 }
 
-// Tests that a form with <select> field is accepted if <option> value (not
-// content) is quite long. Some websites use value to propagate long JSON to
-// JS-backed logic.
-TEST_F(BrowserAutofillManagerTest, FormWithLongOptionValuesIsAcceptable) {
-  FormData form;
-  form.name = u"MyForm";
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-
-  FormFieldData field;
-  test::CreateTestFormField("First name", "firstname", "", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Last name", "lastname", "", "text", &field);
-  form.fields.push_back(field);
-
-  // Prepare <select> field with long <option> values.
-  const size_t kOptionValueLength = 10240;
-  const std::string long_string(kOptionValueLength, 'a');
-  const std::vector<const char*> values(3, long_string.c_str());
-  const std::vector<const char*> contents{"A", "B", "C"};
-  test::CreateTestSelectField("Country", "country", "", values, contents,
-                              &field);
-  form.fields.push_back(field);
-
-  FormsSeen({form});
-
-  // Suggestions should be displayed.
-  for (const FormFieldData& form_field : form.fields) {
-    GetAutofillSuggestions(form, form_field);
-    EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
-  }
-}
-
 // Test that is_all_server_suggestions is true if there are only
 // full_server_card and masked_server_card on file.
 TEST_F(BrowserAutofillManagerTest,
@@ -10040,7 +10034,8 @@ TEST_F(BrowserAutofillManagerTest, HideAutofillPopupAndOtherPopups) {
   EXPECT_CALL(autofill_client_,
               HideAutofillPopup(PopupHidingReason::kRendererEvent));
   EXPECT_CALL(touch_to_fill_delegate(), HideTouchToFill);
-  EXPECT_CALL(autofill_client_, HideFastCheckout(/*allow_further_runs=*/false));
+  EXPECT_CALL(fast_checkout_delegate(),
+              HideFastCheckout(/*allow_further_runs=*/false));
   browser_autofill_manager_->OnHidePopup();
 }
 
@@ -10049,7 +10044,8 @@ TEST_F(BrowserAutofillManagerTest, OnDidEndTextFieldEditing) {
   EXPECT_CALL(autofill_client_,
               HideAutofillPopup(PopupHidingReason::kEndEditing));
   EXPECT_CALL(touch_to_fill_delegate(), HideTouchToFill).Times(0);
-  EXPECT_CALL(autofill_client_, HideFastCheckout(/*allow_further_runs=*/false))
+  EXPECT_CALL(fast_checkout_delegate(),
+              HideFastCheckout(/*allow_further_runs=*/false))
       .Times(0);
   browser_autofill_manager_->OnDidEndTextFieldEditing();
 }

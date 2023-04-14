@@ -40,8 +40,8 @@ import {ChromeVoxBackground} from './classic_background.js';
 import {ClipboardHandler} from './clipboard_handler.js';
 import {Color} from './color.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';
-import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {TypingEcho} from './editing/editable_text_base.js';
+import {DesktopAutomationInterface} from './event/desktop_automation_interface.js';
 import {EventSource} from './event_source.js';
 import {GestureInterface} from './gesture_interface.js';
 import {BackgroundKeyboardHandler} from './keyboard_handler.js';
@@ -77,6 +77,13 @@ export class CommandHandler extends CommandHandlerInterface {
      * @private {?AutomationNode}
      */
     this.imageNode_;
+
+    /**
+     * To support Command.SHOW_OPTIONS_PAGE, the state of the ChromeVox Page
+     * Migration Flag. (If enabled, should open in Chrome OS Settings App)
+     * @private {boolean|undefined}
+     */
+    this.isChromeVoxSettingsMigrationEnabled_;
   }
 
   /** @override */
@@ -94,7 +101,7 @@ export class CommandHandler extends CommandHandlerInterface {
         this.speakTimeAndDate_();
         return false;
       case Command.SHOW_OPTIONS_PAGE:
-        chrome.runtime.openOptionsPage();
+        this.showOptionsPage_();
         break;
       case Command.TOGGLE_STICKY_MODE:
         SmartStickyMode.instance.toggle();
@@ -1602,6 +1609,30 @@ export class CommandHandler extends CommandHandlerInterface {
             .go();
       }
     });
+  }
+
+  /**
+   * Launch ChromeVox options page. If migration enabled, launch settings app.
+   * TODO(268196299): Add test for showing options page.
+   * @private
+   */
+  async showOptionsPage_() {
+    if (this.isChromeVoxSettingsMigrationEnabled_ === undefined) {
+      this.isChromeVoxSettingsMigrationEnabled_ = await new Promise(resolve => {
+        chrome.accessibilityPrivate.isFeatureEnabled(
+            chrome.accessibilityPrivate.AccessibilityFeature
+                .CHROMEVOX_SETTINGS_MIGRATION,
+            resolve);
+      });
+    }
+
+    if (!this.isChromeVoxSettingsMigrationEnabled_) {
+      chrome.runtime.openOptionsPage();
+      return;
+    }
+
+    // Launch new ChromeVox settings (inside ChromeOS Settings App).
+    chrome.accessibilityPrivate.openSettingsSubpage('textToSpeech/chromeVox');
   }
 
   /**

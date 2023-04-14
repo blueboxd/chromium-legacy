@@ -167,18 +167,6 @@ class CORE_EXPORT NGInlineItem {
     shape_result_ = nullptr;
   }
 
-  bool HasStartEdge() const {
-    DCHECK(Type() == kOpenTag || Type() == kCloseTag);
-    // TODO(kojii): Should use break token when NG has its own tree building.
-    return !GetLayoutObject()->IsInlineElementContinuation();
-  }
-  bool HasEndEdge() const {
-    DCHECK(Type() == kOpenTag || Type() == kCloseTag);
-    // TODO(kojii): Should use break token when NG has its own tree building.
-    return !GetLayoutObject()->IsLayoutInline() ||
-           !To<LayoutInline>(GetLayoutObject())->Continuation();
-  }
-
   void SetStyleVariant(NGStyleVariant style_variant) {
     style_variant_ = static_cast<unsigned>(style_variant);
   }

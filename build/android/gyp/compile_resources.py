@@ -33,6 +33,8 @@ from util import manifest_utils
 from util import parallel
 from util import protoresources
 from util import resource_utils
+import action_helpers  # build_utils adds //build to sys.path.
+import zip_helpers
 
 
 # Pngs that we shouldn't convert to webp. Please add rationale when updating.
@@ -185,7 +187,7 @@ def _ParseArgs(args):
       '--verification-library-version-offset',
       help='Subtract this from static-library version for expectation files')
 
-  build_utils.AddDepfileOption(output_opts)
+  action_helpers.add_depfile_arg(output_opts)
   output_opts.add_argument('--arsc-path', help='Apk output for arsc format.')
   output_opts.add_argument('--proto-path', help='Apk output for proto format.')
   output_opts.add_argument(
@@ -206,19 +208,21 @@ def _ParseArgs(args):
   diff_utils.AddCommandLineFlags(parser)
   options = parser.parse_args(args)
 
-  options.include_resources = build_utils.ParseGnList(options.include_resources)
-  options.dependencies_res_zips = build_utils.ParseGnList(
+  options.include_resources = action_helpers.parse_gn_list(
+      options.include_resources)
+  options.dependencies_res_zips = action_helpers.parse_gn_list(
       options.dependencies_res_zips)
-  options.extra_res_packages = build_utils.ParseGnList(
+  options.extra_res_packages = action_helpers.parse_gn_list(
       options.extra_res_packages)
-  options.locale_allowlist = build_utils.ParseGnList(options.locale_allowlist)
-  options.shared_resources_allowlist_locales = build_utils.ParseGnList(
+  options.locale_allowlist = action_helpers.parse_gn_list(
+      options.locale_allowlist)
+  options.shared_resources_allowlist_locales = action_helpers.parse_gn_list(
       options.shared_resources_allowlist_locales)
-  options.resource_exclusion_exceptions = build_utils.ParseGnList(
+  options.resource_exclusion_exceptions = action_helpers.parse_gn_list(
       options.resource_exclusion_exceptions)
-  options.dependencies_res_zip_overlays = build_utils.ParseGnList(
+  options.dependencies_res_zip_overlays = action_helpers.parse_gn_list(
       options.dependencies_res_zip_overlays)
-  options.values_filter_rules = build_utils.ParseGnList(
+  options.values_filter_rules = action_helpers.parse_gn_list(
       options.values_filter_rules)
 
   if not options.arsc_path and not options.proto_path:
@@ -995,7 +999,8 @@ def main(args):
                                       rjava_build_options, options.srcjar_out,
                                       custom_root_package_name,
                                       grandparent_custom_package_name)
-      build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
+      with action_helpers.atomic_output(build.srcjar_path) as f:
+        zip_helpers.zip_directory(f, build.srcjar_dir)
 
     logging.debug('Copying outputs')
     _WriteOutputs(options, build)
@@ -1005,7 +1010,8 @@ def main(args):
     depfile_deps = (options.dependencies_res_zips +
                     options.dependencies_res_zip_overlays +
                     options.include_resources)
-    build_utils.WriteDepfile(options.depfile, options.srcjar_out, depfile_deps)
+    action_helpers.write_depfile(options.depfile, options.srcjar_out,
+                                 depfile_deps)
 
 
 if __name__ == '__main__':

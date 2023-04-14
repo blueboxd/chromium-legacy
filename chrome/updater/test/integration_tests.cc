@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -27,11 +28,14 @@
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/test/integration_test_commands.h"
 #include "chrome/updater/test/integration_tests_impl.h"
+#include "chrome/updater/test/request_matcher.h"
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util/unittest_util.h"
+#include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -60,24 +64,22 @@ namespace {
 
 void ExpectNoUpdateSequence(ScopedServer* test_server,
                             const std::string& app_id) {
-  test_server->ExpectOnce(
-      {base::BindRepeating(
-          RequestMatcherRegex,
-          base::StringPrintf(R"(.*"appid":"%s".*)", app_id.c_str()))},
-      base::StringPrintf(")]}'\n"
-                         R"({"response":{)"
-                         R"(  "protocol":"3.1",)"
-                         R"(  "app":[)"
-                         R"(    {)"
-                         R"(      "appid":"%s",)"
-                         R"(      "status":"ok",)"
-                         R"(      "updatecheck":{)"
-                         R"(        "status":"noupdate")"
-                         R"(      })"
-                         R"(    })"
-                         R"(  ])"
-                         R"(}})",
-                         app_id.c_str()));
+  test_server->ExpectOnce({request::GetContentMatcher(base::StringPrintf(
+                              R"(.*"appid":"%s".*)", app_id.c_str()))},
+                          base::StringPrintf(")]}'\n"
+                                             R"({"response":{)"
+                                             R"(  "protocol":"3.1",)"
+                                             R"(  "app":[)"
+                                             R"(    {)"
+                                             R"(      "appid":"%s",)"
+                                             R"(      "status":"ok",)"
+                                             R"(      "updatecheck":{)"
+                                             R"(        "status":"noupdate")"
+                                             R"(      })"
+                                             R"(    })"
+                                             R"(  ])"
+                                             R"(}})",
+                                             app_id.c_str()));
 }
 
 #endif  // BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
@@ -100,7 +102,9 @@ class IntegrationTest : public ::testing::Test {
     ASSERT_NO_FATAL_FAILURE(ExpectClean());
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // SetUpTestService();
-    ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234")));
+    ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234"),
+                                          GURL("http://localhost:1235"),
+                                          GURL("http://localhost:1236")));
 #endif
 #if BUILDFLAG(IS_LINUX)
     // On LUCI the XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS environment
@@ -125,6 +129,8 @@ class IntegrationTest : public ::testing::Test {
     if (!HasFailure()) {
       ExpectClean();
     }
+    ExpectNoCrashes();
+
     PrintLog();
 
     // TODO(crbug.com/1159189): Use a specific test output directory
@@ -138,6 +144,8 @@ class IntegrationTest : public ::testing::Test {
     ASSERT_TRUE(WaitForUpdaterExit());
     Clean();
   }
+
+  void ExpectNoCrashes() { test_commands_->ExpectNoCrashes(); }
 
   void CopyLog() { test_commands_->CopyLog(); }
 
@@ -153,6 +161,7 @@ class IntegrationTest : public ::testing::Test {
 
   void Uninstall() {
     ASSERT_TRUE(WaitForUpdaterExit());
+    ExpectNoCrashes();
     PrintLog();
     CopyLog();
     test_commands_->Uninstall();
@@ -167,7 +176,12 @@ class IntegrationTest : public ::testing::Test {
 
   void ExpectClean() { test_commands_->ExpectClean(); }
 
-  void EnterTestMode(const GURL& url) { test_commands_->EnterTestMode(url); }
+  void EnterTestMode(const GURL& update_url,
+                     const GURL& crash_upload_url,
+                     const GURL& device_management_url) {
+    test_commands_->EnterTestMode(update_url, crash_upload_url,
+                                  device_management_url);
+  }
 
   void ExitTestMode() { test_commands_->ExitTestMode(); }
 
@@ -291,6 +305,8 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->RunWakeAll();
   }
 
+  void RunCrashMe() { test_commands_->RunCrashMe(); }
+
   void RunWakeActive(int exit_code) {
     ASSERT_TRUE(WaitForUpdaterExit());
     test_commands_->RunWakeActive(exit_code);
@@ -379,6 +395,10 @@ class IntegrationTest : public ::testing::Test {
   }
 
   void SetupFakeLegacyUpdater() { test_commands_->SetupFakeLegacyUpdater(); }
+
+#if BUILDFLAG(IS_WIN)
+  void RunFakeLegacyUpdater() { test_commands_->RunFakeLegacyUpdater(); }
+#endif  // BUILDFLAG(IS_WIN)
 
   void ExpectLegacyUpdaterMigrated() {
     test_commands_->ExpectLegacyUpdaterMigrated();
@@ -511,8 +531,7 @@ TEST_F(IntegrationTest, QualifyUpdater) {
   // This instance is now qualified and should activate itself and check itself
   // for updates on the next check.
   test_server.ExpectOnce(
-      {base::BindRepeating(RequestMatcherRegex,
-                           base::StringPrintf(".*%s.*", kUpdaterAppId))},
+      {request::GetContentMatcher(base::StringPrintf(".*%s.*", kUpdaterAppId))},
       ")]}'\n");
   ASSERT_NO_FATAL_FAILURE(RunWake(0));
   ASSERT_TRUE(WaitForUpdaterExit());
@@ -578,8 +597,7 @@ TEST_F(IntegrationTest, ReportsActive) {
   ASSERT_NO_FATAL_FAILURE(ExpectActive("test1"));
   ASSERT_NO_FATAL_FAILURE(ExpectNotActive("test2"));
   test_server.ExpectOnce(
-      {base::BindRepeating(
-          RequestMatcherRegex,
+      {request::GetContentMatcher(
           R"(.*"appid":"test1","enabled":true,"ping":{"a":-2,.*)")},
       R"()]}')"
       "\n"
@@ -1023,16 +1041,14 @@ TEST_F(IntegrationTest, SameVersionUpdate) {
       R"(}})",
       app_id.c_str());
   test_server.ExpectOnce(
-      {base::BindRepeating(
-          RequestMatcherRegex,
+      {request::GetContentMatcher(
           R"(.*"updatecheck":{"sameversionupdate":true},"version":"0.1"}.*)")},
       response);
   ASSERT_NO_FATAL_FAILURE(CallServiceUpdate(
       app_id, "", UpdateService::PolicySameVersionUpdate::kAllowed));
 
   test_server.ExpectOnce(
-      {base::BindRepeating(RequestMatcherRegex,
-                           R"(.*"updatecheck":{},"version":"0.1"}.*)")},
+      {request::GetContentMatcher(R"(.*"updatecheck":{},"version":"0.1"}.*)")},
       response);
   ASSERT_NO_FATAL_FAILURE(CallServiceUpdate(
       app_id, "", UpdateService::PolicySameVersionUpdate::kNotAllowed));
@@ -1067,11 +1083,9 @@ TEST_F(IntegrationTest, InstallDataIndex) {
       app_id.c_str());
 
   test_server.ExpectOnce(
-      {base::BindRepeating(
-          RequestMatcherRegex,
-          base::StringPrintf(
-              R"(.*"data":\[{"index":"%s","name":"install"}],.*)",
-              install_data_index.c_str()))},
+      {request::GetContentMatcher(base::StringPrintf(
+          R"(.*"data":\[{"index":"%s","name":"install"}],.*)",
+          install_data_index.c_str()))},
       response);
 
   ASSERT_NO_FATAL_FAILURE(
@@ -1084,6 +1098,9 @@ TEST_F(IntegrationTest, InstallDataIndex) {
 
 TEST_F(IntegrationTest, MigrateLegacyUpdater) {
   ASSERT_NO_FATAL_FAILURE(SetupFakeLegacyUpdater());
+#if BUILDFLAG(IS_WIN)
+  ASSERT_NO_FATAL_FAILURE(RunFakeLegacyUpdater());
+#endif  // BUILDFLAG(IS_WIN)
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
@@ -1123,6 +1140,50 @@ TEST_F(IntegrationTest, LegacySilentOfflineInstall) {
   ASSERT_NO_FATAL_FAILURE(RunOfflineInstall(/*is_legacy_install=*/true,
                                             /*is_silent_install=*/true));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
+TEST_F(IntegrationTest, CrashUsageStatsEnabled) {
+#if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
+  GTEST_SKIP() << "Crash tests disabled for Win ASAN.";
+#else
+  ScopedServer test_server(test_commands_);
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  const std::string response;
+
+  // TODO(crbug.com/1430233): Add a matcher to verify the crash report
+  // contents. This is blocked by crbug.com/1430878.
+  test_server.ExpectOnce(
+      {request::GetPathMatcher(
+           base::StringPrintf(R"(%s\?product=%s&version=%s&guid=.*)",
+                              test_server.crash_report_path().c_str(),
+                              CRASH_PRODUCT_NAME, kUpdaterVersion)),
+       request::GetHeaderMatcher("User-Agent", R"(Crashpad/.*)"),
+       request::GetHeaderMatcher(
+           "Content-Type",
+           R"(multipart/form-data; boundary=---MultipartBoundary.*---)")},
+      response);
+  ExpectUninstallPing(&test_server);
+  RunCrashMe();
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  // Delete the dmp files generated by this test, so `ExpectNoCrashes` won't
+  // complain at TearDown.
+  absl::optional<base::FilePath> database_path(
+      GetCrashDatabasePath(GetTestScope()));
+  if (database_path || base::PathExists(*database_path)) {
+    base::FileEnumerator it(*database_path, true, base::FileEnumerator::FILES,
+                            FILE_PATH_LITERAL("*.dmp"),
+                            base::FileEnumerator::FolderSearchPolicy::ALL);
+    for (base::FilePath name = it.Next(); !name.empty(); name = it.Next()) {
+      VLOG(0) << "Deleting file at: " << name;
+      EXPECT_TRUE(base::DeleteFile(name));
+    }
+  }
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+#endif
 }
 
 #if BUILDFLAG(IS_WIN)

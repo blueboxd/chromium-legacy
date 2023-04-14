@@ -6,7 +6,10 @@
 
 #import "base/containers/contains.h"
 #import "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/common/bookmark_features.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -24,6 +27,7 @@ using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 @interface BookmarksFolderChooserMediator () <
+    AuthenticationServiceObserving,
     BookmarksFolderChooserMutator,
     BookmarksFolderChooserParentDataSource,
     SyncObserverModelBridge>
@@ -34,32 +38,52 @@ using bookmarks::BookmarkNode;
   BookmarksFolderChooserSubDataSourceImpl* _profileDataSource;
   // Data source from account bookmark model;
   BookmarksFolderChooserSubDataSourceImpl* _accountDataSource;
-  // List of nodes to hide when displaying folders. This is to avoid to move a
+  // Set of nodes to hide when displaying folders. This is to avoid to move a
   // folder inside a child folder. These are also the list of nodes that are
-  // being edited (moved to a folder).
+  // being edited (moved to a folder). This set may contain nodes from both the
+  // `_profileBookmarkModel` and `_accountBookmarkModel`.
   std::set<const BookmarkNode*> _editedNodes;
+  // Authentication service to get signin status.
+  AuthenticationService* _authService;
+  // Observer for signin status changes.
+  std::unique_ptr<AuthenticationServiceObserverBridge> _authServiceBridge;
   // Sync setup service indicates if the cloud slashed icon should be shown.
   SyncSetupService* _syncSetupService;
   // Observer for sync service status changes.
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
 }
 
-- (instancetype)initWithBookmarkModel:(BookmarkModel*)model
-                          editedNodes:(std::set<const BookmarkNode*>)nodes
-                     syncSetupService:(SyncSetupService*)syncSetupService
-                          syncService:(syncer::SyncService*)syncService {
-  DCHECK(model);
-  DCHECK(model->loaded());
+- (instancetype)
+    initWithProfileBookmarkModel:(BookmarkModel*)profileBookmarkModel
+            accountBookmarkModel:(BookmarkModel*)accountBookmarkModel
+                     editedNodes:(std::set<const BookmarkNode*>)editedNodes
+           authenticationService:(AuthenticationService*)authService
+                syncSetupService:(SyncSetupService*)syncSetupService
+                     syncService:(syncer::SyncService*)syncService {
+  DCHECK(profileBookmarkModel);
+  DCHECK(profileBookmarkModel->loaded());
+  if (base::FeatureList::IsEnabled(bookmarks::kEnableBookmarksAccountStorage)) {
+    DCHECK(accountBookmarkModel);
+    DCHECK(accountBookmarkModel->loaded());
+  } else {
+    DCHECK(!accountBookmarkModel);
+  }
+  DCHECK(authService->initialized());
 
   self = [super init];
   if (self) {
     _profileDataSource = [[BookmarksFolderChooserSubDataSourceImpl alloc]
-        initWithBookmarkModel:model
+        initWithBookmarkModel:profileBookmarkModel
              parentDataSource:self];
-    // TODO(crbug.com/140237): Get account bookmark model and set account data
-    // source here.
-    _accountDataSource = nil;
-    _editedNodes = std::move(nodes);
+    if (accountBookmarkModel) {
+      _accountDataSource = [[BookmarksFolderChooserSubDataSourceImpl alloc]
+          initWithBookmarkModel:accountBookmarkModel
+               parentDataSource:self];
+    }
+    _editedNodes = std::move(editedNodes);
+    _authService = authService;
+    _authServiceBridge = std::make_unique<AuthenticationServiceObserverBridge>(
+        authService, self);
     _syncSetupService = syncSetupService;
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));
   }
@@ -68,10 +92,14 @@ using bookmarks::BookmarkNode;
 
 - (void)disconnect {
   [_profileDataSource disconnect];
+  _profileDataSource.consumer = nil;
   _profileDataSource = nil;
   [_accountDataSource disconnect];
+  _accountDataSource.consumer = nil;
   _accountDataSource = nil;
   _editedNodes.clear();
+  _authService = nullptr;
+  _authServiceBridge = nullptr;
   _syncSetupService = nullptr;
   _syncObserverBridge = nullptr;
 }
@@ -83,6 +111,7 @@ using bookmarks::BookmarkNode;
 #pragma mark - BookmarksFolderChooserDataSource
 
 - (id<BookmarksFolderChooserSubDataSource>)accountDataSource {
+  DCHECK([self shouldShowAccountBookmarks]);
   return _accountDataSource;
 }
 
@@ -91,7 +120,22 @@ using bookmarks::BookmarkNode;
 }
 
 - (BOOL)shouldDisplayCloudIconForProfileBookmarks {
-  return bookmark_utils_ios::ShouldDisplayCloudSlashIcon(_syncSetupService);
+  return bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
+      _syncSetupService);
+}
+
+// TODO(crbug.com/1430453): Update logic when API to check whether butter is
+// enabled is available.
+- (BOOL)shouldShowAccountBookmarks {
+  if (!base::FeatureList::IsEnabled(
+          bookmarks::kEnableBookmarksAccountStorage)) {
+    return NO;
+  }
+
+  BOOL isSignedIn =
+      _authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin) &&
+      !_authService->HasPrimaryIdentity(signin::ConsentLevel::kSync);
+  return isSignedIn;
 }
 
 #pragma mark - BookmarksFolderChooserMutator
@@ -126,7 +170,6 @@ using bookmarks::BookmarkNode;
     // The selected folder has been deleted. Unset `_selectedFolderNode`.
     _selectedFolderNode = nil;
   }
-  [_consumer notifyModelUpdated];
 }
 
 - (void)bookmarkModelWillRemoveAllNodes:(const BookmarkModel*)bookmarkModel {
@@ -141,11 +184,15 @@ using bookmarks::BookmarkNode;
     // chooser.
     [_delegate bookmarksFolderChooserMediatorWantsDismissal:self];
   } else if (_selectedFolderNode->HasAncestor(bookmarkModel->root_node())) {
-    // The selected folder will be deleted. Unset `_selectedFolderNode`. The UI
-    // will be updated after the nodes are deleted in
-    // `BookmarksFolderChooserSubDataSourceImpl::bookmarkModelRemovedAllNodes`.
+    // The selected folder will be deleted. Unset `_selectedFolderNode`.
     _selectedFolderNode = nil;
   }
+}
+
+#pragma mark - AuthenticationServiceObserving
+
+- (void)onServiceStatusChanged {
+  [_consumer notifyModelUpdated];
 }
 
 #pragma mark - SyncObserverModelBridge

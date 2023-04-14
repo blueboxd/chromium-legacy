@@ -7,6 +7,8 @@ import {RequestHandler} from '//resources/ash/common/post_message_api/post_messa
 import {PromiseResolver} from '//resources/js/promise_resolver.js';
 import {ProjectorError} from 'chrome-untrusted://projector/common/message_types.js';
 
+import {browserProxy} from './untrusted_projector_browser_proxy.js';
+
 const TARGET_URL = 'chrome://projector/';
 
 // Maps video file id to promises of video files.
@@ -71,8 +73,7 @@ const CLIENT_DELEGATE = {
    * @return {!Promise<!projectorApp.NewScreencastPreconditionState>}
    */
   getNewScreencastPreconditionState() {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'getNewScreencastPreconditionState', []);
+    return browserProxy.getNewScreencastPreconditionState();
   },
 
   /**
@@ -150,8 +151,7 @@ const CLIENT_DELEGATE = {
    * @return {!Promise<boolean>}
    */
   shouldDownloadSoda() {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'shouldDownloadSoda', []);
+    return browserProxy.shouldDownloadSoda();
   },
 
   /**
@@ -161,8 +161,7 @@ const CLIENT_DELEGATE = {
    * @return {!Promise<boolean>}
    */
   installSoda() {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'installSoda', []);
+    return browserProxy.installSoda();
   },
 
   /**
@@ -239,29 +238,29 @@ export class UntrustedAppRequestHandler extends RequestHandler {
   constructor(parentWindow) {
     super(null, TARGET_URL, TARGET_URL);
     this.targetWindow_ = parentWindow;
+    this.callbackRouter_ = browserProxy.getProjectorCallbackRouter();
 
-    this.registerMethod('onNewScreencastPreconditionChanged', (args) => {
-      if (args.length !== 1) {
-        console.error(
-            'Invalid argument to onNewScreencastPreconditionChanged', args);
-        return;
-      }
-
-      getAppElement().onNewScreencastPreconditionChanged(args[0]);
-    });
-    this.registerMethod('onSodaInstallProgressUpdated', (args) => {
-      if (args.length !== 1 || isNaN(args[0])) {
-        return;
-      }
-
-      getAppElement().onSodaInstallProgressUpdated(args[0]);
-    });
-    this.registerMethod('onSodaInstalled', (args) => {
-      getAppElement().onSodaInstalled();
-    });
-    this.registerMethod('onSodaInstallError', (args) => {
+    this.callbackRouter_.onNewScreencastPreconditionChanged.addListener(
+        (precondition) => {
+          try {
+            getAppElement().onNewScreencastPreconditionChanged(precondition);
+          } catch (error) {
+            console.error(
+                'Unable to notify onNewScreencastPreconditionChanged method',
+                error);
+          }
+        });
+    this.callbackRouter_.onSodaInstallProgressUpdated.addListener(
+        (progress) => {
+          getAppElement().onSodaInstallProgressUpdated(progress);
+        });
+    this.callbackRouter_.onSodaInstallError.addListener(() => {
       getAppElement().onSodaInstallError();
     });
+    this.callbackRouter_.onSodaInstalled.addListener(() => {
+      getAppElement().onSodaInstalled();
+    });
+
     this.registerMethod('onScreencastsStateChange', (pendingScreencasts) => {
       getAppElement().onScreencastsStateChange(pendingScreencasts);
     });

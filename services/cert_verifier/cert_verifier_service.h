@@ -34,11 +34,13 @@ class CertVerifierServiceFactoryImpl;
 namespace internal {
 
 // This class will delete itself upon disconnection of its Mojo receiver.
-class CertVerifierServiceImpl : public mojom::CertVerifierService {
+class CertVerifierServiceImpl : public mojom::CertVerifierService,
+                                public net::CertVerifier::Observer {
  public:
   explicit CertVerifierServiceImpl(
       std::unique_ptr<net::CertVerifierWithUpdatableProc> verifier,
       mojo::PendingReceiver<mojom::CertVerifierService> receiver,
+      mojo::PendingRemote<mojom::CertVerifierServiceClient> client,
       scoped_refptr<CertNetFetcherURLLoader> cert_net_fetcher);
 
   // mojom::CertVerifierService implementation:
@@ -60,17 +62,21 @@ class CertVerifierServiceImpl : public mojom::CertVerifierService {
       base::WeakPtr<cert_verifier::CertVerifierServiceFactoryImpl>
           service_factory_impl);
 
-  // Update the wrapped verifier with new ChromeRootStoreData.
-  void UpdateChromeRootStoreData(
-      const net::ChromeRootStoreData* root_store_data);
+  // Update the wrapped verifier with CRLSet and ChromeRootStoreData.
+  void UpdateVerifierData(
+      const net::CertVerifyProcFactory::ImplParams& impl_params);
 
  private:
   ~CertVerifierServiceImpl() override;
+
+  // CertVerifier::Observer methods:
+  void OnCertVerifierChanged() override;
 
   void OnDisconnectFromService();
 
   std::unique_ptr<net::CertVerifierWithUpdatableProc> verifier_;
   mojo::Receiver<mojom::CertVerifierService> receiver_;
+  mojo::Remote<mojom::CertVerifierServiceClient> client_;
   scoped_refptr<CertNetFetcherURLLoader> cert_net_fetcher_;
   base::WeakPtr<cert_verifier::CertVerifierServiceFactoryImpl>
       service_factory_impl_;

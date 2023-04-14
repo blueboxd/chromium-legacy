@@ -46,21 +46,16 @@ class CORE_EXPORT LayoutTextFragment : public LayoutText {
   static LayoutTextFragment* Create(Node*,
                                     const String&,
                                     int start_offset,
-                                    int length,
-                                    LegacyLayout);
-  static LayoutTextFragment* CreateAnonymous(PseudoElement&,
-                                             const String&,
-                                             LegacyLayout);
+                                    int length);
+  static LayoutTextFragment* CreateAnonymous(PseudoElement&, const String&);
   static LayoutTextFragment* CreateAnonymous(PseudoElement&,
                                              const String&,
                                              unsigned start,
-                                             unsigned length,
-                                             LegacyLayout);
+                                             unsigned length);
   static LayoutTextFragment* CreateAnonymous(Document&,
                                              const String&,
                                              unsigned start,
-                                             unsigned length,
-                                             LegacyLayout);
+                                             unsigned length);
 
   void Trace(Visitor*) const override;
 
@@ -132,6 +127,11 @@ class CORE_EXPORT LayoutTextFragment : public LayoutText {
   void WillBeDestroyed() override;
 
  private:
+  void InsertedIntoTree() final {
+    NOT_DESTROYED();
+    valid_ng_items_ = false;
+    LayoutText::InsertedIntoTree();
+  }
   LayoutBlock* BlockForAccompanyingFirstLetter() const;
   UChar PreviousCharacter() const override;
   void TextDidChange() override;

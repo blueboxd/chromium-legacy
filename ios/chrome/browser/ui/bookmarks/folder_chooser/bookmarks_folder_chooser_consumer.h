@@ -38,7 +38,9 @@ class BookmarkNode;
 // Data source protocol to get data on demand.
 @protocol BookmarksFolderChooserDataSource <NSObject>
 
-// Data source from account bookmark model.
+// Data source from account bookmark model. Clients should call
+// `shouldShowAccountBookmarks` before accessing this property because if
+// that method returns `NO` then account data source may not be available.
 @property(nonatomic, readonly) id<BookmarksFolderChooserSubDataSource>
     accountDataSource;
 // Data source from profile bookmark model.
@@ -49,6 +51,8 @@ class BookmarkNode;
 - (const bookmarks::BookmarkNode*)selectedFolderNode;
 // Whether to display the cloud slashed icon beside the folders.
 - (BOOL)shouldDisplayCloudIconForProfileBookmarks;
+// Whether to show the account bookmarks section.
+- (BOOL)shouldShowAccountBookmarks;
 
 @end
 

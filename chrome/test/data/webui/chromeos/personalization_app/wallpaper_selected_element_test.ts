@@ -229,7 +229,32 @@ suite('WallpaperSelectedTest', function() {
   });
 
   test(
-      'shows daily refresh option on the google photos album view',
+      'shows daily refresh option on non-empty google photos album view',
+      async () => {
+        personalizationStore.data.wallpaper.currentSelected =
+            wallpaperProvider.currentWallpaper;
+        personalizationStore.data.wallpaper.loading.selected = false;
+
+        const album_id = 'test_album_id';
+        wallpaperSelectedElement = initElement(WallpaperSelected, {
+          'path': Paths.GOOGLE_PHOTOS_COLLECTION,
+          'googlePhotosAlbumId': album_id,
+        });
+        await waitAfterNextRender(wallpaperSelectedElement);
+
+        const dailyRefresh =
+            wallpaperSelectedElement.shadowRoot!.getElementById(
+                dailyRefreshButtonId);
+        assertTrue(!!dailyRefresh);
+
+        const refreshWallpaper =
+            wallpaperSelectedElement.shadowRoot!.getElementById(
+                'refreshWallpaper');
+        assertTrue(refreshWallpaper!.hidden);
+      });
+
+  test(
+      'hides daily refresh option on empty google photos album view',
       async () => {
         personalizationStore.data.wallpaper.currentSelected =
             wallpaperProvider.currentWallpaper;
@@ -244,7 +269,7 @@ suite('WallpaperSelectedTest', function() {
         const dailyRefresh =
             wallpaperSelectedElement.shadowRoot!.getElementById(
                 dailyRefreshButtonId);
-        assertTrue(!!dailyRefresh);
+        assertTrue(dailyRefresh!.hidden);
 
         const refreshWallpaper =
             wallpaperSelectedElement.shadowRoot!.getElementById(
@@ -308,7 +333,8 @@ suite('WallpaperSelectedTest', function() {
     // Set a Google Photos photo as current wallpaper.
     personalizationStore.data.wallpaper.currentSelected = {
       attribution: [],
-      description: undefined,
+      descriptionContent: '',
+      descriptionTitle: '',
       key: 'key',
       layout: WallpaperLayout.kStretch,
       type: WallpaperType.kOnceGooglePhotos,
@@ -340,7 +366,8 @@ suite('WallpaperSelectedTest', function() {
   test('shows attribution for device default wallpaper', async () => {
     const currentSelected: CurrentWallpaper = {
       attribution: ['testing attribution'],
-      description: undefined,
+      descriptionContent: '',
+      descriptionTitle: '',
       key: 'key',
       layout: WallpaperLayout.kStretch,
       type: WallpaperType.kDefault,
@@ -364,7 +391,8 @@ suite('WallpaperSelectedTest', function() {
         loadTimeData.overrideValues({isGooglePhotosSharedAlbumsEnabled: true});
         const currentSelected: CurrentWallpaper = {
           attribution: ['testing attribution'],
-          description: undefined,
+          descriptionContent: '',
+          descriptionTitle: '',
           key: 'key',
           layout: WallpaperLayout.kStretch,
           type: WallpaperType.kDefault,
@@ -396,7 +424,8 @@ suite('WallpaperSelectedTest', function() {
         loadTimeData.overrideValues({isGooglePhotosSharedAlbumsEnabled: true});
         personalizationStore.data.wallpaper.currentSelected = {
           attribution: ['testing attribution'],
-          description: undefined,
+          descriptionContent: '',
+          descriptionTitle: '',
           key: 'key',
           layout: WallpaperLayout.kStretch,
           type: WallpaperType.kDefault,
@@ -432,7 +461,8 @@ suite('WallpaperSelectedTest', function() {
         loadTimeData.overrideValues({isGooglePhotosSharedAlbumsEnabled: true});
         personalizationStore.data.wallpaper.currentSelected = {
           attribution: ['testing attribution'],
-          description: undefined,
+          descriptionContent: '',
+          descriptionTitle: '',
           key: 'key',
           layout: WallpaperLayout.kStretch,
           type: WallpaperType.kDefault,
@@ -466,7 +496,8 @@ suite('WallpaperSelectedTest', function() {
     loadTimeData.overrideValues({isGooglePhotosSharedAlbumsEnabled: true});
     personalizationStore.data.wallpaper.currentSelected = {
       attribution: ['testing attribution'],
-      description: undefined,
+      descriptionContent: '',
+      descriptionTitle: '',
       key: 'key',
       layout: WallpaperLayout.kStretch,
       type: WallpaperType.kDefault,
@@ -503,7 +534,8 @@ suite('WallpaperSelectedTest', function() {
         loadTimeData.overrideValues({isGooglePhotosSharedAlbumsEnabled: true});
         personalizationStore.data.wallpaper.currentSelected = {
           attribution: ['testing attribution'],
-          description: undefined,
+          descriptionContent: '',
+          descriptionTitle: '',
           key: 'key',
           layout: WallpaperLayout.kStretch,
           type: WallpaperType.kDefault,
@@ -532,7 +564,8 @@ suite('WallpaperSelectedTest', function() {
     loadTimeData.overrideValues({isPersonalizationJellyEnabled: true});
     personalizationStore.data.wallpaper.currentSelected = {
       attribution: ['testing'],
-      description: undefined,
+      descriptionContent: '',
+      descriptionTitle: '',
       key: 'key',
       layout: WallpaperLayout.kStretch,
       type: WallpaperType.kDefault,
@@ -555,10 +588,8 @@ suite('WallpaperSelectedTest', function() {
 
     personalizationStore.data.wallpaper.currentSelected = {
       ...personalizationStore.data.wallpaper.currentSelected,
-      description: {
-        content: 'content',
-        title: 'title',
-      },
+      descriptionContent: 'content',
+      descriptionTitle: 'title',
     };
     personalizationStore.notifyObservers();
     await waitAfterNextRender(wallpaperSelectedElement);
@@ -573,10 +604,8 @@ suite('WallpaperSelectedTest', function() {
     loadTimeData.overrideValues({isPersonalizationJellyEnabled: true});
     personalizationStore.data.wallpaper.currentSelected = {
       attribution: ['testing'],
-      description: {
-        content: 'content text',
-        title: 'title text',
-      },
+      descriptionContent: 'content text',
+      descriptionTitle: 'title text',
       key: 'key',
       layout: WallpaperLayout.kStretch,
       type: WallpaperType.kDefault,

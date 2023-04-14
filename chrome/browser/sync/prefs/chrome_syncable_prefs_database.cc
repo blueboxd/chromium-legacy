@@ -24,7 +24,7 @@
 #include "chromeos/ash/components/proximity_auth/proximity_auth_pref_names.h"
 #include "chromeos/ash/components/tether/pref_names.h"
 #include "components/metrics/demographics/user_demographics.h"
-#include "ui/chromeos/events/pref_names.h"
+#include "ui/events/ash/pref_names.h"
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/pref_names.h"
@@ -241,6 +241,8 @@ enum {
   kWebauthnCablev2Pairings = 100195,
   kDynamicColorColorScheme = 100196,
   kDynamicColorSeedColor = 100197,
+  kLongPressDiacritics = 100198,
+  kSidePanelCompanionEntryPinnedToToolbar = 100199,
 };
 }  // namespace syncable_prefs_ids
 
@@ -306,6 +308,9 @@ const auto& SyncablePreferences() {
           syncer::PREFERENCES}},
         {prefs::kShowHomeButton,
          {syncable_prefs_ids::kShowHomeButton, syncer::PREFERENCES}},
+        {prefs::kSidePanelCompanionEntryPinnedToToolbar,
+         {syncable_prefs_ids::kSidePanelCompanionEntryPinnedToToolbar,
+          syncer::PREFERENCES}},
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
         {extensions::pref_names::kPinnedExtensions,
@@ -556,6 +561,8 @@ const auto& SyncablePreferences() {
         {ash::prefs::kTouchpadSensitivity,
          {syncable_prefs_ids::kTouchpadSensitivity,
           syncer::OS_PRIORITY_PREFERENCES}},
+        {ash::prefs::kLongPressDiacriticsEnabled,
+         {syncable_prefs_ids::kLongPressDiacritics, syncer::OS_PREFERENCES}},
         {ash::prefs::kXkbAutoRepeatDelay,
          {syncable_prefs_ids::kXkbAutoRepeatDelay, syncer::OS_PREFERENCES}},
         {ash::prefs::kXkbAutoRepeatEnabled,

@@ -24,7 +24,8 @@ constexpr int kDeskNameViewHorizontalPadding = 6;
 
 }  // namespace
 
-DeskNameView::DeskNameView(DeskMiniView* mini_view) : mini_view_(mini_view) {
+DeskNameView::DeskNameView(DeskMiniView* mini_view)
+    : DeskTextfield(SystemTextfield::Type::kSmall), mini_view_(mini_view) {
   views::Builder<DeskNameView>(this)
       .SetBorder(views::CreateEmptyBorder(
           gfx::Insets::VH(0, kDeskNameViewHorizontalPadding)))
@@ -33,6 +34,13 @@ DeskNameView::DeskNameView(DeskMiniView* mini_view) : mini_view_(mini_view) {
 }
 
 DeskNameView::~DeskNameView() = default;
+
+void DeskNameView::OnFocus() {
+  DeskTextfield::OnFocus();
+
+  // When this gets focus, scroll to make `mini_view_` visible.
+  mini_view_->owner_bar()->ScrollToShowViewIfNecessary(mini_view_);
+}
 
 void DeskNameView::OnViewHighlighted() {
   if (!HasFocus()) {
@@ -46,7 +54,7 @@ void DeskNameView::OnViewHighlighted() {
   }
 
   DeskTextfield::OnViewHighlighted();
-  mini_view_->owner_bar()->ScrollToShowMiniViewIfNecessary(mini_view_);
+  mini_view_->owner_bar()->ScrollToShowViewIfNecessary(mini_view_);
 }
 
 BEGIN_METADATA(DeskNameView, DeskTextfield)

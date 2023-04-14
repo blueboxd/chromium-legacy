@@ -317,7 +317,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             @Override
             public void onDisabled() {
                 assert mNativeObj != 0 : "Native code is not initialized, but disable was called.";
-
+                assert ContentFeatureList.isEnabled(
+                        ContentFeatureList.AUTO_DISABLE_ACCESSIBILITY_V2)
+                    : "Disable was called, but Auto-disable accessibility is not enabled.";
                 // If the Auto-disable timer has expired, begin disabling the renderer, and clearing
                 // the Java-side caches.
                 // TODO(mschillaci): This will not re-enable for a Blink event. Fix.
@@ -410,7 +412,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             // generic Exception. (refer to crbug.com/1186406 or AutofillManagerWrapper ctor).
             try {
                 AutofillManager autofillManager = mContext.getSystemService(AutofillManager.class);
-                if (autofillManager != null && autofillManager.isEnabled()) {
+                if (autofillManager != null && autofillManager.isEnabled()
+                        && autofillManager.hasEnabledAutofillServices()) {
                     // Native accessibility is usually initialized when getAccessibilityNodeProvider
                     // is called, but the Autofill compatibility bridge only calls that method after
                     // it has received the first accessibility events. To solve the chicken-and-egg

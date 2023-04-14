@@ -525,10 +525,19 @@ void FillNavigationParamsRequest(
   // error srcdoc page. See test
   // NavigationRequestBrowserTest.OriginForSrcdocErrorPageInSubframe.
   if (blink::features::IsNewBaseUrlInheritanceBehaviorEnabled() &&
-      common_params.initiator_base_url &&
-      (common_params.url.IsAboutSrcdoc() || common_params.url.IsAboutBlank())) {
-    navigation_params->fallback_base_url =
-        common_params.initiator_base_url.value();
+      common_params.initiator_base_url) {
+    if (!common_params.url.IsAboutSrcdoc() &&
+        !common_params.url.IsAboutBlank()) {
+      // TODO(crbug.com/1430232): Remove this once we know the cause of the
+      // associated CHECK failure.
+      SCOPED_CRASH_KEY_BOOL("new_base_url", "rfi_base_url_is_empty",
+                            common_params.initiator_base_url->is_empty());
+      base::debug::DumpWithoutCrashing();
+      navigation_params->fallback_base_url = WebURL();
+    } else {
+      navigation_params->fallback_base_url =
+          common_params.initiator_base_url.value();
+    }
   } else {
     navigation_params->fallback_base_url = WebURL();
   }
@@ -584,8 +593,9 @@ blink::mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       has_download_sandbox_flag, from_ad);
 
   absl::optional<GURL> initiator_base_url;
-  if (info->requestor_base_url.IsValid())
+  if (info->requestor_base_url.IsValid()) {
     initiator_base_url = info->requestor_base_url;
+  }
   return blink::mojom::CommonNavigationParams::New(
       info->url_request.Url(), info->url_request.RequestorOrigin(),
       initiator_base_url, std::move(referrer),
@@ -2179,8 +2189,7 @@ void RenderFrameImpl::SnapshotAccessibilityTree(
     SnapshotAccessibilityTreeCallback callback) {
   ui::AXTreeUpdate response;
   AXTreeSnapshotterImpl snapshotter(this, ui::AXMode(params->ax_mode));
-  snapshotter.Snapshot(params->exclude_offscreen, params->max_nodes,
-                       params->timeout, &response);
+  snapshotter.Snapshot(params->max_nodes, params->timeout, &response);
   std::move(callback).Run(response);
 }
 
@@ -2537,6 +2546,7 @@ void RenderFrameImpl::CommitNavigation(
     const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
     mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
+    mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache,
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
     mojom::NavigationClient::CommitNavigationCallback commit_callback) {
@@ -2594,8 +2604,8 @@ void RenderFrameImpl::CommitNavigation(
       std::move(controller_service_worker_info), std::move(container_info),
       std::move(prefetch_loader_factory), std::move(topics_loader_factory),
       std::move(keep_alive_loader_factory), std::move(code_cache_host),
-      std::move(cookie_manager_info), std::move(storage_info),
-      std::move(document_state));
+      std::move(resource_cache), std::move(cookie_manager_info),
+      std::move(storage_info), std::move(document_state));
 
   // Handle a navigation that has a non-empty `data_url_as_string`, or perform
   // a "loadDataWithBaseURL" navigation, which is different from a normal data:
@@ -2716,6 +2726,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory,
     mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
+    mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache,
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
     std::unique_ptr<DocumentState> document_state,
@@ -2806,6 +2817,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
   DCHECK(!pending_loader_factories_);
   pending_loader_factories_ = std::move(new_loader_factories);
   pending_code_cache_host_ = std::move(code_cache_host);
+  pending_resource_cache_ = std::move(resource_cache);
   pending_cookie_manager_info_ = std::move(cookie_manager_info);
   pending_storage_info_ = std::move(storage_info);
   original_storage_key_ = navigation_params->storage_key;
@@ -3089,8 +3101,9 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
         is_browser_initiated, soft_navigation_heuristics_task_id);
 
     // If `commit_status` is Ok, RunCommitSameDocumentNavigationCallback() was
-    // called in DidCommitNavigationInternal(), and no further work is needed
-    // here.
+    // called in DidCommitNavigationInternal() or the NavigationApi deferred the
+    // commit and will call DidCommitNavigationInternal() when the commit is
+    // undeferred. Either way, no further work is needed here.
     if (commit_status == blink::mojom::CommitResult::Ok) {
       return;
     }
@@ -3786,6 +3799,11 @@ void RenderFrameImpl::DidCommitNavigation(
     }
   }
 
+  if (pending_resource_cache_.is_valid()) {
+    CHECK(base::FeatureList::IsEnabled(blink::features::kRemoteResourceCache));
+    frame_->SetResourceCacheRemote(std::move(pending_resource_cache_));
+  }
+
   DidCommitNavigationInternal(
       commit_type, transition, permissions_policy_header,
       document_policy_header,
@@ -3984,6 +4002,21 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
     observer.DidFinishSameDocumentNavigation();
 
   document_state->clear_navigation_state();
+}
+
+void RenderFrameImpl::DidFailAsyncSameDocumentCommit() {
+  // This is called when the Navigation API deferred a same-document commit,
+  // then fails the navigation without committing, so that we can run the
+  // callback if this commit was browser-initiated. If the commit is aborted
+  // due to frame detach or another navigation preempting it, NavigationState's
+  // destructor will run the callback instead.
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
+  if (NavigationState* navigation_state = document_state->navigation_state()) {
+    navigation_state->RunCommitSameDocumentNavigationCallback(
+        blink::mojom::CommitResult::Aborted);
+    document_state->clear_navigation_state();
+  }
 }
 
 void RenderFrameImpl::WillFreezePage() {
@@ -4332,17 +4365,9 @@ void RenderFrameImpl::DidObserveLoadingBehavior(
 }
 
 void RenderFrameImpl::DidObserveSubresourceLoad(
-    uint32_t number_of_subresources_loaded,
-    uint32_t number_of_subresource_loads_handled_by_service_worker,
-    bool pervasive_payload_requested,
-    int64_t pervasive_bytes_fetched,
-    int64_t total_bytes_fetched) {
+    const blink::SubresourceLoadMetrics& subresource_load_metrics) {
   for (auto& observer : observers_)
-    observer.DidObserveSubresourceLoad(
-        number_of_subresources_loaded,
-        number_of_subresource_loads_handled_by_service_worker,
-        pervasive_payload_requested, pervasive_bytes_fetched,
-        total_bytes_fetched);
+    observer.DidObserveSubresourceLoad(subresource_load_metrics);
 }
 
 void RenderFrameImpl::DidObserveNewFeatureUsage(
@@ -5266,7 +5291,10 @@ void RenderFrameImpl::BeginNavigation(
       frame_->IsOnInitialEmptyDocument() && first_navigation_in_render_frame &&
       // If this is a subframe history navigation that should be sent to the
       // browser, don't commit it synchronously.
-      !is_history_navigation_in_new_child_frame;
+      !is_history_navigation_in_new_child_frame &&
+      // Fullscreen navigation requests must go to the browser (for permission
+      // checks and other security measures).
+      !info->is_fullscreen_requested;
 
   if (should_do_synchronous_about_blank_navigation) {
     for (auto& observer : observers_)

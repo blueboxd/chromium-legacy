@@ -22,7 +22,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
-#include "chrome/browser/net/cert_verifier_configuration.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/preloading/preloading_features.h"
@@ -236,12 +236,6 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
 
   html_source->AddBoolean("isChildAccount", profile->IsChild());
-#if BUILDFLAG(IS_LINUX)
-  bool allow_qt_theme = base::FeatureList::IsEnabled(ui::kAllowQt);
-#else
-  bool allow_qt_theme = false;
-#endif
-  html_source->AddBoolean("allowQtTheme", allow_qt_theme);
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
@@ -524,6 +518,7 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
       {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
       {"openFileTypesAutomatically",
        IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY},
+      {"showDownloadsWhenFinished", IDS_SETTINGS_DOWNLOADS_SHOW_WHEN_FINISHED},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -1239,7 +1234,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"addVirtualCard", IDS_AUTOFILL_ADD_VIRTUAL_CARD},
     {"removeVirtualCard", IDS_AUTOFILL_REMOVE_VIRTUAL_CARD},
     {"editServerCard", IDS_AUTOFILL_EDIT_SERVER_CREDIT_CARD},
-    {"virtualCardAvailable", IDS_AUTOFILL_VIRTUAL_CARD_AVAILABLE_LABEL},
     {"virtualCardEnabled", IDS_AUTOFILL_VIRTUAL_CARD_ENABLED_LABEL},
     {"virtualCardTurnedOn", IDS_AUTOFILL_VIRTUAL_CARD_TURNED_ON_LABEL},
     {"unenrollVirtualCardDialogTitle",
@@ -1872,8 +1866,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "showChromeRootStoreCertificates",
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-      GetChromeCertVerifierServiceParams(/*local_state=*/nullptr)
-          ->use_chrome_root_store
+      SystemNetworkContextManager::GetInstance()->IsUsingChromeRootStore()
 #else
       true
 #endif

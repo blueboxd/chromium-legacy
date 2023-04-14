@@ -47,7 +47,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/views_features.h"
@@ -84,18 +83,22 @@ UrlIdentity GetUrlIdentity(Browser* browser,
 // Determines whether the current request should also display an
 // "Allow only this time" option in addition to the "Allow on every visit"
 // option.
-bool GetShowAllowThisTimeButton(
-    permissions::PermissionPrompt::Delegate& delegate) {
+bool IsOneTimePermission(permissions::PermissionPrompt::Delegate& delegate) {
   if (!base::FeatureList::IsEnabled(
-          permissions::features::kOneTimeGeolocationPermission)) {
-    return false;
-  }
-  if (delegate.Requests().size() > 1) {
+          permissions::features::kOneTimePermission)) {
     return false;
   }
   CHECK_GT(delegate.Requests().size(), 0u);
-  return delegate.Requests()[0]->request_type() ==
-         permissions::RequestType::kGeolocation;
+  for (auto* request : delegate.Requests()) {
+    auto content_setting_type =
+        permissions::RequestTypeToContentSettingsType(request->request_type());
+    if (!content_setting_type.has_value() ||
+        !permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+            content_setting_type.value())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 std::u16string GetWindowTitleInternal(
@@ -156,8 +159,9 @@ std::vector<permissions::PermissionRequest*> GetVisibleRequests(
     permissions::PermissionPrompt::Delegate& delegate) {
   std::vector<permissions::PermissionRequest*> visible_requests;
   for (permissions::PermissionRequest* request : delegate.Requests()) {
-    if (ShouldShowRequest(delegate, request->request_type()))
+    if (ShouldShowRequest(delegate, request->request_type())) {
       visible_requests.push_back(request);
+    }
   }
   return visible_requests;
 }
@@ -186,6 +190,8 @@ absl::optional<std::u16string> GetExtraText(
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PermissionPromptBubbleView,
                                       kPermissionPromptBubbleViewIdentifier);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PermissionPromptBubbleView,
+                                      kAllowButtonElementId);
 
 PermissionPromptBubbleView::PermissionPromptBubbleView(
     Browser* browser,
@@ -195,33 +201,52 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
     : browser_(browser),
       delegate_(delegate),
       permission_requested_time_(permission_requested_time),
+      is_one_time_permission_(IsOneTimePermission(*delegate.get())),
       url_identity_(GetUrlIdentity(browser, *delegate)),
       accessible_window_title_(GetAccessibleWindowTitleInternal(
           url_identity_.name,
           GetVisibleRequests(*delegate.get()))),
       window_title_(
-          GetWindowTitleInternal(url_identity_.name,
-                                 GetShowAllowThisTimeButton(*delegate.get()))) {
+          GetWindowTitleInternal(url_identity_.name, is_one_time_permission_)) {
   // Note that browser_ may be null in unit tests.
 
   // To prevent permissions being accepted accidentally, and as a security
   // measure against crbug.com/619429, permission prompts should not be accepted
   // as the default action.
   SetDefaultButton(ui::DIALOG_BUTTON_NONE);
+  SetPromptStyle(prompt_style);
 
-  if (GetShowAllowThisTimeButton(*delegate.get())) {
-    // Host every button in the extra_view to have full control over the width
-    // of the dialog.
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      DISTANCE_BUTTON_VERTICAL));
+
+  set_close_on_deactivate(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
+
+  for (permissions::PermissionRequest* request :
+       GetVisibleRequests(*delegate.get())) {
+    AddRequestLine(request);
+  }
+
+  absl::optional<std::u16string> extra_text = GetExtraText(*delegate.get());
+  if (extra_text.has_value()) {
+    auto* extra_text_label =
+        AddChildView(std::make_unique<views::Label>(extra_text.value()));
+    extra_text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    extra_text_label->SetMultiLine(true);
+  }
+
+  if (is_one_time_permission_) {
     SetButtons(ui::DIALOG_BUTTON_NONE);
 
-    views::LayoutProvider* const layout_provider = views::LayoutProvider::Get();
-    const int button_spacing = layout_provider->GetDistanceMetric(
-        views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
     auto buttons_container = std::make_unique<views::View>();
-    buttons_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-        button_spacing));
-
+    auto* buttons_layout_manager =
+        buttons_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+            DISTANCE_BUTTON_VERTICAL));
+    buttons_layout_manager->set_cross_axis_alignment(
+        views::BoxLayout::CrossAxisAlignment::kStretch);
     auto allow_once_button = std::make_unique<views::MdTextButton>(
         base::BindRepeating(
             &PermissionPromptBubbleView::AcceptPermissionThisTime,
@@ -232,6 +257,8 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
         base::BindRepeating(&PermissionPromptBubbleView::AcceptPermission,
                             base::Unretained(this)),
         l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW_ALWAYS));
+    allow_always_button->SetProperty(views::kElementIdentifierKey,
+                                     kAllowButtonElementId);
 
     auto block_button = std::make_unique<views::MdTextButton>(
         base::BindRepeating(&PermissionPromptBubbleView::DenyPermission,
@@ -257,7 +284,7 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
         buttons_container->AddChildView(std::move(allow_once_button));
       }
     }
-    SetExtraView(std::move(buttons_container));
+    AddChildView(std::move(buttons_container));
   } else {
     SetButtonLabel(ui::DIALOG_BUTTON_OK,
                    l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
@@ -270,28 +297,6 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
         &PermissionPromptBubbleView::DenyPermission, base::Unretained(this)));
   }
 
-  SetPromptStyle(prompt_style);
-
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-
-  set_close_on_deactivate(false);
-  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
-
-  for (permissions::PermissionRequest* request :
-       GetVisibleRequests(*delegate.get()))
-    AddRequestLine(request);
-
-  absl::optional<std::u16string> extra_text = GetExtraText(*delegate.get());
-  if (extra_text.has_value()) {
-    auto* extra_text_label =
-        AddChildView(std::make_unique<views::Label>(extra_text.value()));
-    extra_text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    extra_text_label->SetMultiLine(true);
-  }
   SetProperty(views::kElementIdentifierKey,
               kPermissionPromptBubbleViewIdentifier);
 }
@@ -305,15 +310,22 @@ void PermissionPromptBubbleView::Show() {
 
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
 
-  if (base::FeatureList::IsEnabled(views::features::kWidgetLayering))
+  if (!is_one_time_permission_) {
+    GetOkButton()->SetProperty(views::kElementIdentifierKey,
+                               kAllowButtonElementId);
+  }
+
+  if (base::FeatureList::IsEnabled(views::features::kWidgetLayering)) {
     widget->SetZOrderSublevel(ChromeWidgetSublevel::kSublevelSecurity);
+  }
 
   // If a browser window (or popup) other than the bubble parent has focus,
   // don't take focus.
-  if (browser_->window()->IsActive())
+  if (browser_->window()->IsActive()) {
     widget->Show();
-  else
+  } else {
     widget->ShowInactive();
+  }
 
   SizeToContents();
 }
@@ -356,8 +368,9 @@ void PermissionPromptBubbleView::UpdateAnchorPosition() {
         platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
   }
   SetHighlightedButton(configuration.highlighted_button);
-  if (!configuration.anchor_view)
+  if (!configuration.anchor_view) {
     SetAnchorRect(bubble_anchor_util::GetPageInfoAnchorRect(browser_));
+  }
   SetArrow(configuration.bubble_arrow);
 }
 
@@ -401,27 +414,31 @@ std::u16string PermissionPromptBubbleView::GetAccessibleWindowTitle() const {
 
 void PermissionPromptBubbleView::AcceptPermission() {
   RecordDecision(permissions::PermissionAction::GRANTED);
-  if (delegate_)
+  if (delegate_) {
     delegate_->Accept();
+  }
 }
 
 void PermissionPromptBubbleView::AcceptPermissionThisTime() {
   RecordDecision(permissions::PermissionAction::GRANTED_ONCE);
-  if (delegate_)
+  if (delegate_) {
     delegate_->AcceptThisTime();
+  }
 }
 
 void PermissionPromptBubbleView::DenyPermission() {
   RecordDecision(permissions::PermissionAction::DENIED);
-  if (delegate_)
+  if (delegate_) {
     delegate_->Deny();
+  }
 }
 
 void PermissionPromptBubbleView::ClosingPermission() {
   DCHECK_EQ(prompt_style_, PermissionPromptStyle::kBubbleOnly);
   RecordDecision(permissions::PermissionAction::DISMISSED);
-  if (delegate_)
+  if (delegate_) {
     delegate_->Dismiss();
+  }
 }
 
 void PermissionPromptBubbleView::RecordDecision(

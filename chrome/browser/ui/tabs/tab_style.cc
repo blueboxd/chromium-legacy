@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tabs/tab_style.h"
 
 #include "ui/base/pointer/touch_ui_controller.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/layout/layout_provider.h"
 
 namespace {
@@ -18,62 +19,68 @@ int GetSeparatorHeight() {
   return ui::TouchUiController::Get()->touch_ui() ? 24 : 20;
 }
 
+class GM2TabStyle : public TabStyle {
+ public:
+  ~GM2TabStyle() override = default;
+};
+class ChromeRefresh2023TabStyle : public GM2TabStyle {
+ public:
+  ~ChromeRefresh2023TabStyle() override = default;
+};
+
 }  // namespace
 
 TabStyle::~TabStyle() = default;
 
-float TabStyle::GetSelectedTabOpacity() const {
-  return kDefaultSelectedTabOpacity;
-}
-
-// static
-int TabStyle::GetStandardWidth() {
+int TabStyle::GetStandardWidth() const {
   // The standard tab width is 240 DIP including both separators.
   constexpr int kTabWidth = 240;
   // The overlap includes one separator, so subtract it here.
   return kTabWidth + GetTabOverlap() - kSeparatorThickness;
 }
 
-// static
-int TabStyle::GetPinnedWidth() {
+int TabStyle::GetPinnedWidth() const {
   constexpr int kTabPinnedContentWidth = 24;
   return kTabPinnedContentWidth + GetContentsHorizontalInsetSize() * 2;
 }
 
-// static
-int TabStyle::GetTabOverlap() {
+int TabStyle::GetTabOverlap() const {
   return GetCornerRadius() * 2 + kSeparatorThickness;
 }
 
-// static
-int TabStyle::GetDragHandleExtension(int height) {
+int TabStyle::GetDragHandleExtension(int height) const {
   return (height - GetSeparatorHeight()) / 2 - 1;
 }
 
-// static
-gfx::Insets TabStyle::GetTabInternalPadding() {
-  return gfx::Insets::VH(0, GetCornerRadius());
-}
-
-// static
-gfx::Size TabStyle::GetSeparatorSize() {
+gfx::Size TabStyle::GetSeparatorSize() const {
   return gfx::Size(kSeparatorThickness, GetSeparatorHeight());
 }
 
-// static
-gfx::Size TabStyle::GetPreviewImageSize() {
+gfx::Size TabStyle::GetPreviewImageSize() const {
   constexpr float kTabHoverCardPreviewImageAspectRatio = 16.0f / 9.0f;
   const int width = GetStandardWidth();
   return gfx::Size(width, width / kTabHoverCardPreviewImageAspectRatio);
 }
 
-// static
-int TabStyle::GetCornerRadius() {
+int TabStyle::GetCornerRadius() const {
   return views::LayoutProvider::Get()->GetCornerRadiusMetric(
       views::Emphasis::kHigh);
 }
 
-// static
-int TabStyle::GetContentsHorizontalInsetSize() {
+int TabStyle::GetContentsHorizontalInsetSize() const {
   return GetCornerRadius() * 2;
+}
+
+float TabStyle::GetSelectedTabOpacity() const {
+  return kDefaultSelectedTabOpacity;
+}
+
+// static
+const TabStyle* TabStyle::Get() {
+  static TabStyle* const tab_style =
+      features::IsChromeRefresh2023()
+          ? static_cast<TabStyle*>(new ChromeRefresh2023TabStyle())
+          : static_cast<TabStyle*>(new GM2TabStyle());
+
+  return tab_style;
 }

@@ -6,6 +6,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import './checkup_section.js';
 import './checkup_details_section.js';
 import './password_details_section.js';
@@ -17,8 +18,10 @@ import './side_bar.js';
 import './toolbar.js';
 
 import {CrToastElement} from '//resources/cr_elements/cr_toast/cr_toast.js';
+import {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import {CrContainerShadowMixin} from 'chrome://resources/cr_elements/cr_container_shadow_mixin.js';
 import {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
+import {FindShortcutMixin} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {getDeepActiveElement, listenOnce} from 'chrome://resources/js/util_ts.js';
 import {IronPagesElement} from 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
@@ -50,15 +53,16 @@ export interface PasswordManagerAppElement {
     content: IronPagesElement,
     drawer: CrDrawerElement,
     drawerTemplate: DomIf,
+    prefs: SettingsPrefsElement,
+    removalToast: CrToastElement,
     settings: SettingsSectionElement,
     sidebar: PasswordManagerSideBarElement,
     toolbar: PasswordManagerToolbarElement,
-    removalToast: CrToastElement,
   };
 }
 
-const PasswordManagerAppElementBase =
-    I18nMixin(CrContainerShadowMixin(RouteObserverMixin(PolymerElement)));
+const PasswordManagerAppElementBase = FindShortcutMixin(
+    I18nMixin(CrContainerShadowMixin(RouteObserverMixin(PolymerElement))));
 
 export class PasswordManagerAppElement extends PasswordManagerAppElementBase {
   static get is() {
@@ -71,6 +75,11 @@ export class PasswordManagerAppElement extends PasswordManagerAppElementBase {
 
   static get properties() {
     return {
+      /**
+       * Preferences state.
+       */
+      prefs_: Object,
+
       selectedPage_: String,
 
       narrow_: {
@@ -128,6 +137,20 @@ export class PasswordManagerAppElement extends PasswordManagerAppElementBase {
         this.enableShadowBehavior(true);
       }
     }, 0);
+  }
+
+  // Override FindShortcutMixin methods.
+  override handleFindShortcut(modalContextOpen: boolean): boolean {
+    if (modalContextOpen) {
+      return false;
+    }
+    this.$.toolbar.searchField.showAndFocus();
+    return true;
+  }
+
+  // Override FindShortcutMixin methods.
+  override searchInputHasFocus(): boolean {
+    return this.$.toolbar.searchField.isSearchFocused();
   }
 
   private onNarrowChanged_() {

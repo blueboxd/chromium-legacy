@@ -28,6 +28,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
+#include "components/sync/test/mock_commit_queue.h"
 #include "components/sync/test/mock_model_type_change_processor.h"
 #include "components/sync/test/model_type_store_test_util.h"
 #include "components/sync/test/test_matchers.h"
@@ -199,7 +200,8 @@ class SessionSyncBridgeTest : public ::testing::Test {
     syncer::DataTypeActivationRequest request;
     request.error_handler = base::DoNothing();
     request.cache_guid = kLocalCacheGuid;
-    request.authenticated_account_id = CoreAccountId("SomeAccountId");
+    request.authenticated_account_id =
+        CoreAccountId::FromGaiaId("SomeAccountId");
 
     base::RunLoop loop;
     real_processor_->OnSyncStarting(
@@ -209,6 +211,11 @@ class SessionSyncBridgeTest : public ::testing::Test {
               loop.Quit();
             }));
     loop.Run();
+
+    // ClientTagBasedModelTypeProcessor requires connecting before other
+    // interactions with the worker happen.
+    real_processor_->ConnectSync(
+        std::make_unique<testing::NiceMock<syncer::MockCommitQueue>>());
 
     sync_pb::ModelTypeState state;
     state.set_initial_sync_state(

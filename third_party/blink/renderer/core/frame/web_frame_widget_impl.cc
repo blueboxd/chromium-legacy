@@ -149,6 +149,7 @@
 #include "ui/gfx/geometry/point_conversions.h"
 
 #if BUILDFLAG(IS_MAC)
+#include "base/mac/foundation_util.h"
 #include "third_party/blink/renderer/core/editing/substring_util.h"
 #include "third_party/blink/renderer/platform/fonts/mac/attributed_string_type_converter.h"
 #include "ui/base/mojom/attributed_string.mojom-blink.h"
@@ -451,9 +452,6 @@ void WebFrameWidgetImpl::DragTargetDragEnter(
     DragOperationsMask operations_allowed,
     uint32_t key_modifiers,
     DragTargetDragEnterCallback callback) {
-  // Nothing must be dragging.
-  CHECK(!current_drag_data_);
-
   current_drag_data_ = DataObject::Create(web_drag_data);
   operations_allowed_ = operations_allowed;
 
@@ -469,9 +467,6 @@ void WebFrameWidgetImpl::DragTargetDragOver(
     DragOperationsMask operations_allowed,
     uint32_t key_modifiers,
     DragTargetDragOverCallback callback) {
-  // Must occur after dragenter.
-  CHECK(current_drag_data_);
-
   operations_allowed_ = operations_allowed;
 
   DragTargetDragEnterOrOver(point_in_viewport, screen_point, kDragOver,
@@ -483,13 +478,10 @@ void WebFrameWidgetImpl::DragTargetDragOver(
 void WebFrameWidgetImpl::DragTargetDragLeave(
     const gfx::PointF& point_in_viewport,
     const gfx::PointF& screen_point) {
-  // Must occur after dragenter.
-  CHECK(current_drag_data_);
-
   base::ScopedClosureRunner runner(
       WTF::BindOnce(&WebFrameWidgetImpl::CancelDrag, WrapWeakPersistent(this)));
 
-  if (IgnoreInputEvents()) {
+  if (IgnoreInputEvents() || !current_drag_data_) {
     return;
   }
 
@@ -508,14 +500,11 @@ void WebFrameWidgetImpl::DragTargetDrop(const WebDragData& web_drag_data,
                                         const gfx::PointF& screen_point,
                                         uint32_t key_modifiers,
                                         base::OnceClosure callback) {
-  // Must occur after dragenter.
-  CHECK(current_drag_data_);
-
   base::ScopedClosureRunner callback_runner(std::move(callback));
   base::ScopedClosureRunner runner(
       WTF::BindOnce(&WebFrameWidgetImpl::CancelDrag, WrapWeakPersistent(this)));
 
-  if (IgnoreInputEvents()) {
+  if (IgnoreInputEvents() || !current_drag_data_) {
     return;
   }
 
@@ -673,8 +662,10 @@ void WebFrameWidgetImpl::GetStringAtPoint(const gfx::Point& point_in_local_root,
   ui::mojom::blink::AttributedStringPtr attributed_string = nullptr;
   NSAttributedString* string = SubstringUtil::AttributedWordAtPoint(
       this, point_in_local_root, baseline_point);
-  if (string)
-    attributed_string = ui::mojom::blink::AttributedString::From(string);
+  if (string) {
+    attributed_string =
+        ui::mojom::blink::AttributedString::From(base::mac::NSToCFCast(string));
+  }
 
   std::move(callback).Run(std::move(attributed_string), baseline_point);
 }
@@ -1234,7 +1225,7 @@ void WebFrameWidgetImpl::DragTargetDragEnterOrOver(
     const gfx::PointF& screen_point,
     DragAction drag_action,
     uint32_t key_modifiers) {
-  if (IgnoreInputEvents()) {
+  if (IgnoreInputEvents() || !current_drag_data_) {
     CancelDrag();
     return;
   }
@@ -1284,12 +1275,7 @@ void WebFrameWidgetImpl::SendScrollEndEventFromImplSide(
     // VisualViewport currently handles scroll but not scrollends. If that
     // changes, we should consider firing scrollend at the visualviewport
     // instead of simply bailing.
-    Node* document_node = nullptr;
-    if (View()->MainFrameImpl() &&
-        View()->MainFrameImpl()->GetFrame()->GetDocument()) {
-      document_node = View()->MainFrameImpl()->GetFrame()->GetDocument();
-    }
-    if (affects_outer_viewport || target_node != document_node) {
+    if (affects_outer_viewport || !target_node->IsDocumentNode()) {
       target_node->GetDocument().EnqueueScrollEndEventForNode(target_node);
     }
   }
@@ -1525,7 +1511,7 @@ void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
       SetBackgroundColor(background_color);
       if (background_color != data.last_background_color) {
         LocalRootImpl()->GetFrame()->DidChangeBackgroundColor(
-            background_color, false /* color_adjust */);
+            SkColor4f::FromColor(background_color), false /* color_adjust */);
         data.last_background_color = background_color;
       }
     }

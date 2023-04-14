@@ -86,7 +86,7 @@
 #include "components/account_manager_core/pref_names.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/chromeos/events/pref_names.h"
+#include "ui/events/ash/pref_names.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_CHROMEOS_ASH)
@@ -182,6 +182,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[autofill::prefs::kAutofillCreditCardFidoAuthEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  (*s_allowlist)[autofill::prefs::kAutofillPaymentMethodsMandatoryReauth] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#endif
   (*s_allowlist)[payments::kCanMakePaymentEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[bookmarks::prefs::kShowBookmarkBar] =
@@ -260,6 +264,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[drive::prefs::kDriveFsBulkPinningEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
+  (*s_allowlist)[::prefs::kDownloadBubblePartialViewEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Miscellaneous. TODO(stevenjb): categorize.
   (*s_allowlist)[::prefs::kEnableDoNotTrack] =
@@ -492,6 +498,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kLiveCaptionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kLiveCaptionLanguageCode] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_allowlist)[::prefs::kLiveTranslateEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kLiveTranslateTargetLanguageCode] =
       settings_api::PrefType::PREF_TYPE_STRING;
 #endif
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -903,6 +913,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kLanguageRemapExternalMetaKeyTo] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::ash::prefs::kSendFunctionKeys] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::ash::prefs::kLongPressDiacriticsEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::ash::prefs::kXkbAutoRepeatEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

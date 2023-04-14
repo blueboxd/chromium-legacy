@@ -84,6 +84,8 @@
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/css_toggle.h"
+#include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
+#include "third_party/blink/renderer/core/dom/css_toggle_key_handling.h"
 #include "third_party/blink/renderer/core/dom/css_toggle_map.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -191,7 +193,8 @@
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/core/style/toggle_root_list.h"
+#include "third_party/blink/renderer/core/style/toggle_trigger.h"
+#include "third_party/blink/renderer/core/style/toggle_trigger_list.h"
 #include "third_party/blink/renderer/core/svg/svg_a_element.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_href.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -340,89 +343,6 @@ bool IsRootEditableElementWithCounting(const Element& element) {
     }
   }
   return is_editable;
-}
-
-// Return true if we're absolutely sure that this node is going to establish a
-// new formatting context that can serve as a layout engine boundary (NG
-// vs. legacy). Whether or not it establishes a new formatting context cannot be
-// accurately determined until we have actually created the object (see
-// LayoutBlockFlow::CreatesNewFormattingContext()), so this function may (and is
-// allowed to) return false negatives, but NEVER false positives.
-bool DefinitelyNewFormattingContext(const Node& node,
-                                    const ComputedStyle& style) {
-  auto display = style.Display();
-  if (display == EDisplay::kInline || display == EDisplay::kContents ||
-      display == EDisplay::kTableRowGroup ||
-      display == EDisplay::kTableHeaderGroup ||
-      display == EDisplay::kTableFooterGroup ||
-      display == EDisplay::kTableRow || display == EDisplay::kTableCaption ||
-      display == EDisplay::kTableCell ||
-      display == EDisplay::kTableColumnGroup ||
-      display == EDisplay::kTableColumn) {
-    return false;
-  }
-
-  // ::marker may establish a formatting context but still have some dependency
-  // on the originating list item, so return false.
-  if (node.IsMarkerPseudoElement()) {
-    return false;
-  }
-  // The only block-container display types that potentially don't establish a
-  // new formatting context, are 'block' and 'list-item'.
-  if (display != EDisplay::kBlock && display != EDisplay::kListItem) {
-    // DETAILS and SUMMARY elements partially or completely ignore the display
-    // type, though, and may end up disregarding the display type and just
-    // create block containers. And those don't necessarily create a formatting
-    // context.
-    if (!IsA<HTMLDetailsElement>(node) && !IsA<HTMLSummaryElement>(node)) {
-      return true;
-    }
-  }
-  if (style.IsScrollContainer()) {
-    return node.GetDocument().ViewportDefiningElement() != &node;
-  }
-  if (style.HasOutOfFlowPosition() ||
-      (style.IsFloating() &&
-       !style.IsInsideDisplayIgnoringFloatingChildren()) ||
-      style.ContainsPaint() || style.ContainsLayout() ||
-      style.SpecifiesColumns()) {
-    return true;
-  }
-  if (node.GetDocument().documentElement() == &node) {
-    return true;
-  }
-  if (const Element* element = DynamicTo<Element>(&node)) {
-    // Replaced elements are considered to create a new formatting context, in
-    // the sense that they can't possibly have children that participate in the
-    // same formatting context as their parent.
-    if (IsA<HTMLObjectElement>(element)) {
-      // OBJECT elements are special, though. If they use fallback content, they
-      // act as regular elements, and we can't claim that they establish a
-      // formatting context, just based on element type, since children may very
-      // well participate in the same formatting context as the parent of the
-      // OBJECT.
-      if (!element->ChildrenCanHaveStyle()) {
-        return true;
-      }
-    } else if (IsA<HTMLImageElement>(element) ||
-               element->IsFormControlElement() || element->IsMediaElement() ||
-               element->IsFrameOwnerElement()) {
-      return true;
-    }
-
-    // foreignObject is absolutely-positioned for the purposes of CSS layout and
-    // so always establishes a new formatting context.
-    // https://svgwg.org/svg2-draft/embedded.html#Placement
-    if (IsA<SVGForeignObjectElement>(element)) {
-      return true;
-    }
-  }
-  // An item inside a flex or grid container always establishes a new formatting
-  // context. Same for a child of a MathML or custom layout container.
-  if (const Node* parent = LayoutTreeBuilderTraversal::LayoutParent(node)) {
-    return parent->ComputedStyleRef().BlockifiesChildren();
-  }
-  return false;
 }
 
 bool HasLeftwardDirection(const Element& element) {
@@ -2673,9 +2593,8 @@ bool Element::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return LayoutObjectIsNeeded(style.GetDisplayStyle());
 }
 
-LayoutObject* Element::CreateLayoutObject(const ComputedStyle& style,
-                                          LegacyLayout legacy) {
-  return LayoutObject::CreateObject(this, style, legacy);
+LayoutObject* Element::CreateLayoutObject(const ComputedStyle& style) {
+  return LayoutObject::CreateObject(this, style);
 }
 
 Node::InsertionNotificationRequest Element::InsertedInto(
@@ -2762,8 +2681,6 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
   bool was_in_document = insertion_point.isConnected();
 
   SetComputedStyle(nullptr);
-  SetStyleShouldForceLegacyLayout(false);
-  SetShouldForceLegacyLayoutForChild(false);
 
   if (Fullscreen::IsFullscreenElement(*this)) {
     SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
@@ -2876,11 +2793,16 @@ void Element::AttachLayoutTree(AttachContext& context) {
   bool being_rendered =
       context.parent && style && !style->IsEnsuredInDisplayNone();
 
+  bool skipped_container_descendants = SkippedContainerStyleRecalc();
+
   if (!being_rendered && !ChildNeedsReattachLayoutTree()) {
-    // We may have skipped recalc for this Element if it's a container query
-    // container. This recalc must be resumed now, since we're not going to
+    // We may have skipped recalc for this Element if it's a query container for
+    // size queries. This recalc must be resumed now, since we're not going to
     // create a LayoutObject for the Element after all.
-    style_engine.RecalcStyleForNonLayoutNGContainerDescendants(*this);
+    if (skipped_container_descendants) {
+      style_engine.UpdateStyleForNonEligibleContainer(*this);
+      skipped_container_descendants = false;
+    }
     // The above recalc may have marked some descendant for reattach, which
     // would set the child-needs flag.
     if (!ChildNeedsReattachLayoutTree()) {
@@ -2892,13 +2814,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   AttachContext children_context(context);
   LayoutObject* layout_object = nullptr;
   if (being_rendered) {
-    AdjustForceLegacyLayout(style, &children_context.force_legacy_layout);
-
-    LegacyLayout legacy = children_context.force_legacy_layout
-                              ? LegacyLayout::kForce
-                              : LegacyLayout::kAuto;
-
-    LayoutTreeBuilderForElement builder(*this, context, style, legacy);
+    LayoutTreeBuilderForElement builder(*this, context, style);
     builder.CreateLayoutObject();
 
     layout_object = GetLayoutObject();
@@ -2923,21 +2839,14 @@ void Element::AttachLayoutTree(AttachContext& context) {
   }
   children_context.use_previous_in_flow = true;
 
-  if (children_context.force_legacy_layout ||
-      (being_rendered && !children_context.parent) ||
-      (layout_object &&
-       !IsGuaranteedToEnterNGBlockNodeLayout(*layout_object))) {
-    // If the created LayoutObject is forced into a legacy object, or if a
-    // LayoutObject was not created, even if we thought it should have been, for
-    // instance because the parent LayoutObject returns false for
-    // IsChildAllowed, we need to complete the skipped style recalc for size
-    // query containers as we would not have an NGBlockNode to resume from.
-    style_engine.RecalcStyleForNonLayoutNGContainerDescendants(*this);
+  if (skipped_container_descendants &&
+      (!layout_object || !layout_object->IsEligibleForSizeContainment())) {
+    style_engine.UpdateStyleForNonEligibleContainer(*this);
+    skipped_container_descendants = false;
   }
 
-  bool skip_container_descendants = SkippedContainerStyleRecalc();
   bool skip_lock_descendants = ChildStyleRecalcBlockedByDisplayLock();
-  if (skip_container_descendants || skip_lock_descendants) {
+  if (skipped_container_descendants || skip_lock_descendants) {
     // Since we block style recalc on descendants of this node due to display
     // locking or container queries, none of its descendants should have the
     // NeedsReattachLayoutTree bit set.
@@ -3075,7 +2984,6 @@ void Element::ReattachLayoutTreeChildren(base::PassKey<StyleEngine>) {
   context.performing_reattach = performing_reattach;
   context.use_previous_in_flow = true;
   context.next_sibling_valid = true;
-  AdjustForceLegacyLayout(GetComputedStyle(), &context.force_legacy_layout);
 
   AttachPrecedingPseudoElements(context);
 
@@ -3195,12 +3103,8 @@ bool Element::SkipStyleRecalcForContainer(
     DCHECK(!child_change.TraverseChildren(*this));
     return false;
   }
-  if (child_change.ReattachLayoutTree()) {
-    if (!LayoutObjectIsNeeded(style) || style.Display() == EDisplay::kInline ||
-        style.IsDisplayTableType()) {
-      return false;
-    }
-  } else {
+
+  if (!child_change.ReattachLayoutTree()) {
     LayoutObject* layout_object = GetLayoutObject();
     if (!layout_object || !layout_object->SelfNeedsLayout() ||
         !layout_object->IsEligibleForSizeContainment() ||
@@ -3619,8 +3523,17 @@ StyleRecalcChange Element::RecalcOwnStyle(
     // ending up calling StyleResolver::ResolveStyle()).
     new_style = StyleForLayoutObject(new_style_recalc_context);
   }
+  bool base_is_display_none =
+      !new_style ||
+      new_style->GetBaseComputedStyleOrThis()->Display() == EDisplay::kNone;
   if (new_style && !ShouldStoreComputedStyle(*new_style)) {
     new_style = nullptr;
+    if (auto* ax_cache = GetDocument().ExistingAXObjectCache()) {
+      // UpdateCacheAfterNodeIsAttached is normally called from
+      // Node::AttachLayoutTree, but if this Element is display:none, there's no
+      // guarantee that AttachLayoutTree will be called.
+      ax_cache->UpdateCacheAfterNodeIsAttached(this);
+    }
   }
 
   if (HighlightRecalc highlight_recalc =
@@ -3727,7 +3640,14 @@ StyleRecalcChange Element::RecalcOwnStyle(
     ElementRareDataVector* rare_data = GetElementRareData();
     if (ElementAnimations* element_animations =
             rare_data->GetElementAnimations()) {
-      element_animations->CssAnimations().Cancel();
+      // The animation should only be canceled when the base style is
+      // display:none. If new_style is otherwise set to display:none, then it
+      // means an animation set display:none, and an animation shouldn't
+      // cancel itself in this case.
+      if (base_is_display_none ||
+          !RuntimeEnabledFeatures::CSSDisplayAnimationEnabled()) {
+        element_animations->CssAnimations().Cancel();
+      }
     }
     rare_data->SetContainerQueryEvaluator(nullptr);
     rare_data->ClearPseudoElements();
@@ -3783,9 +3703,6 @@ StyleRecalcChange Element::RecalcOwnStyle(
     if (old_style && !child_change.RecalcChildren() &&
         old_style->HasChildDependentFlags()) {
       new_style->CopyChildDependentFlagsFrom(*old_style);
-    }
-    if (UpdateForceLegacyLayout(*new_style, old_style.get())) {
-      child_change = child_change.ForceReattachLayoutTree();
     }
     auto* evaluator =
         ComputeContainerQueryEvaluator(*this, old_style.get(), *new_style);
@@ -3922,10 +3839,6 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     AttachContext reattach_context;
     reattach_context.parent =
         LayoutTreeBuilderTraversal::ParentLayoutObject(*this);
-    if (reattach_context.parent &&
-        reattach_context.parent->ForceLegacyLayoutForChildren()) {
-      reattach_context.force_legacy_layout = true;
-    }
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
@@ -4021,27 +3934,6 @@ void Element::RebuildFirstLetterLayoutTree() {
 
 void Element::RebuildMarkerLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   if (PseudoElement* marker = GetPseudoElement(kPseudoIdMarker)) {
-    // In legacy layout, we need to reattach a marker in this case:
-    //
-    // <ol><li id="outer"><div id="inner">0</div></li></ol>
-    // <script>outer.offsetTop; inner.style.display = "inline";</script>
-    //
-    // An outside marker must be aligned with the 1st line box in the
-    // list item, so legacy layout will insert it inside #inner.
-    // But when #inner becomes inline, the LayoutBlockFlow is destroyed,
-    // so we need to reinsert it.
-    //
-    // TODO: SetNeedsReattachLayoutTree() should not be called at this point.
-    // The layout tree rebuilding for markers should be done similarly to how
-    // it is done for ::first-letter.
-    if (LayoutObject* layout_object = GetLayoutObject()) {
-      if (layout_object->IsListItem() && !marker->GetLayoutObject()) {
-        StyleEngine::AllowMarkForReattachFromRebuildLayoutTreeScope scope(
-            GetDocument().GetStyleEngine());
-        marker->SetNeedsReattachLayoutTree();
-      }
-    }
-
     if (marker->NeedsRebuildLayoutTree(whitespace_attacher)) {
       marker->RebuildLayoutTree(whitespace_attacher);
     }
@@ -4377,15 +4269,6 @@ void Element::SetRegionCaptureCropId(
 const RegionCaptureCropId* Element::GetRegionCaptureCropId() const {
   return HasRareData() ? GetElementRareData()->GetRegionCaptureCropId()
                        : nullptr;
-}
-
-bool Element::IsSupportedByRegionCapture() const {
-  return base::FeatureList::IsEnabled(
-      features::kRegionCaptureExperimentalSubtypes);
-}
-
-void Element::ResetForceLegacyLayoutForPrinting() {
-  SetShouldForceLegacyLayoutForChild(false);
 }
 
 void Element::SetCustomElementDefinition(CustomElementDefinition* definition) {
@@ -5032,6 +4915,19 @@ void Element::DefaultEventHandler(Event& event) {
         }
       }
     }
+  } else if (event.type() == event_type_names::kKeydown) {
+    auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+    if (keyboard_event) {
+      bool handled =
+          css_toggle_key_handling::HandleKeydownEvent(this, *keyboard_event);
+      if (handled) {
+        event.SetDefaultHandled();
+        // We don't want to continue to the default handlers for base
+        // classes, because those are likely to treat the same event as
+        // scrolling the page.
+        return;
+      }
+    }
   }
 
   ContainerNode::DefaultEventHandler(event);
@@ -5044,10 +4940,12 @@ bool Element::DelegatesFocus() const {
 // https://html.spec.whatwg.org/C/#get-the-focusable-area
 Element* Element::GetFocusableArea(bool in_descendant_traversal) const {
   // GetFocusableArea should only be called as a fallback on elements which
-  // aren't focusable, unless we are looking for an initial focus candidate for
-  // a dialog element in which case we are looking for a keyboard focusable
-  // element and will be calling this for mouse focusable elements.
-  DCHECK(!IsFocusable() || FocusController::AdjustedTabIndex(*this) < 0);
+  // aren't mouse and keyboard focusable, unless we are looking for an initial
+  // focus candidate for a dialog element in which case we are looking for a
+  // keyboard focusable element and will be calling this for mouse focusable
+  // elements.
+  DCHECK(!IsMouseFocusable() || !IsKeyboardFocusable() ||
+         FocusController::AdjustedTabIndex(*this) < 0);
 
   // TODO(crbug.com/1018619): Support AREA -> IMG delegation.
   if (!DelegatesFocus()) {
@@ -5441,12 +5339,24 @@ bool Element::IsFocusableStyleAfterUpdate() const {
   return IsFocusableStyle();
 }
 
+bool Element::HasNoFocusableChildren() const {
+  for (Node* node = FlatTreeTraversal::FirstChild(*this); node;
+       node = FlatTreeTraversal::Next(*node, this)) {
+    if (Element* element = DynamicTo<Element>(node)) {
+      if (element->IsKeyboardFocusable()) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 bool Element::IsKeyboardFocusable() const {
   return isConnected() && IsFocusableStyleAfterUpdate() &&
          ((SupportsFocus() &&
            GetIntegralAttribute(html_names::kTabindexAttr, 0) >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
-           IsScrollableNode(this)));
+           IsScrollableNode(this) && HasNoFocusableChildren()));
 }
 
 bool Element::IsMouseFocusable() const {
@@ -5512,22 +5422,6 @@ bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
     }
   }
   return activated;
-}
-
-bool Element::StyleShouldForceLegacyLayoutInternal() const {
-  return GetElementRareData()->StyleShouldForceLegacyLayout();
-}
-
-void Element::SetStyleShouldForceLegacyLayoutInternal(bool force) {
-  EnsureElementRareData().SetStyleShouldForceLegacyLayout(force);
-}
-
-bool Element::ShouldForceLegacyLayoutForChildInternal() const {
-  return GetElementRareData()->ShouldForceLegacyLayoutForChild();
-}
-
-void Element::SetShouldForceLegacyLayoutForChildInternal(bool force) {
-  EnsureElementRareData().SetShouldForceLegacyLayoutForChild(force);
 }
 
 bool Element::HasUndoStack() const {
@@ -5658,162 +5552,6 @@ bool Element::AffectedByMultipleHas() const {
 
 void Element::SetAffectedByMultipleHas() {
   EnsureElementRareData().SetAffectedByMultipleHas();
-}
-
-// TODO(1229581): Remove this function.
-bool Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
-                                      const ComputedStyle* old_style) {
-  // ::first-letter may cause structure discrepancies between DOM and layout
-  //  tree (in layout the layout object will be wrapped around the actual text
-  //  layout object, which may be deep down in the tree somewhere, while in DOM,
-  //  the pseudo element will be a direct child of the node that matched the
-  //  ::first-letter selector). Because of that, it's going to be tricky to
-  //  determine whether we need to force legacy layout or not. Luckily, the
-  //  ::first-letter pseudo element cannot introduce the need for legacy layout
-  //  on its own, so just bail. We'll do whatever the parent layout object does.
-  if (IsFirstLetterPseudoElement()) {
-    return false;
-  }
-  bool needs_reattach = false;
-  bool old_force = old_style && ShouldForceLegacyLayout();
-  SetStyleShouldForceLegacyLayout(false);
-  if (ShouldForceLegacyLayout()) {
-    if (!old_force) {
-      if (const LayoutObject* layout_object = GetLayoutObject()) {
-        // Forced legacy layout is inherited down the layout tree, so even if we
-        // just decided here on the DOM side that we need forced legacy layout,
-        // check with the LayoutObject whether this is news and that it really
-        // needs to be reattached.
-        if (!layout_object->ForceLegacyLayout()) {
-          needs_reattach = true;
-        }
-      }
-    }
-    // If we're inside an NG fragmentation context, we need the entire
-    // fragmentation context to fall back to legacy layout. Note that once this
-    // has happened, the fragmentation context will be locked to legacy layout,
-    // even if all the reasons for requiring it in the first place disappear
-    // (e.g. if the only reason was a table, and that table is removed, we'll
-    // still be using legacy layout).
-    if (new_style.InsideFragmentationContextWithNondeterministicEngine()) {
-      if (ForceLegacyLayoutInFragmentationContext(new_style)) {
-        needs_reattach = true;
-      }
-    } else {
-      // Note that even if we also previously forced legacy layout, we may need
-      // to introduce forced legacy layout in the ancestry, e.g. if this element
-      // no longer establishes a new formatting context.
-      if (ForceLegacyLayoutInFormattingContext(new_style)) {
-        needs_reattach = true;
-      }
-    }
-  } else if (old_force) {
-    // TODO(mstensho): If we have ancestors that got legacy layout just because
-    // of this child, we should clean it up, and switch the subtree back to NG,
-    // rather than being stuck with legacy forever. Also make sure to reattach
-    // the Document, if we want to switch from LayoutView to LayoutNGView (may
-    // happen after printing).
-    needs_reattach = true;
-  }
-  return needs_reattach;
-}
-
-bool Element::ForceLegacyLayoutInFormattingContext(
-    const ComputedStyle& new_style) {
-  bool found_fc = DefinitelyNewFormattingContext(*this, new_style);
-  bool needs_reattach = false;
-
-  Element* container_recalc_root =
-      GetDocument().GetStyleEngine().GetContainerForContainerStyleRecalc();
-
-  // TODO(mstensho): Missing call to SetNeedsReattachLayoutTree() on Document
-  // here. We may have to re-attach it if we want to change from LayoutNGView to
-  // LayoutView.
-  for (Element* ancestor = this; !found_fc;) {
-    ancestor =
-        DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*ancestor));
-    if (!ancestor || ancestor->ShouldForceLegacyLayoutForChild()) {
-      break;
-    }
-    const ComputedStyle* style = ancestor->GetComputedStyle();
-
-    if (style->Display() == EDisplay::kNone) {
-      break;
-    }
-
-    found_fc = DefinitelyNewFormattingContext(*ancestor, *style);
-    ancestor->SetShouldForceLegacyLayoutForChild(true);
-    ancestor->SetNeedsReattachLayoutTree();
-    needs_reattach = true;
-
-    if (container_recalc_root == ancestor) {
-      DCHECK(found_fc)
-          << "A size query container is always a formatting context";
-      break;
-    }
-  }
-  return needs_reattach;
-}
-
-bool Element::ForceLegacyLayoutInFragmentationContext(
-    const ComputedStyle& new_style) {
-  DCHECK(new_style.InsideFragmentationContextWithNondeterministicEngine());
-
-  // This element cannot be laid out natively by LayoutNG. We now need to switch
-  // all enclosing block fragmentation contexts over to using legacy
-  // layout. Find the element that establishes the fragmentation context, and
-  // switch it over to legacy layout. Note that we walk the parent chain here,
-  // and not the containing block chain. This means that we may get false
-  // positives; e.g. if there's an absolutely positioned table, whose containing
-  // block of the table is on the outside of the fragmentation context, we're
-  // still going to fall back to legacy.
-
-  Element* container_recalc_root =
-      GetDocument().GetStyleEngine().GetContainerForContainerStyleRecalc();
-
-  Element* parent;
-  Element* legacy_root;
-  for (legacy_root = this; legacy_root != container_recalc_root;
-       legacy_root = parent) {
-    parent =
-        DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*legacy_root));
-
-    // Note that even if we also previously forced legacy layout, we may need to
-    // introduce forced legacy layout in the ancestry, e.g. if legacy_root no
-    // longer establishes a new formatting context. It is therefore important
-    // that we first check if we reached the root, and potentially continue the
-    // journey in search of a formatting context root.
-    if (!parent ||
-        !parent->GetComputedStyle()
-             ->InsideFragmentationContextWithNondeterministicEngine()) {
-      break;
-    }
-  }
-
-  // Only mark for reattachment if needed. Unnecessary reattachments may lead to
-  // over-invalidation and also printing problems; if we re-attach a frameset
-  // when printing, the frames will show up blank.
-  bool needs_reattach = false;
-  if (!legacy_root->ShouldForceLegacyLayoutForChild()) {
-    legacy_root->SetShouldForceLegacyLayoutForChild(true);
-    legacy_root->SetNeedsReattachLayoutTree();
-    needs_reattach = true;
-  }
-
-  // When we have found the outermost fragmentation context candidate, we need
-  // to make sure to mark for legacy all the way up to the element that we can
-  // tell for sure will establish a new formatting context.
-  //
-  // E.g. <span style="columns:1;"> will trigger legacy layout fallback (false
-  // positive). When this happens, we need to walk all the way up to the
-  // ancestor that establishes a formatting context, and this is the subtree
-  // that will force legacy layout.
-  if (legacy_root->ForceLegacyLayoutInFormattingContext(
-          *legacy_root->GetComputedStyle())) {
-    needs_reattach = true;
-  }
-
-  return needs_reattach;
 }
 
 bool Element::IsFocusedElementInDocument() const {
@@ -6034,15 +5772,6 @@ void Element::HideNonce() {
           ->GetContentSecurityPolicy()
           ->HasHeaderDeliveredPolicy()) {
     setAttribute(html_names::kNonceAttr, g_empty_atom);
-  }
-}
-
-void Element::AdjustForceLegacyLayout(const ComputedStyle* style,
-                                      bool* should_force_legacy_layout) {
-  // If an element requires forced legacy layout, all descendants need it too
-  // (but see below):
-  if (ShouldForceLegacyLayout()) {
-    *should_force_legacy_layout = true;
   }
 }
 
@@ -6838,12 +6567,6 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(
 
   pseudo_element->SetComputedStyle(pseudo_style);
 
-  // Most pseudo elements get their style calculated upon insertion, which means
-  // that we don't get to RecalcOwnStyle() (regular DOM nodes do get there,
-  // since their style isn't calculated directly upon insertion). Need to check
-  // now if the element requires legacy layout.
-  pseudo_element->UpdateForceLegacyLayout(*pseudo_style, nullptr);
-
   probe::PseudoElementCreated(pseudo_element);
 
   return pseudo_element;
@@ -7044,14 +6767,14 @@ scoped_refptr<const ComputedStyle> Element::StyleForPseudoElement(
     return result;
   }
 
-  // Use the originating DOM element when resolving style for ::transition*
+  // We use the originating DOM element when resolving style for ::transition*
   // pseudo elements instead of the element's direct ancestor (which could
   // itself be a pseudo element).
-  auto* originating_element = IsTransitionPseudoElement(GetPseudoId())
-                                  ? GetDocument().documentElement()
-                                  : this;
+  DCHECK(!IsTransitionPseudoElement(GetPseudoId()) ||
+         (GetDocument().documentElement() == this));
+
   return GetDocument().GetStyleResolver().ResolveStyle(
-      originating_element, style_recalc_context, request);
+      this, style_recalc_context, request);
 }
 
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
@@ -8126,6 +7849,8 @@ void Element::AddPropertyToPresentationAttributeStyle(
     CSSPropertyID property_id,
     CSSValueID identifier) {
   DCHECK(IsStyledElement());
+  DCHECK(!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled() ||
+         property_id != CSSPropertyID::kWhiteSpace);
   style->SetLonghandProperty(property_id,
                              *CSSIdentifierValue::Create(identifier));
 }
@@ -8394,7 +8119,13 @@ void Element::RecalcTransitionPseudoTreeStyle(
     const Vector<AtomicString>& view_transition_names) {
   DCHECK_EQ(this, GetDocument().documentElement());
 
-  auto* old_transition_pseudo = GetPseudoElement(kPseudoIdViewTransition);
+  DisplayLockStyleScope display_lock_style_scope(this);
+  if (!display_lock_style_scope.ShouldUpdateChildStyle()) {
+    return;
+  }
+
+  PseudoElement* old_transition_pseudo =
+      GetPseudoElement(kPseudoIdViewTransition);
   if (view_transition_names.empty() && !old_transition_pseudo) {
     return;
   }
@@ -8404,7 +8135,7 @@ void Element::RecalcTransitionPseudoTreeStyle(
       StyleRecalcContext::FromInclusiveAncestors(
           *GetDocument().documentElement());
 
-  auto* transition_pseudo =
+  PseudoElement* transition_pseudo =
       UpdatePseudoElement(kPseudoIdViewTransition, style_recalc_change,
                           style_recalc_context, g_null_atom);
   if (!transition_pseudo) {
@@ -8412,14 +8143,14 @@ void Element::RecalcTransitionPseudoTreeStyle(
   }
 
   for (const auto& view_transition_name : view_transition_names) {
-    auto* container_pseudo = transition_pseudo->UpdatePseudoElement(
+    PseudoElement* container_pseudo = transition_pseudo->UpdatePseudoElement(
         kPseudoIdViewTransitionGroup, style_recalc_change, style_recalc_context,
         view_transition_name);
     if (!container_pseudo) {
       continue;
     }
 
-    auto* wrapper_pseudo = container_pseudo->UpdatePseudoElement(
+    PseudoElement* wrapper_pseudo = container_pseudo->UpdatePseudoElement(
         kPseudoIdViewTransitionImagePair, style_recalc_change,
         style_recalc_context, view_transition_name);
     if (!wrapper_pseudo) {
@@ -8468,10 +8199,56 @@ bool Element::IsInertRoot() {
 
 FocusgroupFlags Element::GetFocusgroupFlags() const {
   ExecutionContext* context = GetExecutionContext();
-  if (!RuntimeEnabledFeatures::FocusgroupEnabled(context) || !HasRareData()) {
-    return FocusgroupFlags::kNone;
+
+  // Explicit flags from the focusgroup attribute take priority, when present.
+  if (RuntimeEnabledFeatures::FocusgroupEnabled(context) && HasRareData()) {
+    FocusgroupFlags flags = GetElementRareData()->GetFocusgroupFlags();
+    if (flags != FocusgroupFlags::kNone) {
+      return flags;
+    }
   }
-  return GetElementRareData()->GetFocusgroupFlags();
+
+  // We can also have flags from inferred roles from CSS toggles.
+  if (CSSToggleInference* toggle_inference =
+          GetDocument().GetCSSToggleInference()) {
+    DCHECK(RuntimeEnabledFeatures::CSSTogglesEnabled(context));
+    switch (toggle_inference->RoleForElement(this)) {
+      case CSSToggleRole::kNone:
+      case CSSToggleRole::kAccordion:
+      case CSSToggleRole::kAccordionItem:
+      case CSSToggleRole::kAccordionItemButton:
+      case CSSToggleRole::kButton:
+      case CSSToggleRole::kButtonWithPopup:
+      case CSSToggleRole::kCheckbox:
+      case CSSToggleRole::kDisclosure:
+      case CSSToggleRole::kDisclosureButton:
+      case CSSToggleRole::kListboxItem:
+      case CSSToggleRole::kRadioItem:
+      case CSSToggleRole::kTab:
+      case CSSToggleRole::kTabPanel:
+      case CSSToggleRole::kTreeItem:
+        break;
+      case CSSToggleRole::kCheckboxGroup:
+        return FocusgroupFlags::kHorizontal | FocusgroupFlags::kVertical |
+               FocusgroupFlags::kForCSSToggleCheckbox;
+      case CSSToggleRole::kListbox:
+        return FocusgroupFlags::kHorizontal | FocusgroupFlags::kVertical |
+               FocusgroupFlags::kForCSSToggleListboxItem;
+      case CSSToggleRole::kRadioGroup:
+        return FocusgroupFlags::kHorizontal | FocusgroupFlags::kVertical |
+               FocusgroupFlags::kForCSSToggleRadioItem;
+      case CSSToggleRole::kTabContainer:
+        return FocusgroupFlags::kHorizontal | FocusgroupFlags::kVertical |
+               FocusgroupFlags::kForCSSToggleTab;
+      case CSSToggleRole::kTree:
+      case CSSToggleRole::kTreeGroup:
+        // TODO(https://crbug.com/1250716): This needs more work!
+        return FocusgroupFlags::kVertical |
+               FocusgroupFlags::kForCSSToggleTreeItem;
+    }
+  }
+
+  return FocusgroupFlags::kNone;
 }
 
 bool Element::checkVisibility(CheckVisibilityOptions* options) const {
@@ -8898,8 +8675,8 @@ AnchorScrollData* Element::GetAnchorScrollData() const {
 }
 
 void Element::IncrementImplicitlyAnchoredElementCount() {
-  if (RuntimeEnabledFeatures::CSSAnchorPositioningEnabled() &&
-      !HasImplicitlyAnchoredElement() && GetLayoutObject()) {
+  DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
+  if (!HasImplicitlyAnchoredElement() && GetLayoutObject()) {
     // Invalidate layout to populate itself into NGPhysical/LogicalAnchorQuery.
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kAnchorPositioning);
@@ -8912,11 +8689,7 @@ void Element::DecrementImplicitlyAnchoredElementCount() {
   GetElementRareData()->DecrementImplicitlyAnchoredElementCount();
 }
 bool Element::HasImplicitlyAnchoredElement() const {
-  // TODO(xiaochengh): <selectmenu> should also use the implicitly anchored
-  // element count on element rare data.
-  return (HasRareData() &&
-          GetElementRareData()->HasImplicitlyAnchoredElement()) ||
-         IsA<HTMLSelectMenuElement>(this);
+  return HasRareData() && GetElementRareData()->HasImplicitlyAnchoredElement();
 }
 
 AnchorElementObserver* Element::GetAnchorElementObserver() const {
@@ -8926,6 +8699,7 @@ AnchorElementObserver* Element::GetAnchorElementObserver() const {
 
 AnchorElementObserver& Element::EnsureAnchorElementObserver() {
   DCHECK(IsHTMLElement());
+  DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
   return EnsureElementRareData().EnsureAnchorElementObserver(
       To<HTMLElement>(this));
 }

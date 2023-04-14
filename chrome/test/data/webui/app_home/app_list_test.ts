@@ -13,6 +13,7 @@ import {AppHomeUserAction} from 'chrome://apps/app_home_utils.js';
 import {AppListElement} from 'chrome://apps/app_list.js';
 import {BrowserProxy} from 'chrome://apps/browser_proxy.js';
 import {DeprecatedAppsLinkElement} from 'chrome://apps/deprecated_apps_link.js';
+import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -200,24 +201,20 @@ suite('AppListTest', () => {
     const appInfo = apps.appList[0]!;
 
     const openInWindow =
-        contextMenu.querySelector<HTMLElement>('#openInWindow');
+        contextMenu.querySelector<CrCheckboxElement>('#openInWindow');
     assertTrue(!!openInWindow);
     assertEquals(openInWindow.hidden, !appInfo.isLocallyInstalled);
-    assertEquals(
-        openInWindow.querySelector('cr-checkbox')!.checked,
-        appInfo.openInWindow);
+    assertEquals(openInWindow.checked, appInfo.openInWindow);
 
     const launchOnStartup =
-        contextMenu.querySelector<HTMLElement>('#launchOnStartup');
+        contextMenu.querySelector<CrCheckboxElement>('#launchOnStartup');
     assertTrue(!!launchOnStartup);
     assertEquals(launchOnStartup.hidden, !appInfo.mayShowRunOnOsLoginMode);
 
     assertEquals(
-        launchOnStartup.querySelector('cr-checkbox')!.checked,
+        launchOnStartup.checked,
         (appInfo.runOnOsLoginMode !== RunOnOsLoginMode.kNotRun));
-    assertEquals(
-        launchOnStartup.querySelector('cr-checkbox')!.disabled,
-        !appInfo.mayToggleRunOnOsLoginMode);
+    assertEquals(launchOnStartup.disabled, !appInfo.mayToggleRunOnOsLoginMode);
 
     assertTrue(!!contextMenu.querySelector('#createShortcut'));
     assertTrue(!!contextMenu.querySelector('#uninstall'));
@@ -278,11 +275,9 @@ suite('AppListTest', () => {
     const contextMenu = appItem.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!contextMenu);
     const openInWindow =
-        contextMenu.querySelector<HTMLElement>('#openInWindow');
+        contextMenu.querySelector<CrCheckboxElement>('#openInWindow');
     assertTrue(!!openInWindow);
-    const checkbox = openInWindow.querySelector('cr-checkbox');
-    assertTrue(!!checkbox);
-    assertFalse(checkbox.checked);
+    assertFalse(openInWindow.checked);
     assertFalse(apps.appList[0]!.openInWindow);
 
     // Clicking on the open in window context menu option to toggle
@@ -291,7 +286,7 @@ suite('AppListTest', () => {
     await callbackRouterRemote.$.flushForTesting();
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
-    assertTrue(openInWindow.querySelector('cr-checkbox')!.checked);
+    assertTrue(openInWindow.checked);
     assertEquals(
         1,
         metricsPrivateMock.getUserActionCount(
@@ -302,29 +297,12 @@ suite('AppListTest', () => {
     await callbackRouterRemote.$.flushForTesting();
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
-    assertFalse(openInWindow.querySelector('cr-checkbox')!.checked);
+    assertFalse(openInWindow.checked);
     assertEquals(
         1,
         metricsPrivateMock.getUserActionCount(
             AppHomeUserAction.OPEN_IN_WINDOW_UNCHECKED));
     assertFalse(apps.appList[0]!.openInWindow);
-
-    // Clicking the checkbox should have the same effect as click the parent
-    // menu item.
-    checkbox.click();
-    appItem.dispatchEvent(new CustomEvent('contextmenu'));
-    await callbackRouterRemote.$.flushForTesting();
-    flush();
-    assertTrue(openInWindow.querySelector('cr-checkbox')!.checked);
-    assertEquals(
-        2,
-        metricsPrivateMock.getUserActionCount(
-            AppHomeUserAction.OPEN_IN_WINDOW_CHECKED));
-    assertTrue(apps.appList[0]!.openInWindow);
-    assertEquals(
-        4,
-        metricsPrivateMock.getUserActionCount(
-            AppHomeUserAction.CONTEXT_MENU_TRIGGERED));
   });
 
   test('toggle launch on startup', async () => {
@@ -337,11 +315,9 @@ suite('AppListTest', () => {
     const contextMenu = appItem.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!contextMenu);
     const launchOnStartup =
-        contextMenu.querySelector<HTMLElement>('#launchOnStartup');
+        contextMenu.querySelector<CrCheckboxElement>('#launchOnStartup');
     assertTrue(!!launchOnStartup);
-    const checkbox = launchOnStartup.querySelector('cr-checkbox');
-    assertTrue(!!checkbox);
-    assertFalse(checkbox.checked);
+    assertFalse(launchOnStartup.checked);
     assertEquals(apps.appList[0]!.runOnOsLoginMode, RunOnOsLoginMode.kNotRun);
 
     // Clicking on the launch on startup context menu option to toggle
@@ -350,7 +326,7 @@ suite('AppListTest', () => {
     await callbackRouterRemote.$.flushForTesting();
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
-    assertTrue(launchOnStartup.querySelector('cr-checkbox')!.checked);
+    assertTrue(launchOnStartup.checked);
     assertEquals(
         1,
         metricsPrivateMock.getUserActionCount(
@@ -361,29 +337,12 @@ suite('AppListTest', () => {
     await callbackRouterRemote.$.flushForTesting();
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
-    assertFalse(launchOnStartup.querySelector('cr-checkbox')!.checked);
+    assertFalse(launchOnStartup.checked);
     assertEquals(
         1,
         metricsPrivateMock.getUserActionCount(
             AppHomeUserAction.LAUNCH_AT_STARTUP_UNCHECKED));
     assertEquals(apps.appList[0]!.runOnOsLoginMode, RunOnOsLoginMode.kNotRun);
-
-    // Clicking the checkbox should have the same effect as click the parent
-    // menu item.
-    checkbox.click();
-    await callbackRouterRemote.$.flushForTesting();
-    flush();
-    appItem.dispatchEvent(new CustomEvent('contextmenu'));
-    assertTrue(launchOnStartup!.querySelector('cr-checkbox')!.checked);
-    assertEquals(
-        2,
-        metricsPrivateMock.getUserActionCount(
-            AppHomeUserAction.LAUNCH_AT_STARTUP_CHECKED));
-    assertEquals(apps.appList[0]!.runOnOsLoginMode, RunOnOsLoginMode.kWindowed);
-    assertEquals(
-        4,
-        metricsPrivateMock.getUserActionCount(
-            AppHomeUserAction.CONTEXT_MENU_TRIGGERED));
   });
 
   test('toggle launch on startup disabled', async () => {
@@ -397,11 +356,9 @@ suite('AppListTest', () => {
     const contextMenu = appItem.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!contextMenu);
     const launchOnStartup =
-        contextMenu.querySelector<HTMLElement>('#launchOnStartup');
+        contextMenu.querySelector<CrCheckboxElement>('#launchOnStartup');
     assertTrue(!!launchOnStartup);
-    const checkbox = launchOnStartup.querySelector('cr-checkbox');
-    assertTrue(!!checkbox);
-    assertFalse(checkbox.checked);
+    assertFalse(launchOnStartup.checked);
     assertEquals(apps.appList[1]!.runOnOsLoginMode, RunOnOsLoginMode.kNotRun);
 
     // Clicking on the launch on startup context menu option should not toggle
@@ -411,20 +368,7 @@ suite('AppListTest', () => {
     await callbackRouterRemote.$.flushForTesting();
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
-    assertFalse(launchOnStartup.querySelector('cr-checkbox')!.checked);
-    assertEquals(
-        0,
-        metricsPrivateMock.getUserActionCount(
-            AppHomeUserAction.LAUNCH_AT_STARTUP_CHECKED));
-    assertEquals(apps.appList[1]!.runOnOsLoginMode, RunOnOsLoginMode.kNotRun);
-
-    // Clicking the checkbox should have the same effect as clicking the parent
-    // menu item.
-    checkbox.click();
-    await callbackRouterRemote.$.flushForTesting();
-    flush();
-    appItem.dispatchEvent(new CustomEvent('contextmenu'));
-    assertFalse(launchOnStartup!.querySelector('cr-checkbox')!.checked);
+    assertFalse(launchOnStartup.checked);
     assertEquals(
         0,
         metricsPrivateMock.getUserActionCount(

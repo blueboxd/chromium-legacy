@@ -10,13 +10,12 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.R;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
@@ -30,6 +29,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.tile.TileViewProperties;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatch.SuggestTile;
+import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -150,15 +150,15 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
                 tileModel.set(TileViewProperties.ICON_TINT,
                         ChromeColors.getSecondaryIconTint(mContext, /* isIncognito= */ false));
                 tileModel.set(TileViewProperties.ICON,
-                        AppCompatResources.getDrawable(
+                        OmniboxResourceProvider.getDrawable(
                                 mContext, R.drawable.ic_suggestion_magnifier));
                 tileModel.set(TileViewProperties.CONTENT_DESCRIPTION,
-                        mContext.getString(
+                        OmniboxResourceProvider.getString(mContext,
                                 R.string.accessibility_omnibox_most_visited_tile_search, title));
             } else {
                 tileModel.set(TileViewProperties.ICON_TINT, null);
                 tileModel.set(TileViewProperties.CONTENT_DESCRIPTION,
-                        mContext.getString(
+                        OmniboxResourceProvider.getString(mContext,
                                 R.string.accessibility_omnibox_most_visited_tile_navigate, title,
                                 url.getHost()));
 

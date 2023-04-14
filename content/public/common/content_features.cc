@@ -29,6 +29,11 @@ BASE_FEATURE(kAndroidDownloadableFontsMatching,
              "AndroidDownloadableFontsMatching",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables FLEDGE and Attribution Reporting API integration.
+BASE_FEATURE(kAttributionFencedFrameReportingBeacon,
+             "AttributionFencedFrameReportingBeacon",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Launches the audio service on the browser startup.
 BASE_FEATURE(kAudioServiceLaunchOnStartup,
              "AudioServiceLaunchOnStartup",
@@ -389,6 +394,9 @@ BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 // Field trial boolean parameter which indicates whether FedCM IDP sign-out
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
+
+// Enables usage of the FedCM Authz API.
+BASE_FEATURE(kFedCmAuthz, "FedCmAuthz", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with auto re-authentication. Note that actual
 // exposure of FedCM's auto re-authentication feature to web content is
@@ -862,6 +870,13 @@ BASE_FEATURE(kPrerender2Holdback,
 // Preloading holdback feature disables preloading (e.g., preconnect, prefetch,
 // and prerender) on all predictors. This is useful in comparing the impact of
 // blink::features::kPrerender2 experiment with and without them.
+
+// This Feature allows configuring preloading features via a parameter string.
+// See content/browser/preloading/preloading_config.cc to see how to use this
+// feature.
+BASE_FEATURE(kPreloadingConfig,
+             "PreloadingConfig",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Please note this feature is only used for experimental purposes, please don't
 // enable this feature by default.

@@ -42,7 +42,7 @@
   },
   "$build/reclient": {
     "bootstrap_env": {
-      "RBE_compression_threshold": "4000000"
+      "RBE_clang_depscan_archive": "true"
     },
     "ensure_verified": true,
     "instance": "rbe-chromium-trusted-test",

@@ -26,8 +26,6 @@ namespace extensions {
 
 namespace api_test_utils {
 
-FunctionMode::FunctionMode(int value) : value(value) {}
-
 SendResponseHelper::SendResponseHelper(ExtensionFunction* function) {
   function->set_has_callback(true);
   function->set_response_callback(
@@ -52,13 +50,6 @@ void SendResponseHelper::OnResponse(ExtensionFunction::ResponseType response,
 
 void SendResponseHelper::WaitForResponse() {
   run_loop_.Run();
-}
-
-absl::optional<base::Value::Dict> ParseDictionary(const std::string& data) {
-  absl::optional<base::Value> value = base::JSONReader::Read(data);
-  if (!value || !value->is_dict())
-    return absl::nullopt;
-  return std::move(*value).TakeDict();
 }
 
 bool GetBoolean(const base::Value::Dict& dict, const std::string& key) {
@@ -160,15 +151,15 @@ absl::optional<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
 }
 
 absl::optional<base::Value> RunFunctionAndReturnSingleResult(
-    ExtensionFunction* function,
+    scoped_refptr<ExtensionFunction> function,
     const std::string& args,
     content::BrowserContext* context) {
-  return RunFunctionAndReturnSingleResult(function, args, context,
+  return RunFunctionAndReturnSingleResult(std::move(function), args, context,
                                           FunctionMode::kNone);
 }
 
 absl::optional<base::Value> RunFunctionAndReturnSingleResult(
-    ExtensionFunction* function,
+    scoped_refptr<ExtensionFunction> function,
     const std::string& args,
     content::BrowserContext* context,
     FunctionMode mode) {
@@ -176,23 +167,22 @@ absl::optional<base::Value> RunFunctionAndReturnSingleResult(
       new ExtensionFunctionDispatcher(context));
 
   return RunFunctionWithDelegateAndReturnSingleResult(
-      function, args, std::move(dispatcher), mode);
+      std::move(function), args, std::move(dispatcher), mode);
 }
 
-std::string RunFunctionAndReturnError(ExtensionFunction* function,
+std::string RunFunctionAndReturnError(scoped_refptr<ExtensionFunction> function,
                                       const std::string& args,
                                       content::BrowserContext* context) {
-  return RunFunctionAndReturnError(function, args, context,
+  return RunFunctionAndReturnError(std::move(function), args, context,
                                    FunctionMode::kNone);
 }
 
-std::string RunFunctionAndReturnError(ExtensionFunction* function,
+std::string RunFunctionAndReturnError(scoped_refptr<ExtensionFunction> function,
                                       const std::string& args,
                                       content::BrowserContext* context,
                                       FunctionMode mode) {
   std::unique_ptr<ExtensionFunctionDispatcher> dispatcher(
       new ExtensionFunctionDispatcher(context));
-  scoped_refptr<ExtensionFunction> function_owner(function);
   // Without a callback the function will not generate a result.
   RunFunction(function, args, std::move(dispatcher), mode);
   // When sending a response, the function will set an empty list value if there
@@ -205,30 +195,30 @@ std::string RunFunctionAndReturnError(ExtensionFunction* function,
   return function->GetError();
 }
 
-bool RunFunction(ExtensionFunction* function,
+bool RunFunction(scoped_refptr<ExtensionFunction> function,
                  const std::string& args,
                  content::BrowserContext* context,
                  FunctionMode mode) {
   std::unique_ptr<ExtensionFunctionDispatcher> dispatcher(
       new ExtensionFunctionDispatcher(context));
-  return RunFunction(function, args, std::move(dispatcher), mode);
+  return RunFunction(std::move(function), args, std::move(dispatcher), mode);
 }
 
 bool RunFunction(
-    ExtensionFunction* function,
+    scoped_refptr<ExtensionFunction> function,
     const std::string& args,
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     FunctionMode mode) {
   base::Value::List parsed_args = base::test::ParseJsonList(args);
-  return RunFunction(function, std::move(parsed_args), std::move(dispatcher),
-                     mode);
+  return RunFunction(std::move(function), std::move(parsed_args),
+                     std::move(dispatcher), mode);
 }
 
-bool RunFunction(ExtensionFunction* function,
+bool RunFunction(scoped_refptr<ExtensionFunction> function,
                  base::Value::List args,
                  std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
                  FunctionMode mode) {
-  SendResponseHelper response_helper(function);
+  SendResponseHelper response_helper(function.get());
   function->SetArgs(std::move(args));
 
   CHECK(dispatcher);

@@ -123,6 +123,7 @@ class SyncServiceImpl : public SyncService,
   bool IsSetupInProgress() const override;
   ModelTypeSet GetPreferredDataTypes() const override;
   ModelTypeSet GetActiveDataTypes() const override;
+  ModelTypeSet GetTypesWithPendingDownloadForInitialSync() const override;
   void StopAndClear() override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
@@ -261,11 +262,6 @@ class SyncServiceImpl : public SyncService,
   // Callbacks for SyncAuthManager.
   void AccountStateChanged();
   void CredentialsChanged();
-
-  // A wrapper around SyncUserSettings::SetSyncRequested(), such that the
-  // notification which is synchronously triggered will be ignored in the
-  // implementation of OnSyncRequestedPrefChange().
-  void SetSyncRequestedAndIgnoreNotification(bool is_requested);
 
   bool IsEngineAllowedToRun() const;
 

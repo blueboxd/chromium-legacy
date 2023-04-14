@@ -154,7 +154,6 @@ FYI_BUILDERS = {
     'android-cfi-builder-perf-fyi': {
         'additional_compile_targets': [
             'android_tools',
-            'cc_perftests',
             'chrome_public_apk',
             'chromium_builder_perf',
             'push_apps_to_background_apk',
@@ -201,7 +200,6 @@ FYI_BUILDERS = {
     'android_arm64-cfi-builder-perf-fyi': {
         'additional_compile_targets': [
             'android_tools',
-            'cc_perftests',
             'chrome_public_apk',
             'chromium_builder_perf',
             'push_apps_to_background_apk',
@@ -440,19 +438,6 @@ FYI_BUILDERS = {
 # issues, please contact johnchen@chromium.org.
 BUILDERS = {
     'android-builder-perf': {
-        'additional_compile_targets': [
-            'microdump_stackwalk',
-            'chrome_apk',
-            'system_webview_google_apk',
-            'android_tools',
-            'cc_perftests',
-            'chrome_public_apk',
-            'chromium_builder_perf',
-            'dump_syms',
-            'push_apps_to_background_apk',
-            'system_webview_apk',
-            'system_webview_shell_apk',
-        ],
         'tests': [
             {
                 'name': 'resource_sizes_monochrome_minimal_apks',
@@ -504,19 +489,6 @@ BUILDERS = {
         False,
     },
     'android-builder-perf-pgo': {
-        'additional_compile_targets': [
-            'microdump_stackwalk',
-            'chrome_apk',
-            'system_webview_google_apk',
-            'android_tools',
-            'cc_perftests',
-            'chrome_public_apk',
-            'chromium_builder_perf',
-            'dump_syms',
-            'push_apps_to_background_apk',
-            'system_webview_apk',
-            'system_webview_shell_apk',
-        ],
         'dimension': {
             'cpu': 'x86',
             'os': 'Ubuntu-18.04',
@@ -526,18 +498,6 @@ BUILDERS = {
         False,
     },
     'android_arm64-builder-perf': {
-        'additional_compile_targets': [
-            'microdump_stackwalk',
-            'chrome_apk',
-            'system_webview_google_apk',
-            'android_tools',
-            'cc_perftests',
-            'chrome_public_apk',
-            'chromium_builder_perf',
-            'push_apps_to_background_apk',
-            'system_webview_apk',
-            'system_webview_shell_apk',
-        ],
         'tests': [
             {
                 'name': 'resource_sizes_monochrome_minimal_apks',
@@ -597,18 +557,6 @@ BUILDERS = {
         False,
     },
     'android_arm64-builder-perf-pgo': {
-        'additional_compile_targets': [
-            'microdump_stackwalk',
-            'chrome_apk',
-            'system_webview_google_apk',
-            'android_tools',
-            'cc_perftests',
-            'chrome_public_apk',
-            'chromium_builder_perf',
-            'push_apps_to_background_apk',
-            'system_webview_apk',
-            'system_webview_shell_apk',
-        ],
         'dimension': {
             'cpu': 'x86',
             'os': 'Ubuntu-18.04',
@@ -618,7 +566,7 @@ BUILDERS = {
         False,
     },
     'linux-builder-perf': {
-        'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
+        'additional_compile_targets': ['chromedriver'],
         'tests': [{
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
@@ -636,7 +584,6 @@ BUILDERS = {
         False,
     },
     'linux-builder-perf-pgo': {
-        'additional_compile_targets': ['chromium_builder_perf'],
         'dimension': {
             'cpu': 'x86-64',
             'os': 'Ubuntu-18.04',
@@ -644,11 +591,9 @@ BUILDERS = {
         },
         'perf_trigger': False,
     },
-    'linux-builder-perf-rel': {
-        'additional_compile_targets': ['chromium_builder_perf'],
-    },
+    'linux-builder-perf-rel': {},
     'mac-builder-perf': {
-        'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
+        'additional_compile_targets': ['chromedriver'],
         'tests': [{
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
@@ -666,7 +611,6 @@ BUILDERS = {
         False,
     },
     'mac-builder-perf-pgo': {
-        'additional_compile_targets': ['chromium_builder_perf'],
         'dimension': {
             'cpu': 'x86-64',
             'os': 'Mac',
@@ -675,7 +619,7 @@ BUILDERS = {
         'perf_trigger': False,
     },
     'mac-arm-builder-perf': {
-        'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
+        'additional_compile_targets': ['chromedriver'],
         'tests': [{
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
@@ -693,7 +637,6 @@ BUILDERS = {
         False,
     },
     'mac-arm-builder-perf-pgo': {
-        'additional_compile_targets': ['chromium_builder_perf'],
         'dimension': {
             'cpu': 'x86',
             'os': 'Mac',
@@ -702,7 +645,7 @@ BUILDERS = {
         'perf_trigger': False,
     },
     'win64-builder-perf': {
-        'additional_compile_targets': ['chromedriver', 'chromium_builder_perf'],
+        'additional_compile_targets': ['chromedriver'],
         'tests': [{
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
@@ -720,7 +663,6 @@ BUILDERS = {
         False,
     },
     'win64-builder-perf-pgo': {
-        'additional_compile_targets': ['chromium_builder_perf'],
         'dimension': {
             'cpu': 'x86-64',
             'os': 'Windows-10',
@@ -1239,6 +1181,24 @@ BUILDERS = {
             'pool': 'chrome.tests.perf-pgo',
         },
     },
+    'mac-m1-pro-perf': {
+        'tests': [
+            {
+                'isolate': 'performance_test_suite',
+                'extra_args': [
+                    '--assert-gpu-compositing',
+                ],
+            },
+        ],
+        'platform':
+        'mac',
+        'dimension': {
+            'cpu': 'arm',
+            'mac_model': 'MacBookPro18,3',
+            'os': 'Mac',
+            'pool': 'chrome.tests.perf',
+        },
+    },
     'linux-perf': {
         'tests': [
             {
@@ -1528,8 +1488,7 @@ def _generate_pinpoint_builders_dict(builder):
     content = copy.deepcopy(builder[key])
     additional_compile_targets = content.get('additional_compile_targets', [])
     additional_compile_targets = list(
-        filter(lambda x: x not in ['chromium_builder_perf', 'chromedriver'],
-               additional_compile_targets))
+        filter(lambda x: x not in ['chromedriver'], additional_compile_targets))
     if additional_compile_targets:
       content['additional_compile_targets'] = additional_compile_targets
     elif 'additional_compile_targets' in content:

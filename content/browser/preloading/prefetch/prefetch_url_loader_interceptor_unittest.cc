@@ -24,6 +24,7 @@
 #include "content/browser/preloading/prefetch/prefetch_type.h"
 #include "content/browser/preloading/prefetch/prefetch_url_loader_helper.h"
 #include "content/browser/preloading/preloading.h"
+#include "content/browser/preloading/preloading_config.h"
 #include "content/browser/preloading/preloading_data_impl.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -33,6 +34,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/preloading_test_util.h"
@@ -251,10 +253,15 @@ class PrefetchURLLoaderInterceptorTest : public RenderViewHostTestHarness {
 
     scoped_test_timer_ =
         std::make_unique<base::ScopedMockElapsedTimersForTest>();
+
+    scoped_feature_list_.InitAndDisableFeature(::features::kPreloadingConfig);
+    PreloadingConfig::GetInstance().ParseConfig();
   }
 
   void TearDown() override {
     interceptor_.release();
+    scoped_feature_list_.Reset();
+    PreloadingConfig::GetInstance().ParseConfig();
 
     RenderViewHostTestHarness::TearDown();
   }
@@ -406,6 +413,7 @@ class PrefetchURLLoaderInterceptorTest : public RenderViewHostTestHarness {
       attempt_entry_builder_;
 
   std::unique_ptr<base::ScopedMockElapsedTimersForTest> scoped_test_timer_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(PrefetchURLLoaderInterceptorTest,
@@ -435,7 +443,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(
@@ -509,7 +517,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(
@@ -590,7 +598,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           PrefetchType(/*use_isolated_network_context=*/false,
                        /*use_prefetch_proxy=*/false,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(
@@ -684,7 +692,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   interceptor()->AddPrefetch(prefetch_container->GetWeakPtr());
@@ -734,7 +742,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(
@@ -789,7 +797,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(
@@ -859,7 +867,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest, DISABLE_ASAN(ProbeSuccess)) {
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(
@@ -911,7 +919,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest, DISABLE_ASAN(ProbeFailure)) {
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(
@@ -967,7 +975,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(
@@ -1051,7 +1059,7 @@ TEST_F(PrefetchURLLoaderInterceptorTest, DISABLE_ASAN(HandleRedirects)) {
           PrefetchType(/*use_isolated_network_context=*/true,
                        /*use_prefetch_proxy=*/true,
                        blink::mojom::SpeculationEagerness::kEager),
-          blink::mojom::Referrer(), nullptr);
+          blink::mojom::Referrer(), absl::nullopt, nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
   prefetch_container->TakeStreamingURLLoader(

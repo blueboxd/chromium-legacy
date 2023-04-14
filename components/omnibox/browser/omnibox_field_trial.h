@@ -335,26 +335,6 @@ extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyLow;
 // applied and where the low penalty will be applied.
 extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyTaperLength;
 
-// Returns true if the default browser pedal feature is enabled.
-bool IsDefaultBrowserPedalEnabled();
-
-// Indicates whether the default browser pedal should make the change
-// immediately by calling the shell_integration API directly. When
-// false (default), the pedal goes to settings to let the user see
-// and commit the change themselves.
-extern const base::FeatureParam<bool> kDefaultBrowserPedalImmediate;
-
-// Note: These two feature params are only relevant when the above
-// param `kDefaultBrowserPedalImmediate` is true.
-// Indicates whether the default browser pedal can be used when the
-// shell_integration API indicates the system sets default browser
-// interactively, e.g. by bringing up system settings.
-extern const base::FeatureParam<bool> kDefaultBrowserPedalInteractive;
-// Indicates whether the default browser pedal can be used when the
-// shell_integration API indicates the system sets default browser
-// without any further user interaction, i.e. "unattended".
-extern const base::FeatureParam<bool> kDefaultBrowserPedalUnattended;
-
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
@@ -400,7 +380,9 @@ extern const base::FeatureParam<int> kSuggestionRowHeight;
 // Specifies the vertical margin to use in one-line rich entity and answer
 // suggestions.
 extern const base::FeatureParam<int> kRichSuggestionVerticalMargin;
-
+// Omnibox GM3 - icons.
+// Returns true if the feature to enable GM3 icons is enabled.
+bool IsChromeRefreshIconsEnabled();
 // Omnibox GM3 - text style.
 // Returns true if the feature to enable GM3 text styling is enabled.
 bool IsGM3TextStyleEnabled();
@@ -561,9 +543,6 @@ extern const base::FeatureParam<bool>
     kShortBookmarkSuggestionsByTotalInputLengthCounterfactual;
 extern const base::FeatureParam<int>
     kShortBookmarkSuggestionsByTotalInputLengthThreshold;
-
-// Bookmark paths.
-extern const base::FeatureParam<std::string> kBookmarkPathsCounterfactual;
 
 // Shortcut Expanding.
 bool IsShortcutExpandingEnabled();
@@ -729,12 +708,31 @@ bool IsUrlScoringModelEnabled();
 
 // <- ML Relevance Scoring
 // ---------------------------------------------------------
+// Two-column realbox ->
+
+// Specifies the number of zero-prefix suggestions in the 2nd column of realbox
+// when `omnibox::kRealboxSecondaryZeroSuggest` is enabled.
+extern const base::FeatureParam<int>
+    kRealboxMaxPreviousSearchRelatedSuggestions;
+
+// <- Two-column realbox
+// ---------------------------------------------------------
 // Inspire Me ->
+
 // Specify number of additional Related and Trending queries appended to the
 // suggestion list, when the Inspire Me feature is enabled.
 extern const base::FeatureParam<int> kInspireMeAdditionalRelatedQueries;
 extern const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries;
+
 // <- Inspire Me
+// ---------------------------------------------------------
+// Actions In Suggest ->
+//
+// When set to true, permits Entity suggestion with associated Actions to be
+// promoted over the Escape Hatch.
+extern const base::FeatureParam<bool> kActionsInSuggestPromoteEntitySuggestion;
+// <- Actions In Suggest
+// ---------------------------------------------------------
 
 // New params should be inserted above this comment. They should be ordered
 // consistently with `omnibox_features.h`. They should be formatted as:

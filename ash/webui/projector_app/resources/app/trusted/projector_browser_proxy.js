@@ -19,12 +19,6 @@ export class ProjectorBrowserProxy {
   getAccounts() {}
 
   /**
-   * Checks whether the SWA can trigger a new Projector session.
-   * @return {Promise<!projectorApp.NewScreencastPreconditionState>}
-   */
-  getNewScreencastPreconditionState() {}
-
-  /**
    * Launches the Projector recording session. Returns true if a projector
    * recording session was successfully launched.
    * @param {string} storageDir, the directory name in which the screen cast
@@ -64,21 +58,6 @@ export class ProjectorBrowserProxy {
   sendXhr(
       url, method, requestBody, useCredentials, useApiKey, headers,
       accountEmail) {}
-
-  /**
-   * Returns true if the "install speech recognition" button should be shown to
-   * the user.
-   * @return {!Promise<boolean>}
-   */
-  shouldDownloadSoda() {}
-
-  /**
-   * Triggers the installation of on device speech recognition binary and
-   * language packs for the user's locale. Returns true if download and
-   * installation started.
-   * @return {!Promise<boolean>}
-   */
-  installSoda() {}
 
   /**
    * Gets the list of pending screencasts that are uploading to drive.
@@ -148,11 +127,6 @@ export class ProjectorBrowserProxyImpl {
   }
 
   /** @override */
-  getNewScreencastPreconditionState() {
-    return sendWithPromise('getNewScreencastPreconditionState');
-  }
-
-  /** @override */
   startProjectorSession(storageDir) {
     return sendWithPromise('startProjectorSession', [storageDir]);
   }
@@ -180,16 +154,6 @@ export class ProjectorBrowserProxyImpl {
       headers,
       accountEmail,
     ]);
-  }
-
-  /** @override */
-  shouldDownloadSoda() {
-    return sendWithPromise('shouldDownloadSoda');
-  }
-
-  /** @override */
-  installSoda() {
-    return sendWithPromise('installSoda');
   }
 
   /** @override */

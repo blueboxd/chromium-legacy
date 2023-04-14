@@ -504,6 +504,7 @@ void AppLauncherHandler::RegisterMessages() {
 }
 
 void AppLauncherHandler::OnAppsReordered(
+    content::BrowserContext* context,
     const absl::optional<std::string>& extension_id) {
   if (ignore_changes_ || !has_loaded_apps_)
     return;
@@ -591,7 +592,9 @@ void AppLauncherHandler::OnWebAppWillBeUninstalled(
       base::Value(!extension_id_prompting_.empty()));
 }
 
-void AppLauncherHandler::OnWebAppUninstalled(const web_app::AppId& app_id) {
+void AppLauncherHandler::OnWebAppUninstalled(
+    const web_app::AppId& app_id,
+    webapps::WebappUninstallSource uninstall_source) {
   // This can be redundant in most cases, however it is not uncommon for the
   // chrome://apps page to be loaded, or reloaded, during the uninstallation of
   // an app. In this state, the app is still in the registry, but the

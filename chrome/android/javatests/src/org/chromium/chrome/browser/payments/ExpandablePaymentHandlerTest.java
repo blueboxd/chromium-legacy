@@ -34,7 +34,6 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -42,6 +41,7 @@ import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -214,8 +214,8 @@ public class ExpandablePaymentHandlerTest {
 
         waitForUiShown();
 
-        View sheetControlContainer = mRule.getActivity().findViewById(
-                org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_control_container);
+        View sheetControlContainer =
+                mRule.getActivity().findViewById(R.id.bottom_sheet_control_container);
         int touchX = sheetControlContainer.getWidth() / 2;
         int startY = sheetControlContainer.getHeight() / 2;
 
@@ -304,7 +304,7 @@ public class ExpandablePaymentHandlerTest {
         PaymentHandlerCoordinator paymentHandler = createPaymentHandlerAndShow(mDefaultIsIncognito);
         waitForUiShown();
 
-        onView(withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet))
+        onView(withId(R.id.bottom_sheet))
                 .check(matches(
                         withContentDescription("Payment handler sheet. Swipe down to close.")));
 
@@ -314,7 +314,7 @@ public class ExpandablePaymentHandlerTest {
         onView(withId(R.id.title))
                 .check(matches(isDisplayed()))
                 .check(matches(withText("Max Pay")));
-        onView(withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet))
+        onView(withId(R.id.bottom_sheet))
                 .check(matches(isDisplayed()))
                 .check(matches(
                         withContentDescription("Payment handler sheet. Swipe down to close.")));
@@ -363,7 +363,6 @@ public class ExpandablePaymentHandlerTest {
     @Test
     @SmallTest
     @Feature({"Payments"})
-    @DisabledTest(message = "crbug.com/1131674")
     public void testNavigateBackWithSystemBackButton() throws Throwable {
         startDefaultServer();
 
@@ -399,7 +398,6 @@ public class ExpandablePaymentHandlerTest {
     @SmallTest
     @Feature({"Payments"})
     @ParameterAnnotations.UseMethodParameter(BadCertParams.class)
-    @DisabledTest(message = "https://crbug.com/1288003")
     public void testInsecureConnectionNotShowUi(int badCertificate) throws Throwable {
         startServer(badCertificate);
         PaymentHandlerCoordinator paymentHandler = createPaymentHandlerAndShow(mDefaultIsIncognito);
@@ -434,7 +432,8 @@ public class ExpandablePaymentHandlerTest {
     public void testBottomSheetSuppressedFailsShow() {
         startDefaultServer();
         PaymentHandlerCoordinator paymentHandler = new PaymentHandlerCoordinator();
-        mBottomSheetTestSupport.suppressSheet(StateChangeReason.UNKNOWN);
+        mRule.runOnUiThread(
+                () -> { mBottomSheetTestSupport.suppressSheet(StateChangeReason.UNKNOWN); });
         mRule.runOnUiThread(() -> {
             Assert.assertNull(paymentHandler.show(mDefaultActivity.getCurrentWebContents(),
                     defaultPaymentAppUrl(), mDefaultIsIncognito, defaultUiObserver()));

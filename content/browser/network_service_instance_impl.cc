@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
@@ -766,21 +767,7 @@ namespace {
 cert_verifier::mojom::CertVerifierServiceFactory*
     g_cert_verifier_service_factory_for_testing = nullptr;
 
-mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
-GetNewCertVerifierServiceRemote(
-    cert_verifier::mojom::CertVerifierServiceFactory*
-        cert_verifier_service_factory,
-    cert_verifier::mojom::CertVerifierCreationParamsPtr creation_params) {
-  mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
-      cert_verifier_remote;
-  cert_verifier_service_factory->GetNewCertVerifier(
-      cert_verifier_remote.InitWithNewPipeAndPassReceiver(),
-      std::move(creation_params));
-  return cert_verifier_remote;
-}
-
 void RunInProcessCertVerifierServiceFactory(
-    cert_verifier::mojom::CertVerifierServiceParamsPtr params,
     mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceFactory>
         receiver) {
 #if BUILDFLAG(IS_CHROMEOS)
@@ -797,7 +784,7 @@ void RunInProcessCertVerifierServiceFactory(
       service_factory_slot;
   service_factory_slot.GetOrCreateValue() =
       std::make_unique<cert_verifier::CertVerifierServiceFactoryImpl>(
-          std::move(params), std::move(receiver));
+          std::move(receiver));
 }
 
 // Owns the CertVerifierServiceFactory used by the browser.
@@ -824,8 +811,6 @@ GetCertVerifierServiceFactory() {
       factory_remote_storage = GetCertVerifierServiceFactoryRemoteStorage();
   if (!factory_remote_storage.is_bound() ||
       !factory_remote_storage.is_connected()) {
-    cert_verifier::mojom::CertVerifierServiceParamsPtr service_params =
-        GetContentClient()->browser()->GetCertVerifierServiceParams();
     factory_remote_storage.reset();
 #if BUILDFLAG(IS_CHROMEOS)
     // In-process CertVerifierService in Ash and Lacros should run on the IO
@@ -835,24 +820,41 @@ GetCertVerifierServiceFactory() {
     GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&RunInProcessCertVerifierServiceFactory,
-                       std::move(service_params),
                        factory_remote_storage.BindNewPipeAndPassReceiver()));
 #else
     RunInProcessCertVerifierServiceFactory(
-        std::move(service_params),
         factory_remote_storage.BindNewPipeAndPassReceiver());
 #endif
   }
   return factory_remote_storage.get();
 }
 
+mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>&
+GetCertVerifierServiceFactoryRemoteForTesting() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // The Remote isn't used if g_cert_verifier_service_factory_for_testing is
+  // registered, so any test trying to do both is doing something wrong.
+  CHECK(!g_cert_verifier_service_factory_for_testing);
+
+  return GetCertVerifierServiceFactoryRemoteStorage();
+}
+
 network::mojom::CertVerifierServiceRemoteParamsPtr GetCertVerifierParams(
     cert_verifier::mojom::CertVerifierCreationParamsPtr
         cert_verifier_creation_params) {
+  mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
+      cert_verifier_remote;
+  mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceClient>
+      cert_verifier_client;
+
+  GetCertVerifierServiceFactory()->GetNewCertVerifier(
+      cert_verifier_remote.InitWithNewPipeAndPassReceiver(),
+      cert_verifier_client.InitWithNewPipeAndPassRemote(),
+      std::move(cert_verifier_creation_params));
+
   return network::mojom::CertVerifierServiceRemoteParams::New(
-      GetNewCertVerifierServiceRemote(
-          GetCertVerifierServiceFactory(),
-          std::move(cert_verifier_creation_params)));
+      std::move(cert_verifier_remote), std::move(cert_verifier_client));
 }
 
 void SetCertVerifierServiceFactoryForTesting(

@@ -17,7 +17,8 @@ import zipfile
 
 from util import build_utils
 from util import md5_check
-from util import zipalign
+import action_helpers  # build_utils adds //build to sys.path.
+import zip_helpers
 
 
 _DEX_XMX = '2G'  # Increase this when __final_dex OOMs.
@@ -55,6 +56,8 @@ _IGNORE_WARNINGS = (
     r'Proguard configuration rule does not match anything:.*class android\.',
     # TODO(crbug.com/1303951): Don't ignore all such warnings.
     r'Proguard configuration rule does not match anything:',
+    # TODO(agrieve): Remove once we update to U SDK.
+    r'OnBackAnimationCallback',
 )
 
 _SKIPPED_CLASS_FILE_NAMES = (
@@ -66,7 +69,7 @@ def _ParseArgs(args):
   args = build_utils.ExpandFileArgs(args)
   parser = argparse.ArgumentParser()
 
-  build_utils.AddDepfileOption(parser)
+  action_helpers.add_depfile_arg(parser)
   parser.add_argument('--output', required=True, help='Dex output path.')
   parser.add_argument(
       '--class-inputs',
@@ -147,13 +150,13 @@ def _ParseArgs(args):
     parser.error('Cannot use both --force-enable-assertions and '
                  '--assertion-handler')
 
-  options.class_inputs = build_utils.ParseGnList(options.class_inputs)
-  options.class_inputs_filearg = build_utils.ParseGnList(
+  options.class_inputs = action_helpers.parse_gn_list(options.class_inputs)
+  options.class_inputs_filearg = action_helpers.parse_gn_list(
       options.class_inputs_filearg)
-  options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
-  options.classpath = build_utils.ParseGnList(options.classpath)
-  options.dex_inputs = build_utils.ParseGnList(options.dex_inputs)
-  options.dex_inputs_filearg = build_utils.ParseGnList(
+  options.bootclasspath = action_helpers.parse_gn_list(options.bootclasspath)
+  options.classpath = action_helpers.parse_gn_list(options.classpath)
+  options.dex_inputs = action_helpers.parse_gn_list(options.dex_inputs)
+  options.dex_inputs_filearg = action_helpers.parse_gn_list(
       options.dex_inputs_filearg)
 
   return options
@@ -233,7 +236,7 @@ def _ZipAligned(dex_files, output_path):
   with zipfile.ZipFile(output_path, 'w') as z:
     for i, dex_file in enumerate(dex_files):
       name = 'classes{}.dex'.format(i + 1 if i > 0 else '')
-      zipalign.AddToZipHermetic(z, name, src_path=dex_file, alignment=4)
+      zip_helpers.add_to_zip_hermetic(z, name, src_path=dex_file, alignment=4)
 
 
 def _CreateFinalDex(d8_inputs, output, tmp_dir, dex_cmd, options=None):

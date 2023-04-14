@@ -224,8 +224,7 @@ void MaybeAppendManagePasswordsEntry(
   // yet.
   // TODO(crbug.com/1274134): Clean up once improvements are launched.
   if (!suggestions->empty()) {
-    suggestions->push_back(
-        autofill::Suggestion(autofill::POPUP_ITEM_ID_SEPARATOR));
+    suggestions->emplace_back(autofill::POPUP_ITEM_ID_SEPARATOR);
   }
 #endif
 
@@ -503,10 +502,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(
           password_client_->GetDeviceAuthenticator();
       // Note: this is currently only implemented on Android, Mac and Windows.
       // For other platforms, the `authenticator` will be null.
-      if (!password_manager_util::CanUseBiometricAuth(
-              authenticator.get(),
-              device_reauth::DeviceAuthRequester::kAutofillSuggestion,
-              password_client_)) {
+      if (!password_manager_util::CanUseBiometricAuth(authenticator.get(),
+                                                      password_client_)) {
         bool success = FillSuggestion(
             GetUsernameFromSuggestion(suggestion.main_text.value),
             suggestion.frontend_id);
@@ -728,20 +725,16 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
 #if !BUILDFLAG(IS_ANDROID)
     uses_passkeys = true;
 #endif
-    std::u16string label = l10n_util::GetStringUTF16(
-        password_manager::GetPlatformAuthenticatorLabel());
     base::ranges::transform(
         *delegate->GetPasskeys(), std::back_inserter(suggestions),
-        [label, this](const auto& passkey) {
-          autofill::Suggestion suggestion(passkey.username().value());
+        [this](const auto& passkey) {
+          autofill::Suggestion suggestion(passkey.username());
           suggestion.icon = "globeIcon";
           suggestion.frontend_id = autofill::POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL;
           suggestion.custom_icon = page_favicon_;
-          suggestion.payload =
-              autofill::Suggestion::BackendId(passkey.id().value());
-          if (!label.empty()) {
-            suggestion.labels = {{autofill::Suggestion::Text(label)}};
-          }
+          suggestion.payload = autofill::Suggestion::BackendId(passkey.id());
+          suggestion.labels = {
+              {autofill::Suggestion::Text(passkey.device_name())}};
           return suggestion;
         });
   }

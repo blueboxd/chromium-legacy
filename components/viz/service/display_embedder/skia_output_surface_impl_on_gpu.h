@@ -201,7 +201,6 @@ class SkiaOutputSurfaceImplOnGpu
   void ResetStateOfImages();
   void EndAccessImages(const base::flat_set<ImageContextImpl*>& image_contexts);
 
-  sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
@@ -263,7 +262,7 @@ class SkiaOutputSurfaceImplOnGpu
   void RemoveAsyncReadResultHelperWithLock(AsyncReadResultHelper* helper);
 
   void CreateSharedImage(gpu::Mailbox mailbox,
-                         ResourceFormat format,
+                         SharedImageFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
                          uint32_t usage,
@@ -318,12 +317,10 @@ class SkiaOutputSurfaceImplOnGpu
     return !!vulkan_context_provider_ &&
            gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan;
   }
-  bool is_using_dawn() const {
-    return !!dawn_context_provider_ &&
-           gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn;
-  }
 
-  bool is_using_gl() const { return !is_using_vulkan() && !is_using_dawn(); }
+  bool is_using_gl() const {
+    return gpu_preferences_.gr_context_type == gpu::GrContextType::kGL;
+  }
 
   // Helper for `CopyOutput()` method, handles the RGBA format.
   void CopyOutputRGBA(SkSurface* surface,
@@ -352,7 +349,7 @@ class SkiaOutputSurfaceImplOnGpu
 
   // Helper for `CopyOutputNV12()` & `CopyOutputRGBA()` methods:
   std::unique_ptr<gpu::SkiaImageRepresentation>
-  CreateSharedImageRepresentationSkia(ResourceFormat resource_format,
+  CreateSharedImageRepresentationSkia(SharedImageFormat format,
                                       const gfx::Size& size,
                                       const gfx::ColorSpace& color_space);
 
@@ -568,7 +565,7 @@ class SkiaOutputSurfaceImplOnGpu
   // The format that will be used to CreateSolidColorSharedImage(). This should
   // be either RGBA_8888 by default, or BGRA_8888 if the default is not
   // supported on Linux.
-  ResourceFormat solid_color_image_format_ = RGBA_8888;
+  SharedImageFormat solid_color_image_format_ = SinglePlaneFormat::kRGBA_8888;
 
   THREAD_CHECKER(thread_checker_);
 

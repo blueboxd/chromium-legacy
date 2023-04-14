@@ -16,6 +16,8 @@
 #error "This file requires ARC support."
 #endif
 
+const int kInactiveTabsDisabledByUser = -1;
+
 BASE_FEATURE(kTabInactivityThreshold,
              "TabInactivityThreshold",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -39,13 +41,24 @@ bool IsInactiveTabsEnabled() {
     return false;
   }
 
-  static const int kDisabledByUser = -1;
+  return !IsInactiveTabsExplictlyDisabledByUser();
+}
+
+bool IsInactiveTabsExplictlyDisabledByUser() {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return false;
+  }
+
+  if (!base::FeatureList::IsEnabled(kTabInactivityThreshold)) {
+    return false;
+  }
+
   return GetApplicationContext()->GetLocalState()->GetInteger(
-             prefs::kInactiveTabsTimeThreshold) != kDisabledByUser;
+             prefs::kInactiveTabsTimeThreshold) == kInactiveTabsDisabledByUser;
 }
 
 const base::TimeDelta InactiveTabsTimeThreshold() {
-  DCHECK(IsInactiveTabsEnabled());
+  DCHECK(IsInactiveTabsEnabled() || IsInactiveTabsExplictlyDisabledByUser());
 
   // Preference.
   PrefService* local_state = GetApplicationContext()->GetLocalState();
@@ -70,17 +83,11 @@ const base::TimeDelta InactiveTabsTimeThreshold() {
   return base::Days(14);
 }
 
-NSString* InactiveTabsTimeThresholdDisplayString() {
-  DCHECK(IsInactiveTabsEnabled());
-  return [NSString
-      stringWithFormat:@"%@", @(InactiveTabsTimeThreshold().InDays())];
-}
-
 BASE_FEATURE(kShowInactiveTabsCount,
              "ShowInactiveTabsCount",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsShowInactiveTabsCountEnabled() {
-  DCHECK(IsInactiveTabsEnabled());
+  DCHECK(IsInactiveTabsEnabled() || IsInactiveTabsExplictlyDisabledByUser());
   return base::FeatureList::IsEnabled(kShowInactiveTabsCount);
 }

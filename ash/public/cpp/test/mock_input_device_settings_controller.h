@@ -52,6 +52,11 @@ class ASH_PUBLIC_EXPORT MockInputDeviceSettingsController
               GetPointingStickSettings,
               (DeviceId id),
               (override));
+  MOCK_METHOD(const mojom::KeyboardPolicies&,
+              GetKeyboardPolicies,
+              (),
+              (override));
+  MOCK_METHOD(const mojom::MousePolicies&, GetMousePolicies, (), (override));
   MOCK_METHOD(void,
               SetKeyboardSettings,
               (DeviceId id, mojom::KeyboardSettingsPtr settings),
@@ -67,6 +72,10 @@ class ASH_PUBLIC_EXPORT MockInputDeviceSettingsController
   MOCK_METHOD(void,
               SetPointingStickSettings,
               (DeviceId id, mojom::PointingStickSettingsPtr settings),
+              (override));
+  MOCK_METHOD(void,
+              OnLoginScreenFocusedPodChanged,
+              (const AccountId&),
               (override));
   MOCK_METHOD(void, AddObserver, (Observer * observer), (override));
   MOCK_METHOD(void, RemoveObserver, (Observer * observer), (override));

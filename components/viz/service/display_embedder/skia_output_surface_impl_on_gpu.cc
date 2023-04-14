@@ -554,9 +554,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
       release_fence = CreateReleaseFenceForGL();
     }
 
-    if (!return_release_fence_cb.is_null() && is_using_dawn())
-      NOTIMPLEMENTED() << "Release fences with dawn are not supported.";
-
     if (!return_release_fence_cb.is_null()) {
       // Returning fences for Vulkan is delayed. See the comment above.
       DCHECK(!is_using_vulkan());
@@ -747,9 +744,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
       release_fence = CreateReleaseFenceForGL();
     }
 
-    if (!return_release_fence_cb.is_null() && is_using_dawn())
-      NOTIMPLEMENTED() << "Release fences with dawn are not supported.";
-
     if (!return_release_fence_cb.is_null()) {
       // Returning fences for Vulkan is delayed. See the comment above.
       DCHECK(!is_using_vulkan());
@@ -766,7 +760,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 
 std::unique_ptr<gpu::SkiaImageRepresentation>
 SkiaOutputSurfaceImplOnGpu::CreateSharedImageRepresentationSkia(
-    ResourceFormat resource_format,
+    SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space) {
   constexpr uint32_t kUsage = gpu::SHARED_IMAGE_USAGE_GLES2 |
@@ -776,10 +770,10 @@ SkiaOutputSurfaceImplOnGpu::CreateSharedImageRepresentationSkia(
                               gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE;
 
   gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
-  SharedImageFormat si_format = SharedImageFormat::SinglePlane(resource_format);
   bool result = shared_image_factory_->CreateSharedImage(
-      mailbox, si_format, size, color_space, kBottomLeft_GrSurfaceOrigin,
-      kUnpremul_SkAlphaType, gpu::kNullSurfaceHandle, kUsage);
+      mailbox, format, size, color_space, kBottomLeft_GrSurfaceOrigin,
+      kUnpremul_SkAlphaType, gpu::kNullSurfaceHandle, kUsage,
+      "SkiaOutputSurface");
   if (!result) {
     DLOG(ERROR) << "Failed to create shared image.";
     return nullptr;
@@ -840,7 +834,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
       break;
     case CopyOutputRequest::ResultDestination::kNativeTextures: {
       auto representation = CreateSharedImageRepresentationSkia(
-          ResourceFormat::RGBA_8888,
+          SinglePlaneFormat::kRGBA_8888,
           gfx::Size(geometry.result_bounds.width(),
                     geometry.result_bounds.height()),
           color_space);
@@ -981,7 +975,7 @@ bool SkiaOutputSurfaceImplOnGpu::CreateSurfacesForNV12Planes(
     const SkISize& plane_size = plane_dimensions[i];
 
     const auto resource_format =
-        (i == 0) ? ResourceFormat::RED_8 : ResourceFormat::RG_88;
+        (i == 0) ? SinglePlaneFormat::kR_8 : SinglePlaneFormat::kRG_88;
     auto representation = CreateSharedImageRepresentationSkia(
         resource_format, gfx::SkISizeToSize(plane_size), color_space);
     if (!representation) {
@@ -1624,11 +1618,6 @@ void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
     context->EndAccessIfNecessary();
 }
 
-sk_sp<GrContextThreadSafeProxy>
-SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
-  return gr_context() ? gr_context()->threadSafeProxy() : nullptr;
-}
-
 void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
     std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
         image_contexts) {
@@ -1702,9 +1691,6 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
 
   if (is_using_vulkan()) {
     if (!InitializeForVulkan())
-      return false;
-  } else if (is_using_dawn()) {
-    if (!InitializeForDawn())
       return false;
   } else {
     if (!InitializeForGL())
@@ -2351,16 +2337,15 @@ gfx::GpuFenceHandle SkiaOutputSurfaceImplOnGpu::CreateReleaseFenceForGL() {
 
 void SkiaOutputSurfaceImplOnGpu::CreateSharedImage(
     gpu::Mailbox mailbox,
-    ResourceFormat format,
+    SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     gpu::SurfaceHandle surface_handle) {
-  SharedImageFormat si_format = SharedImageFormat::SinglePlane(format);
   shared_image_factory_->CreateSharedImage(
-      mailbox, si_format, size, color_space, kTopLeft_GrSurfaceOrigin,
-      si_format.HasAlpha() ? kPremul_SkAlphaType : kOpaque_SkAlphaType,
-      surface_handle, usage);
+      mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
+      format.HasAlpha() ? kPremul_SkAlphaType : kOpaque_SkAlphaType,
+      surface_handle, usage, "SkiaOutputSurface");
   skia_representations_.emplace(mailbox, nullptr);
 }
 
@@ -2373,21 +2358,19 @@ void SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage(
                                           ->GetSurfaceFactoryOzone()
                                           ->GetPreferredFormatForSolidColor();
   if (preferred_solid_color_format)
-    solid_color_image_format_ =
-        GetResourceFormat(preferred_solid_color_format.value());
+    solid_color_image_format_ = SharedImageFormat::SinglePlane(
+        GetResourceFormat(preferred_solid_color_format.value()));
 #endif
-  DCHECK(solid_color_image_format_ == RGBA_8888 ||
-         solid_color_image_format_ == BGRA_8888);
+  DCHECK(solid_color_image_format_ == SinglePlaneFormat::kRGBA_8888 ||
+         solid_color_image_format_ == SinglePlaneFormat::kBGRA_8888);
   // Create a 1x1 pixel span of the colour in |solid_color_image_format_|.
   gfx::Size size(1, 1);
-  SharedImageFormat si_format =
-      SharedImageFormat::SinglePlane(solid_color_image_format_);
   // Premultiply the SkColor4f to support transparent quads.
   SkColor4f premul{color[0] * color[3], color[1] * color[3],
                    color[2] * color[3], color[3]};
   const uint32_t premul_rgba_bytes = premul.toBytes_RGBA();
   uint32_t premul_bytes = premul_rgba_bytes;
-  if (solid_color_image_format_ == BGRA_8888) {
+  if (solid_color_image_format_ == SinglePlaneFormat::kBGRA_8888) {
     SkSwapRB(&premul_bytes, &premul_rgba_bytes, 1);
   }
   auto pixel_span = base::make_span(
@@ -2395,10 +2378,10 @@ void SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage(
 
   // TODO(crbug.com/1360538) Some work is needed to properly support F16 format.
   shared_image_factory_->CreateSharedImage(
-      mailbox, si_format, size, color_space, kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType,
+      mailbox, solid_color_image_format_, size, color_space,
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
       gpu::SHARED_IMAGE_USAGE_SCANOUT | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ,
-      pixel_span);
+      "SkiaSolidColor", pixel_span);
   solid_color_images_.insert(mailbox);
 }
 

@@ -64,7 +64,7 @@ export class FileHandlerPageElement extends HTMLElement {
       assert(dialogArgs.args.localTasks);
       // Adjust the dialog's size if there are no local tasks to display.
       if (dialogArgs.args.localTasks.length == 0) {
-        this.style.height = '311px';
+        this.$('#dialog').style.height = '311px';
       }
 
       const {name, icon, type} =
@@ -111,10 +111,9 @@ export class FileHandlerPageElement extends HTMLElement {
           localHandlerCard.$('#container')!.classList.add('round-bottom');
         }
         this.addLocalHandlerCard(localHandlerCard);
-
-        // Set local tasks to indicate completion (used in tests).
-        this.localTasks = dialogArgs.args.localTasks;
       }
+      // Set local tasks to indicate completion (used in tests).
+      this.localTasks = dialogArgs.args.localTasks;
     } catch (e) {
       // TODO(b:243095484) Define expected behavior.
       console.error(

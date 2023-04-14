@@ -5,11 +5,10 @@
 #ifndef ASH_SYSTEM_MEDIA_QUICK_SETTINGS_MEDIA_VIEW_H_
 #define ASH_SYSTEM_MEDIA_QUICK_SETTINGS_MEDIA_VIEW_H_
 
+#include <list>
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/pagination/pagination_model.h"
-#include "ash/style/pagination_view.h"
 #include "ui/views/view.h"
 
 namespace global_media_controls {
@@ -22,6 +21,9 @@ namespace {
 class MediaScrollView;
 }  // namespace
 
+class PaginationController;
+class PaginationModel;
+class PaginationView;
 class QuickSettingsMediaViewController;
 
 // Media view displayed in the quick settings view.
@@ -35,6 +37,7 @@ class ASH_EXPORT QuickSettingsMediaView : public views::View {
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Shows the given media item in the media view.
   void ShowItem(const std::string& id,
@@ -43,10 +46,15 @@ class ASH_EXPORT QuickSettingsMediaView : public views::View {
   // Removes the given media item from the media view.
   void HideItem(const std::string& id);
 
+  // Updates the media item order given the id order in the list.
+  void UpdateItemOrder(std::list<std::string> ids);
+
  private:
   raw_ptr<QuickSettingsMediaViewController> controller_ = nullptr;
 
   std::unique_ptr<PaginationModel> pagination_model_;
+
+  std::unique_ptr<PaginationController> pagination_controller_;
 
   raw_ptr<MediaScrollView> media_scroll_view_ = nullptr;
 

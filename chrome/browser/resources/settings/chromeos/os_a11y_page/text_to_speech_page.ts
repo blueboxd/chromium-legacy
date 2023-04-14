@@ -12,12 +12,12 @@ import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from '../device_page/device_page_browser_proxy.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
@@ -242,27 +242,27 @@ export class SettingsTextToSpeechPageElement extends
     return this.i18n('selectToSpeakDescriptionWithoutKeyboard');
   }
 
-  private onManageTtsSettingsTap_(): void {
+  private onManageTtsSettingsClick_(): void {
     Router.getInstance().navigateTo(routes.MANAGE_TTS_SETTINGS);
   }
 
-  private onChromeVoxSettingsTap_(): void {
+  private onChromeVoxSettingsClick_(): void {
     this.textToSpeechBrowserProxy_.showChromeVoxSettings();
   }
 
-  private onChromeVoxNewSettingsTap_(): void {
+  private onChromeVoxNewSettingsClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_CHROMEVOX);
   }
 
-  private onChromeVoxTutorialTap_(): void {
+  private onChromeVoxTutorialClick_(): void {
     this.textToSpeechBrowserProxy_.showChromeVoxTutorial();
   }
 
-  private onSelectToSpeakSettingsTap_(): void {
+  private onSelectToSpeakSettingsClick_(): void {
     this.textToSpeechBrowserProxy_.showSelectToSpeakSettings();
   }
 
-  private onSelectToSpeakTap_(): void {
+  private onSelectToSpeakClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_SELECT_TO_SPEAK);
   }
 }

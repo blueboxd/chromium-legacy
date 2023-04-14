@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.compositor.layouts;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
@@ -42,7 +44,6 @@ import org.mockito.stubbing.Answer;
 
 import org.chromium.base.Log;
 import org.chromium.base.MathUtils;
-import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
@@ -54,10 +55,11 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.LayoutState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -81,6 +83,7 @@ import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurface.TabSwitcherViewObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -234,7 +237,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         mManagerPhone = new LayoutManagerChromePhone(layoutManagerHost, container,
                 mStartSurfaceSupplier,
                 mIsStartSurfaceRefactorEnabled ? mTabSwitcherSupplier : new OneshotSupplierImpl<>(),
-                tabContentManagerSupplier, () -> mTopUiThemeColorProvider, new DummyJankTracker());
+                tabContentManagerSupplier, () -> mTopUiThemeColorProvider);
 
         setUpLayouts();
 
@@ -471,6 +474,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         // Verify accessibility
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
+        DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT.setForTesting(true);
         setAccessibilityEnabledForTesting(true);
         verifyTabSwitcherLayoutEnable(TabListCoordinator.TabListMode.GRID);
     }
@@ -486,15 +490,17 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testTabSwitcherLayout_Enabled_LowEndPhone() throws Exception {
         // clang-format on
+        DeviceClassManager.GTS_LOW_END_SUPPORT.setForTesting(true);
         verifyTabSwitcherLayoutEnable(TabListCoordinator.TabListMode.LIST);
 
         // Test Accessibility
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
+        DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT.setForTesting(true);
         setAccessibilityEnabledForTesting(true);
         verifyTabSwitcherLayoutEnable(TabListCoordinator.TabListMode.LIST);
     }
 
-    // TODO(crbug.com/1108496): Update the test to use Assert.assertThat for better failure message.
+    // TODO(crbug.com/1108496): Update the test to use assertThat for better failure message.
     @Test
     @MediumTest
     public void testLayoutObserverNotification_ShowAndHide_ToolbarSwipe() throws TimeoutException {
@@ -613,18 +619,18 @@ public class LayoutManagerTest implements MockTabModelDelegate {
                     tab, -1, TabLaunchType.FROM_LONGPRESS_BACKGROUND, LIVE_IN_BACKGROUND);
             Assert.assertTrue("LayoutManager took too long to finish the animations",
                     simulateTime(mManager, 1000));
-            Assert.assertThat("Incorrect active LayoutType",
-                    mManager.getActiveLayout().getLayoutType(), is(LayoutType.SIMPLE_ANIMATION));
-            Assert.assertThat("Incorrect active Layout",
+            assertThat("Incorrect active LayoutType", mManager.getActiveLayout().getLayoutType(),
+                    is(LayoutType.SIMPLE_ANIMATION));
+            assertThat("Incorrect active Layout",
                     mManager.isLayoutVisible(LayoutType.SIMPLE_ANIMATION), is(true));
         });
 
         startedShowingCallback.waitForCallback(0);
-        Assert.assertThat("startedShowingCallback with incorrect LayoutType",
+        assertThat("startedShowingCallback with incorrect LayoutType",
                 startedShowingCallback.layoutType, is(LayoutType.SIMPLE_ANIMATION));
 
         finishedShowingCallback.waitForCallback(0);
-        Assert.assertThat("finishedShowingCallback with incorrect LayoutType",
+        assertThat("finishedShowingCallback with incorrect LayoutType",
                 finishedShowingCallback.layoutType, is(LayoutType.SIMPLE_ANIMATION));
 
         CriteriaHelper.pollUiThread(() -> {
@@ -639,19 +645,19 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         });
 
         startedHidingCallback.waitForCallback(0);
-        Assert.assertThat("startedHidingCallback with incorrect LayoutType",
+        assertThat("startedHidingCallback with incorrect LayoutType",
                 startedHidingCallback.layoutType, is(LayoutType.SIMPLE_ANIMATION));
 
         finishedHidingCallback.waitForCallback(0);
-        Assert.assertThat("finishedHidingCallback with incorrectLayoutType",
+        assertThat("finishedHidingCallback with incorrectLayoutType",
                 finishedHidingCallback.layoutType, is(LayoutType.SIMPLE_ANIMATION));
 
         startedShowingCallback.waitForCallback(1);
-        Assert.assertThat("startedShowingCallback with incorrectLayoutType",
+        assertThat("startedShowingCallback with incorrectLayoutType",
                 startedShowingCallback.layoutType, is(LayoutType.BROWSING));
 
         finishedShowingCallback.waitForCallback(1);
-        Assert.assertThat("finishedShowingCallback with incorrectLayoutType",
+        assertThat("finishedShowingCallback with incorrectLayoutType",
                 finishedShowingCallback.layoutType, is(LayoutType.BROWSING));
     }
 
@@ -758,6 +764,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         ChromeFeatureList.sTabGridLayoutAndroid.setForTesting(null);
         ChromeFeatureList.sTabGroupsAndroid.setForTesting(null);
         setAccessibilityEnabledForTesting(null);
+        CachedFeatureFlags.resetFlagsForTesting();
     }
 
     private void launchAndVerifyOverviewListLayout() {

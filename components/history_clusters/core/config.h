@@ -103,7 +103,7 @@ struct Config {
 
   // No effect if `persist_clusters_in_history_db` is disabled. Determines how
   // soon to update clusters after startup in minutes. E.g., by default, will
-  // update clusters 5 minutes minutes after startup.
+  // update clusters 5 minutes after startup.
   int persist_clusters_in_history_db_after_startup_delay_minutes = 5;
 
   // No effect if `persist_clusters_in_history_db` is disabled. Determines how
@@ -264,6 +264,11 @@ struct Config {
 
   // The `kUseEngagementScoreCache` feature and child params.
 
+  // Whether to use a cache to store the site engagement scores per host. Used
+  // in both the old (OnDeviceClusteringBackend) and new
+  // (ContextClustererHistoryServiceObserver) clustering paths.
+  bool use_engagement_score_cache = true;
+
   // The max number of hosts that should be stored in the engagement score
   // cache.
   int engagement_score_cache_size = 100;
@@ -342,11 +347,6 @@ struct Config {
   // considered to be fully frozen and triggerability can be finalized.
   base::TimeDelta cluster_triggerability_cutoff_duration = base::Minutes(120);
 
-  // Whether to continue fetching persisted clusters when updating cluster
-  // triggerability even if all returned clusters had their triggerability
-  // calculated already.
-  bool fetch_persisted_clusters_after_filtered_clusters_empty = true;
-
   // WebUI features and params.
 
   // Whether show either the hide visits thumbs-down or menu item on individual
@@ -354,7 +354,17 @@ struct Config {
   bool hide_visits = false;
 
   // Whether to the icon or menu item.
-  bool hide_visits_icon = false;
+  bool hide_visits_icon = true;
+
+  // The `kUseUrlForDisplayCache` feature and child params.
+
+  // Whether to use a cache to store the site engagement scores per host. Used
+  // in both the old (OnDeviceClusteringBackend) and new
+  // (ContextClustererHistoryServiceObserver) clustering paths.
+  bool use_url_for_display_cache = false;
+
+  // The max number of URLs that should be stored in the URL for display cache.
+  int url_for_display_cache_size = 100;
 
   // Lonely features without child params.
 

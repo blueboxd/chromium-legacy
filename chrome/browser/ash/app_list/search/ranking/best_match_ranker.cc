@@ -23,6 +23,7 @@ bool ShouldIgnoreProvider(ProviderType type) {
     case ProviderType::kZeroStateApp:
     case ProviderType::kZeroStateFile:
     case ProviderType::kZeroStateDrive:
+    case ProviderType::kDesksAdminTemplate:
       // Low-intent providers:
     case ProviderType::kPlayStoreReinstallApp:
     case ProviderType::kPlayStoreApp:

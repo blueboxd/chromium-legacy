@@ -627,18 +627,25 @@ void FormStructure::ProcessQueryResponse(
     std::map<FieldSignature, size_t> field_rank_map;
     for (auto& field : form->fields_) {
       // Get the field prediction for |form|'s signature and the |field|'s
-      // host_form_signature. The former takes precedence over the latter.
+      // host_form_signature. The precedence rule is the following:
+      // 1) Server overrides on main frame first, then iframe.
+      // 2) Server crowdsourcing on main frame first, then iframe.
       absl::optional<FieldSuggestion> current_field =
           GetPrediction(form->form_signature(), field->GetFieldSignature());
-      if (base::FeatureList::IsEnabled(features::kAutofillAcrossIframes) &&
-          field->host_form_signature &&
-          field->host_form_signature != form->form_signature()) {
+      auto is_override = [](absl::optional<FieldSuggestion> field_suggestion) {
+        return field_suggestion && !field_suggestion->predictions().empty() &&
+               field_suggestion->predictions()[0].override();
+      };
+      if (field->host_form_signature &&
+          field->host_form_signature != form->form_signature() &&
+          !is_override(current_field) &&
+          base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
         // Retrieves the alternative prediction even if it is not used so that
         // the alternative predictions are popped.
         absl::optional<FieldSuggestion> alternative_field = GetPrediction(
             field->host_form_signature, field->GetFieldSignature());
         if (alternative_field &&
-            (!current_field ||
+            (!current_field || is_override(alternative_field) ||
              base::ranges::all_of(current_field->predictions(),
                                   [](const auto& prediction) {
                                     return prediction.type() == NO_SERVER_DATA;
@@ -1023,18 +1030,11 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
       field->section = cached_field->section;
       field->set_only_fill_when_focused(cached_field->only_fill_when_focused());
 
-      // Only retrieve an overall prediction from cache if a server prediction
-      // is set.
-      // The following is just gated behind a flag because it changes behavior.
-      // We are pretty convinced that this should be enabled by default.
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillRetrieveOverallPredictionsFromCache)) {
-        // During import the final field type is used to decide which
-        // information to store in an address profile or credit card. As
-        // rationalization is an important component of determining the final
-        // field type, the output should be preserved.
-        field->SetTypeTo(cached_field->Type());
-      }
+      // During import, the final field type is used to decide which
+      // information to store in an address profile or credit card. As
+      // rationalization is an important component of determining the final
+      // field type, the output should be preserved.
+      field->SetTypeTo(cached_field->Type());
     }
     field->set_field_log_events(cached_field->field_log_events());
   }

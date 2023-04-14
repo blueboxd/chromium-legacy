@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
@@ -36,6 +37,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -104,6 +106,9 @@ class HttpsUpgradesBrowserTest
     verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
     mock_cert_verifier_.mock_cert_verifier()->AddResultForCertAndHost(
         cert, "bad-https.test", verify_result,
+        net::ERR_CERT_COMMON_NAME_INVALID);
+    mock_cert_verifier_.mock_cert_verifier()->AddResultForCertAndHost(
+        cert, "www.bad-https.test", verify_result,
         net::ERR_CERT_COMMON_NAME_INVALID);
 
     http_server_.AddDefaultHandlers(GetChromeTestDataDir());
@@ -301,6 +306,60 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, Localhost_ShouldNotUpgrade) {
   histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
                                   NavigationRequestSecurityLevel::kLocalhost,
                                   1);
+}
+
+// Test that HTTPS Upgrades are skipped for non-publicly routable (RFC1918/4193)
+// IP address hostnames, but HTTPS-First Mode should still apply.
+IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
+                       NonRoutableIPAddress_ShouldNotUpgrade) {
+  // This test is only interesting for HTTPS-Upgrades and HTTPS-First Mode.
+  if (!IsHttpUpgradingEnabled()) {
+    return;
+  }
+
+  // Disable the testing port configuration, as this test doesn't use the
+  // EmbeddedTestServer.
+  HttpsUpgradesInterceptor::SetHttpsPortForTesting(0);
+  HttpsUpgradesInterceptor::SetHttpPortForTesting(0);
+
+  // Set up an interceptor because the test server can't listen on private IPs.
+  GURL local_ip_url("http://192.168.0.1/simple.html");
+  auto url_loader_interceptor =
+      content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
+          GetChromeTestDataDir().MaybeAsASCII(),
+          local_ip_url.GetWithEmptyPath());
+
+  auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  if (IsHttpInterstitialEnabled()) {
+    // HFM should attempt the upgrade, fail, and fallback to the interstitial.
+    EXPECT_FALSE(content::NavigateToURL(contents, local_ip_url));
+    EXPECT_TRUE(
+        chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+            contents));
+
+    // Verify that upgrade events were recorded because an upgrade was attempted
+    // and failed.
+    histograms()->ExpectTotalCount(kEventHistogram, 3);
+    histograms()->ExpectBucketCount(
+        kEventHistogram,
+        security_interstitials::https_only_mode::Event::kUpgradeAttempted, 1);
+    histograms()->ExpectBucketCount(
+        kEventHistogram,
+        security_interstitials::https_only_mode::Event::kUpgradeFailed, 1);
+    histograms()->ExpectBucketCount(
+        kEventHistogram,
+        security_interstitials::https_only_mode::Event::kUpgradeTimedOut, 1);
+  } else {
+    // If HFM is not enabled, HTTPS-Upgrades should not attempt to upgrade the
+    // navigation.
+    EXPECT_TRUE(content::NavigateToURL(contents, local_ip_url));
+    histograms()->ExpectTotalCount(kEventHistogram, 0);
+  }
+
+  histograms()->ExpectBucketCount(
+      kNavigationRequestSecurityLevelHistogram,
+      NavigationRequestSecurityLevel::kNonUniqueHostname, 1);
 }
 
 // If the user navigates to a non-unique hostname, the navigation should be
@@ -1475,6 +1534,48 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
     histograms()->ExpectBucketCount(
         kNavigationRequestSecurityLevelHistogram,
         NavigationRequestSecurityLevel::kAllowlisted, 2);
+  }
+}
+
+// Regression test for crbug.com/1431026. Triggers a navigation where HTTPS
+// upgrades applied multiple times across redirects to different sites.
+// Should not crash when DCHECKS are enabled.
+IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, crbug1431026) {
+  GURL www_bad_https_url =
+      https_server()->GetURL("www.bad-https.test", "/simple.html");
+  GURL www_http_url =
+      http_server()->GetURL("www.bad-https.test", "/simple.html");
+
+  // Configure HTTP and bad-HTTPS URLs which redirect to www. subdomain.
+  std::string www_redirect_path =
+      base::StrCat({"/server-redirect?", www_http_url.spec()});
+  GURL redirecting_bad_https_url =
+      https_server()->GetURL("bad-https.test", www_redirect_path);
+  GURL redirecting_http_url =
+      http_server()->GetURL("bad-https.test", www_redirect_path);
+
+  // A good HTTPS URL which redirects to an HTTP URL, which also redirects.
+  GURL initial_redirecting_good_https_url = https_server()->GetURL(
+      "good-https.test",
+      base::StrCat({"/server-redirect-301?", redirecting_http_url.spec()}));
+
+  auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      content::NavigateToURL(contents, initial_redirecting_good_https_url));
+
+  if (IsHttpInterstitialEnabled()) {
+    // Should be showing interstitial on http://bad-https.test/.
+    EXPECT_EQ(redirecting_http_url, contents->GetLastCommittedURL());
+    EXPECT_TRUE(
+        chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+            contents));
+  } else {
+    // Either due to no upgrades, or due to fast fallback to HTTP, this should
+    // end up on http://www.bad-https.test.
+    EXPECT_EQ(www_http_url, contents->GetLastCommittedURL());
+    EXPECT_FALSE(
+        chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+            contents));
   }
 }
 

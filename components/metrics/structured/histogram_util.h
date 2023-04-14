@@ -6,8 +6,7 @@
 #define COMPONENTS_METRICS_STRUCTURED_HISTOGRAM_UTIL_H_
 #include "components/prefs/persistent_pref_store.h"
 
-namespace metrics {
-namespace structured {
+namespace metrics::structured {
 
 // Possible internal errors of the structured metrics system. These are events
 // we expect to never see, so only the absolute counts should be looked at, the
@@ -40,7 +39,8 @@ enum class EventRecordingState {
   kProviderUninitialized = 1,
   kRecordingDisabled = 2,
   kProviderMissing = 3,
-  kMaxValue = kProviderMissing,
+  kProjectDisallowed = 4,
+  kMaxValue = kProjectDisallowed,
 };
 
 // Describes the action taken by KeyData::ValidateAndGetKey on a particular user
@@ -79,7 +79,15 @@ void LogNumFilesPerExternalMetricsScan(int num_files);
 // Logs the file size of an event.
 void LogEventFileSizeKB(int64_t file_size_kb);
 
-}  // namespace structured
-}  // namespace metrics
+// Logs the serialized size of an event when it is recorded in bytes.
+void LogEventSerializedSizeBytes(int64_t event_size_bytes);
+
+// Logs the StructuredMetrics uploaded size to UMA in bytes.
+void LogUploadSizeBytes(int64_t upload_size_bytes);
+
+// Logs the number of external metrics were scanned for an upload.
+void LogExternalMetricsScanInUpload(int num_scans);
+
+}  // namespace metrics::structured
 
 #endif  // COMPONENTS_METRICS_STRUCTURED_HISTOGRAM_UTIL_H_

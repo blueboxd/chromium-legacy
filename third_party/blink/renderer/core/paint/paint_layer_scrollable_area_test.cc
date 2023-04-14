@@ -346,19 +346,7 @@ TEST_P(MAYBE_PaintLayerScrollableAreaTest, SelectElementPromotionTest) {
 
   Element* element = GetDocument().getElementById("select");
   EXPECT_FALSE(HasDirectCompositingReasons(element->GetLayoutObject()));
-  if (RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
-    // PaintArtifactCompositor can detect the opaque background of <select>
-    // and use composited scrolling.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-    // <select> implementation is different and not scrollable on Android and
-    // iOS.
-    EXPECT_FALSE(UsesCompositedScrolling(element->GetLayoutBox()));
-#else
-    EXPECT_TRUE(UsesCompositedScrolling(element->GetLayoutBox()));
-#endif
-  } else {
-    EXPECT_FALSE(UsesCompositedScrolling(element->GetLayoutBox()));
-  }
+  EXPECT_FALSE(UsesCompositedScrolling(element->GetLayoutBox()));
 
   element->setAttribute("class", "composited");
   UpdateAllLifecyclePhasesForTest();
@@ -535,7 +523,11 @@ TEST_P(MAYBE_PaintLayerScrollableAreaTest,
   ASSERT_TRUE(scrollable_area);
   scrollable_area->SetScrollOffset(ScrollOffset(100, 0),
                                    mojom::blink::ScrollType::kClamping);
-  EXPECT_EQ(scrollable_area->GetScrollOffset().x(), 0);
+  if (RuntimeEnabledFeatures::OverflowOverlayAliasesAutoEnabled()) {
+    EXPECT_EQ(scrollable_area->GetScrollOffset().x(), 15);
+  } else {
+    EXPECT_EQ(scrollable_area->GetScrollOffset().x(), 0);
+  }
 }
 
 TEST_P(MAYBE_PaintLayerScrollableAreaTest,

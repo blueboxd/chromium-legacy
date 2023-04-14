@@ -185,6 +185,7 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
 void ThreadControllerWithMessagePumpImpl::SetWorkBatchSize(
     int work_batch_size) {
   DCHECK_GE(work_batch_size, 1);
+  CHECK(main_thread_only().can_change_batch_size);
   main_thread_only().work_batch_size = work_batch_size;
 }
 
@@ -459,8 +460,8 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
                                                        select_task_option);
     LazyNow lazy_now_task_selected(time_source_);
     run_level_tracker_.OnApplicationTaskSelected(
-        (selected_task && selected_task->task->delayed_run_time.is_null())
-            ? selected_task->task->queue_time
+        (selected_task && selected_task->task.delayed_run_time.is_null())
+            ? selected_task->task.queue_time
             : TimeTicks(),
         lazy_now_task_selected);
     if (!selected_task) {
@@ -480,17 +481,17 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     {
       // Always track the start of the task, as this is low-overhead.
       TaskAnnotator::LongTaskTracker long_task_tracker(
-          time_source_, *selected_task->task, &task_annotator_);
+          time_source_, selected_task->task, &task_annotator_);
 
       // Note: all arguments after task are just passed to a TRACE_EVENT for
       // logging so lambda captures are safe as lambda is executed inline.
       SequencedTaskSource* source = main_thread_only().task_source;
       task_annotator_.RunTask(
-          "ThreadControllerImpl::RunTask", *selected_task->task,
+          "ThreadControllerImpl::RunTask", selected_task->task,
           [&selected_task, &source](perfetto::EventContext& ctx) {
             if (selected_task->task_execution_trace_logger) {
               selected_task->task_execution_trace_logger.Run(
-                  ctx, *selected_task->task);
+                  ctx, selected_task->task);
             }
             source->MaybeEmitTaskDetails(ctx, selected_task.value());
           });
@@ -735,6 +736,9 @@ void ThreadControllerWithMessagePumpImpl::DetachFromMessagePump() {
 }
 #elif BUILDFLAG(IS_ANDROID)
 void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {
+  CHECK(main_thread_only().work_batch_size == 1);
+  // Aborting the message pump currently relies on the batch size being 1.
+  main_thread_only().can_change_batch_size = false;
   static_cast<MessagePumpForUI*>(pump_.get())->Attach(this);
 }
 #endif

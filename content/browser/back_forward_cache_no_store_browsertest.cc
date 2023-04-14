@@ -1376,6 +1376,51 @@ IN_PROC_BROWSER_TEST_F(
                   BlockListedFeatures()));
 }
 
+// Test that a page with `Cache-control: no-store` header gets evicted without
+// crashes if some cookie is modified immediately before the back navigation.
+// TODO: this test could be potentially flaky if the notification to
+// CookieChangeListener is only received after the entire back navigation
+// completes. If any flaky case is reported in the future, we should fix that by
+// ensuring the eviction to happen after the NavigationRequest starts to process
+// response but before it finishes committing the navigation.
+// See discussion from https://crrev.com/c/4408607.
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTestRestoreCacheControlNoStoreUnlessCookieChange,
+    PagesWithCacheControlNoStoreNotBFCachedWithCookieSetImmediatelyBeforeNavigateBack) {
+  CreateHttpsServer();
+  net::test_server::ControllableHttpResponse response(https_server(),
+                                                      "/title1.html");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a_2(https_server()->GetURL("a.com", "/title2.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Load the document and specify no-store for the main resource.
+  TestNavigationObserver observer(web_contents());
+  shell()->LoadURL(url_a);
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  response.WaitForRequest();
+  response.Send(kResponseWithNoCache);
+  response.Done();
+  observer.Wait();
+  rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
+
+  // 2) Navigate away, and set a cookie from the new page.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a_2));
+  EXPECT_TRUE(ExecJs(shell(), "document.cookie='foo=bar'"));
+
+  // 3) Go back. |rfh_a| should be evicted upon restoration.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestored({NotRestoredReason::kCacheControlNoStoreCookieModified}, {},
+                    {}, {}, {}, FROM_HERE);
+  EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
+              MatchesDocumentResult(
+                  NotRestoredReasons(
+                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                  BlockListedFeatures()));
+}
+
 class BackForwardCacheBrowserTestRestoreUnlessHTTPOnlyCookieChange
     : public BackForwardCacheBrowserTest {
  protected:

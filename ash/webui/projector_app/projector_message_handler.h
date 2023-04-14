@@ -48,20 +48,13 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
   // TODO(b/237337607): chrome.send() is banned on ash. Migrate to Mojo instead.
   void RegisterMessages() override;
 
-  // ProjectorAppClient:Observer:
-  void OnNewScreencastPreconditionChanged(
-      const NewScreencastPrecondition& precondition) override;
-
-  void set_web_ui_for_test(content::WebUI* web_ui) { set_web_ui(web_ui); }
-
   // ProjectorAppClient::Observer:
   // Notifies the Projector SWA the pending screencasts' state change and
   // updates the pending list in Projector SWA.
   void OnScreencastsPendingStatusChanged(
       const PendingScreencastSet& pending_screencast) override;
-  void OnSodaProgress(int percentage) override;
-  void OnSodaError() override;
-  void OnSodaInstalled() override;
+
+  void set_web_ui_for_test(content::WebUI* web_ui) { set_web_ui(web_ui); }
 
  protected:
   // Called when the XHR request is completed. Resolves the javascript promise
@@ -77,10 +70,6 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
   // used in the account picker in the SWA.
   void GetAccounts(const base::Value::List& args);
 
-  // Requested by the Projector SWA to check the new screencast precondition
-  // state.
-  void GetNewScreencastPrecondition(const base::Value::List& args);
-
   // Requested by the Projector SWA to start a new Projector session if it is
   // possible.
   void StartProjectorSession(const base::Value::List& args);
@@ -91,13 +80,6 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
 
   // Requested by the Projector SWA to send XHR request.
   void SendXhr(const base::Value::List& args);
-
-  // Requested by the Projector SWA to check if SODA is not available and should
-  // be downloaded. Returns false if the device doesn't support SODA.
-  void ShouldDownloadSoda(const base::Value::List& args);
-
-  // Requested by the Projector SWA to trigger SODA installation.
-  void InstallSoda(const base::Value::List& args);
 
   // Called by the Projector SWA when an error occurred.
   void OnError(const base::Value::List& args);

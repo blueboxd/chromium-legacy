@@ -22,6 +22,7 @@ android_library("java") {
 
 android_library("javatests") {
   testonly = true
+  resources_package = "org.chromium.chrome.browser.ui.quickactionsearchwidget"
   sources = [
     "java/src/org/chromium/chrome/browser/ui/quickactionsearchwidget/QuickActionSearchWidgetProviderDelegateTest.java",
     "java/src/org/chromium/chrome/browser/ui/quickactionsearchwidget/QuickActionSearchWidgetTestUtils.java",
@@ -31,6 +32,7 @@ android_library("javatests") {
     ":java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:base_java_test_support_uncommon",
     "//chrome/android:chrome_app_java_resources",
     "//chrome/android:chrome_java",
     "//chrome/browser/android/browserservices/intents:java",

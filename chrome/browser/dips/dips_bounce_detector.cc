@@ -14,14 +14,17 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/dips/cookie_access_filter.h"
+#include "chrome/browser/dips/dips_features.h"
 #include "chrome/browser/dips/dips_redirect_info.h"
 #include "chrome/browser/dips/dips_service.h"
+#include "chrome/browser/dips/dips_storage.h"
 #include "chrome/browser/dips/dips_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_handle_user_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 
 using content::NavigationHandle;
 
@@ -45,11 +48,6 @@ ClientBounceDetectionState::ClientBounceDetectionState(
 }
 
 namespace {
-
-// The amount of time since finishing navigation to a page that a client-side
-// redirect must happen within to count as a bounce (provided that all other
-// criteria are met as well).
-const int kBounceThresholdSeconds = 10;
 
 inline void UmaHistogramTimeToBounce(base::TimeDelta sample) {
   base::UmaHistogramTimes("Privacy.DIPS.TimeFromNavigationCommitToClientBounce",
@@ -77,7 +75,10 @@ DIPSWebContentsObserver::DIPSWebContentsObserver(
       dips_service_(dips_service),
       detector_(this,
                 base::DefaultTickClock::GetInstance(),
-                base::DefaultClock::GetInstance()) {}
+                base::DefaultClock::GetInstance()) {
+  issue_callback_ = base::BindRepeating(&DIPSWebContentsObserver::EmitDIPSIssue,
+                                        weak_factory_.GetWeakPtr());
+}
 
 DIPSWebContentsObserver::~DIPSWebContentsObserver() = default;
 
@@ -215,6 +216,42 @@ bool DIPSRedirectContext::AddLateCookieAccess(GURL url, CookieOperation op) {
   return false;
 }
 
+void DIPSWebContentsObserver::EmitDIPSIssue(
+    const std::set<std::string>& sites) {
+  if (sites.empty()) {
+    return;
+  }
+
+  auto details = blink::mojom::InspectorIssueDetails::New();
+  auto bounce_tracking_issue_details =
+      blink::mojom::BounceTrackingIssueDetails::New();
+
+  bounce_tracking_issue_details->tracking_sites.reserve(sites.size());
+  for (const auto& site : sites) {
+    bounce_tracking_issue_details->tracking_sites.push_back(site);
+  }
+
+  details->bounce_tracking_issue_details =
+      std::move(bounce_tracking_issue_details);
+
+  web_contents()->GetPrimaryMainFrame()->ReportInspectorIssue(
+      blink::mojom::InspectorIssueInfo::New(
+          blink::mojom::InspectorIssueCode::kBounceTrackingIssue,
+          std::move(details)));
+}
+
+void DIPSWebContentsObserver::ReportRedirectorsWithoutInteraction(
+    const std::set<std::string>& sites) {
+  if (sites.size() == 0) {
+    return;
+  }
+
+  dips_service_->storage()
+      ->AsyncCall(&DIPSStorage::FilterSitesWithoutInteraction)
+      .WithArgs(sites)
+      .Then(issue_callback_);
+}
+
 void DIPSWebContentsObserver::RecordEvent(DIPSRecordedEvent event,
                                           const GURL& url,
                                           const base::Time& time) {
@@ -293,16 +330,16 @@ void DIPSBounceDetector::DidStartNavigation(
 
   DIPSRedirectInfoPtr client_redirect;
   if (client_detection_state_.has_value()) {
-    base::TimeDelta bounce_time = now - client_detection_state_->page_load_time;
+    base::TimeDelta bounce_delay =
+        now - client_detection_state_->page_load_time;
 
     if (!navigation_handle->HasUserGesture() &&
-        (bounce_time <
-         base::TimeDelta(base::Seconds(kBounceThresholdSeconds)))) {
+        (bounce_delay < dips::kBounceTimeout.Get())) {
       // Time between page load and client-side redirect starting is only
       // tracked for stateful bounces.
       if (client_detection_state_->cookie_access_type >
           CookieAccessType::kNone) {
-        UmaHistogramTimeToBounce(bounce_time);
+        UmaHistogramTimeToBounce(bounce_delay);
       }
 
       client_redirect = std::make_unique<DIPSRedirectInfo>(
@@ -313,7 +350,7 @@ void DIPSBounceDetector::DidStartNavigation(
           /*source_id=*/
           delegate_->GetPageUkmSourceId(),
           /*time=*/clock_->Now(),
-          /*client_bounce_delay=*/bounce_time,
+          /*client_bounce_delay=*/bounce_delay,
           /*has_sticky_activation=*/
           client_detection_state_->last_activation_time.has_value());
       // We cannot append |client_redirect| to |redirect_context_| immediately,
@@ -460,6 +497,9 @@ void DIPSBounceDetector::DidFinishNavigation(
         /*time=*/clock_->Now()));
   }
 
+  delegate_->ReportRedirectorsWithoutInteraction(
+      GetRedirectors(server_state->navigation_start, navigation_handle));
+
   if (navigation_handle->HasCommitted()) {
     redirect_context_.AppendCommitted(std::move(server_state->navigation_start),
                                       std::move(redirects));
@@ -476,6 +516,7 @@ void DIPSBounceDetector::DidFinishNavigation(
     client_detection_state_->cookie_access_type = access_types.back();
   }
 }
+
 // TODO(kaklilu): Follow up on how this interacts with Fenced Frames.
 void DIPSWebContentsObserver::FrameReceivedUserActivation(
     content::RenderFrameHost* render_frame_host) {
@@ -515,6 +556,47 @@ bool DIPSBounceDetector::ShouldUpdateTimestamp(
     base::Time now) {
   return (!last_time.has_value() ||
           (now - last_time.value()) >= kTimestampUpdateInterval);
+}
+
+std::set<std::string> DIPSBounceDetector::GetRedirectors(
+    const DIPSNavigationStart& navigation_start,
+    DIPSNavigationHandle* navigation_handle) {
+  std::set<std::string> redirectors;
+  std::string initial_site;
+
+  absl::visit(  //
+      base::Overloaded{
+          [&](const DIPSRedirectInfoPtr& client_redirect) {
+            initial_site = GetSiteForDIPS(redirect_context_.GetInitialURL());
+            // If the navigation started with a client redirect,
+            // `navigation_start` will be a DIPSRedirectInfoPtr and
+            // we'll include that redirector as well.
+            redirectors.insert(GetSiteForDIPS(client_redirect->url));
+          },
+          [&](const GURL& client_url) {
+            initial_site = GetSiteForDIPS(client_url);
+          },
+      },
+      navigation_start);
+
+  const auto& redirect_chain = navigation_handle->GetRedirectChain();
+  // The last site in the chain is the destination page, so it is ignored here.
+  for (auto it = redirect_chain.begin(); it != (redirect_chain.end() - 1);
+       it++) {
+    redirectors.insert(GetSiteForDIPS(*it));
+  }
+
+  // Since redirectors that are the same as the start or final page won't be
+  // acted on, we don't report on them.
+  //
+  // NOTE: This is not exactly right since the end of this navigation may not
+  // necessarily be the end of the chain, if a client redirect happens. However,
+  // this is better for developer experience than waiting until then, since
+  // notifications come faster.
+  redirectors.erase(initial_site);
+  redirectors.erase(GetSiteForDIPS(redirect_chain.back()));
+
+  return redirectors;
 }
 
 void DIPSWebContentsObserver::WebContentsDestroyed() {

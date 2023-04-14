@@ -78,6 +78,9 @@ import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult.TopToolbar
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
+import org.chromium.chrome.browser.util.BrowserUiUtils;
+import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
+import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNTP;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
@@ -141,7 +144,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
-    private OptionalButtonCoordinator mOptionalButton;
+    private OptionalButtonCoordinator mOptionalButtonCoordinator;
     private boolean mOptionalButtonUsesTint;
     private boolean mShouldShowModernizeVisualUpdate;
 
@@ -392,8 +395,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         if (mCurrentLocationBarColor == color) return;
         mCurrentLocationBarColor = color;
         mLocationBarBackground.setTint(color);
-        if (mOptionalButton != null) {
-            mOptionalButton.setBackgroundColorFilter(color);
+        if (mOptionalButtonCoordinator != null) {
+            mOptionalButtonCoordinator.setBackgroundColorFilter(color);
         }
     }
 
@@ -554,6 +557,11 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             return;
         }
         if (mHomeButton == v) {
+            if (getToolbarDataProvider().getNewTabPageDelegate().isCurrentlyVisible()) {
+                // Record the clicking action on the home button.
+                BrowserUiUtils.recordModuleClickHistogram(
+                        HostSurface.NEW_TAB_PAGE, ModuleTypeOnStartAndNTP.HOME_BUTTON);
+            }
             openHomepage();
             if (isNativeLibraryReady() && mPartnerHomepageEnabledSupplier.getAsBoolean()) {
                 Profile profile = getToolbarDataProvider().getProfile();
@@ -617,6 +625,12 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     @VisibleForTesting
     void setLocationBarBackgroundDrawableForTesting(GradientDrawable background) {
         mLocationBarBackground = background;
+    }
+
+    @VisibleForTesting
+    void setOptionalButtonCoordinatorForTesting(
+            OptionalButtonCoordinator optionalButtonCoordinator) {
+        mOptionalButtonCoordinator = optionalButtonCoordinator;
     }
 
     @SuppressLint("RtlHardcoded")
@@ -927,7 +941,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      */
     @VisibleForTesting
     float getLocationBarWidthOffsetForOptionalButton() {
-        float widthChange = mOptionalButton.getViewWidth();
+        float widthChange = mOptionalButtonCoordinator.getViewWidth();
 
         // When the optional button is the only visible button after the location bar and the
         // button is hidden mToolbarSidePadding is used for the padding after the location bar.
@@ -1309,11 +1323,17 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         // Translate to draw end toolbar buttons.
         ViewUtils.translateCanvasToView(this, mToolbarButtonsContainer, canvas);
 
-        if (mOptionalButton != null && mOptionalButton.getViewVisibility() != View.GONE) {
+        // Draw the optional button if visible. We check for both visibility and width because in
+        // some cases (e.g. the first frame of the showing animation) the view may be visible with a
+        // width of zero. Calling draw in this state results in drawing the inner ImageButton when
+        // it's not supposed to. (See https://crbug.com/1422176 for an example of this happening).
+        if (mOptionalButtonCoordinator != null
+                && mOptionalButtonCoordinator.getViewVisibility() != View.GONE
+                && mOptionalButtonCoordinator.getViewWidth() != 0) {
             canvas.save();
-            ViewUtils.translateCanvasToView(
-                    mToolbarButtonsContainer, mOptionalButton.getViewForDrawing(), canvas);
-            mOptionalButton.getViewForDrawing().draw(canvas);
+            ViewUtils.translateCanvasToView(mToolbarButtonsContainer,
+                    mOptionalButtonCoordinator.getViewForDrawing(), canvas);
+            mOptionalButtonCoordinator.getViewForDrawing().draw(canvas);
             canvas.restore();
         }
 
@@ -1578,6 +1598,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                     TopToolbarBlockCaptureReason.STATUS_ICON_ANIMATION_IN_PROGRESS);
         } else if (isInTabSwitcherMode() || mIsShowingStartSurfaceTabSwitcher) {
             return CaptureReadinessResult.notReady(TopToolbarBlockCaptureReason.TAB_SWITCHER_MODE);
+        } else if (mNtpSearchBoxTranslation.y != 0) {
+            return CaptureReadinessResult.notReady(TopToolbarBlockCaptureReason.NTP_Y_TRANSLATION);
         } else {
             PhoneCaptureStateToken newSnapshotState = generateToolbarSnapshotState();
             @ToolbarSnapshotDifference
@@ -1634,6 +1656,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         return new PhoneCaptureStateToken(getTint().getDefaultColor(),
                 mTabCountProvider.getTabCount(), mButtonData, mVisualState, visibleUrlText,
                 securityIconResource, ImageViewCompat.getImageTintList(mHomeButton),
+                mHomeButton.getVisibility() == View.VISIBLE,
                 getMenuButtonCoordinator().isShowingUpdateBadge(),
                 getToolbarDataProvider().isPaintPreview(), getProgressBar().getProgress(),
                 mUnfocusedLocationBarLayoutWidth);
@@ -1691,8 +1714,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             }
         }
 
-        if (mOptionalButton != null && mOptionalButtonUsesTint) {
-            mOptionalButton.setIconForegroundColor(tint);
+        if (mOptionalButtonCoordinator != null && mOptionalButtonUsesTint) {
+            mOptionalButtonCoordinator.setIconForegroundColor(tint);
         }
 
         // TODO(amaralp): Have the LocationBar listen to tint changes.
@@ -2060,7 +2083,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             mUrlFocusLayoutAnimator.cancel();
             mUrlFocusLayoutAnimator = null;
         }
-        if (mOptionalButtonAnimationRunning) mOptionalButton.cancelTransition();
+        if (mOptionalButtonAnimationRunning) mOptionalButtonCoordinator.cancelTransition();
 
         List<Animator> animators = new ArrayList<>();
         if (hasFocus) {
@@ -2443,7 +2466,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     }
 
     private void initializeOptionalButton() {
-        if (mOptionalButton == null) {
+        if (mOptionalButtonCoordinator == null) {
             ViewStub optionalButtonStub = findViewById(R.id.optional_button_stub);
 
             if (optionalButtonStub == null) {
@@ -2475,17 +2498,18 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
             Profile profile = Profile.getLastUsedRegularProfile();
             Tracker featureEngagementTracker = TrackerFactory.getTrackerForProfile(profile);
-            mOptionalButton = new OptionalButtonCoordinator(optionalButton, userEducationHelper,
-                    /* transitionRoot= */ mToolbarButtonsContainer, isAnimationAllowedPredicate,
-                    featureEngagementTracker);
+            mOptionalButtonCoordinator =
+                    new OptionalButtonCoordinator(optionalButton, userEducationHelper,
+                            /* transitionRoot= */ mToolbarButtonsContainer,
+                            isAnimationAllowedPredicate, featureEngagementTracker);
 
             // Set the button's background to the same color as the URL bar background. This color
             // is only used when showing dynamic actions.
-            mOptionalButton.setBackgroundColorFilter(mCurrentLocationBarColor);
-            mOptionalButton.setOnBeforeHideTransitionCallback(
+            mOptionalButtonCoordinator.setBackgroundColorFilter(mCurrentLocationBarColor);
+            mOptionalButtonCoordinator.setOnBeforeHideTransitionCallback(
                     () -> mLayoutLocationBarWithoutExtraButton = true);
 
-            mOptionalButton.setTransitionStartedCallback(transitionType -> {
+            mOptionalButtonCoordinator.setTransitionStartedCallback(transitionType -> {
                 mOptionalButtonAnimationRunning = true;
                 keepControlsShownForAnimation();
 
@@ -2502,7 +2526,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                         break;
                 }
             });
-            mOptionalButton.setTransitionFinishedCallback(transitionType -> {
+            mOptionalButtonCoordinator.setTransitionFinishedCallback(transitionType -> {
                 // If we are done expanding the transition chip then don't re-enable hiding browser
                 // controls, as we'll begin the collapse transition soon.
                 if (transitionType == TransitionType.EXPANDING_ACTION_CHIP) {
@@ -2525,18 +2549,18 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         mButtonData = buttonData;
         ButtonSpec buttonSpec = mButtonData.getButtonSpec();
 
-        if (mOptionalButton == null) {
+        if (mOptionalButtonCoordinator == null) {
             initializeOptionalButton();
         }
 
         mOptionalButtonUsesTint = buttonSpec.getSupportsTinting();
 
-        mOptionalButton.updateButton(buttonData);
+        mOptionalButtonCoordinator.updateButton(buttonData);
 
         if (mOptionalButtonUsesTint) {
-            mOptionalButton.setIconForegroundColor(getTint());
+            mOptionalButtonCoordinator.setIconForegroundColor(getTint());
         } else {
-            mOptionalButton.setIconForegroundColor(null);
+            mOptionalButtonCoordinator.setIconForegroundColor(null);
         }
     }
 
@@ -2550,19 +2574,20 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     @Override
     void hideOptionalButton() {
         mButtonData = null;
-        if (mOptionalButton == null || mOptionalButton.getViewVisibility() == View.GONE
+        if (mOptionalButtonCoordinator == null
+                || mOptionalButtonCoordinator.getViewVisibility() == View.GONE
                 || mLayoutLocationBarWithoutExtraButton) {
             return;
         }
 
-        mOptionalButton.hideButton();
+        mOptionalButtonCoordinator.hideButton();
     }
 
     @Override
     @VisibleForTesting
     public View getOptionalButtonViewForTesting() {
-        if (mOptionalButton != null) {
-            return mOptionalButton.getButtonViewForTesting();
+        if (mOptionalButtonCoordinator != null) {
+            return mOptionalButtonCoordinator.getButtonViewForTesting();
         }
 
         return null;

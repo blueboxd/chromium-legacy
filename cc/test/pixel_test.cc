@@ -66,8 +66,8 @@ PixelTest::PixelTest(GraphicsBackend backend)
   if (backend == kSkiaVulkan) {
     scoped_feature_list_.InitAndEnableFeature(features::kVulkan);
     init_vulkan = true;
-  } else if (backend == kSkiaDawn) {
-    scoped_feature_list_.InitAndEnableFeature(features::kSkiaDawn);
+  } else if (backend == kSkiaGraphite) {
+    scoped_feature_list_.InitAndEnableFeature(features::kSkiaGraphite);
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     init_vulkan = true;
 #elif BUILDFLAG(IS_WIN)
@@ -290,6 +290,7 @@ void PixelTest::TearDown() {
   child_context_provider_.reset();
 
   // Tear down the skia renderer.
+  software_renderer_ = nullptr;
   renderer_.reset();
   resource_provider_.reset();
   output_surface_.reset();

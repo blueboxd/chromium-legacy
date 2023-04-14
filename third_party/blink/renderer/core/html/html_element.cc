@@ -106,9 +106,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
-#include "third_party/blink/renderer/platform/text/bidi_resolver.h"
-#include "third_party/blink/renderer/platform/text/bidi_text_run.h"
-#include "third_party/blink/renderer/platform/text/text_run_iterator.h"
+#include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -791,7 +789,8 @@ void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
     EnsureElementInternals().ReadonlyAttributeChanged();
     return;
   }
-  if (params.name == html_names::kAnchorAttr) {
+  if (params.name == html_names::kAnchorAttr &&
+      RuntimeEnabledFeatures::CSSAnchorPositioningEnabled()) {
     EnsureAnchorElementObserver().Notify();
     return;
   }
@@ -1214,10 +1213,6 @@ void HTMLElement::UpdatePopoverAttribute(String value) {
   PopoverValueType type = GetPopoverTypeFromAttributeValue(value);
   if (type == PopoverValueType::kManual &&
       !EqualIgnoringASCIICase(value, kPopoverTypeValueManual)) {
-    // TODO(masonf) This console message might be too much log spam. Though
-    // in case there's a namespace collision with something the developer is
-    // doing with e.g. a function called 'popover', this will be helpful to
-    // troubleshoot that.
     GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
         mojom::blink::ConsoleMessageLevel::kWarning,
@@ -1298,7 +1293,7 @@ PopoverValueType HTMLElement::PopoverType() const {
   return GetPopoverData() ? GetPopoverData()->type() : PopoverValueType::kNone;
 }
 
-// This should be true when `:open` should match.
+// This should be true when `:popover-open` should match.
 bool HTMLElement::popoverOpen() const {
   DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
@@ -1413,14 +1408,6 @@ void HTMLElement::togglePopover(bool force, ExceptionState& exception_state) {
   }
 }
 
-// Showing a popover happens in phases, to facilitate animations and
-// transitions:
-// 1. Move the popover to the top layer, stop matching `:closed`, and
-//     remove the UA `display:none` style.
-// 2. Update style. (Transition initial style can be specified in this
-//    state.)
-// 3. Set the `:open` pseudo class.
-// 4. Update style. (Animations/transitions happen here.)
 void HTMLElement::showPopover(ExceptionState& exception_state) {
   ShowPopoverInternal(&exception_state);
 }
@@ -1522,14 +1509,12 @@ void HTMLElement::ShowPopoverInternal(ExceptionState* exception_state) {
   GetPopoverData()->setPreviouslyFocusedElement(nullptr);
   Element* originally_focused_element = document.FocusedElement();
   document.AddToTopLayer(this);
-  // Make the popover match `:open`, stop matching `:closed`, and remove
-  // `display:none` styling:
+  // Make the popover match `:popover-open` and remove `display:none` styling:
   GetPopoverData()->setVisibilityState(PopoverVisibilityState::kShowing);
-  PseudoStateChanged(CSSSelector::kPseudoClosed);
-  PseudoStateChanged(CSSSelector::kPseudoOpen);
+  PseudoStateChanged(CSSSelector::kPseudoPopoverOpen);
 
   // Force a style update. This ensures that base property values are set prior
-  // to `:open` matching, so that transitions can start on the change to
+  // to `:popover-open` matching, so that transitions can start on the change to
   // top layer.
   document.UpdateStyleAndLayoutTreeForNode(this);
 
@@ -1676,20 +1661,6 @@ void HTMLElement::hidePopover(ExceptionState& exception_state) {
       &exception_state);
 }
 
-// Hiding a popover happens in phases, to facilitate animations and
-// transitions:
-// 1. Capture any already-running animations via getAnimations(), including
-//    animations on descendant elements.
-// 2. Remove the `:open` pseudo class.
-// 3. Fire the 'beforetoggle' event.
-// 4. If the hidePopover() call is *not* the result of the popover being "forced
-//    out" of the top layer, e.g. by a modal dialog or fullscreen element:
-//   a. Restore focus to the previously-focused element.
-//   b. Update style. (Animations/transitions start here.)
-//   c. Call getAnimations() again, remove any from step #1, and then wait
-//      until all of them finish or are cancelled.
-// 5. Remove the popover from the top layer, and add the UA display:none style.
-// 6. Update style.
 void HTMLElement::HidePopoverInternal(
     HidePopoverFocusBehavior focus_behavior,
     HidePopoverTransitionBehavior transition_behavior,
@@ -1794,10 +1765,9 @@ void HTMLElement::HidePopoverInternal(
     GetDocument().RemoveFromTopLayerImmediately(this);
   }
 
-  // Re-apply display:none, and start matching `:closed`.
+  // Re-apply display:none, and stop matching `:popover-open`.
   GetPopoverData()->setVisibilityState(PopoverVisibilityState::kHidden);
-  PseudoStateChanged(CSSSelector::kPseudoOpen);
-  PseudoStateChanged(CSSSelector::kPseudoClosed);
+  PseudoStateChanged(CSSSelector::kPseudoPopoverOpen);
 
   Element* previously_focused_element =
       GetPopoverData()->previouslyFocusedElement();
@@ -1812,6 +1782,10 @@ void HTMLElement::HidePopoverInternal(
           /*capabilities=*/nullptr, focus_options,
           /*gate_on_user_activation=*/true));
     }
+  }
+
+  if (auto* selectmenu = ownerSelectMenuElement()) {
+    selectmenu->ListboxWasClosed();
   }
 }
 
@@ -2307,9 +2281,7 @@ absl::optional<TextDirection> HTMLElement::ResolveAutoDirectionality(
     Node* stay_within) const {
   is_deferred = false;
   if (auto* input_element = DynamicTo<HTMLInputElement>(*this)) {
-    bool has_strong_directionality;
-    return DetermineDirectionality(input_element->Value(),
-                                   &has_strong_directionality);
+    return BidiParagraph::BaseDirectionForStringOrLtr(input_element->Value());
   }
 
   // For <textarea>, the heuristic is applied on a per-paragraph level, and
@@ -2353,11 +2325,10 @@ absl::optional<TextDirection> HTMLElement::ResolveAutoDirectionality(
     }
 
     if (node->IsTextNode()) {
-      bool has_strong_directionality;
-      TextDirection text_direction = DetermineDirectionality(
-          node->textContent(true), &has_strong_directionality);
-      if (has_strong_directionality)
-        return text_direction;
+      if (const absl::optional<TextDirection> text_direction =
+              BidiParagraph::BaseDirectionForString(node->textContent(true))) {
+        return *text_direction;
+      }
     }
 
     if (slot) {
@@ -2428,26 +2399,26 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildrenChanged(
     return;
 
   Node* stay_within = nullptr;
-  bool has_strong_directionality;
   if (change.type == ChildrenChangeType::kTextChanged) {
     CHECK(change.old_text);
     TextDirection old_text_direction =
-        DetermineDirectionality(*change.old_text, &has_strong_directionality);
+        BidiParagraph::BaseDirectionForStringOrLtr(*change.old_text);
     auto* character_data = DynamicTo<CharacterData>(change.sibling_changed);
     DCHECK(character_data);
-    TextDirection new_text_direction = DetermineDirectionality(
-        character_data->data(), &has_strong_directionality);
+    TextDirection new_text_direction =
+        BidiParagraph::BaseDirectionForStringOrLtr(character_data->data());
     if (old_text_direction == new_text_direction)
       return;
     stay_within = change.sibling_changed;
   } else if (change.IsChildInsertion()) {
     if (change.sibling_changed->IsTextNode()) {
-      TextDirection new_text_direction =
-          DetermineDirectionality(change.sibling_changed->textContent(true),
-                                  &has_strong_directionality);
-      if (!has_strong_directionality ||
-          new_text_direction == CachedDirectionality())
+      const absl::optional<TextDirection> new_text_direction =
+          BidiParagraph::BaseDirectionForString(
+              change.sibling_changed->textContent(true));
+      if (!new_text_direction ||
+          *new_text_direction == CachedDirectionality()) {
         return;
+      }
     }
     stay_within = change.sibling_changed;
   }

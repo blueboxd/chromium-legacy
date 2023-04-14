@@ -71,6 +71,11 @@ found in the LICENSE file.
     <!-- Sheet tab toolbar dimensions -->
     <dimen name="sheet_tab_toolbar_height">70dp</dimen>
 
+    <!-- Autofill address prompt dimensions -->
+    <dimen name="address_prompt_end_margin">8dp</dimen>
+    <dimen name="address_prompt_edit_button_size">48dp</dimen>
+    <dimen name="address_prompt_edit_button_padding">12dp</dimen>
+
     <!-- Autofill keyboard accessory dimensions -->
     <dimen name="keyboard_accessory_height_with_shadow">56dp</dimen>
     <dimen name="keyboard_accessory_sheet_height">330dp</dimen>
@@ -226,6 +231,9 @@ found in the LICENSE file.
     <dimen name="bookmark_widget_min_height">48dp</dimen>
 
     <!-- Custom Tabs dimensions -->
+    <dimen name="custom_tabs_drag_handle_padding_top">12dp</dimen>
+    <dimen name="custom_tabs_drag_handle_padding_bottom">32dp</dimen>
+    <dimen name="custom_tabs_drag_handle_padding_side">4dp</dimen>
     <dimen name="custom_tabs_toolbar_maxWidth">60dp</dimen>
     <dimen name="custom_tabs_toolbar_vertical_padding">16dp</dimen>
     <dimen name="custom_tabs_toolbar_horizontal_margin_no_start">8dp</dimen>

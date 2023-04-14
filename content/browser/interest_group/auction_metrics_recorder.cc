@@ -6,7 +6,10 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+
 #include "base/check.h"
+#include "base/functional/invoke.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/auction_result.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom-shared.h"
@@ -37,6 +40,22 @@ void AuctionMetricsRecorder::OnAuctionEnd(AuctionResult auction_result) {
   builder_.SetNumBidderWorklets(
       GetExponentialBucketMinForCounts1000(bidder_worklet_keys_.size()));
 
+  builder_.SetNumBidsAbortedByBuyerCumulativeTimeout(
+      GetExponentialBucketMinForCounts1000(
+          num_bids_aborted_by_buyer_cumulative_timeout_));
+  builder_.SetNumBidsAbortedByBidderWorkletFatalError(
+      GetExponentialBucketMinForCounts1000(
+          num_bids_aborted_by_bidder_worklet_fatal_error_));
+  builder_.SetNumBidsFilteredDuringInterestGroupLoad(
+      GetExponentialBucketMinForCounts1000(
+          num_bids_filtered_during_interest_group_load_));
+  builder_.SetNumBidsFilteredDuringReprioritization(
+      GetExponentialBucketMinForCounts1000(
+          num_bids_filtered_during_reprioritization_));
+  builder_.SetNumBidsFilteredByPerBuyerLimits(
+      GetExponentialBucketMinForCounts1000(
+          num_bids_filtered_by_per_buyer_limits_));
+
   builder_.SetNumInterestGroupsWithNoBids(
       GetExponentialBucketMinForCounts1000(num_interest_groups_with_no_bids_));
   builder_.SetNumInterestGroupsWithOnlyNonKAnonBid(
@@ -48,6 +67,22 @@ void AuctionMetricsRecorder::OnAuctionEnd(AuctionResult auction_result) {
   builder_.SetNumInterestGroupsWithSeparateBidsForKAnonAndNonKAnon(
       GetExponentialBucketMinForCounts1000(
           num_interest_groups_with_separate_bids_for_k_anon_and_non_k_anon_));
+
+  MaybeSetMeanAndMaxLatency(
+      component_auction_latency_aggregator_,
+      /*set_mean_function=*/&UkmEntry::SetMeanComponentAuctionLatencyInMillis,
+      /*set_max_function=*/&UkmEntry::SetMaxComponentAuctionLatencyInMillis);
+
+  MaybeSetMeanAndMaxLatency(
+      bid_for_one_interest_group_latency_aggregator_,
+      /*set_mean_function=*/
+      &UkmEntry::SetMeanBidForOneInterestGroupLatencyInMillis,
+      /*set_max_function=*/
+      &UkmEntry::SetMaxBidForOneInterestGroupLatencyInMillis);
+  MaybeSetMeanAndMaxLatency(
+      generate_single_bid_latency_aggregator_,
+      /*set_mean_function=*/&UkmEntry::SetMeanGenerateSingleBidLatencyInMillis,
+      /*set_max_function=*/&UkmEntry::SetMaxGenerateSingleBidLatencyInMillis);
 
   auto* ukm_recorder = ukm::UkmRecorder::Get();
   builder_.Record(ukm_recorder->Get());
@@ -87,6 +122,28 @@ void AuctionMetricsRecorder::ReportBidderWorkletKey(
   bidder_worklet_keys_.emplace(worklet_key.GetHash());
 }
 
+void AuctionMetricsRecorder::RecordBidsAbortedByBuyerCumulativeTimeout(
+    int64_t num_bids) {
+  num_bids_aborted_by_buyer_cumulative_timeout_ += num_bids;
+}
+
+void AuctionMetricsRecorder::RecordBidAbortedByBidderWorkletFatalError() {
+  ++num_bids_aborted_by_bidder_worklet_fatal_error_;
+}
+
+void AuctionMetricsRecorder::RecordBidFilteredDuringInterestGroupLoad() {
+  ++num_bids_filtered_during_interest_group_load_;
+}
+
+void AuctionMetricsRecorder::RecordBidFilteredDuringReprioritization() {
+  ++num_bids_filtered_during_reprioritization_;
+}
+
+void AuctionMetricsRecorder::RecordBidsFilteredByPerBuyerLimits(
+    int64_t num_bids) {
+  num_bids_filtered_by_per_buyer_limits_ += num_bids;
+}
+
 void AuctionMetricsRecorder::SetKAnonymityBidMode(
     auction_worklet::mojom::KAnonymityBidMode bid_mode) {
   builder_.SetKAnonymityBidMode(static_cast<int64_t>(bid_mode));
@@ -108,6 +165,61 @@ void AuctionMetricsRecorder::
 void AuctionMetricsRecorder::
     RecordInterestGroupWithSameBidForKAnonAndNonKAnon() {
   ++num_interest_groups_with_same_bid_for_k_anon_and_non_k_anon_;
+}
+
+void AuctionMetricsRecorder::RecordComponentAuctionLatency(
+    base::TimeDelta latency) {
+  component_auction_latency_aggregator_.RecordLatency(latency);
+}
+
+void AuctionMetricsRecorder::RecordBidForOneInterestGroupLatency(
+    base::TimeDelta latency) {
+  bid_for_one_interest_group_latency_aggregator_.RecordLatency(latency);
+}
+
+void AuctionMetricsRecorder::RecordGenerateSingleBidLatency(
+    base::TimeDelta latency) {
+  generate_single_bid_latency_aggregator_.RecordLatency(latency);
+}
+
+void AuctionMetricsRecorder::LatencyAggregator::RecordLatency(
+    base::TimeDelta latency) {
+  // Negative latencies are meaningless; don't record them at all.
+  if (latency.is_negative()) {
+    return;
+  }
+  ++num_records_;
+  sum_latency_ += latency;
+  max_latency_ = std::max(latency, max_latency_);
+}
+
+int32_t AuctionMetricsRecorder::LatencyAggregator::GetNumRecords() {
+  return num_records_;
+}
+
+base::TimeDelta AuctionMetricsRecorder::LatencyAggregator::GetMeanLatency() {
+  if (num_records_ == 0) {
+    return base::TimeDelta();
+  }
+  return sum_latency_ / num_records_;
+}
+
+base::TimeDelta AuctionMetricsRecorder::LatencyAggregator::GetMaxLatency() {
+  return max_latency_;
+}
+
+void AuctionMetricsRecorder::MaybeSetMeanAndMaxLatency(
+    AuctionMetricsRecorder::LatencyAggregator& aggregator,
+    EntrySetFunction set_mean_function,
+    EntrySetFunction set_max_function) {
+  if (aggregator.GetNumRecords() > 0) {
+    base::invoke(set_mean_function, builder_,
+                 GetSemanticBucketMinForDurationTiming(
+                     aggregator.GetMeanLatency().InMilliseconds()));
+    base::invoke(set_max_function, builder_,
+                 GetSemanticBucketMinForDurationTiming(
+                     aggregator.GetMaxLatency().InMilliseconds()));
+  }
 }
 
 }  // namespace content

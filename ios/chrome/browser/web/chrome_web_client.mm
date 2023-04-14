@@ -442,7 +442,7 @@ bool ChromeWebClient::RestoreSessionFromCache(web::WebState* web_state) const {
 void ChromeWebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {
   web::NavigationManager* navigationManager = web_state->GetNavigationManager();
   for (int i = 0; i < web_state->GetNavigationItemCount(); i++) {
-    // The WKWebView URL underneath the NTP is about://newtab, which has no
+    // The WKWebView URL underneath the NTP is about://newtab/, which has no
     // title. When restoring the NTP, be sure to re-add the title below.
     web::NavigationItem* item = navigationManager->GetItemAtIndex(i);
     NewTabPageTabHelper::UpdateItem(item);
@@ -505,4 +505,15 @@ bool ChromeWebClient::IsMixedContentAutoupgradeEnabled(
   }
   return base::FeatureList::IsEnabled(
       security_interstitials::features::kMixedContentAutoupgrade);
+}
+
+bool ChromeWebClient::IsBrowserLockdownModeEnabled(
+    web::BrowserState* browser_state) {
+  if (base::FeatureList::IsEnabled(web::kEnableBrowserLockdownMode)) {
+    ChromeBrowserState* chrome_browser_state =
+        ChromeBrowserState::FromBrowserState(browser_state);
+    PrefService* prefs = chrome_browser_state->GetPrefs();
+    return prefs->GetBoolean(prefs::kBrowserLockdownModeEnabled);
+  }
+  return false;
 }

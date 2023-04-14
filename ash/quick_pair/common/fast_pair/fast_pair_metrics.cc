@@ -12,6 +12,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/metrics/structured/structured_events.h"
+#include "components/metrics/structured/structured_metrics_features.h"
 
 namespace {
 
@@ -19,6 +20,7 @@ const char kDeviceTypeHeadphones[] = "HeadphonesDeviceType";
 const char kDeviceTypeSpeaker[] = "SpeakerDeviceType";
 const char kDeviceTypeTrueWirelessHeadphones[] =
     "TrueWirelessHeadphonesDeviceType";
+const char kDeviceTypeInputDevice[] = "InputDeviceDeviceType";
 const char kDeviceTypeUnspecified[] = "UnspecifiedDeviceType";
 
 const char kNotificationTypeFastPair[] = "FastPairNotificationType";
@@ -584,14 +586,6 @@ absl::optional<std::string> GetFastPairDeviceType(
   // ash/quick_pair/proto/enums.proto. We only expect these device
   // types because of filtering in the scanning component. Always expected to
   // be one of these values.
-  DCHECK(device_metadata.device_type() ==
-             nearby::fastpair::DeviceType::HEADPHONES ||
-         device_metadata.device_type() ==
-             nearby::fastpair::DeviceType::SPEAKER ||
-         device_metadata.device_type() ==
-             nearby::fastpair::DeviceType::TRUE_WIRELESS_HEADPHONES ||
-         device_metadata.device_type() ==
-             nearby::fastpair::DeviceType::DEVICE_TYPE_UNSPECIFIED);
   if (device_metadata.device_type() ==
       nearby::fastpair::DeviceType::HEADPHONES) {
     return kDeviceTypeHeadphones;
@@ -602,11 +596,14 @@ absl::optional<std::string> GetFastPairDeviceType(
              nearby::fastpair::DeviceType::TRUE_WIRELESS_HEADPHONES) {
     return kDeviceTypeTrueWirelessHeadphones;
   } else if (device_metadata.device_type() ==
+             nearby::fastpair::DeviceType::INPUT_DEVICE) {
+    return kDeviceTypeInputDevice;
+  } else if (device_metadata.device_type() ==
              nearby::fastpair::DeviceType::DEVICE_TYPE_UNSPECIFIED) {
     return kDeviceTypeUnspecified;
-  } else {
-    return absl::nullopt;
   }
+
+  NOTREACHED_NORETURN();
 }
 
 absl::optional<std::string> GetFastPairNotificationType(
@@ -1589,6 +1586,10 @@ int GetTxPower(const device::BluetoothDevice* bt_device) {
 void RecordStructuredDiscoveryNotificationShown(
     const Device& device,
     const device::BluetoothDevice* bt_device) {
+  if (!base::FeatureList::IsEnabled(metrics::structured::kFastPairMetrics)) {
+    return;
+  }
+
   QP_LOG(INFO) << __func__;
   int model_id;
   if (!base::HexStringToInt(device.metadata_id(), &model_id)) {
@@ -1610,6 +1611,10 @@ void RecordStructuredDiscoveryNotificationShown(
 
 void RecordStructuredPairingStarted(const Device& device,
                                     const device::BluetoothDevice* bt_device) {
+  if (!base::FeatureList::IsEnabled(metrics::structured::kFastPairMetrics)) {
+    return;
+  }
+
   QP_LOG(INFO) << __func__;
   int model_id;
   if (!base::HexStringToInt(device.metadata_id(), &model_id)) {
@@ -1631,6 +1636,10 @@ void RecordStructuredPairingStarted(const Device& device,
 
 void RecordStructuredPairingComplete(const Device& device,
                                      const device::BluetoothDevice* bt_device) {
+  if (!base::FeatureList::IsEnabled(metrics::structured::kFastPairMetrics)) {
+    return;
+  }
+
   QP_LOG(INFO) << __func__;
   int model_id;
   if (!base::HexStringToInt(device.metadata_id(), &model_id)) {
@@ -1651,6 +1660,10 @@ void RecordStructuredPairingComplete(const Device& device,
 }
 
 void RecordStructuredPairFailure(const Device& device, PairFailure failure) {
+  if (!base::FeatureList::IsEnabled(metrics::structured::kFastPairMetrics)) {
+    return;
+  }
+
   QP_LOG(INFO) << __func__;
   int model_id;
   if (!base::HexStringToInt(device.metadata_id(), &model_id)) {

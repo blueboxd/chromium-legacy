@@ -515,17 +515,21 @@ struct ShowAutofillPopupParams {
       if (!IsFocusedField(e, rfh))
         return a << "Field " << *e << " must be focused. ";
       if (!ShouldAutoselectFirstSuggestionOnArrowDown()) {
-        if (!ArrowDown({kSuggest})) {
-          a << "Cannot trigger suggestions by first arrow. ";
+        if (AssertionResult b = ArrowDown({kSuggest}); !b) {
+          a << "Cannot trigger suggestions by first arrow: " << b;
           continue;
         }
-        if (!(has_preview ? ArrowDown({kPreview}) : ArrowDown({}))) {
-          a << "Cannot select first suggestion by second arrow. ";
+        if (AssertionResult b =
+                has_preview ? ArrowDown({kPreview}) : ArrowDown({});
+            !b) {
+          a << "Cannot select first suggestion by second arrow: " << b;
           continue;
         }
-      } else if (!(has_preview ? ArrowDown({kSuggest, kPreview})
-                               : ArrowDown({kSuggest}))) {
-        a << "Cannot trigger and select first suggestion by arrow. ";
+      } else if (AssertionResult b = has_preview
+                                         ? ArrowDown({kSuggest, kPreview})
+                                         : ArrowDown({kSuggest});
+                 !b) {
+        a << "Cannot trigger and select first suggestion by arrow: " << b;
         continue;
       }
     } else if (p.show_method.character) {
@@ -533,17 +537,20 @@ struct ShowAutofillPopupParams {
       // If necessary, delete past iterations character first.
       if (!IsFocusedField(e, rfh))
         return a << "Field " << *e << " must be focused. ";
-      if (i > 1 && !Backspace())
-        a << "Cannot undo past iteration's key. ";
+      if (i > 1) {
+        if (AssertionResult b = Backspace(); !b) {
+          a << "Cannot undo past iteration's key: " << b;
+        }
+      }
       std::string code = std::string("Key") + p.show_method.character;
-      if (!Char(code, {kSuggest})) {
-        a << "Cannot trigger suggestions by key. ";
+      if (AssertionResult b = Char(code, {kSuggest}); !b) {
+        a << "Cannot trigger suggestions by key: " << b;
         continue;
       }
     } else if (p.show_method.click) {
       // Click item to open the popup, but do not select an option.
-      if (!Click({kSuggest})) {
-        a << "Cannot trigger and select first suggestion by click. ";
+      if (AssertionResult b = Click({kSuggest}); !b) {
+        a << "Cannot trigger and select first suggestion by click: " << b;
         continue;
       }
     }
@@ -1246,9 +1253,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
   // show if it's going to. If it does show, an assert in
   // BrowserAutofillManagerTestDelegateImpl will trigger.
   void MakeSurePopupDoesntAppear() {
-    int unused;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-        GetWebContents(), "domAutomationController.send(42)", &unused));
+    EXPECT_EQ(42, content::EvalJs(GetWebContents(), "42"));
   }
 
   void SimulateKeyPress(const ui::DomKey& dom_key,
@@ -1686,10 +1691,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   // Change the last name.
   ASSERT_TRUE(FocusField(GetElementById("lastname"), GetWebContents()));
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
-                       {ObservedUiEvents::kSuggestionShown});
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
-                       {ObservedUiEvents::kSuggestionShown});
+  ASSERT_TRUE(SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                                   {ObservedUiEvents::kSuggestionShown}));
+  ASSERT_TRUE(SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                                   {ObservedUiEvents::kSuggestionShown}));
   EXPECT_THAT(GetFormValues(),
               ValuesAre(MergeValue(kDefaultAddress, {"lastname", "Wadda"})));
 
@@ -1720,10 +1725,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   // Change the last name.
   ASSERT_TRUE(FocusField(GetElementById("lastname"), GetWebContents()));
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
-                       {ObservedUiEvents::kSuggestionShown});
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
-                       {ObservedUiEvents::kSuggestionShown});
+  ASSERT_TRUE(SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                                   {ObservedUiEvents::kSuggestionShown}));
+  ASSERT_TRUE(SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                                   {ObservedUiEvents::kSuggestionShown}));
   EXPECT_THAT(GetFormValues(),
               ValuesAre(MergeValue(kDefaultAddress, {"lastname", "Wadda"})));
 
@@ -1753,10 +1758,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   // Change the last name.
   ASSERT_TRUE(FocusField(GetElementById("lastname"), GetWebContents()));
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
-                       {ObservedUiEvents::kSuggestionShown});
-  SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
-                       {ObservedUiEvents::kSuggestionShown});
+  ASSERT_TRUE(SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                                   {ObservedUiEvents::kSuggestionShown}));
+  ASSERT_TRUE(SendKeyToPageAndWait(ui::DomKey::BACKSPACE,
+                                   {ObservedUiEvents::kSuggestionShown}));
   EXPECT_THAT(GetFormValues(),
               ValuesAre(MergeValue(kDefaultAddress, {"lastname", "Wadda"})));
 
@@ -2129,12 +2134,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, InputFiresBeforeChange) {
                                 kEmptyAddress, {"firstname", "M"}))}));
   EXPECT_THAT(GetFormValues(), ValuesAre(kDefaultAddress));
 
-  int num_input_element_events = -1;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      GetWebContents(),
-      "domAutomationController.send(inputElementEvents.length);",
-      &num_input_element_events));
-  EXPECT_EQ(2, num_input_element_events);
+  EXPECT_EQ(2, content::EvalJs(GetWebContents(), "inputElementEvents.length;"));
 
   std::vector<std::string> input_element_events;
   input_element_events.resize(2);
@@ -2149,12 +2149,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, InputFiresBeforeChange) {
   EXPECT_EQ("input", input_element_events[0]);
   EXPECT_EQ("change", input_element_events[1]);
 
-  int num_select_element_events = -1;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      GetWebContents(),
-      "domAutomationController.send(selectElementEvents.length);",
-      &num_select_element_events));
-  EXPECT_EQ(2, num_select_element_events);
+  EXPECT_EQ(2,
+            content::EvalJs(GetWebContents(), "selectElementEvents.length;"));
 
   std::vector<std::string> select_element_events;
   select_element_events.resize(2);
@@ -4077,7 +4073,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestChromeVox,
   sm_.ExpectSpeechPattern("Region");
   // Wait for suggestions popup to show up. This needs to happen before we
   // simulate the cursor down key press.
-  sm_.Call([this]() { test_delegate()->Wait(); });
+  sm_.Call([this]() { ASSERT_TRUE(test_delegate()->Wait()); });
   sm_.Call([this]() {
     test_delegate()->SetExpectations({ObservedUiEvents::kPreviewFormData});
     ASSERT_TRUE(
@@ -4088,7 +4084,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestChromeVox,
   sm_.ExpectSpeechPattern("Milton 4120 Freidrich Lane");
   sm_.ExpectSpeechPattern("List item");
   sm_.ExpectSpeechPattern("1 of 2");
-  sm_.Call([this]() { test_delegate()->Wait(); });
+  sm_.Call([this]() { ASSERT_TRUE(test_delegate()->Wait()); });
   sm_.Replay();
 }
 

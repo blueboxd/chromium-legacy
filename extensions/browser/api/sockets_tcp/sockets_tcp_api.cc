@@ -215,7 +215,7 @@ ExtensionFunction::ResponseAction SocketsTcpSetKeepAliveFunction::Work() {
 
 void SocketsTcpSetKeepAliveFunction::OnCompleted(bool success) {
   if (success) {
-    Respond(OneArgument(base::Value(net::OK)));
+    Respond(WithArguments(net::OK));
   } else {
     Respond(
         ErrorWithCode(net::ERR_FAILED, net::ErrorToString(net::ERR_FAILED)));
@@ -243,7 +243,7 @@ ExtensionFunction::ResponseAction SocketsTcpSetNoDelayFunction::Work() {
 
 void SocketsTcpSetNoDelayFunction::OnCompleted(bool success) {
   if (success) {
-    Respond(OneArgument(base::Value(net::OK)));
+    Respond(WithArguments(net::OK));
   } else {
     Respond(
         ErrorWithCode(net::ERR_FAILED, net::ErrorToString(net::ERR_FAILED)));
@@ -274,14 +274,14 @@ ExtensionFunction::ResponseAction SocketsTcpConnectFunction::Work() {
 
   net::DnsQueryType dns_query_type;
   switch (params_->dns_query_type) {
-    case extensions::api::sockets_tcp::DNS_QUERY_TYPE_NONE:
-    case extensions::api::sockets_tcp::DNS_QUERY_TYPE_ANY:
+    case extensions::api::sockets_tcp::DnsQueryType::kNone:
+    case extensions::api::sockets_tcp::DnsQueryType::kAny:
       dns_query_type = net::DnsQueryType::UNSPECIFIED;
       break;
-    case extensions::api::sockets_tcp::DNS_QUERY_TYPE_IPV4:
+    case extensions::api::sockets_tcp::DnsQueryType::kIpv4:
       dns_query_type = net::DnsQueryType::A;
       break;
-    case extensions::api::sockets_tcp::DNS_QUERY_TYPE_IPV6:
+    case extensions::api::sockets_tcp::DnsQueryType::kIpv6:
       dns_query_type = net::DnsQueryType::AAAA;
       break;
   }
@@ -325,7 +325,7 @@ void SocketsTcpConnectFunction::OnCompleted(int net_result) {
   }
 
   if (net_result == net::OK) {
-    Respond(OneArgument(base::Value(net_result)));
+    Respond(WithArguments(net_result));
   } else {
     Respond(ErrorWithCode(net_result, net::ErrorToString(net_result)));
   }
@@ -520,7 +520,7 @@ void SocketsTcpSecureFunction::TlsConnectDone(
   socket->set_persistent(persistent_);
   socket->set_paused(paused_);
   ReplaceSocket(params_->socket_id, socket.release());
-  Respond(OneArgument(base::Value(result)));
+  Respond(WithArguments(result));
 }
 
 }  // namespace api

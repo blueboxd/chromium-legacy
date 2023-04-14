@@ -98,7 +98,6 @@
 <translation id="1773212559869067373">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε τοπικά</translation>
 <translation id="1775381402323441512">Πληροφορίες βίντεο</translation>
 <translation id="180035236176489073">Πρέπει να είστε συνδεδεμένοι στο διαδίκτυο για να αποκτήσετε πρόσβαση σε αυτά τα αρχεία.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Η επέκταση με το αναγνωριστικό}other{Οι επεκτάσεις με τα αναγνωριστικά}}</translation>
 <translation id="1807938677607439181">Όλα τα αρχεία</translation>
 <translation id="1810764548349082891">Δεν υπάρχει διαθέσιμη προεπισκόπηση</translation>
 <translation id="1812302367230252929">Μεταγραφή σε Αμχαρικά</translation>
@@ -109,7 +108,6 @@
 <translation id="1834290891154666894">Μη έγκυρη εισαγωγή αντιστοιχίας εναλλακτικού ονόματος υποκειμένου</translation>
 <translation id="1838709767668011582">Ιστότοπος Google</translation>
 <translation id="1853795129690976061">Αυτός ο φάκελος χρησιμοποιείται από κοινού με το Linux.</translation>
-<translation id="1859422890169495746">Αυτό το Chromebook</translation>
 <translation id="1864756863218646478">Δεν ήταν δυνατή η εύρεση του αρχείου.</translation>
 <translation id="1884013283844450420">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Σύνδεση</translation>
 <translation id="1920670151694390848">Μεταγραφή στα Μαλαγιαλαμικά</translation>
@@ -163,6 +161,7 @@
 <translation id="2304820083631266885">Πλανήτης</translation>
 <translation id="2305020378527873881">Το στοιχείο <ph name="VOLUME_NAME" /> καταργήθηκε.</translation>
 <translation id="2307462900900812319">Διαμόρφωση δικτύου</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Δεν είναι δυνατός ο εντοπισμός μιας επέκτασης με το αναγνωριστικό <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Επικοινωνήστε με τον διαχειριστή σας.}other{Δεν είναι δυνατός ο εντοπισμός των επεκτάσεων με τα αναγνωριστικά <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Επικοινωνήστε με τον διαχειριστή σας.}}</translation>
 <translation id="2325650632570794183">Αυτός ο τύπος αρχείου δεν υποστηρίζεται. Επισκεφτείτε το Chrome Web Store για να εντοπίσετε μια εφαρμογή που να μπορεί να ανοίξει αυτόν τον τύπο αρχείου.</translation>
 <translation id="2326539130272988168">Βουλγαρικά</translation>
 <translation id="2337715497728194187">Κοινοποίηση στο Bruschetta</translation>
@@ -281,6 +280,7 @@
 <translation id="3290356915286466215">Μη ασφαλές</translation>
 <translation id="3291218047831493686">Συνδεθείτε σε αυτό το δίκτυο για να αλλάξετε τη ρύθμιση κλειδώματος SIM</translation>
 <translation id="3293023191599135697">Δεν υποστηρίζονται δίκτυα WEP</translation>
+<translation id="3295006446256079333">Αυτός ο τόμος</translation>
 <translation id="3295357220137379386">Η συσκευή εργάζεται</translation>
 <translation id="3296763833017966289">Γεωργιανά
 </translation>
@@ -485,6 +485,7 @@
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="485316830061041779">Γερμανικά
 </translation>
+<translation id="4862885579661885411">Ρυθμίσεις αρχείων</translation>
 <translation id="4867079195717347957">Κάντε κλικ για ταξινόμηση της στήλης σε φθίνουσα σειρά.</translation>
 <translation id="4867297348137739678">Τελευταία εβδομάδα</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
@@ -815,7 +816,6 @@
 <translation id="7359359531237882347">Αντιγραφή <ph name="NUMBER_OF_ITEMS" /> στοιχείων…</translation>
 <translation id="7375951387215729722">Η λίστα αρχείων ταξινομήθηκε κατά <ph name="COLUMN_NAME" /> σε φθίνουσα σειρά.</translation>
 <translation id="7377161162143020057">Η αντιγραφή αυτού του αρχείου έχει αποκλειστεί από την πολιτική διαχειριστή</translation>
-<translation id="7392500733467492920">δεν βρέθηκε(αν). Επικοινωνήστε με τον διαχειριστή σας.</translation>
 <translation id="7402503521691663770">Συσκευές ChromeOS Flex</translation>
 <translation id="7408870451288633753">Τσεχικά</translation>
 <translation id="7417453074306512035">Πληκτρολόγιο Αιθιοπικών</translation>

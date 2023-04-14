@@ -40,6 +40,7 @@
 #import "components/flags_ui/feature_entry_macros.h"
 #import "components/flags_ui/flags_storage.h"
 #import "components/flags_ui/flags_ui_switches.h"
+#import "components/history/core/browser/features.h"
 #import "components/invalidation/impl/invalidation_switches.h"
 #import "components/ntp_tiles/features.h"
 #import "components/ntp_tiles/switches.h"
@@ -75,6 +76,7 @@
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/follow/follow_features.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
@@ -82,6 +84,7 @@
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/snapshots/features.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/text_selection/text_selection_util.h"
@@ -702,6 +705,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::test::kAutofillShowTypePredictions)},
+    {"autofill-account-profiles-storage",
+     flag_descriptions::kAutofillAccountProfilesStorageName,
+     flag_descriptions::kAutofillAccountProfilesStorageDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillAccountProfileStorage)},
     {"autofill-account-profiles-union-view",
      flag_descriptions::kAutofillAccountProfilesUnionViewName,
      flag_descriptions::kAutofillAccountProfilesUnionViewDescription,
@@ -1024,6 +1032,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          optimization_guide::features::kOptimizationTargetPrediction)},
+    {"sync-segments-data", flag_descriptions::kSyncSegmentsDataName,
+     flag_descriptions::kSyncSegmentsDataDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(history::kSyncSegmentsData)},
     {"sync-standalone-invalidations", flag_descriptions::kSyncInvalidationsName,
      flag_descriptions::kSyncInvalidationsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidations)},
@@ -1039,9 +1050,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"popout-omnibox-ipad", flag_descriptions::kEnablePopoutOmniboxIpadName,
      flag_descriptions::kEnablePopoutOmniboxIpadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnablePopoutOmniboxIpad)},
-    {"experience-kit-calendar", flag_descriptions::kCalendarExperienceKitName,
-     flag_descriptions::kCalendarExperienceKitDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kCalendarExperienceKit)},
     {"intents-on-phone-number", flag_descriptions::kPhoneNumberName,
      flag_descriptions::kPhoneNumberDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kEnablePhoneNumbers)},
@@ -1110,6 +1118,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFeedCardMenuSignInPromoName,
      flag_descriptions::kEnableFeedCardMenuSignInPromoDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableFeedCardMenuSignInPromo)},
+    {"content-suggestions-magic-stack", flag_descriptions::kMagicStackName,
+     flag_descriptions::kMagicStackDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kMagicStack)},
     {"content-suggestions-ui-module-refresh",
      flag_descriptions::kContentSuggestionsUIModuleRefreshName,
      flag_descriptions::kContentSuggestionsUIModuleRefreshDescription,
@@ -1185,6 +1196,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnDeviceTailSuggestionsName,
      flag_descriptions::kOmniboxOnDeviceTailSuggestionsDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kOnDeviceTailModel)},
+    {"enable-browser-lockdown-mode",
+     flag_descriptions::kEnableBrowserLockdownModeName,
+     flag_descriptions::kEnableBrowserLockdownModeDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::kEnableBrowserLockdownMode)},
     {"enable-button-configuration-usage",
      flag_descriptions::kEnableUIButtonConfigurationName,
      flag_descriptions::kEnableUIButtonConfigurationDescription,
@@ -1451,6 +1466,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kBringYourOwnTabsIOS,
                                     kBringYourOwnTabsIOSVariations,
                                     "BringYourOwnTabsIOS")},
+    {"enable-follow-IPH-exp-params",
+     flag_descriptions::kEnableFollowIPHExpParamsName,
+     flag_descriptions::kEnableFollowIPHExpParamsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableFollowIPHExpParams)},
     {"enable-follow-management-instant-reload",
      flag_descriptions::kEnableFollowManagementInstantReloadName,
      flag_descriptions::kEnableFollowManagementInstantReloadDescription,
@@ -1500,6 +1519,41 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(reading_list::switches::
                             kReadingListEnableSyncTransportModeUponSignIn)},
+    {"fix-pdf-snapshot", flag_descriptions::kPDFSnapshotName,
+     flag_descriptions::kPDFSnapshotDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kPDFSnapshot)},
+    {"omnibox-grouping-framework-zps",
+     flag_descriptions::kOmniboxGroupingFrameworkForZPSName,
+     flag_descriptions::kOmniboxGroupingFrameworkForZPSDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kGroupingFrameworkForZPS)},
+    {"omnibox-grouping-framework-non-zps",
+     flag_descriptions::kOmniboxGroupingFrameworkForTypedSuggestionsName,
+     flag_descriptions::kOmniboxGroupingFrameworkForTypedSuggestionsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kGroupingFrameworkForNonZPS)},
+    {"enable-session-serialization-optimizations",
+     flag_descriptions::kEnableSessionSerializationOptimizationsName,
+     flag_descriptions::kEnableSessionSerializationOptimizationsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         web::features::kEnableSessionSerializationOptimizations)},
+    {"bottom-omnibox-steady-state",
+     flag_descriptions::kBottomOmniboxSteadyStateName,
+     flag_descriptions::kBottomOmniboxSteadyStateDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kBottomOmniboxSteadyState)},
+    {"autofill-upstream-use-alternate-secure-data-type",
+     flag_descriptions::kAutofillUpstreamUseAlternateSecureDataTypeName,
+     flag_descriptions::kAutofillUpstreamUseAlternateSecureDataTypeDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamUseAlternateSecureDataType)},
+    {"only-access-clipboard-async",
+     flag_descriptions::kOnlyAccessClipboardAsyncName,
+     flag_descriptions::kOnlyAccessClipboardAsyncDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kOnlyAccessClipboardAsync)},
+    {"omnibox-tail-suggest", flag_descriptions::kOmniboxTailSuggestName,
+     flag_descriptions::kOmniboxTailSuggestDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kOmniboxTailSuggest)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

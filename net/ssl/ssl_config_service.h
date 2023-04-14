@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "net/base/net_export.h"
 #include "net/ssl/ssl_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -23,6 +24,9 @@ struct NET_EXPORT SSLContextConfig {
 
   // EncryptedClientHelloEnabled returns whether ECH is enabled.
   bool EncryptedClientHelloEnabled() const;
+
+  // Returns whether insecure hashes are allowed in TLS handshakes.
+  bool InsecureHashesInTLSHandshakesEnabled() const;
 
   // The minimum and maximum protocol versions that are enabled.
   // (Use the SSL_PROTOCOL_VERSION_xxx enumerators defined in ssl_config.h.)
@@ -42,12 +46,16 @@ struct NET_EXPORT SSLContextConfig {
   std::vector<uint16_t> disabled_cipher_suites;
 
   // If false, disables post-quantum key agreement in TLS connections.
-  bool cecpq2_enabled = true;
+  bool post_quantum_enabled = true;
 
   // If false, disables TLS Encrypted ClientHello (ECH). If true, the feature
   // may be enabled or disabled, depending on feature flags. If querying whether
   // ECH is enabled, use `EncryptedClientHelloEnabled` instead.
   bool ech_enabled = true;
+
+  // If specified, controls whether insecure hashes are allowed in TLS
+  // handshakes. If `absl::nullopt`, this is determined by feature flags.
+  absl::optional<bool> insecure_hash_override;
 
   // ADDING MORE HERE? Don't forget to update `SSLContextConfigsAreEqual`.
 };

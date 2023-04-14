@@ -1897,8 +1897,8 @@ TEST_P(PaintArtifactCompositorTest, EffectWithElementIdWithAlias) {
 }
 
 TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleMask) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto masked =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   EffectPaintPropertyNode::State masking_state;
   masking_state.local_transform_space = &t0();
   masking_state.output_clip = &c0();
@@ -1931,14 +1931,14 @@ TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleMask) {
 }
 
 TEST_P(PaintArtifactCompositorTest, CompositedMaskOneChild) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto masked =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   EffectPaintPropertyNode::State masking_state;
   masking_state.local_transform_space = &t0();
   masking_state.output_clip = &c0();
   masking_state.blend_mode = SkBlendMode::kDstIn;
   masking_state.direct_compositing_reasons =
-      CompositingReason::kMaskWithCompositedDescendants;
+      CompositingReason::kWillChangeOpacity;
   auto masking =
       EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
 
@@ -1975,8 +1975,8 @@ TEST_P(PaintArtifactCompositorTest, CompositedMaskOneChild) {
 }
 
 TEST_P(PaintArtifactCompositorTest, NonCompositedMaskClearsOpaqueness) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto masked =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   EffectPaintPropertyNode::State masking_state;
   masking_state.local_transform_space = &t0();
   masking_state.output_clip = &c0();
@@ -2003,8 +2003,8 @@ TEST_P(PaintArtifactCompositorTest, NonCompositedMaskClearsOpaqueness) {
 }
 
 TEST_P(PaintArtifactCompositorTest, CompositedMaskTwoChildren) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto masked =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   EffectPaintPropertyNode::State masking_state;
   masking_state.local_transform_space = &t0();
   masking_state.output_clip = &c0();
@@ -2012,8 +2012,8 @@ TEST_P(PaintArtifactCompositorTest, CompositedMaskTwoChildren) {
   auto masking =
       EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
 
-  auto child_of_masked = CreateOpacityEffect(
-      *masking, 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto child_of_masked =
+      CreateOpacityEffect(*masking, 1.0, CompositingReason::kWillChangeOpacity);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *masked)
@@ -2042,8 +2042,8 @@ TEST_P(PaintArtifactCompositorTest, CompositedMaskTwoChildren) {
 }
 
 TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleExoticBlendMode) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto masked =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   EffectPaintPropertyNode::State masking_state;
   masking_state.local_transform_space = &t0();
   masking_state.output_clip = &c0();
@@ -2069,8 +2069,8 @@ TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleExoticBlendMode) {
 }
 
 TEST_P(PaintArtifactCompositorTest, ForcedCompositedExoticBlendMode) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto masked =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   EffectPaintPropertyNode::State masking_state;
   masking_state.local_transform_space = &t0();
   masking_state.output_clip = &c0();
@@ -2104,8 +2104,8 @@ TEST_P(PaintArtifactCompositorTest, ForcedCompositedExoticBlendMode) {
 
 TEST_P(PaintArtifactCompositorTest,
        CompositedExoticBlendModeOnTwoOpacityAnimationLayers) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto masked =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   auto masked_child1 = CreateOpacityEffect(
       *masked, 1.0, CompositingReason::kActiveOpacityAnimation);
   auto masked_child2 = CreateOpacityEffect(
@@ -2144,8 +2144,8 @@ TEST_P(PaintArtifactCompositorTest,
 
 TEST_P(PaintArtifactCompositorTest,
        CompositedExoticBlendModeOnTwo3DTransformLayers) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto masked =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   auto transform1 = CreateTransform(t0(), gfx::Transform(), gfx::Point3F(),
                                     CompositingReason::k3DTransform);
   auto transform2 = CreateTransform(t0(), gfx::Transform(), gfx::Point3F(),
@@ -2183,8 +2183,8 @@ TEST_P(PaintArtifactCompositorTest,
 }
 
 TEST_P(PaintArtifactCompositorTest, DecompositeExoticBlendModeWithoutBackdrop) {
-  auto parent_effect = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto parent_effect =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   EffectPaintPropertyNode::State blend_state1;
   blend_state1.local_transform_space = &t0();
   blend_state1.blend_mode = SkBlendMode::kScreen;
@@ -2214,8 +2214,8 @@ TEST_P(PaintArtifactCompositorTest, DecompositeExoticBlendModeWithoutBackdrop) {
 
 TEST_P(PaintArtifactCompositorTest,
        DecompositeExoticBlendModeWithNonDrawingLayer) {
-  auto parent_effect = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  auto parent_effect =
+      CreateOpacityEffect(e0(), 1.0, CompositingReason::kWillChangeOpacity);
   EffectPaintPropertyNode::State blend_state1;
   blend_state1.local_transform_space = &t0();
   blend_state1.blend_mode = SkBlendMode::kScreen;
@@ -4642,10 +4642,14 @@ TEST_P(PaintArtifactCompositorTest, AddNonCompositedScrollNodes) {
   if (!base::FeatureList::IsEnabled(::features::kScrollUnification))
     return;
 
-  const uint32_t main_thread_scrolling_reason =
-      cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
-  ASSERT_TRUE(cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(
-      main_thread_scrolling_reason));
+  uint32_t main_thread_scrolling_reason =
+      cc::MainThreadScrollingReason::kNotScrollingOnMain;
+  if (!RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
+    main_thread_scrolling_reason =
+        cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
+    ASSERT_TRUE(cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(
+        main_thread_scrolling_reason));
+  }
   auto scroll_state =
       ScrollState1(PropertyTreeState::Root(), CompositingReason::kNone,
                    main_thread_scrolling_reason);
@@ -4653,11 +4657,17 @@ TEST_P(PaintArtifactCompositorTest, AddNonCompositedScrollNodes) {
   WTF::Vector<const TransformPaintPropertyNode*> scroll_translation_nodes;
   scroll_translation_nodes.push_back(&scroll_state.Transform());
 
-  Update(TestPaintArtifact()
-             .Chunk(1)
-             .Properties(scroll_state.Transform(), c0(), e0())
-             .Build(),
-         ViewportProperties(), scroll_translation_nodes);
+  Update(
+      TestPaintArtifact()
+          .Chunk(1)
+          .ScrollHitTest(scroll_state.Transform().ScrollNode()->ContainerRect(),
+                         &scroll_state.Transform())
+          // In CompositeScrollAfterPaint, this chunk being non-opaque makes
+          // the scroll not composited.
+          .Chunk(2)
+          .Properties(scroll_state.Transform(), c0(), e0())
+          .Build(),
+      ViewportProperties(), scroll_translation_nodes);
 
   const auto& scroll_tree = GetPropertyTrees().scroll_tree();
   auto* scroll_node = scroll_tree.FindNodeFromElementId(

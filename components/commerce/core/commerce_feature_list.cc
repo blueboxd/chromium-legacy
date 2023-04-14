@@ -42,6 +42,7 @@ const CountryLocaleMap& GetAllowedCountryToLocaleMap() {
   static const base::NoDestructor<CountryLocaleMap> allowed_map([] {
     CountryLocaleMap map;
 
+    map[&kCommerceProductInfoApiEnabledRegionLaunched] = {{"us", {"en-us"}}};
     map[&kShoppingListRegionLaunched] = {{"us", {"en-us"}}};
     map[&kShoppingPDPMetricsRegionLaunched] = {{"us", {"en-us"}}};
     map[&ntp_features::kNtpChromeCartModule] = {{"us", {"en-us"}}};
@@ -125,10 +126,6 @@ BASE_FEATURE(kCommerceAllowServerImages,
              "CommerceAllowServerImages",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCommerceCoupons,
-             "CommerceCoupons",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCommerceMerchantViewer,
              "CommerceMerchantViewer",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -145,6 +142,14 @@ BASE_FEATURE(kCommerceMerchantViewerRegionLaunched,
 BASE_FEATURE(kCommercePriceTracking,
              "CommercePriceTracking",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCommerceProductInfoApiEnabled,
+             "CommerceProductInfoApiEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCommerceProductInfoApiEnabledRegionLaunched,
+             "CommerceProductInfoApiEnabledRegionLaunched",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory{
     &kCommerceMerchantViewer, "delete_all_merchants_on_clear_history", false};
@@ -308,6 +313,12 @@ const base::FeatureParam<bool> kReadyToFetchMerchantWidePromotion{
 const char kCodeBasedRuleDiscountParam[] = "code-based-rbd";
 const base::FeatureParam<bool> kCodeBasedRuleDiscount{
     &commerce::kCodeBasedRBD, kCodeBasedRuleDiscountParam, false};
+const char kCodeBasedRuleDiscountCouponDeletionTimeParam[] =
+    "coupon-deletion-time";
+const base::FeatureParam<base::TimeDelta>
+    kCodeBasedRuleDiscountCouponDeletionTime{
+        &commerce::kCodeBasedRBD, kCodeBasedRuleDiscountCouponDeletionTimeParam,
+        base::Seconds(6)};
 
 const char kRevertIconOnFailureParam[] =
     "shopping-list-revert-page-action-icon-on-failure";

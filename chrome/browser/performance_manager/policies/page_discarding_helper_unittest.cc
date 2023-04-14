@@ -5,7 +5,9 @@
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
 
 #include <memory>
+#include <utility>
 
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/performance_manager/test_support/page_discarding_utils.h"
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
+#include "components/performance_manager/test_support/persistence/test_site_data_reader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,11 +40,22 @@ class PageDiscardingHelperTest
     testing::GraphTestHarnessWithMockDiscarder::SetUp();
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
+
+    // Unretained is safe because the PageDiscardingHelper will be deleted when
+    // the graph is torn down in TearDown().
+    PageDiscardingHelper::GetFromGraph(graph())
+        ->SetSiteDataReaderCallbackForTesting(base::BindRepeating(
+            &PageDiscardingHelperTest::GetTestSiteDataReader,
+            base::Unretained(this)));
   }
 
   void TearDown() override {
     histogram_tester_.reset();
     testing::GraphTestHarnessWithMockDiscarder::TearDown();
+  }
+
+  SiteDataReader* GetTestSiteDataReader(const PageNode*) {
+    return &site_data_reader_;
   }
 
   // Convenience wrappers for PageNodeHelper::CanDiscard().
@@ -61,6 +75,8 @@ class PageDiscardingHelperTest
 
  protected:
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
+
+  testing::SimpleTestSiteDataReader site_data_reader_;
 
  private:
   std::unique_ptr<base::HistogramTester> histogram_tester_;
@@ -276,9 +292,7 @@ TEST_F(PageDiscardingHelperTest,
 
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageOnNoDiscardList) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kHighEfficiencyModeAvailable,
-                                 features::kBatterySaverModeAvailable},
-                                {});
+  feature_list.InitWithFeatures({features::kBatterySaverModeAvailable}, {});
   // static_cast page_node because it's declared as a PageNodeImpl which hides
   // the members it overrides from PageNode.
   PageDiscardingHelper::GetFromGraph(graph())->SetNoDiscardPatternsForProfile(
@@ -333,9 +347,16 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardWithDevToolsOpen) {
 }
 
 TEST_F(PageDiscardingHelperTest,
-       TestCannotProactivelyDiscardAfterUpdatedTitleOrFaviconInBackground) {
-  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
-      ->SetUpdatedTitleOrFaviconInBackgroundForTesting(true);
+       TestCannotProactivelyDiscardUpdatesTitleInBackground) {
+  site_data_reader_.set_updates_title_in_background(true);
+  EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::URGENT));
+  EXPECT_FALSE(CanDiscard(page_node(), DiscardReason::PROACTIVE));
+  EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::EXTERNAL));
+}
+
+TEST_F(PageDiscardingHelperTest,
+       TestCannotProactivelyDiscardUpdatesFaviconInBackground) {
+  site_data_reader_.set_updates_favicon_in_background(true);
   EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::URGENT));
   EXPECT_FALSE(CanDiscard(page_node(), DiscardReason::PROACTIVE));
   EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::EXTERNAL));

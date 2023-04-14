@@ -4,7 +4,10 @@
 
 package org.chromium.webengine;
 
+import android.graphics.Bitmap;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * An interface for observing changes to a Tab.
@@ -16,7 +19,7 @@ public interface TabObserver {
      * @param tab the tab associated with this event.
      * @param uri The new user-visible uri.
      */
-    public default void onVisibleUriChanged(Tab tab, @NonNull String uri) {}
+    public default void onVisibleUriChanged(@NonNull Tab tab, @NonNull String uri) {}
 
     /**
      * Called when the title of this tab changes. Note before the page sets a title, the title may
@@ -25,7 +28,15 @@ public interface TabObserver {
      * @param tab the tab associated with this event.
      * @param title New title of this tab.
      */
-    public default void onTitleUpdated(Tab tab, @NonNull String title) {}
+    public default void onTitleUpdated(@NonNull Tab tab, @NonNull String title) {}
+
+    /**
+     * Called when the favicon of the tab has changed.
+     *
+     * @param tab the tab associated with this event.
+     * @param favicon The favicon associated with the Tab. null if there is no favicon.
+     */
+    public default void onFaviconChanged(@NonNull Tab tab, @Nullable Bitmap favicon) {}
 
     /**
      * Triggered when the render process dies, either due to crash or killed by the system to
@@ -33,5 +44,5 @@ public interface TabObserver {
      *
      * @param tab the tab associated with this event.
      */
-    public default void onRenderProcessGone(Tab tab) {}
+    public default void onRenderProcessGone(@NonNull Tab tab) {}
 }

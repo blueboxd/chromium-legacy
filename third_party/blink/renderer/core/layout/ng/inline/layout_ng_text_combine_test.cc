@@ -714,16 +714,17 @@ TEST_F(LayoutNGTextCombineTest, Outline) {
 
   // Sample 1 with text-combine-upright:all
   const auto& sample1 = *GetLayoutObjectByElementId("t1");
-  Vector<PhysicalRect> standard_outlines1;
-  sample1.AddOutlineRects(standard_outlines1, nullptr, PhysicalOffset(),
+  VectorOutlineRectCollector collector;
+  sample1.AddOutlineRects(collector, nullptr, PhysicalOffset(),
                           NGOutlineType::kDontIncludeBlockVisualOverflow);
+  Vector<PhysicalRect> standard_outlines1 = collector.TakeRects();
   EXPECT_THAT(
       standard_outlines1,
       ElementsAre(PhysicalRect(PhysicalOffset(0, 0), PhysicalSize(150, 200))));
 
-  Vector<PhysicalRect> focus_outlines1;
-  sample1.AddOutlineRects(focus_outlines1, nullptr, PhysicalOffset(),
+  sample1.AddOutlineRects(collector, nullptr, PhysicalOffset(),
                           NGOutlineType::kIncludeBlockVisualOverflow);
+  Vector<PhysicalRect> focus_outlines1 = collector.TakeRects();
   EXPECT_THAT(
       focus_outlines1,
       ElementsAre(
@@ -737,16 +738,16 @@ TEST_F(LayoutNGTextCombineTest, Outline) {
 
   // Sample 1 without text-combine-upright:all
   const auto& sample2 = *GetLayoutObjectByElementId("t2");
-  Vector<PhysicalRect> standard_outlines2;
-  sample2.AddOutlineRects(standard_outlines2, nullptr, PhysicalOffset(),
+  sample2.AddOutlineRects(collector, nullptr, PhysicalOffset(),
                           NGOutlineType::kDontIncludeBlockVisualOverflow);
+  Vector<PhysicalRect> standard_outlines2 = collector.TakeRects();
   EXPECT_THAT(
       standard_outlines2,
       ElementsAre(PhysicalRect(PhysicalOffset(0, 0), PhysicalSize(150, 100))));
 
-  Vector<PhysicalRect> focus_outlines2;
-  sample1.AddOutlineRects(focus_outlines2, nullptr, PhysicalOffset(),
+  sample1.AddOutlineRects(collector, nullptr, PhysicalOffset(),
                           NGOutlineType::kIncludeBlockVisualOverflow);
+  Vector<PhysicalRect> focus_outlines2 = collector.TakeRects();
   EXPECT_THAT(
       focus_outlines2,
       ElementsAre(
@@ -1523,6 +1524,52 @@ LayoutNGBlockFlow DIV id="root"
   +--LayoutText #text "de"
 )DUMP",
             ToSimpleLayoutTree(root_layout_object));
+}
+
+// crbug.com/1430617
+TEST_F(LayoutNGTextCombineTest, ShouldBeParentOfSvg) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="root" style="text-combine-upright: all;">
+    <svg>
+    <text style="writing-mode: vertical-rl;">Text)HTML");
+
+  // Should have no LayoutNGTextCombine.
+  EXPECT_EQ(R"DUMP(
+LayoutNGBlockFlow DIV id="root" style="text-combine-upright: all;"
+  +--LayoutSVGRoot svg
+  |  +--LayoutNGSVGText text style="writing-mode: vertical-rl;"
+  |  |  +--LayoutSVGInlineText #text "Text"
+)DUMP",
+            ToSimpleLayoutTree(*GetLayoutObjectByElementId("root")));
+}
+
+TEST_F(LayoutNGTextCombineTest, InHorizontal) {
+  InsertStyleElement(
+      "div { writing-mode: horizontal-tb; }"
+      "tcy { text-combine-upright: all; }");
+  SetBodyInnerHTML("<div><tcy id=sample>ab</tcy></div>");
+  const auto& sample_layout_object = *GetLayoutObjectByElementId("sample");
+
+  EXPECT_EQ(R"DUMP(
+LayoutInline TCY id="sample"
+  +--LayoutText #text "ab"
+)DUMP",
+            ToSimpleLayoutTree(sample_layout_object));
+}
+
+TEST_F(LayoutNGTextCombineTest, InVertical) {
+  InsertStyleElement(
+      "div { writing-mode: vertical-rl; }"
+      "tcy { text-combine-upright: all; }");
+  SetBodyInnerHTML("<div><tcy id=sample>ab</tcy></div>");
+  const auto& sample_layout_object = *GetLayoutObjectByElementId("sample");
+
+  EXPECT_EQ(R"DUMP(
+LayoutInline TCY id="sample"
+  +--LayoutNGTextCombine (anonymous)
+  |  +--LayoutText #text "ab"
+)DUMP",
+            ToSimpleLayoutTree(sample_layout_object));
 }
 
 }  // namespace blink

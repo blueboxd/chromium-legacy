@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
-#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
@@ -342,10 +341,10 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
                        length_context.ValueForLength(style.Y(), style,
                                                      SVGLengthMode::kHeight));
     WriteNameValuePair(ts, "width",
-                       length_context.ValueForLength(style.Width(), style,
+                       length_context.ValueForLength(style.UsedWidth(), style,
                                                      SVGLengthMode::kWidth));
     WriteNameValuePair(ts, "height",
-                       length_context.ValueForLength(style.Height(), style,
+                       length_context.ValueForLength(style.UsedHeight(), style,
                                                      SVGLengthMode::kHeight));
   } else if (auto* element = DynamicTo<SVGLineElement>(*svg_element)) {
     WriteNameValuePair(ts, "x1",

@@ -8,16 +8,21 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "content/services/shared_storage_worklet/worklet_v8_helper.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "gin/function_template.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/shared_storage/shared_storage_utils.h"
 #include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
 #include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom.h"
 #include "third_party/blink/public/mojom/shared_storage/shared_storage_worklet_service.mojom.h"
@@ -411,12 +416,25 @@ class SharedStorageWorkletGlobalScopeTest : public testing::Test {
     return mock_private_aggregation_host_.get();
   }
 
+  mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
+  InitNewRemotePAHost() {
+    mojo::PendingRemote<blink::mojom::PrivateAggregationHost> remote;
+    if (blink::ShouldDefinePrivateAggregationInSharedStorage()) {
+      mock_private_aggregation_host_receiver_set_.Add(
+          mock_private_aggregation_host_.get(),
+          remote.InitWithNewPipeAndPassReceiver());
+    }
+    return remote;
+  }
+
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<TestClient> test_client_;
   std::unique_ptr<MockMojomPrivateAggregationHost>
       mock_private_aggregation_host_;
+  mojo::ReceiverSet<blink::mojom::PrivateAggregationHost>
+      mock_private_aggregation_host_receiver_set_;
 
   std::unique_ptr<SharedStorageWorkletGlobalScope> global_scope_;
 };
@@ -427,8 +445,7 @@ TEST_F(SharedStorageWorkletGlobalScopeTest, IsolateNotInitializedByDefault) {
 
 TEST_F(SharedStorageWorkletGlobalScopeTest, OnModuleScriptDownloadedSuccess) {
   global_scope_->OnModuleScriptDownloaded(
-      test_client_.get(), mock_private_aggregation_host_.get(),
-      GURL("https://example.test"), base::DoNothing(),
+      test_client_.get(), GURL("https://example.test"), base::DoNothing(),
       /*response_body=*/std::make_unique<std::string>(),
       /*error_message=*/{});
 
@@ -448,8 +465,7 @@ TEST_F(SharedStorageWorkletGlobalScopeTest, OnModuleScriptDownloadedSuccess) {
   EXPECT_EQ(GetTypeOf("sharedStorage.length"), "function");
   EXPECT_EQ(GetTypeOf("sharedStorage.remainingBudget"), "function");
   EXPECT_EQ(GetTypeOf("sharedStorage.context"), "undefined");
-  EXPECT_EQ(GetTypeOf("privateAggregation"), "object");
-  EXPECT_EQ(GetTypeOf("privateAggregation.sendHistogramReport"), "function");
+  EXPECT_EQ(GetTypeOf("privateAggregation"), "undefined");
 }
 
 TEST_F(SharedStorageWorkletGlobalScopeTest, OnModuleScriptDownloadedWithError) {
@@ -461,9 +477,9 @@ TEST_F(SharedStorageWorkletGlobalScopeTest, OnModuleScriptDownloadedWithError) {
         callback_called = true;
       });
 
-  global_scope_->OnModuleScriptDownloaded(
-      test_client_.get(), mock_private_aggregation_host_.get(),
-      GURL("https://example.test"), std::move(cb), nullptr, "error1");
+  global_scope_->OnModuleScriptDownloaded(test_client_.get(),
+                                          GURL("https://example.test"),
+                                          std::move(cb), nullptr, "error1");
 
   EXPECT_FALSE(IsolateInitialized());
   EXPECT_TRUE(callback_called);
@@ -472,8 +488,7 @@ TEST_F(SharedStorageWorkletGlobalScopeTest, OnModuleScriptDownloadedWithError) {
 TEST_F(SharedStorageWorkletGlobalScopeTest,
        OnModuleScriptDownloadedWithoutPrivateAggregationHost) {
   global_scope_->OnModuleScriptDownloaded(
-      test_client_.get(), /*private_aggregation_host=*/nullptr,
-      GURL("https://example.test"), base::DoNothing(),
+      test_client_.get(), GURL("https://example.test"), base::DoNothing(),
       /*response_body=*/std::make_unique<std::string>(),
       /*error_message=*/{});
 
@@ -484,8 +499,7 @@ TEST_F(SharedStorageWorkletGlobalScopeTest,
 
 class SharedStorageAddModuleTest : public SharedStorageWorkletGlobalScopeTest {
  public:
-  void SimulateAddModule(const std::string& script_body,
-                         bool define_private_aggregation_host = true) {
+  void SimulateAddModule(const std::string& script_body) {
     bool callback_called = false;
 
     auto cb = base::BindLambdaForTesting(
@@ -497,10 +511,7 @@ class SharedStorageAddModuleTest : public SharedStorageWorkletGlobalScopeTest {
         });
 
     global_scope_->OnModuleScriptDownloaded(
-        test_client_.get(),
-        define_private_aggregation_host ? mock_private_aggregation_host_.get()
-                                        : nullptr,
-        GURL("https://example.test"), std::move(cb),
+        test_client_.get(), GURL("https://example.test"), std::move(cb),
         std::make_unique<std::string>(script_body), /*error_message=*/{});
 
     ASSERT_TRUE(callback_called);
@@ -702,12 +713,26 @@ TEST_F(SharedStorageAddModuleTest,
     }
 
     register("test-operation", TestClass);
-  )",
-                    /*define_private_aggregation_host=*/false);
+  )");
 
   EXPECT_TRUE(success());
   EXPECT_TRUE(error_message().empty());
   EXPECT_FALSE(test_client()->observed_record_use_counter_call());
+}
+
+TEST_F(SharedStorageAddModuleTest,
+       RunPrivateAggregationInOutermostScope_ErrorThrown) {
+  // The operation will not be run.
+  EXPECT_CALL(*mock_private_aggregation_host(), SendHistogramReport).Times(0);
+
+  SimulateAddModule(R"(
+    privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
+  )");
+
+  EXPECT_FALSE(success());
+  EXPECT_EQ(error_message(),
+            "https://example.test/:2 Uncaught ReferenceError: "
+            "privateAggregation is not defined.");
 }
 
 class SharedStorageRunOperationTest
@@ -715,8 +740,7 @@ class SharedStorageRunOperationTest
  public:
   // The caller should provide a valid module script. The purpose of this test
   // suite is to test RunOperation.
-  void SimulateAddModule(const std::string& script_body,
-                         bool define_private_aggregation_host = true) {
+  void SimulateAddModule(const std::string& script_body) {
     bool add_module_callback_called = false;
 
     auto add_module_callback = base::BindLambdaForTesting(
@@ -726,10 +750,8 @@ class SharedStorageRunOperationTest
         });
 
     global_scope_->OnModuleScriptDownloaded(
-        test_client_.get(),
-        define_private_aggregation_host ? mock_private_aggregation_host_.get()
-                                        : nullptr,
-        GURL("https://example.test"), std::move(add_module_callback),
+        test_client_.get(), GURL("https://example.test"),
+        std::move(add_module_callback),
         std::make_unique<std::string>(script_body), /*error_message=*/{});
 
     ASSERT_TRUE(add_module_callback_called);
@@ -746,7 +768,7 @@ class SharedStorageRunOperationTest
           unnamed_operation_error_message_ = error_message;
         });
 
-    global_scope_->RunOperation(name, serialized_data,
+    global_scope_->RunOperation(name, serialized_data, InitNewRemotePAHost(),
                                 std::move(run_operation_callback));
   }
 
@@ -763,6 +785,7 @@ class SharedStorageRunOperationTest
         });
 
     global_scope_->RunURLSelectionOperation(name, urls, serialized_data,
+                                            InitNewRemotePAHost(),
                                             std::move(run_operation_callback));
   }
 
@@ -1441,68 +1464,6 @@ TEST_F(
 }
 
 TEST_F(SharedStorageRunOperationTest,
-       UnnamedOperationWithPrivateAggregationCall_Success) {
-  EXPECT_CALL(*mock_private_aggregation_host(), SendHistogramReport)
-      .WillOnce(testing::Invoke(
-          [](std::vector<
-                 blink::mojom::AggregatableReportHistogramContributionPtr>
-                 contributions,
-             blink::mojom::AggregationServiceMode aggregation_mode,
-             blink::mojom::DebugModeDetailsPtr debug_mode_details) {
-            ASSERT_EQ(contributions.size(), 1u);
-            EXPECT_EQ(contributions[0]->bucket, 1);
-            EXPECT_EQ(contributions[0]->value, 2);
-            EXPECT_EQ(aggregation_mode,
-                      blink::mojom::AggregationServiceMode::kDefault);
-            ASSERT_FALSE(debug_mode_details.is_null());
-            EXPECT_EQ(*debug_mode_details, blink::mojom::DebugModeDetails());
-          }));
-
-  SimulateAddModule(R"(
-      class TestClass {
-        async run() {
-          privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
-        }
-      }
-
-      register("test-operation", TestClass);
-    )");
-
-  SimulateRunOperation("test-operation", /*serialized_data=*/{});
-
-  EXPECT_TRUE(unnamed_operation_finished());
-  EXPECT_TRUE(unnamed_operation_success());
-  EXPECT_TRUE(unnamed_operation_error_message().empty());
-}
-
-TEST_F(SharedStorageRunOperationTest,
-       UnnamedOperationWithPrivateAggregationCall_PAPermissionsPolicyDisabled) {
-  OverrideGlobalScope(std::make_unique<SharedStorageWorkletGlobalScope>(
-      /*private_aggregation_permissions_policy_allowed=*/false,
-      /*embedder_context=*/absl::nullopt));
-
-  SimulateAddModule(R"(
-      class TestClass {
-        async run() {
-          privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
-        }
-      }
-
-      register("test-operation", TestClass);
-    )");
-
-  SimulateRunOperation("test-operation", /*serialized_data=*/{});
-
-  EXPECT_TRUE(unnamed_operation_finished());
-  EXPECT_FALSE(unnamed_operation_success());
-
-  EXPECT_EQ(unnamed_operation_error_message(),
-            "TypeError: The \"private-aggregation\" Permissions Policy denied "
-            "the method on privateAggregation");
-  EXPECT_TRUE(test_client()->observed_record_use_counter_call());
-}
-
-TEST_F(SharedStorageRunOperationTest,
        UnnamedOperationWithPrivateAggregationCall_PAHostNotDefined) {
   EXPECT_CALL(*mock_private_aggregation_host(), SendHistogramReport).Times(0);
 
@@ -1514,8 +1475,7 @@ TEST_F(SharedStorageRunOperationTest,
       }
 
       register("test-operation", TestClass);
-    )",
-                    /*define_private_aggregation_host=*/false);
+    )");
 
   SimulateRunOperation("test-operation", /*serialized_data=*/{});
 
@@ -2324,6 +2284,14 @@ class SharedStoragePrivateAggregationTest
     : public SharedStorageRunOperationTest {
  public:
   SharedStoragePrivateAggregationTest() {
+    private_aggregation_feature_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/
+        {{blink::features::kPrivateAggregationApi,
+          {{"enabled_in_shared_storage", "true"}}}},
+        /*disabled_features=*/{});
+  }
+
+  void SetUp() override {
     // Run AddModule so that `privateAggregation` is exposed.
     SimulateAddModule(R"()");
   }
@@ -2334,12 +2302,14 @@ class SharedStoragePrivateAggregationTest
     EXPECT_TRUE(error_message.empty());
   }
 
+  // error_message` being `nullptr` indicates no error is expected.
   void ExecuteScriptAndValidateContribution(
       const std::string& script_body,
       absl::uint128 expected_bucket,
       int expected_value,
       blink::mojom::DebugModeDetailsPtr expected_debug_mode_details =
-          blink::mojom::DebugModeDetails::New()) {
+          blink::mojom::DebugModeDetails::New(),
+      std::string* error_message = nullptr) {
     EXPECT_CALL(*mock_private_aggregation_host(), SendHistogramReport)
         .WillOnce(testing::Invoke(
             [&](std::vector<
@@ -2355,19 +2325,22 @@ class SharedStoragePrivateAggregationTest
               EXPECT_TRUE(debug_mode_details == expected_debug_mode_details);
             }));
 
-    ExecuteScriptExpectNoError(script_body);
+    if (error_message == nullptr) {
+      ExecuteScriptExpectNoError(script_body);
+    } else {
+      ExecuteScript(script_body, error_message);
+    }
 
     EXPECT_TRUE(test_client()->observed_record_use_counter_call());
+
+    mock_private_aggregation_host_receiver_set_.FlushForTesting();
   }
 
-  std::string ExecuteScriptReturningError(
-      const std::string& script_body,
-      bool flush_and_reset_private_aggregation = true) {
+  std::string ExecuteScriptReturningError(const std::string& script_body) {
     EXPECT_CALL(*mock_private_aggregation_host(), SendHistogramReport).Times(0);
 
     std::string error_message;
-    ExecuteScript(script_body, &error_message,
-                  flush_and_reset_private_aggregation);
+    ExecuteScript(script_body, &error_message);
     EXPECT_FALSE(error_message.empty());
 
     // These tests all invoke sendHistogramReport (albeit incorrectly), so the
@@ -2377,21 +2350,20 @@ class SharedStoragePrivateAggregationTest
   }
 
  private:
-  void ExecuteScript(const std::string& script_body,
-                     std::string* out_error,
-                     bool flush_and_reset_private_aggregation = true) {
+  void ExecuteScript(const std::string& script_body, std::string* out_error) {
     WorkletV8Helper::HandleScope scope(Isolate());
     v8::Local<v8::Context> context = LocalContext();
     v8::Context::Scope context_scope(context);
+    base::OnceClosure operation_completion_closure =
+        global_scope_->StartOperationForTesting(InitNewRemotePAHost());
 
     WorkletV8Helper::CompileAndRunScript(
         LocalContext(), script_body, GURL("https://example.test"), out_error);
 
-    if (flush_and_reset_private_aggregation) {
-      // Ensures that Private Aggregation is flushed and reset after.
-      SimulateRunOperation("", {});
-    }
+    std::move(operation_completion_closure).Run();
   }
+
+  base::test::ScopedFeatureList private_aggregation_feature_;
 };
 
 TEST_F(SharedStoragePrivateAggregationTest, BasicTest) {
@@ -2503,6 +2475,8 @@ TEST_F(SharedStoragePrivateAggregationTest, MultipleRequests) {
         privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
         privateAggregation.sendHistogramReport({bucket: 3n, value: 4});
       )");
+
+  mock_private_aggregation_host_receiver_set_.FlushForTesting();
 }
 
 TEST_F(SharedStoragePrivateAggregationTest, DebugModeWithNoDebugKey) {
@@ -2572,26 +2546,33 @@ TEST_F(SharedStoragePrivateAggregationTest,
 
 TEST_F(SharedStoragePrivateAggregationTest,
        EnableDebugModeCalledTwice_SecondCallFails) {
-  std::string error_str = ExecuteScriptReturningError(
-      R"(
-        privateAggregation.enableDebugMode({debug_key: 1234n});
-        privateAggregation.enableDebugMode();
-      )",
-      /*flush_and_reset_private_aggregation=*/false);
+  std::string error_str;
 
-  EXPECT_EQ(error_str,
-            "https://example.test/:3 Uncaught TypeError: enableDebugMode may "
-            "be called at most once.");
-
-  // Note that the first call still applies to future requests.
+  // Note that the first call still applies to future requests if the error is
+  // caught. Here, we rethrow it to check its value.
   ExecuteScriptAndValidateContribution(
-      "privateAggregation.sendHistogramReport({bucket: 1n, value: 2});",
+      R"(
+        let error;
+        try {
+          privateAggregation.enableDebugMode({debug_key: 1234n});
+          privateAggregation.enableDebugMode();
+        } catch (e) {
+          error = e;
+        }
+        privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
+        throw error;
+      )",
       /*expected_bucket=*/1,
       /*expected_value=*/2,
       /*expected_debug_mode_details=*/
       blink::mojom::DebugModeDetails::New(
           /*is_enabled=*/true,
-          /*debug_key=*/blink::mojom::DebugKey::New(1234u)));
+          /*debug_key=*/blink::mojom::DebugKey::New(1234u)),
+      &error_str);
+
+  EXPECT_EQ(error_str,
+            "https://example.test/:10 Uncaught TypeError: enableDebugMode may "
+            "be called at most once.");
 }
 
 // Note that FLEDGE worklets have different behavior in this case.
@@ -2635,6 +2616,67 @@ TEST_F(SharedStoragePrivateAggregationTest, MultipleDebugModeRequests) {
         privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
         privateAggregation.sendHistogramReport({bucket: 3n, value: 4});
       )");
+
+  mock_private_aggregation_host_receiver_set_.FlushForTesting();
+}
+
+// Regression test for crbug.com/1429895.
+TEST_F(SharedStoragePrivateAggregationTest,
+       GlobalScopeDeletedBeforeOperationCompletes_ContributionsStillFlushed) {
+  EXPECT_CALL(*mock_private_aggregation_host(), SendHistogramReport)
+      .WillOnce(testing::Invoke(
+          [&](std::vector<
+                  blink::mojom::AggregatableReportHistogramContributionPtr>
+                  contributions,
+              blink::mojom::AggregationServiceMode aggregation_mode,
+              blink::mojom::DebugModeDetailsPtr debug_mode_details) {
+            ASSERT_EQ(contributions.size(), 1u);
+            EXPECT_EQ(contributions[0]->bucket, 1);
+            EXPECT_EQ(contributions[0]->value, 2);
+            EXPECT_EQ(aggregation_mode,
+                      blink::mojom::AggregationServiceMode::kDefault);
+            EXPECT_FALSE(debug_mode_details->is_enabled);
+          }));
+
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    v8::Local<v8::Context> context = LocalContext();
+    v8::Context::Scope context_scope(context);
+    std::string error_str;
+
+    // Intentionally discard returned operation completion closure without
+    // running.
+    global_scope_->StartOperationForTesting(InitNewRemotePAHost());
+
+    WorkletV8Helper::CompileAndRunScript(
+        LocalContext(),
+        "privateAggregation.sendHistogramReport({bucket: 1n, value: 2});",
+        GURL("https://example.test"), &error_str);
+  }
+
+  global_scope_.reset();
+  mock_private_aggregation_host_receiver_set_.FlushForTesting();
+}
+
+class SharedStoragePrivateAggregationPermissionsPolicyDisabledTest
+    : public SharedStoragePrivateAggregationTest {
+ public:
+  void SetUp() override {
+    OverrideGlobalScope(std::make_unique<SharedStorageWorkletGlobalScope>(
+        /*private_aggregation_permissions_policy_allowed=*/false,
+        /*embedder_context=*/absl::nullopt));
+    SharedStoragePrivateAggregationTest::SetUp();
+  }
+};
+
+TEST_F(SharedStoragePrivateAggregationPermissionsPolicyDisabledTest, Rejected) {
+  std::string error_str = ExecuteScriptReturningError(
+      "privateAggregation.sendHistogramReport({bucket: 1, value: 2});");
+
+  EXPECT_EQ(
+      error_str,
+      "https://example.test/:1 Uncaught TypeError: The \"private-aggregation\" "
+      "Permissions Policy denied the method on privateAggregation.");
 }
 
 }  // namespace shared_storage_worklet

@@ -112,6 +112,7 @@ class BackGestureEventHandler;
 class BacklightsForcedOffSetter;
 class BluetoothDeviceStatusUiHandler;
 class BluetoothNotificationController;
+class BluetoothStateCache;
 class BrightnessControlDelegate;
 class CalendarController;
 class CameraEffectsController;
@@ -189,7 +190,6 @@ class PciePeripheralNotificationController;
 class UsbPeripheralNotificationController;
 class PeripheralBatteryListener;
 class PeripheralBatteryNotifier;
-class PersistentDesksBarController;
 class PersistentWindowController;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
@@ -422,6 +422,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   BacklightsForcedOffSetter* backlights_forced_off_setter() {
     return backlights_forced_off_setter_.get();
   }
+  BluetoothStateCache* bluetooth_state_cache() {
+    return bluetooth_state_cache_.get();
+  }
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
@@ -445,9 +448,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return dark_light_mode_controller_.get();
   }
   DesksController* desks_controller() { return desks_controller_.get(); }
-  PersistentDesksBarController* persistent_desks_bar_controller() {
-    return persistent_desks_bar_controller_.get();
-  }
   SavedDeskController* saved_desk_controller() {
     return saved_desk_controller_.get();
   }
@@ -981,8 +981,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<PrivacyHubController> privacy_hub_controller_;
   std::unique_ptr<UsbPeripheralNotificationController>
       usb_peripheral_notification_controller_;
-  std::unique_ptr<PersistentDesksBarController>
-      persistent_desks_bar_controller_;
   std::unique_ptr<RgbKeyboardManager> rgb_keyboard_manager_;
   std::unique_ptr<RasterScaleController> raster_scale_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
@@ -1076,6 +1074,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       resolution_notification_controller_;
   std::unique_ptr<BluetoothNotificationController>
       bluetooth_notification_controller_;
+  std::unique_ptr<BluetoothStateCache> bluetooth_state_cache_;
   std::unique_ptr<BluetoothDeviceStatusUiHandler>
       bluetooth_device_status_ui_handler_;
   std::unique_ptr<KeyboardControllerImpl> keyboard_controller_;

@@ -72,6 +72,7 @@
 // flag to #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/common/features.h"
 #include "extensions/browser/api/management/management_api.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
@@ -526,24 +527,13 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   if (!dummy_extension_->is_theme()) {
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile_);
-    if (profile_->IsChild() && !service->CanInstallExtensions()) {
-      SupervisedUserExtensionsDelegate* supervised_user_extensions_delegate =
-          ManagementAPI::GetFactoryInstance()
-              ->Get(profile_)
-              ->GetSupervisedUserExtensionsDelegate();
-      DCHECK(supervised_user_extensions_delegate);
-      auto extension_approval_callback =
-          base::BindOnce(&WebstorePrivateBeginInstallWithManifest3Function::
-                             OnExtensionApprovalDone,
-                         this);
+    if (service->AreExtensionsPermissionsEnabled() &&
+        !service->CanInstallExtensions()) {
       // Assume that the block dialog will be shown here since it was checked
       // that extensions cannot be installed by the child user. If extensions
       // are allowed, the install prompt will be shown before the request
       // permission dialog is shown.
-      supervised_user_extensions_delegate->RequestToAddExtensionOrShowError(
-          *dummy_extension_, web_contents,
-          gfx::ImageSkia::CreateFrom1xBitmap(icon_),
-          std::move(extension_approval_callback));
+      RequestExtensionApproval(web_contents);
       return;
     }
   }
@@ -602,6 +592,23 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+void WebstorePrivateBeginInstallWithManifest3Function::RequestExtensionApproval(
+    content::WebContents* web_contents) {
+  SupervisedUserExtensionsDelegate* supervised_user_extensions_delegate =
+      ManagementAPI::GetFactoryInstance()
+          ->Get(profile_)
+          ->GetSupervisedUserExtensionsDelegate();
+  CHECK(supervised_user_extensions_delegate);
+  auto extension_approval_callback =
+      base::BindOnce(&WebstorePrivateBeginInstallWithManifest3Function::
+                         OnExtensionApprovalDone,
+                     this);
+  supervised_user_extensions_delegate->RequestToAddExtensionOrShowError(
+      *dummy_extension_, web_contents,
+      gfx::ImageSkia::CreateFrom1xBitmap(icon_),
+      std::move(extension_approval_callback));
+}
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnExtensionApprovalDone(
     SupervisedUserExtensionsDelegate::ExtensionApprovalResult result) {
@@ -662,7 +669,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::
 
 bool WebstorePrivateBeginInstallWithManifest3Function::
     PromptForParentApproval() {
-  DCHECK(profile_->IsChild());
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  DCHECK(service->AreExtensionsPermissionsEnabled());
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents) {
     // The browser window has gone away.
@@ -670,26 +679,11 @@ bool WebstorePrivateBeginInstallWithManifest3Function::
                           kWebstoreUserCancelledError));
     return false;
   }
-
-  auto extension_approval_callback =
-      base::BindOnce(&WebstorePrivateBeginInstallWithManifest3Function::
-                         OnExtensionApprovalDone,
-                     this);
-
-  SupervisedUserExtensionsDelegate* supervised_user_extensions_delegate =
-      ManagementAPI::GetFactoryInstance()
-          ->Get(profile_)
-          ->GetSupervisedUserExtensionsDelegate();
-  DCHECK(supervised_user_extensions_delegate);
-
   // Assume that the block dialog will not be shown by the
   // SupervisedUserExtensionsDelegate, because if permissions for extensions
   // were disabled, the block dialog would have been shown at the install prompt
   // step.
-  supervised_user_extensions_delegate->RequestToAddExtensionOrShowError(
-      *dummy_extension_, web_contents,
-      gfx::ImageSkia::CreateFrom1xBitmap(icon_),
-      std::move(extension_approval_callback));
+  RequestExtensionApproval(web_contents);
 
   return true;
 }
@@ -736,11 +730,13 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
     case ExtensionInstallPrompt::Result::ACCEPTED:
     case ExtensionInstallPrompt::Result::ACCEPTED_WITH_WITHHELD_PERMISSIONS: {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      SupervisedUserService* service =
+          SupervisedUserServiceFactory::GetForProfile(profile_);
       // Handle parent permission for child accounts on ChromeOS.
       if (!dummy_extension_->is_theme()  // Parent permission not required for
                                          // theme installation
           && g_browser_process->profile_manager()->IsValidProfile(profile_) &&
-          profile_->IsChild()) {
+          service->AreExtensionsPermissionsEnabled()) {
         if (PromptForParentApproval()) {
           // If are showing parent permission dialog, return instead of
           // break, so that we don't release the ref below.
@@ -886,13 +882,22 @@ void WebstorePrivateBeginInstallWithManifest3Function::ShowInstallDialog(
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (!dummy_extension_->is_theme()) {
-    const bool is_child = profile_->IsChild();
+    SupervisedUserService* service =
+        SupervisedUserServiceFactory::GetForProfile(profile_);
+    const bool requires_parent_permission =
+        service->AreExtensionsPermissionsEnabled();
     // We don't prompt for parent permission for themes, so no need
     // to configure the install prompt to indicate that this is a child
     // asking a parent for installation permission.
-    prompt->set_requires_parent_permission(is_child);
-    if (is_child) {
+    prompt->set_requires_parent_permission(requires_parent_permission);
+    if (requires_parent_permission) {
       prompt->AddObserver(&supervised_user_extensions_metrics_recorder_);
+    }
+    // Bypass the install prompt dialog if V2 is enabled. The ParentAccessDialog
+    // handles both the blocked and install use case.
+    if (supervised_user::IsLocalExtensionApprovalsV2Enabled()) {
+      RequestExtensionApproval(contents);
+      return;
     }
   }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -1176,11 +1181,13 @@ WebstorePrivateIsPendingCustodianApprovalFunction::Run() {
       IsPendingCustodianApproval::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (!Profile::FromBrowserContext(browser_context())->IsChild())
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserService* service = SupervisedUserServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
+  if (!service->AreExtensionsPermissionsEnabled()) {
     return RespondNow(BuildResponse(false));
-
+  }
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
-
   const Extension* extension =
       registry->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
   if (!extension) {
@@ -1198,6 +1205,9 @@ WebstorePrivateIsPendingCustodianApprovalFunction::Run() {
       params->id, disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
 
   return RespondNow(BuildResponse(is_pending_approval));
+#else
+  return RespondNow(BuildResponse(false));
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 }
 
 ExtensionFunction::ResponseValue

@@ -34,11 +34,11 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/events/keyboard_capability.h"
-#include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/touch_device_manager.h"
+#include "ui/events/ash/keyboard_capability.h"
+#include "ui/events/ash/keyboard_layout_util.h"
 #include "ui/events/devices/device_data_manager.h"
 
 namespace ash::settings {
@@ -165,6 +165,15 @@ const std::vector<SearchConcept>& GetKeyboardSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kKeyboardFunctionKeys}},
+      {IDS_OS_SETTINGS_TAG_KEYBOARD_DIACRITIC,
+       mojom::kKeyboardSubpagePath,
+       mojom::SearchResultIcon::kKeyboard,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kShowDiacritic},
+       {IDS_OS_SETTINGS_TAG_KEYBOARD_DIACRITIC1,
+        IDS_OS_SETTINGS_TAG_KEYBOARD_DIACRITIC2,
+        IDS_OS_SETTINGS_TAG_KEYBOARD_DIACRITIC3, SearchConcept::kAltTagEnd}}
   });
   return *tags;
 }
@@ -827,7 +836,7 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
           : IDS_SETTINGS_KEYBOARD_KEY_SEARCH);
   html_source->AddLocalizedString(
       "keyboardSendFunctionKeysDescription",
-      ui::DeviceUsesKeyboardLayout2()
+      Shell::Get()->keyboard_capability()->HasLauncherButton()
           ? IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT2_DESCRIPTION
           : IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION);
 }
@@ -1335,6 +1344,7 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kKeyboard,
       mojom::SearchResultDefaultRank::kMedium, mojom::kKeyboardSubpagePath);
   static constexpr mojom::Setting kKeyboardSettings[] = {
+      mojom::Setting::kShowDiacritic,
       mojom::Setting::kKeyboardFunctionKeys,
       mojom::Setting::kKeyboardAutoRepeat,
       mojom::Setting::kKeyboardShortcuts,

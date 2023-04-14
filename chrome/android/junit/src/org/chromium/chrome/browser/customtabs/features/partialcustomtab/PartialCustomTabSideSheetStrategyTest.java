@@ -20,6 +20,7 @@ import static org.chromium.chrome.browser.browserservices.intents.BrowserService
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT;
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE;
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_POSITION_DEFAULT;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_POSITION_END;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_POSITION_START;
@@ -28,6 +29,7 @@ import static org.chromium.chrome.browser.customtabs.features.partialcustomtab.P
 import static org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabTestRule.DEVICE_HEIGHT_LANDSCAPE;
 import static org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabTestRule.DEVICE_WIDTH;
 import static org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabTestRule.DEVICE_WIDTH_LANDSCAPE;
+import static org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabTestRule.DEVICE_WIDTH_MEDIUM;
 import static org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabTestRule.FULL_HEIGHT;
 import static org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabTestRule.NAVBAR_HEIGHT;
 
@@ -47,6 +49,7 @@ import org.robolectric.annotation.LooperMode.Mode;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.base.LocalizationUtils;
@@ -55,11 +58,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Tests for {@link PartialCustomTabSideSheetStrategy}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {PartialCustomTabTestRule.ShadowSemanticColorUtils.class})
 @LooperMode(Mode.PAUSED)
 @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET})
 public class PartialCustomTabSideSheetStrategyTest {
-    private static final float MINIMAL_WIDTH_RATIO = 0.33f;
+    private static final float MINIMAL_WIDTH_RATIO_EXPANDED = 0.33f;
+    private static final float MINIMAL_WIDTH_RATIO_MEDIUM = 0.5f;
     private static final boolean RTL = true;
     private static final boolean LTR = false;
     private static final boolean RIGHT = true;
@@ -138,14 +142,25 @@ public class PartialCustomTabSideSheetStrategyTest {
     }
 
     @Test
-    public void create_smallWidthLandscape() {
+    public void create_smallWidthLandscape_Expanded() {
         mPCCTTestRule.configLandscapeMode();
         createPcctSideSheetStrategy(100);
         mPCCTTestRule.verifyWindowFlagsSet();
 
         assertTabIsAtFullLandscapeHeight();
         assertEquals("Side-sheet has wrong width",
-                (int) (DEVICE_WIDTH_LANDSCAPE * MINIMAL_WIDTH_RATIO),
+                (int) (DEVICE_WIDTH_LANDSCAPE * MINIMAL_WIDTH_RATIO_EXPANDED),
+                mPCCTTestRule.mAttributeResults.get(0).width);
+    }
+
+    @Test
+    public void create_smallWidthLandscape_Medium() {
+        mPCCTTestRule.configDeviceWidthMedium();
+        createPcctSideSheetStrategy(100);
+        mPCCTTestRule.verifyWindowFlagsSet();
+
+        assertEquals("Side-sheet has wrong width",
+                (int) (DEVICE_WIDTH_MEDIUM * MINIMAL_WIDTH_RATIO_MEDIUM),
                 mPCCTTestRule.mAttributeResults.get(0).width);
     }
 
@@ -201,7 +216,7 @@ public class PartialCustomTabSideSheetStrategyTest {
     public void noTopShadow() {
         doReturn(47)
                 .when(mPCCTTestRule.mResources)
-                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
 
         mPCCTTestRule.configLandscapeMode();
         createPcctSideSheetStrategy(2000);
@@ -218,7 +233,7 @@ public class PartialCustomTabSideSheetStrategyTest {
     public void leftShadowIsVisible() {
         doReturn(47)
                 .when(mPCCTTestRule.mResources)
-                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
 
         mPCCTTestRule.configLandscapeMode();
         createPcctSideSheetStrategy(2000);
@@ -237,7 +252,7 @@ public class PartialCustomTabSideSheetStrategyTest {
     public void rightShadowIsVisible() {
         doReturn(47)
                 .when(mPCCTTestRule.mResources)
-                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
 
         mPCCTTestRule.configLandscapeMode();
         createLeftPcctSideSheetStrategy(2000);
@@ -256,7 +271,7 @@ public class PartialCustomTabSideSheetStrategyTest {
     public void noShadowsFullWidth() {
         doReturn(47)
                 .when(mPCCTTestRule.mResources)
-                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
 
         mPCCTTestRule.configLandscapeMode();
         createLeftPcctSideSheetStrategy(3000);
@@ -280,10 +295,32 @@ public class PartialCustomTabSideSheetStrategyTest {
     public void drawDividerLine() {
         doReturn(10)
                 .when(mPCCTTestRule.mResources)
-                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
         mPCCTTestRule.configLandscapeMode();
         var strategy = createPcctSideSheetStrategy(2000, ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT,
                 ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER);
+        strategy.onToolbarInitialized(
+                mPCCTTestRule.mToolbarCoordinator, mPCCTTestRule.mToolbarView, 5);
+        mPCCTTestRule.verifyWindowFlagsSet();
+
+        assertTrue(strategy.shouldDrawDividerLine());
+        assertEquals("Right margin should zero for no shadow", 0,
+                mPCCTTestRule.mLayoutParams.rightMargin);
+        assertEquals("Left margin should be zero for no shadow", 0,
+                mPCCTTestRule.mLayoutParams.leftMargin);
+    }
+
+    @Config(sdk = Build.VERSION_CODES.P)
+    @Test
+    public void drawDividerLine_OverrideWithOldOS() {
+        doReturn(10)
+                .when(mPCCTTestRule.mResources)
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
+        mPCCTTestRule.configLandscapeMode();
+        // Only override instead of shadow. If they set to no decoration, we don't override with
+        // divider line
+        var strategy = createPcctSideSheetStrategy(2000, ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT,
+                ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW);
         strategy.onToolbarInitialized(
                 mPCCTTestRule.mToolbarCoordinator, mPCCTTestRule.mToolbarView, 5);
         mPCCTTestRule.verifyWindowFlagsSet();
@@ -299,7 +336,7 @@ public class PartialCustomTabSideSheetStrategyTest {
     public void noDecoration() {
         doReturn(10)
                 .when(mPCCTTestRule.mResources)
-                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
         mPCCTTestRule.configLandscapeMode();
         var strategy = createPcctSideSheetStrategy(2000, ACTIVITY_SIDE_SHEET_POSITION_DEFAULT,
                 ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE);
@@ -318,7 +355,7 @@ public class PartialCustomTabSideSheetStrategyTest {
     public void enterAndExitHtmlFullscreen() {
         doReturn(47)
                 .when(mPCCTTestRule.mResources)
-                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
         var strategy = createPcctSideSheetStrategy(1000);
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
                 .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),

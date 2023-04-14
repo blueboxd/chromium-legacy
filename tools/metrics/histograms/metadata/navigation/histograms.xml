@@ -45,6 +45,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
       was removed in Feb 2022.
     </obsolete>
   </variant>
+  <variant name=".Embedder_BookmarkBar"/>
   <variant name=".Embedder_DefaultSearchEngine"/>
   <variant name=".Embedder_DirectURLInput"/>
   <variant name=".SpeculationRule"/>
@@ -487,7 +488,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.AnonymousIframeIsSandboxed" enum="Boolean"
-    expires_after="2023-07-09">
+    expires_after="2023-10-01">
   <owner>arthursonzogni@chromium.org</owner>
   <owner>chrome-security-owp-team@google.com</owner>
   <summary>
@@ -739,7 +740,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.HostnameHasDeviationCharacters" units="count"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>meacer@chromium.org</owner>
   <owner>chrome-trusty-transport@google.com</owner>
   <summary>
@@ -880,7 +881,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Navigation.MainFrame.RendererInitiated.InitiatorFramePresentAtStart"
-    enum="BooleanPresent" expires_after="2023-07-30">
+    enum="BooleanPresent" expires_after="2023-10-01">
   <owner>yaoxia@chromium.org</owner>
   <owner>cammie@chromium.org</owner>
   <summary>
@@ -1022,7 +1023,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.NavigationStartToBeforeUnloadForLegacy" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>sky@chromium.org</owner>
   <owner>swarm-team@chromium.org</owner>
   <summary>
@@ -1035,7 +1036,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Navigation.NavigationStartToBeginWithAvoidUnnecessaryBeforeUnloadSync"
-    units="ms" expires_after="2023-08-08">
+    units="ms" expires_after="2023-10-08">
   <owner>sky@chromium.org</owner>
   <owner>swarm-team@chromium.org</owner>
   <summary>
@@ -1079,7 +1080,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.OnBeforeUnloadTotalTime" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -1614,6 +1615,41 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     PrerenderHost in the browser process when comparing these two parameters.
   </summary>
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.BookmarkBar.EnterToPressDuration{ButtonType}"
+    units="ms" expires_after="2023-09-24">
+  <owner>robertlin@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    The metrics for preload boomark to understand the distribution of delay to
+    press {ButtonType}. It records duration time from entering to to pressing
+    the button.
+  </summary>
+  <token key="ButtonType">
+    <variant name="" summary="any button"/>
+    <variant name=".LeftButton" summary="the left button"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.BookmarkBar.HoverDuration.{ConversionResultType}"
+    units="ms" expires_after="2023-09-24">
+  <owner>robertlin@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    The metrics for preload boomark to understand the distribution of mouse
+    hovering duration. It records mouse hovering duration time when mouse leaves
+    the bookmark button areas without using it as NotTaken, or when the bookmark
+    is actually clicked as Taken.
+  </summary>
+  <token key="ConversionResultType">
+    <variant name="NotTaken"/>
+    <variant name="Taken"/>
+  </token>
 </histogram>
 
 <histogram name="Prerender.Experimental.BookmarkUrlButtonEvent"

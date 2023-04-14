@@ -234,7 +234,7 @@
       {
         "id": "AccessibilityFeature",
         "type": "string",
-        "enum": [ "googleTtsLanguagePacks","selectToSpeakContextMenuOption", "dictationContextChecking", "chromevoxTabsDeprecation"],
+        "enum": [ "googleTtsLanguagePacks", "dictationContextChecking", "chromevoxTabsDeprecation", "chromevoxSettingsMigration"],
         "description": "Subset of accessibility features."
       },
       {
@@ -921,6 +921,41 @@
         "type": "function",
         "description": "Fired when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
         "parameters": []
+      },
+      {
+        "name": "onSelectToSpeakKeysPressedChanged",
+        "type": "function",
+        "description": "Fired when Chrome OS wants to send an updated list of keys currently pressed to Select to Speak.",
+        "parameters": [
+          {
+            "name": "keyCodes",
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "List of key codes that are currently pressed"
+          }
+        ]
+      },
+      {
+        "name": "onSelectToSpeakMouseChanged",
+        "type": "function",
+        "description": "Fired when Chrome OS wants to send a mouse event Select to Speak.",
+        "parameters": [
+          {
+            "name": "type",
+            "$ref": "SyntheticMouseEventType",
+            "description": "The type of the mouse event."
+          },
+          {
+            "name": "x",
+            "type": "number",
+            "description": "The mouse x position in global coordinates."
+          },
+          {
+            "name": "y",
+            "type": "number",
+            "description": "The mouse y position in global coordinates."
+          }
+        ]
       },
       {
         "name": "onSelectToSpeakPanelAction",

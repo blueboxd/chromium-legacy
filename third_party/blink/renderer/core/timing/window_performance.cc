@@ -647,7 +647,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
       DomWindow());
   TRACE_EVENT2("loading", "PerformanceElementTiming", "data",
                entry->ToTracedValue(), "frame",
-               ToTraceValue(DomWindow()->GetFrame()));
+               GetFrameIdForTracing(DomWindow()->GetFrame()));
   if (HasObserverFor(PerformanceEntry::kElement))
     NotifyObserversOfEntry(*entry);
   if (!IsElementTimingBufferFull())
@@ -682,10 +682,8 @@ void WindowPerformance::AddVisibilityStateEntry(bool is_visible,
   DCHECK(RuntimeEnabledFeatures::VisibilityStateEntryEnabled());
   VisibilityStateEntry* entry = MakeGarbageCollected<VisibilityStateEntry>(
       PageHiddenStateString(!is_visible),
-      MonotonicTimeToDOMHighResTimeStamp(timestamp),
-      DomWindow());  // Todo(haoliuk): Add WPT for
-                     // VisibilityStateEntry. See
-                     // crbug.com/1320878.
+      MonotonicTimeToDOMHighResTimeStamp(timestamp), DomWindow());
+
   if (HasObserverFor(PerformanceEntry::kVisibilityState))
     NotifyObserversOfEntry(*entry);
 

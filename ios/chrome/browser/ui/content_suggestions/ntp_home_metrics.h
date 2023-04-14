@@ -14,15 +14,6 @@ class ChromeBrowserState;
 namespace web {
 class WebState;
 }
-
-namespace ntp_home {
-
-// Records an NTP impression of type `impression_type`.
-void RecordNTPImpression(ntp_home::IOSNTPImpression impression_type);
-// Records when an NTP impression has occurred for Tile Ablation.
-void NTPImpressionHasOccurred();
-}  // namespace ntp_home
-
 // These values are persisted to IOS.ContentSuggestions.ActionOn* histograms.
 // Entries should not be renumbered and numeric values should never be reused.
 enum class IOSContentSuggestionsActionType {

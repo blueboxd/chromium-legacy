@@ -89,16 +89,7 @@ IN_PROC_BROWSER_TEST_F(ViewExtensionSourceTest, ViewSourceTabRestore) {
 
   // Verify that the view-source content is not empty, and that the
   // renderer-side URL is correct.
-  int view_source_length;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      view_source_tab,
-      "domAutomationController.send(document.body.innerText.length)",
-      &view_source_length));
-  EXPECT_GT(view_source_length, 0);
+  EXPECT_GT(EvalJs(view_source_tab, "document.body.innerText.length"), 0);
 
-  std::string location;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      view_source_tab, "domAutomationController.send(location.href)",
-      &location));
-  EXPECT_EQ(bookmarks_extension_url, location);
+  EXPECT_EQ(bookmarks_extension_url, EvalJs(view_source_tab, "location.href"));
 }

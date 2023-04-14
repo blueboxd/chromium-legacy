@@ -57,7 +57,7 @@ void CreateSharedContext(const GpuPreferences& preferences,
   context_state = base::MakeRefCounted<SharedContextState>(
       std::move(share_group), surface, context,
       /*use_virtualized_gl_contexts=*/false, base::DoNothing());
-  context_state->InitializeGrContext(GpuPreferences(), workarounds, nullptr);
+  context_state->InitializeSkia(GpuPreferences(), workarounds);
   context_state->InitializeGL(GpuPreferences(), feature_info);
 }
 
@@ -133,7 +133,7 @@ class GLES2ExternalFrameBufferTest
     backing_factory_->CreateSharedImage(
         mailbox, format, gfx::Size(64, 64), gfx::ColorSpace::CreateSRGB(),
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, SurfaceHandle(),
-        SHARED_IMAGE_USAGE_GLES2);
+        SHARED_IMAGE_USAGE_GLES2, "TestLabel");
     return mailbox;
   }
 
@@ -224,10 +224,8 @@ std::string TestParamToString(
 INSTANTIATE_TEST_SUITE_P(
     ,
     GLES2ExternalFrameBufferTest,
-    ::testing::Combine(::testing::Values(viz::SharedImageFormat::SinglePlane(
-                                             viz::ResourceFormat::RGBA_8888),
-                                         viz::SharedImageFormat::SinglePlane(
-                                             viz::ResourceFormat::RGBX_8888)),
+    ::testing::Combine(::testing::Values(viz::SinglePlaneFormat::kRGBA_8888,
+                                         viz::SinglePlaneFormat::kRGBX_8888),
                        ::testing::Values(0, 8),
                        ::testing::Bool(),
                        ::testing::Bool(),

@@ -18,6 +18,7 @@ import '../../controls/settings_slider.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -26,7 +27,6 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
-import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from '../device_page/device_page_browser_proxy.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
@@ -52,7 +52,7 @@ interface LocaleInfo {
 
 const DEFAULT_BLACK_CURSOR_COLOR: number = 0;
 
-interface SettingsManageA11yPageElement {
+export interface SettingsManageA11yPageElement {
   $: {
     pointerSubpageButton: CrLinkRowElement,
     startupSoundEnabled: CrToggleElement,
@@ -62,7 +62,8 @@ interface SettingsManageA11yPageElement {
 const SettingsManageA11yPageElementBase = PrefsMixin(DeepLinkingMixin(
     RouteOriginMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
-class SettingsManageA11yPageElement extends SettingsManageA11yPageElementBase {
+export class SettingsManageA11yPageElement extends
+    SettingsManageA11yPageElementBase {
   static get is() {
     return 'settings-manage-a11y-page' as const;
   }
@@ -533,46 +534,46 @@ class SettingsManageA11yPageElement extends SettingsManageA11yPageElementBase {
     this.manageBrowserProxy_.setStartupSoundEnabled(e.detail);
   }
 
-  private onManageTtsSettingsTap_(): void {
+  private onManageTtsSettingsClick_(): void {
     Router.getInstance().navigateTo(routes.MANAGE_TTS_SETTINGS);
   }
 
-  private onChromeVoxSettingsTap_(): void {
+  private onChromeVoxSettingsClick_(): void {
     this.manageBrowserProxy_.showChromeVoxSettings();
   }
 
-  private onChromeVoxNewSettingsTap_(): void {
+  private onChromeVoxNewSettingsClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_CHROMEVOX);
   }
 
-  private onChromeVoxTutorialTap_(): void {
+  private onChromeVoxTutorialClick_(): void {
     this.manageBrowserProxy_.showChromeVoxTutorial();
   }
 
-  private onSelectToSpeakSettingsTap_(): void {
+  private onSelectToSpeakSettingsClick_(): void {
     this.manageBrowserProxy_.showSelectToSpeakSettings();
   }
 
-  private onSelectToSpeakNewSettingsTap_(): void {
+  private onSelectToSpeakNewSettingsClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_SELECT_TO_SPEAK);
   }
 
-  private onSwitchAccessSettingsTap_(): void {
+  private onSwitchAccessSettingsClick_(): void {
     Router.getInstance().navigateTo(routes.MANAGE_SWITCH_ACCESS_SETTINGS);
   }
 
-  private onDisplayTap_(): void {
+  private onDisplayClick_(): void {
     Router.getInstance().navigateTo(
         routes.DISPLAY,
         /* dynamicParams */ undefined, /* removeSearch */ true);
   }
 
-  private onAppearanceTap_(): void {
+  private onAppearanceClick_(): void {
     // Open browser appearance section in a new browser tab.
     window.open('chrome://settings/appearance');
   }
 
-  private onKeyboardTap_(): void {
+  private onKeyboardClick_(): void {
     Router.getInstance().navigateTo(
         routes.KEYBOARD,
         /* dynamicParams */ undefined, /* removeSearch */ true);
@@ -666,7 +667,7 @@ class SettingsManageA11yPageElement extends SettingsManageA11yPageElementBase {
   }
 
 
-  private onMouseTap_(): void {
+  private onMouseClick_(): void {
     Router.getInstance().navigateTo(
         routes.POINTERS,
         /* dynamicParams */ undefined, /* removeSearch */ true);

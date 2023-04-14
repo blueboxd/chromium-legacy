@@ -135,6 +135,50 @@ GLuint CreateAndBindTexture(EGLImage image, GLenum target) {
   return service_id;
 }
 
+// Returns whether the format is supported by AHardwareBuffer.
+// TODO(vikassoni): In future we will need to expose the set of formats and
+// constraints (e.g. max size) to the clients somehow that are available for
+// certain combinations of SharedImageUsage flags (e.g. when Vulkan is on,
+// SHARED_IMAGE_USAGE_GLES2 + SHARED_IMAGE_USAGE_DISPLAY_READ implies AHB, so
+// those restrictions apply, but that's decided on the service side). For now
+// getting supported format is a static mechanism like this. We probably need
+// something like gpu::Capabilities.texture_target_exception_list.
+bool AHardwareBufferSupportedFormat(viz::ResourceFormat format) {
+  switch (format) {
+    case viz::RGBA_8888:
+    case viz::RGB_565:
+    case viz::BGR_565:
+    case viz::RGBA_F16:
+    case viz::RGBX_8888:
+    case viz::RGBA_1010102:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// Returns the corresponding AHardwareBuffer format.
+unsigned int AHardwareBufferFormat(viz::ResourceFormat format) {
+  DCHECK(AHardwareBufferSupportedFormat(format));
+  switch (format) {
+    case viz::RGBA_8888:
+      return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
+    case viz::RGB_565:
+      return AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM;
+    case viz::BGR_565:
+      return AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM;
+    case viz::RGBA_F16:
+      return AHARDWAREBUFFER_FORMAT_R16G16B16A16_FLOAT;
+    case viz::RGBX_8888:
+      return AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM;
+    case viz::RGBA_1010102:
+      return AHARDWAREBUFFER_FORMAT_R10G10B10A2_UNORM;
+    default:
+      NOTREACHED();
+      return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
+  }
+}
+
 constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
@@ -191,7 +235,7 @@ class AHardwareBufferImageBacking : public AndroidImageBacking {
   ProduceGLTexturePassthrough(SharedImageManager* manager,
                               MemoryTypeTracker* tracker) override;
 
-  std::unique_ptr<SkiaImageRepresentation> ProduceSkia(
+  std::unique_ptr<SkiaImageRepresentation> ProduceSkiaGanesh(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
@@ -404,7 +448,7 @@ AHardwareBufferImageBacking::ProduceGLTexturePassthrough(
 }
 
 std::unique_ptr<SkiaImageRepresentation>
-AHardwareBufferImageBacking::ProduceSkia(
+AHardwareBufferImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
@@ -768,6 +812,7 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
+    std::string debug_label,
     bool is_thread_safe) {
   return MakeBacking(mailbox, format, size, color_space, surface_origin,
                      alpha_type, usage, is_thread_safe, base::span<uint8_t>());
@@ -782,6 +827,7 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
+    std::string debug_label,
     base::span<const uint8_t> pixel_data) {
   return MakeBacking(mailbox, format, size, color_space, surface_origin,
                      alpha_type, usage, false, pixel_data);
@@ -834,7 +880,8 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage) {
+    uint32_t usage,
+    std::string debug_label) {
   // TODO(vasilyt): support SHARED_MEMORY_BUFFER?
   if (handle.type != gfx::ANDROID_HARDWARE_BUFFER) {
     NOTIMPLEMENTED();

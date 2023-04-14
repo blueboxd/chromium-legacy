@@ -9,6 +9,9 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
+#include "base/metrics/user_metrics.h"
+#include "base/strings/strcat.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -30,7 +33,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -345,6 +347,9 @@ void SidePanelCoordinator::UpdatePinState() {
         prefs::kSidePanelCompanionEntryPinnedToToolbar);
     pref_service->SetBoolean(prefs::kSidePanelCompanionEntryPinnedToToolbar,
                              !current_state);
+    base::RecordComputedAction(base::StrCat(
+        {"SidePanel.Companion.", !current_state ? "Pinned" : "Unpinned",
+         ".BySidePanelHeaderButton"}));
   }
 }
 
@@ -535,7 +540,6 @@ void SidePanelCoordinator::PopulateSidePanel(
   if (auto* side_panel_container =
           browser_view_->toolbar()->side_panel_container()) {
     UpdateHeaderPinButtonState();
-    side_panel_container->UpdateSidePanelContainerButtonsState();
   }
 }
 
@@ -628,7 +632,6 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
   header_combobox_->SetProperty(views::kElementIdentifierKey,
                                 kSidePanelComboboxElementId);
 
-  // TODO(corising): Update icon and tooltip once provided by UX.
   header_pin_button_ =
       header->AddChildView(CreatePinToggleButton(base::BindRepeating(
           &SidePanelCoordinator::UpdatePinState, base::Unretained(this))));
@@ -640,8 +643,7 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
       header.get(),
       base::BindRepeating(&SidePanelCoordinator::OpenInNewTab,
                           base::Unretained(this)),
-      vector_icons::kOpenInNewIcon,
-      l10n_util::GetStringUTF16(IDS_ACCNAME_OPEN_IN_NEW_TAB),
+      kOpenInNewIcon, l10n_util::GetStringUTF16(IDS_ACCNAME_OPEN_IN_NEW_TAB),
       kSidePanelOpenInNewTabButtonElementId,
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE)));

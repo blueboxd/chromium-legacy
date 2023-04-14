@@ -159,8 +159,7 @@ class FakePerUserTopicSubscriptionManager
             /*identity_provider=*/nullptr,
             /*pref_service=*/local_state,
             /*url_loader_factory=*/nullptr,
-            /*project_id*/ kInvalidationGCMSenderId,
-            /*migrate_prefs=*/false) {}
+            /*project_id*/ kInvalidationGCMSenderId) {}
 
   FakePerUserTopicSubscriptionManager(
       const FakePerUserTopicSubscriptionManager&) = delete;
@@ -189,8 +188,7 @@ std::unique_ptr<invalidation::FCMNetworkHandler> CreateFCMNetworkHandler(
 
 std::unique_ptr<invalidation::PerUserTopicSubscriptionManager>
 CreatePerUserTopicSubscriptionManager(PrefService* local_state,
-                                      const std::string& project_id,
-                                      bool migrate_prefs) {
+                                      const std::string& project_id) {
   return std::make_unique<FakePerUserTopicSubscriptionManager>(local_state);
 }
 
@@ -438,7 +436,7 @@ bool SyncTest::CreateProfile(int index) {
 // static
 Profile* SyncTest::MakeProfileForUISignin(base::FilePath profile_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profiles::testing::CreateProfileSync(profile_manager, profile_path);
+  return &profiles::testing::CreateProfileSync(profile_manager, profile_path);
 }
 
 Profile* SyncTest::GetProfile(int index) const {

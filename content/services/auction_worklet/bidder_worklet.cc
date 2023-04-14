@@ -116,6 +116,26 @@ bool CreateAdVector(AuctionV8Helper* v8_helper,
   return true;
 }
 
+bool HasKAnonFailureComponent(
+    const auction_worklet::mojom::PrivateAggregationRequestPtr& request) {
+  if (request->contribution->is_histogram_contribution()) {
+    return false;
+  }
+  const auction_worklet::mojom::AggregatableReportForEventContributionPtr&
+      event_contribution = request->contribution->get_for_event_contribution();
+  if (event_contribution->bucket->is_signal_bucket() &&
+      event_contribution->bucket->get_signal_bucket()->base_value ==
+          auction_worklet::mojom::BaseValue::kBidRejectReason) {
+    return true;
+  }
+  if (event_contribution->value->is_signal_value() &&
+      event_contribution->value->get_signal_value()->base_value ==
+          auction_worklet::mojom::BaseValue::kBidRejectReason) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 BidderWorklet::BidderWorklet(
@@ -299,6 +319,9 @@ void BidderWorklet::ReportWin(
     double browser_signal_highest_scoring_other_bid,
     bool browser_signal_made_highest_scoring_other_bid,
     absl::optional<double> browser_signal_ad_cost,
+    absl::optional<uint16_t> browser_signal_modeling_signals,
+    uint8_t browser_signal_join_count,
+    uint8_t browser_signal_recency,
     const url::Origin& browser_signal_seller_origin,
     const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     uint32_t bidding_signals_data_version,
@@ -320,6 +343,10 @@ void BidderWorklet::ReportWin(
   report_win_task->browser_signal_made_highest_scoring_other_bid =
       browser_signal_made_highest_scoring_other_bid;
   report_win_task->browser_signal_ad_cost = browser_signal_ad_cost;
+  report_win_task->browser_signal_modeling_signals =
+      browser_signal_modeling_signals;
+  report_win_task->browser_signal_join_count = browser_signal_join_count;
+  report_win_task->browser_signal_recency = browser_signal_recency;
   report_win_task->browser_signal_seller_origin = browser_signal_seller_origin;
   report_win_task->browser_signal_top_level_seller_origin =
       browser_signal_top_level_seller_origin;
@@ -381,12 +408,14 @@ void BidderWorklet::FinishGenerateBid(
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
     const absl::optional<base::TimeDelta> per_buyer_timeout,
+    const std::string& expected_buyer_currency,
     const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
     const absl::optional<GURL>& direct_from_seller_auction_signals) {
   GenerateBidTaskList::iterator task = finalize_receiver_set_.current_context();
   task->auction_signals_json = auction_signals_json;
   task->per_buyer_signals_json = per_buyer_signals_json;
   task->per_buyer_timeout = per_buyer_timeout;
+  task->expected_buyer_currency = expected_buyer_currency;
   task->finalize_generate_bid_called = true;
   HandleDirectFromSellerForGenerateBid(direct_from_seller_per_buyer_signals,
                                        direct_from_seller_auction_signals,
@@ -489,6 +518,9 @@ void BidderWorklet::V8State::ReportWin(
     double browser_signal_highest_scoring_other_bid,
     bool browser_signal_made_highest_scoring_other_bid,
     const absl::optional<double>& browser_signal_ad_cost,
+    const absl::optional<uint16_t>& browser_signal_modeling_signals,
+    uint8_t browser_signal_join_count,
+    uint8_t browser_signal_recency,
     const url::Origin& browser_signal_seller_origin,
     const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     const absl::optional<uint32_t>& bidding_signals_data_version,
@@ -535,6 +567,14 @@ void BidderWorklet::V8State::ReportWin(
       !browser_signals_dict.Set("bid", browser_signal_bid) ||
       (browser_signal_ad_cost.has_value() &&
        !browser_signals_dict.Set("adCost", *browser_signal_ad_cost)) ||
+      (browser_signal_modeling_signals.has_value() &&
+       !browser_signals_dict.Set(
+           "modelingSignals",
+           static_cast<double>(*browser_signal_modeling_signals))) ||
+      !browser_signals_dict.Set(
+          "joinCount", static_cast<double>(browser_signal_join_count)) ||
+      !browser_signals_dict.Set("recency",
+                                static_cast<double>(browser_signal_recency)) ||
       !browser_signals_dict.Set("highestScoringOtherBid",
                                 browser_signal_highest_scoring_other_bid) ||
       !browser_signals_dict.Set(
@@ -652,6 +692,7 @@ void BidderWorklet::V8State::GenerateBid(
     DirectFromSellerSignalsRequester::Result
         direct_from_seller_result_auction_signals,
     const absl::optional<base::TimeDelta> per_buyer_timeout,
+    const std::string& expected_buyer_currency,
     const url::Origin& browser_signal_seller_origin,
     const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
@@ -674,7 +715,7 @@ void BidderWorklet::V8State::GenerateBid(
       base::OptionalToPtr(per_buyer_signals_json),
       direct_from_seller_result_per_buyer_signals,
       direct_from_seller_result_auction_signals, per_buyer_timeout,
-      browser_signal_seller_origin,
+      expected_buyer_currency, browser_signal_seller_origin,
       base::OptionalToPtr(browser_signal_top_level_seller_origin),
       bidding_browser_signals, auction_start_time,
       trusted_bidding_signals_result, trace_id,
@@ -711,7 +752,7 @@ void BidderWorklet::V8State::GenerateBid(
               base::OptionalToPtr(per_buyer_signals_json),
               direct_from_seller_result_per_buyer_signals,
               direct_from_seller_result_auction_signals, per_buyer_timeout,
-              browser_signal_seller_origin,
+              expected_buyer_currency, browser_signal_seller_origin,
               base::OptionalToPtr(browser_signal_top_level_seller_origin),
               bidding_browser_signals, auction_start_time,
               trusted_bidding_signals_result, trace_id,
@@ -723,15 +764,24 @@ void BidderWorklet::V8State::GenerateBid(
       }
 
       if (kanon_mode == mojom::KAnonymityBidMode::kEnforce) {
+        PrivateAggregationRequests non_kanon_pa_requests =
+            std::move(result->pa_requests);
+        base::EraseIf(
+            non_kanon_pa_requests,
+            [](const auction_worklet::mojom::PrivateAggregationRequestPtr&
+                   request) { return !HasKAnonFailureComponent(request); });
+
         // We are enforcing the k-anonymity, so the restricted result is the one
         // to use for reporting, etc., and needs to succeed.
         if (!restricted_result.has_value()) {
           PostErrorBidCallbackToUserThread(
               std::move(callback),
-              /*bidding_latency=*/base::TimeTicks::Now() - bidding_start);
+              /*bidding_latency=*/base::TimeTicks::Now() - bidding_start,
+              std::move(non_kanon_pa_requests));
           return;
         }
         result = std::move(restricted_result);
+        result->non_kanon_pa_requests = std::move(non_kanon_pa_requests);
       } else {
         DCHECK_EQ(kanon_mode, mojom::KAnonymityBidMode::kSimulate);
         // Here, `result` is already what we want for reporting, etc., so
@@ -749,6 +799,7 @@ void BidderWorklet::V8State::GenerateBid(
                      std::move(result->set_priority),
                      std::move(result->update_priority_signals_overrides),
                      std::move(result->pa_requests),
+                     std::move(result->non_kanon_pa_requests),
                      /*bidding_latency=*/base::TimeTicks::Now() - bidding_start,
                      std::move(result->error_msgs)));
 }
@@ -764,6 +815,7 @@ BidderWorklet::V8State::GenerateSingleBid(
     const DirectFromSellerSignalsRequester::Result&
         direct_from_seller_result_auction_signals,
     const absl::optional<base::TimeDelta> per_buyer_timeout,
+    const std::string& expected_buyer_currency,
     const url::Origin& browser_signal_seller_origin,
     const url::Origin* browser_signal_top_level_seller_origin,
     const mojom::BiddingBrowserSignalsPtr& bidding_browser_signals,
@@ -891,8 +943,8 @@ BidderWorklet::V8State::GenerateSingleBid(
 
   context_recycler->set_bid_bindings()->ReInitialize(
       start, browser_signal_top_level_seller_origin != nullptr,
-      &bidder_worklet_non_shared_params, should_exclude_ad_due_to_kanon,
-      should_exclude_component_ad_due_to_kanon);
+      &bidder_worklet_non_shared_params, expected_buyer_currency,
+      should_exclude_ad_due_to_kanon, should_exclude_component_ad_due_to_kanon);
 
   std::vector<v8::Local<v8::Value>> args;
   v8::Local<v8::Object> interest_group_object = v8::Object::New(isolate);
@@ -1199,6 +1251,7 @@ void BidderWorklet::V8State::PostReportWinCallbackToUserThread(
 void BidderWorklet::V8State::PostErrorBidCallbackToUserThread(
     GenerateBidCallbackInternal callback,
     base::TimeDelta bidding_latency,
+    PrivateAggregationRequests non_kanon_pa_requests,
     std::vector<std::string> error_msgs) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   user_thread_->PostTask(
@@ -1213,8 +1266,8 @@ void BidderWorklet::V8State::PostErrorBidCallbackToUserThread(
           /*update_priority_signals_overrides=*/
           base::flat_map<std::string, mojom::PrioritySignalsDoublePtr>(),
           /*pa_requests=*/
-          PrivateAggregationRequests(), bidding_latency,
-          std::move(error_msgs)));
+          PrivateAggregationRequests(), std::move(non_kanon_pa_requests),
+          bidding_latency, std::move(error_msgs)));
 }
 
 void BidderWorklet::ResumeIfPaused() {
@@ -1548,6 +1601,7 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
           std::move(task->direct_from_seller_result_per_buyer_signals),
           std::move(task->direct_from_seller_result_auction_signals),
           std::move(task->per_buyer_timeout),
+          std::move(task->expected_buyer_currency),
           std::move(task->browser_signal_seller_origin),
           std::move(task->browser_signal_top_level_seller_origin),
           std::move(task->bidding_browser_signals), task->auction_start_time,
@@ -1632,6 +1686,9 @@ void BidderWorklet::RunReportWinIfReady(ReportWinTaskList::iterator task) {
           std::move(task->browser_signal_highest_scoring_other_bid),
           std::move(task->browser_signal_made_highest_scoring_other_bid),
           std::move(task->browser_signal_ad_cost),
+          std::move(task->browser_signal_modeling_signals),
+          std::move(task->browser_signal_join_count),
+          std::move(task->browser_signal_recency),
           std::move(task->browser_signal_seller_origin),
           std::move(task->browser_signal_top_level_seller_origin),
           std::move(task->bidding_signals_data_version), task->trace_id,
@@ -1650,6 +1707,7 @@ void BidderWorklet::DeliverBidCallbackOnUserThread(
     base::flat_map<std::string, mojom::PrioritySignalsDoublePtr>
         update_priority_signals_overrides,
     PrivateAggregationRequests pa_requests,
+    PrivateAggregationRequests non_kanon_pa_requests,
     base::TimeDelta bidding_latency,
     std::vector<std::string> error_msgs) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
@@ -1666,7 +1724,7 @@ void BidderWorklet::DeliverBidCallbackOnUserThread(
       bidding_signals_data_version.has_value(), debug_loss_report_url,
       debug_win_report_url, set_priority.value_or(0), set_priority.has_value(),
       std::move(update_priority_signals_overrides), std::move(pa_requests),
-      bidding_latency, error_msgs);
+      std::move(non_kanon_pa_requests), bidding_latency, error_msgs);
   CleanUpBidTaskOnUserThread(task);
 }
 

@@ -276,6 +276,8 @@ class ComputedStyle : public ComputedStyleBase,
   friend class CachedUAStyle;
   // Accesses visited and unvisited colors.
   friend class ColorPropertyFunctions;
+  // Accesses inset and sizing property values.
+  friend class LengthPropertyFunctions;
   // Edits the background for media controls and accesses UserModify().
   friend class StyleAdjuster;
   // Access to GetCurrentColor(). (drop-shadow() does not resolve 'currentcolor'
@@ -285,6 +287,9 @@ class ComputedStyle : public ComputedStyleBase,
   friend class StyleResolver;
   // Access to UserModify().
   friend class MatchedPropertiesCache;
+
+  // Allows unit tests to access protected members.
+  friend class StyleResolverTest;
 
   using ComputedStyleBase::Clear;
   using ComputedStyleBase::Floating;
@@ -500,6 +505,11 @@ class ComputedStyle : public ComputedStyleBase,
    * class, and be kept to a minimum.
    */
 
+  // anchor-default
+  bool AnchorDefaultDataEquivalent(const ComputedStyle& o) const {
+    return base::ValuesEquivalent(AnchorDefault(), o.AnchorDefault());
+  }
+
   // anchor-name
   bool AnchorNameDataEquivalent(const ComputedStyle& o) const {
     return base::ValuesEquivalent(AnchorName(), o.AnchorName());
@@ -558,7 +568,9 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Returns true if the Element should stick to the viewport bottom as the URL
   // bar hides.
-  bool IsFixedToBottom() const { return !Bottom().IsAuto() && Top().IsAuto(); }
+  bool IsFixedToBottom() const {
+    return !UsedBottom().IsAuto() && UsedTop().IsAuto();
+  }
 
   // Border properties.
   // border-image-slice
@@ -841,7 +853,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // font-size-adjust
-  float FontSizeAdjust() const { return GetFontDescription().SizeAdjust(); }
+  blink::FontSizeAdjust FontSizeAdjust() const {
+    return GetFontDescription().SizeAdjust();
+  }
   bool HasFontSizeAdjust() const {
     return GetFontDescription().HasSizeAdjust();
   }
@@ -1151,24 +1165,65 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT LayoutUnit ComputedLineHeightAsFixed() const;
   LayoutUnit ComputedLineHeightAsFixed(const Font& font) const;
 
+  const Length& AdjustLengthForAnchorQueries(
+      const Length& original_value,
+      const Length& fallback_value) const {
+    if (LIKELY(!original_value.HasAnchorQueries())) {
+      return original_value;
+    }
+    return HasOutOfFlowPosition() ? original_value : fallback_value;
+  }
+
+  // Inset utility functions.
+  const Length& UsedLeft() const {
+    return AdjustLengthForAnchorQueries(Left(), Length::Auto());
+  }
+  const Length& UsedRight() const {
+    return AdjustLengthForAnchorQueries(Right(), Length::Auto());
+  }
+  const Length& UsedTop() const {
+    return AdjustLengthForAnchorQueries(Top(), Length::Auto());
+  }
+  const Length& UsedBottom() const {
+    return AdjustLengthForAnchorQueries(Bottom(), Length::Auto());
+  }
+
   // Width/height utility functions.
+  const Length& UsedWidth() const {
+    return AdjustLengthForAnchorQueries(Width(), Length::Auto());
+  }
+  const Length& UsedHeight() const {
+    return AdjustLengthForAnchorQueries(Height(), Length::Auto());
+  }
+  const Length& UsedMinWidth() const {
+    return AdjustLengthForAnchorQueries(MinWidth(), Length::Auto());
+  }
+  const Length& UsedMinHeight() const {
+    return AdjustLengthForAnchorQueries(MinHeight(), Length::Auto());
+  }
+  const Length& UsedMaxWidth() const {
+    return AdjustLengthForAnchorQueries(MaxWidth(), Length::None());
+  }
+  const Length& UsedMaxHeight() const {
+    return AdjustLengthForAnchorQueries(MaxHeight(), Length::None());
+  }
   const Length& LogicalWidth() const {
-    return IsHorizontalWritingMode() ? Width() : Height();
+    return IsHorizontalWritingMode() ? UsedWidth() : UsedHeight();
   }
   const Length& LogicalHeight() const {
-    return IsHorizontalWritingMode() ? Height() : Width();
+    return IsHorizontalWritingMode() ? UsedHeight() : UsedWidth();
   }
   const Length& LogicalMaxWidth() const {
-    return IsHorizontalWritingMode() ? MaxWidth() : MaxHeight();
+    return IsHorizontalWritingMode() ? UsedMaxWidth() : UsedMaxHeight();
   }
   const Length& LogicalMaxHeight() const {
-    return IsHorizontalWritingMode() ? MaxHeight() : MaxWidth();
+    return IsHorizontalWritingMode() ? UsedMaxHeight() : UsedMaxWidth();
   }
   const Length& LogicalMinWidth() const {
-    return IsHorizontalWritingMode() ? MinWidth() : MinHeight();
+    return IsHorizontalWritingMode() ? UsedMinWidth() : UsedMinHeight();
   }
   const Length& LogicalMinHeight() const {
-    return IsHorizontalWritingMode() ? MinHeight() : MinWidth();
+    return IsHorizontalWritingMode() ? UsedMinHeight() : UsedMinWidth();
   }
 
   // Margin utility functions.
@@ -1535,8 +1590,8 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool HasStickyConstrainedPosition() const {
     return GetPosition() == EPosition::kSticky &&
-           (!Top().IsAuto() || !Left().IsAuto() || !Right().IsAuto() ||
-            !Bottom().IsAuto());
+           (!UsedTop().IsAuto() || !UsedLeft().IsAuto() ||
+            !UsedRight().IsAuto() || !UsedBottom().IsAuto());
   }
   static EPosition GetPosition(EDisplay display, EPosition position_internal) {
     // Applied sticky position is static for table columns and column groups.
@@ -1598,17 +1653,17 @@ class ComputedStyle : public ComputedStyleBase,
     return PhysicalBoundsToLogical().After();
   }
   bool OffsetEqual(const ComputedStyle& other) const {
-    return Left() == other.Left() && Right() == other.Right() &&
-           Top() == other.Top() && Bottom() == other.Bottom();
+    return UsedLeft() == other.UsedLeft() && UsedRight() == other.UsedRight() &&
+           UsedTop() == other.UsedTop() && UsedBottom() == other.UsedBottom();
   }
 
   // Whether or not a positioned element requires normal flow x/y to be computed
   // to determine its position.
   bool HasAutoLeftAndRight() const {
-    return Left().IsAuto() && Right().IsAuto();
+    return UsedLeft().IsAuto() && UsedRight().IsAuto();
   }
   bool HasAutoTopAndBottom() const {
-    return Top().IsAuto() && Bottom().IsAuto();
+    return UsedTop().IsAuto() && UsedBottom().IsAuto();
   }
   bool HasStaticInlinePosition(bool horizontal) const {
     return horizontal ? HasAutoLeftAndRight() : HasAutoTopAndBottom();
@@ -1728,6 +1783,13 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool IsDisplayBlockContainer() const {
     return IsDisplayBlockContainer(Display());
+  }
+  bool IsDisplayListItem() const { return IsDisplayListItem(Display()); }
+  static bool IsDisplayListItem(EDisplay display) {
+    return display == EDisplay::kListItem ||
+           display == EDisplay::kInlineListItem ||
+           display == EDisplay::kFlowRootListItem ||
+           display == EDisplay::kInlineFlowRootListItem;
   }
   bool IsDisplayTableBox() const { return IsDisplayTableBox(Display()); }
   bool IsDisplayFlexibleBox() const { return IsDisplayFlexibleBox(Display()); }
@@ -2154,7 +2216,7 @@ class ComputedStyle : public ComputedStyleBase,
     if (HasNonInitialBackdropFilter()) {
       return true;
     }
-    if (ViewTransitionName()) {
+    if (ViewTransitionName() || ElementIsViewTransitionParticipant()) {
       return true;
     }
     return false;
@@ -2236,10 +2298,10 @@ class ComputedStyle : public ComputedStyleBase,
     return blink::ShouldWrapLine(ToTextWrap(ws));
   }
   static bool DeprecatedPreserveNewline(EWhiteSpace ws) {
-    return ShouldPreserveBreaks(ToWhiteSpaceCollapse(ws));
+    return blink::ShouldPreserveBreaks(ToWhiteSpaceCollapse(ws));
   }
   static bool DeprecatedCollapseWhiteSpace(EWhiteSpace ws) {
-    return blink::ShouldCollapseSpacesAndTabs(ToWhiteSpaceCollapse(ws));
+    return blink::ShouldCollapseWhiteSpaces(ToWhiteSpaceCollapse(ws));
   }
 
   // This function may return values not defined as the enum values. See
@@ -2249,22 +2311,25 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Semantic functions for the `white-space` property and its longhands.
-  bool ShouldPreserveSpacesAndTabs() const {
-    return blink::ShouldPreserveSpacesAndTabs(GetWhiteSpaceCollapse());
+  bool ShouldPreserveWhiteSpaces() const {
+    return blink::ShouldPreserveWhiteSpaces(GetWhiteSpaceCollapse());
   }
-  bool PreserveNewline() const {
+  bool ShouldCollapseWhiteSpaces() const {
+    return blink::ShouldCollapseWhiteSpaces(GetWhiteSpaceCollapse());
+  }
+  bool ShouldPreserveBreaks() const {
     return blink::ShouldPreserveBreaks(GetWhiteSpaceCollapse());
   }
-  bool CollapseWhiteSpace() const {
-    return blink::ShouldCollapseSpacesAndTabs(GetWhiteSpaceCollapse());
+  bool ShouldCollapseBreaks() const {
+    return blink::ShouldCollapseBreaks(GetWhiteSpaceCollapse());
   }
   bool IsCollapsibleWhiteSpace(UChar c) const {
     switch (c) {
       case ' ':
       case '\t':
-        return CollapseWhiteSpace();
+        return ShouldCollapseWhiteSpaces();
       case '\n':
-        return !PreserveNewline();
+        return ShouldCollapseBreaks();
     }
     return false;
   }
@@ -2273,15 +2338,15 @@ class ComputedStyle : public ComputedStyleBase,
   bool ShouldBreakSpaces() const {
     return blink::ShouldBreakSpaces(GetWhiteSpaceCollapse());
   }
-  bool BreakOnlyAfterWhiteSpace() const {
-    return (ShouldPreserveSpacesAndTabs() && ShouldWrapLine()) ||
+  bool ShouldBreakOnlyAfterWhiteSpace() const {
+    return (ShouldPreserveWhiteSpaces() && ShouldWrapLine()) ||
            GetLineBreak() == LineBreak::kAfterWhiteSpace;
   }
   bool NeedsTrailingSpace() const {
-    return BreakOnlyAfterWhiteSpace() && ShouldWrapLine();
+    return ShouldBreakOnlyAfterWhiteSpace() && ShouldWrapLine();
   }
 
-  bool BreakWords() const {
+  bool ShouldBreakWords() const {
     return (WordBreak() == EWordBreak::kBreakWord ||
             OverflowWrap() != EOverflowWrap::kNormal) &&
            ShouldWrapLine();
@@ -2387,7 +2452,7 @@ class ComputedStyle : public ComputedStyleBase,
       return false;
     }
     if (pseudo == kPseudoIdMarker) {
-      return Display() == EDisplay::kListItem;
+      return IsDisplayListItem();
     }
     if (pseudo == kPseudoIdBackdrop && Overlay() == EOverlay::kNone) {
       return false;
@@ -2420,7 +2485,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   bool GeneratesMarkerImage() const {
-    return Display() == EDisplay::kListItem && ListStyleImage() &&
+    return IsDisplayListItem() && ListStyleImage() &&
            !ListStyleImage()->ErrorOccurred() &&
            (ListStyleImage()->IsLoading() || ListStyleImage()->IsLoaded());
   }
@@ -2508,7 +2573,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   static bool IsDisplayInlineType(EDisplay display) {
-    return display == EDisplay::kInline || IsDisplayReplacedType(display);
+    return display == EDisplay::kInline ||
+           display == EDisplay::kInlineListItem ||
+           IsDisplayReplacedType(display);
   }
 
   static bool IsDisplayTableType(EDisplay display) {
@@ -2646,8 +2713,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   PhysicalToLogical<const Length&> PhysicalBoundsToLogical() const {
-    return PhysicalToLogical<const Length&>(GetWritingDirection(), Top(),
-                                            Right(), Bottom(), Left());
+    return PhysicalToLogical<const Length&>(GetWritingDirection(), UsedTop(),
+                                            UsedRight(), UsedBottom(),
+                                            UsedLeft());
   }
 
   static Difference ComputeDifferenceIgnoringInheritedFirstLineStyle(
@@ -3113,6 +3181,20 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   bool HasInitialLineHeight() const {
     return LineHeightInternal() ==
            ComputedStyleInitialValues::InitialLineHeight();
+  }
+
+  // Sizing properties
+  const Length& UsedWidth() const {
+    if (LIKELY(!Width().HasAnchorQueries())) {
+      return Width();
+    }
+    return HasOutOfFlowPosition() ? Width() : Length::Auto();
+  }
+  const Length& UsedHeight() const {
+    if (LIKELY(!Height().HasAnchorQueries())) {
+      return Height();
+    }
+    return HasOutOfFlowPosition() ? Height() : Length::Auto();
   }
 
   // margin-*

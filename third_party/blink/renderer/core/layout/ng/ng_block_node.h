@@ -16,7 +16,6 @@ namespace blink {
 
 class LayoutBox;
 class NGBlockBreakToken;
-class NGBoxFragmentBuilder;
 class NGColumnSpannerPath;
 class NGConstraintSpace;
 class NGEarlyBreak;
@@ -232,6 +231,10 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
     return box_->ShouldApplyLayoutContainment();
   }
 
+  bool ShouldApplyPaintContainment() const {
+    return box_->ShouldApplyPaintContainment();
+  }
+
   bool HasLineIfEmpty() const {
     if (const auto* block = DynamicTo<LayoutBlock>(box_.Get()))
       return block->HasLineIfEmpty();
@@ -258,10 +261,6 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
 
  private:
   void PrepareForLayout() const;
-
-  // Runs layout on the underlying LayoutObject and creates a fragment for the
-  // resulting geometry.
-  const NGLayoutResult* RunLegacyLayout(const NGConstraintSpace&) const;
 
   const NGLayoutResult* RunSimplifiedLayout(const NGLayoutAlgorithmParams&,
                                             const NGLayoutResult&) const;
@@ -297,11 +296,6 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
       const NGConstraintSpace&,
       const NGPhysicalBoxFragment&,
       const NGBlockBreakToken* previous_container_break_token) const;
-
-  void CopyBaselinesFromLegacyLayout(const NGConstraintSpace&,
-                                     NGBoxFragmentBuilder*) const;
-  LayoutUnit AtomicInlineBaselineFromLegacyLayout(
-      const NGConstraintSpace&) const;
 
   void UpdateMarginPaddingInfoIfNeeded(const NGConstraintSpace&) const;
 

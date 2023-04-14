@@ -314,8 +314,8 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
   MinMaxSizesResult result;
 
   const Length& inline_size = parent_writing_mode == WritingMode::kHorizontalTb
-                                  ? style.Width()
-                                  : style.Height();
+                                  ? style.UsedWidth()
+                                  : style.UsedHeight();
   if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
       inline_size.IsFillAvailable() || inline_size.IsFitContent()) {
     result = min_max_sizes_func(MinMaxSizesType::kContent);
@@ -342,8 +342,8 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
   }
 
   const Length& max_length = parent_writing_mode == WritingMode::kHorizontalTb
-                                 ? style.MaxWidth()
-                                 : style.MaxHeight();
+                                 ? style.UsedMaxWidth()
+                                 : style.UsedMaxHeight();
   LayoutUnit max;
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
     max = ResolveMaxInlineLength(space, style, border_padding,
@@ -354,8 +354,8 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
   result.sizes.Constrain(max);
 
   const Length& min_length = parent_writing_mode == WritingMode::kHorizontalTb
-                                 ? style.MinWidth()
-                                 : style.MinHeight();
+                                 ? style.UsedMinWidth()
+                                 : style.UsedMinHeight();
   LayoutUnit min;
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
     min = ResolveMinInlineLength(space, style, border_padding,
@@ -1524,20 +1524,6 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
   NGBoxStrut scrollbar = ComputeScrollbars(constraint_space, node);
   NGBoxStrut border_padding = border + padding;
   NGBoxStrut border_scrollbar_padding = border_padding + scrollbar;
-
-  // If we have a percentage size, we need to set the
-  // HasPercentHeightDescendants flag correctly so that flexbox knows it may
-  // need to redo layout and can also do some performance optimizations.
-  if (style.LogicalHeight().IsPercentOrCalc() ||
-      style.LogicalMinHeight().IsPercentOrCalc() ||
-      style.LogicalMaxHeight().IsPercentOrCalc() ||
-      style.LogicalTop().IsPercentOrCalc() ||
-      style.LogicalBottom().IsPercentOrCalc() ||
-      (node.IsFlexItem() && style.FlexBasis().IsPercentOrCalc())) {
-    // This call has the side-effect of setting HasPercentHeightDescendants
-    // correctly.
-    node.GetLayoutBox()->ComputePercentageLogicalHeight(Length::Percent(0));
-  }
 
   if (node.IsReplaced()) {
     const LogicalSize border_box_size =

@@ -19,8 +19,8 @@ namespace viz {
 namespace {
 
 std::unique_ptr<SurfaceSavedFrame> CreateFrameWithResult() {
-  CompositorFrameTransitionDirective directive(
-      NavigationID::Null(), 1, CompositorFrameTransitionDirective::Type::kSave);
+  auto directive = CompositorFrameTransitionDirective::CreateSave(
+      NavigationID::Null(), 1, {});
   auto frame = std::make_unique<SurfaceSavedFrame>(
       std::move(directive),
       base::BindRepeating([](const CompositorFrameTransitionDirective&) {}));
@@ -40,8 +40,8 @@ class TransferableResourceTrackerTest : public testing::Test {
   bool HasBitmapResource(const TransferableResource& resource) {
     DCHECK(resource.is_software);
     SharedBitmapId id = resource.mailbox_holder.mailbox;
-    return !!shared_bitmap_manager_.GetSharedBitmapFromId(gfx::Size(1, 1),
-                                                          RGBA_8888, id);
+    return !!shared_bitmap_manager_.GetSharedBitmapFromId(
+        gfx::Size(1, 1), SinglePlaneFormat::kRGBA_8888, id);
   }
 
  protected:

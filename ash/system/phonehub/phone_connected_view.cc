@@ -14,6 +14,7 @@
 #include "ash/system/phonehub/phone_hub_recent_apps_view.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
 #include "ash/system/phonehub/phone_status_view.h"
+#include "ash/system/phonehub/quick_action_item.h"
 #include "ash/system/phonehub/quick_actions_view.h"
 #include "ash/system/phonehub/task_continuation_view.h"
 #include "ash/system/phonehub/ui_constants.h"
@@ -73,7 +74,8 @@ PhoneConnectedView::PhoneConnectedView(
       phone_hub_manager->GetMultideviceFeatureAccessManager()));
 
   setup_layered_view(
-      AddChildView(std::make_unique<QuickActionsView>(phone_hub_manager)));
+      quick_actions_view_ =
+          AddChildView(std::make_unique<QuickActionsView>(phone_hub_manager)));
 
   auto* phone_model = phone_hub_manager->GetPhoneModel();
   if (phone_model) {
@@ -137,7 +139,8 @@ phone_hub_metrics::Screen PhoneConnectedView::GetScreenForMetrics() const {
   return phone_hub_metrics::Screen::kPhoneConnected;
 }
 
-void PhoneConnectedView::ShowAppStreamErrorDialog() {
+void PhoneConnectedView::ShowAppStreamErrorDialog(bool is_different_network,
+                                                  bool is_phone_on_cellular) {
   if (!features::IsEcheNetworkConnectionStateEnabled()) {
     return;
   }
@@ -146,7 +149,8 @@ void PhoneConnectedView::ShowAppStreamErrorDialog() {
       base::BindOnce(&PhoneConnectedView::OnAppStreamErrorDialogClosed,
                      base::Unretained(this)),
       base::BindOnce(&PhoneConnectedView::OnAppStreamErrorDialogButtonClicked,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      is_different_network, is_phone_on_cellular);
   app_stream_error_dialog_->UpdateBounds();
   app_stream_error_dialog_->widget()->Show();
 }
@@ -155,8 +159,13 @@ void PhoneConnectedView::OnAppStreamErrorDialogClosed() {
   app_stream_error_dialog_.reset();
 }
 
-void PhoneConnectedView::OnAppStreamErrorDialogButtonClicked() {
-  // TODO(b/273823627): Add method to enable hotspot.
+void PhoneConnectedView::OnAppStreamErrorDialogButtonClicked(
+    const ui::Event& event) {
+  auto* enable_hotspot = quick_actions_view_->GetEnableHotspotQuickActionItem();
+  if (enable_hotspot->IsToggled()) {
+    return;
+  }
+  enable_hotspot->icon_button()->NotifyClick(event);
 }
 
 }  // namespace ash

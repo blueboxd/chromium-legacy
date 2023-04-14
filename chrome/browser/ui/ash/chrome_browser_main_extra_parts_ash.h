@@ -12,6 +12,7 @@
 #include "chrome/common/buildflags.h"
 
 namespace ash {
+class ArcWindowWatcher;
 class NetworkPortalNotificationController;
 class NewWindowDelegateProvider;
 class NightLightClient;
@@ -100,6 +101,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
       accessibility_controller_client_;
   std::unique_ptr<AppListClientImpl> app_list_client_;
   std::unique_ptr<ash::NewWindowDelegateProvider> new_window_delegate_provider_;
+  std::unique_ptr<ash::ArcWindowWatcher> arc_window_watcher_;
   std::unique_ptr<ArcOpenUrlDelegateImpl> arc_open_url_delegate_impl_;
   std::unique_ptr<ImeControllerClientImpl> ime_controller_client_;
   std::unique_ptr<InSessionAuthDialogClient> in_session_auth_dialog_client_;
@@ -107,6 +109,8 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
       in_session_auth_token_provider_;
   std::unique_ptr<ScreenOrientationDelegateChromeos>
       screen_orientation_delegate_;
+  std::unique_ptr<policy::ScreensaverImagesPolicyHandler>
+      screensaver_images_policy_handler_;
   std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
   std::unique_ptr<SystemTrayClientImpl> system_tray_client_;
   std::unique_ptr<TabClusterUIClient> tab_cluster_ui_client_;
@@ -136,8 +140,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<AppAccessNotifier> app_access_notifier_;
   std::unique_ptr<policy::DisplaySettingsHandler> display_settings_handler_;
   std::unique_ptr<AshWebViewFactoryImpl> ash_web_view_factory_;
-  std::unique_ptr<policy::ScreensaverImagesPolicyHandler>
-      screensaver_images_policy_handler_;
 
   // Initialized in PostBrowserStart in all configs:
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;

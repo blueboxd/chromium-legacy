@@ -21,8 +21,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.jank_tracker.JankScenario;
-import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
@@ -59,9 +57,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -90,7 +87,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
 
     private TabListSceneLayer mSceneLayer;
     private final StartSurface mStartSurface;
-    private final JankTracker mJankTracker;
     private final TabSwitcherViewObserver mTabSwitcherObserver;
     @Nullable
     private final ViewGroup mScrimAnchor;
@@ -127,14 +123,13 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     private PerfListener mPerfListenerForTesting;
 
     public TabSwitcherAndStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, StartSurface startSurface, JankTracker jankTracker,
+            LayoutRenderHost renderHost, StartSurface startSurface,
             ViewGroup tabSwitcherScrimAnchor, ScrimCoordinator scrimCoordinator) {
         super(context, updateHost, renderHost);
         mDummyLayoutTab = createLayoutTab(Tab.INVALID_TAB_ID, false);
         mDummyLayoutTab.setShowToolbar(true);
         mStartSurface = startSurface;
         mStartSurface.setOnTabSelectingListener(this::onTabSelecting);
-        mJankTracker = jankTracker;
         mScrimAnchor = tabSwitcherScrimAnchor;
         mScrimCoordinator = scrimCoordinator;
 
@@ -249,13 +244,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     private void show(long time, boolean animate, boolean isShowingStartSurfaceHomepage) {
         super.show(time, animate);
 
-        // When shown on StartSurface jank is tracked under
-        // JankScenario.START_SURFACE_TAB_SWITCHER and it's started/stopped on
-        // StartSurfaceMediator.
-        if (!StartSurfaceConfiguration.isStartSurfaceFlagEnabled()) {
-            mJankTracker.startTrackingScenario(JankScenario.TAB_SWITCHER);
-        }
-
         // Lazy initialization if needed.
         mStartSurface.initialize();
 
@@ -264,7 +252,7 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         LayoutTab sourceLayoutTab = createLayoutTab(
                 mTabModelSelector.getCurrentTabId(), mTabModelSelector.isIncognitoSelected());
         sourceLayoutTab.setDecorationAlpha(0);
-
+        updateCacheVisibleIds(Collections.singletonList(mTabModelSelector.getCurrentTabId()));
         mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
 
         boolean quick;
@@ -386,7 +374,9 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         sourceLayoutTab.setDecorationAlpha(0);
 
         List<LayoutTab> layoutTabs = new ArrayList<>();
+        List<Integer> tabIds = new ArrayList<>();
         layoutTabs.add(sourceLayoutTab);
+        tabIds.add(sourceLayoutTab.getId());
 
         if (sourceTabId != mTabModelSelector.getCurrentTabId()) {
             // Keep the original tab in mLayoutTabs to unblock thumbnail taking at the end of
@@ -396,10 +386,10 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
             originalTab.setScale(0);
             originalTab.setDecorationAlpha(0);
             layoutTabs.add(originalTab);
+            tabIds.add(originalTab.getId());
         }
         mLayoutTabs = layoutTabs.toArray(new LayoutTab[0]);
-
-        updateCacheVisibleIds(new LinkedList<>(Arrays.asList(sourceTabId)));
+        updateCacheVisibleIds(tabIds);
 
         mIsAnimatingHide = true;
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
@@ -414,12 +404,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         try (TraceEvent e = TraceEvent.scoped("StartSurfaceLayout.DoneHiding")) {
             super.doneHiding();
             RecordUserAction.record("MobileExitStackView");
-            // When shown on StartSurface jank is tracked under
-            // JankScenario.START_SURFACE_TAB_SWITCHER and it's started/stopped on
-            // StartSurfaceMediator.
-            if (!StartSurfaceConfiguration.isStartSurfaceFlagEnabled()) {
-                mJankTracker.finishTrackingScenario(JankScenario.TAB_SWITCHER);
-            }
         }
     }
 

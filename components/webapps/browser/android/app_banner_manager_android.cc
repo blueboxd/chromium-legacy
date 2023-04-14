@@ -88,7 +88,7 @@ int AppBannerManagerAndroid::GetBadgeStatusForTesting(JNIEnv* env) {
   if (!ambient_badge_manager_) {
     return 0;
   }
-  return (int)ambient_badge_manager_->GetStatus();
+  return (int)ambient_badge_manager_->state();
 }
 
 bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
@@ -163,10 +163,6 @@ void AppBannerManagerAndroid::PerformInstallableChecks() {
 }
 
 void AppBannerManagerAndroid::PerformInstallableWebAppCheck() {
-  if (!manifest_url_.SchemeIsHTTPOrHTTPS()) {
-    Stop(MANIFEST_URL_SCHEME_NOT_SUPPORTED_FOR_WEBAPK);
-    return;
-  }
   if (!webapps::WebappsUtils::AreWebManifestUrlsWebApkCompatible(manifest())) {
     Stop(URL_NOT_SUPPORTED_FOR_WEBAPK);
     return;

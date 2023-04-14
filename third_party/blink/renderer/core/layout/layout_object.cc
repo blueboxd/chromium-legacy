@@ -79,10 +79,7 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_list_item.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inl.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
@@ -94,7 +91,10 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -330,8 +330,7 @@ ASSERT_SIZE(LayoutObject, SameSizeAsLayoutObject);
 bool LayoutObject::affects_parent_block_ = false;
 
 LayoutObject* LayoutObject::CreateObject(Element* element,
-                                         const ComputedStyle& style,
-                                         LegacyLayout legacy) {
+                                         const ComputedStyle& style) {
   DCHECK(IsAllowedToModifyLayoutTreeStructure(element->GetDocument()));
 
   // Minimal support for content properties replacing an entire element.
@@ -359,7 +358,15 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     image->SetStyleInternal(nullptr);
     return image;
   } else if (element->GetPseudoId() == kPseudoIdMarker) {
-    return LayoutObjectFactory::CreateListMarker(*element, style, legacy);
+    const Node* parent = element->parentNode();
+    const ComputedStyle* parent_style = parent->GetComputedStyle();
+    bool is_inside =
+        parent_style->ListStylePosition() == EListStylePosition::kInside ||
+        (IsA<HTMLLIElement>(parent) && !parent_style->IsInsideListElement());
+    if (is_inside) {
+      return MakeGarbageCollected<LayoutNGInsideListMarker>(element);
+    }
+    return MakeGarbageCollected<LayoutNGOutsideListMarker>(element);
   }
 
   switch (style.Display()) {
@@ -368,11 +375,18 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return nullptr;
     case EDisplay::kInline:
       return MakeGarbageCollected<LayoutInline>(element);
+    case EDisplay::kInlineListItem:
+      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
+      return MakeGarbageCollected<LayoutNGInlineListItem>(element);
+    case EDisplay::kFlowRootListItem:
+    case EDisplay::kInlineFlowRootListItem:
+      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
+      [[fallthrough]];
     case EDisplay::kBlock:
     case EDisplay::kFlowRoot:
     case EDisplay::kInlineBlock:
     case EDisplay::kListItem:
-      return LayoutObjectFactory::CreateBlockFlow(*element, style, legacy);
+      return CreateBlockFlowOrListItem(element, style);
     case EDisplay::kTable:
     case EDisplay::kInlineTable:
       return MakeGarbageCollected<LayoutNGTable>(element);
@@ -415,6 +429,22 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
 
   NOTREACHED();
   return nullptr;
+}
+
+// static
+LayoutBlockFlow* LayoutObject::CreateBlockFlowOrListItem(
+    Element* element,
+    const ComputedStyle& style) {
+  if (style.Display() == EDisplay::kListItem && element &&
+      element->GetPseudoId() != kPseudoIdBackdrop) {
+    // Create a LayoutBlockFlow with a ListItemOrdinal and maybe a ::marker.
+    // ::backdrop is excluded since it's not tree-abiding, and ListItemOrdinal
+    // needs to traverse the tree.
+    return MakeGarbageCollected<LayoutNGListItem>(element);
+  }
+
+  // Create a plain LayoutBlockFlow
+  return MakeGarbageCollected<LayoutNGBlockFlow>(element);
 }
 
 LayoutObject::LayoutObject(Node* node)
@@ -738,30 +768,6 @@ LayoutObject* LayoutObject::NextInPreOrder() const {
     return o;
 
   return NextInPreOrderAfterChildren();
-}
-
-bool LayoutObject::IsForElement() const {
-  if (!IsAnonymous()) {
-    return true;
-  }
-
-  // When a block is inside of an inline, the part of the inline that
-  // wraps the block is represented in the layout tree by a block that
-  // is marked as anonymous, but has a continuation that's not
-  // anonymous.
-
-  if (!IsBox()) {
-    return false;
-  }
-
-  auto* continuation = To<LayoutBox>(this)->Continuation();
-  if (!continuation || continuation->IsAnonymous()) {
-    return false;
-  }
-
-  DCHECK(continuation->IsInline());
-  DCHECK(IsLayoutBlockFlow());
-  return true;
 }
 
 bool LayoutObject::HasClipRelatedProperty() const {
@@ -1247,16 +1253,6 @@ bool LayoutObject::IsFirstInlineFragmentSafe() const {
 LayoutFlowThread* LayoutObject::LocateFlowThreadContainingBlock() const {
   NOT_DESTROYED();
   DCHECK(IsInsideFlowThread());
-
-  // See if we have the thread cached because we're in the middle of layout.
-  if (LayoutView* view = View()) {
-    if (LayoutState* layout_state = view->GetLayoutState()) {
-      if (LayoutFlowThread* flow_thread = layout_state->FlowThread())
-        return flow_thread;
-    }
-  }
-
-  // Not in the middle of layout so have to find the thread the slow way.
   return LayoutFlowThread::LocateFlowThreadContainingBlockOf(
       *this, LayoutFlowThread::kAnyAncestor);
 }
@@ -1352,8 +1348,9 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   // height will allow the object to grow and shrink based on the content
   // inside. The same goes for for logical width, if this objects is inside a
   // shrink-to-fit container, for instance.
-  if (!style->Width().IsFixed() || !style->Height().IsFixed())
+  if (!style->UsedWidth().IsFixed() || !style->UsedHeight().IsFixed()) {
     return false;
+  }
 
   if (object->IsTextControl()) {
     return true;
@@ -1727,8 +1724,9 @@ LayoutObject* LayoutObject::NonAnonymousAncestor() const {
 LayoutObject* LayoutObject::NearestAncestorForElement() const {
   NOT_DESTROYED();
   LayoutObject* ancestor = Parent();
-  while (ancestor && !ancestor->IsForElement())
+  while (ancestor && ancestor->IsAnonymous()) {
     ancestor = ancestor->Parent();
+  }
   return ancestor;
 }
 
@@ -2256,17 +2254,6 @@ void LayoutObject::ShowLayoutTreeForThis() const {
   ShowLayoutTree(this, nullptr);
 }
 
-void LayoutObject::ShowLineTreeForThis() const {
-  NOT_DESTROYED();
-  if (const LayoutBlock* cb = InclusiveContainingBlock()) {
-    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(cb);
-    if (child_block_flow) {
-      child_block_flow->ShowLineTreeAndMark(nullptr, nullptr, nullptr, nullptr,
-                                            this);
-    }
-  }
-}
-
 void LayoutObject::ShowLayoutObject() const {
   NOT_DESTROYED();
 
@@ -2298,9 +2285,6 @@ void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
     string_builder.AppendFormat(
         " \"%s\" ", To<LayoutText>(this)->GetText().Ascii().c_str());
   }
-
-  if (VirtualContinuation())
-    string_builder.AppendFormat(" continuation=%p", VirtualContinuation());
 
   if (GetNode()) {
     while (string_builder.length() < show_tree_character_offset)
@@ -2383,31 +2367,6 @@ const ComputedStyle& LayoutObject::SlowEffectiveStyle(
   return StyleRef();
 }
 
-const ComputedStyle* LayoutObject::SlowStyleForContinuationOutline() const {
-  NOT_DESTROYED();
-  // Fail fast using bitfields is done in |StyleForContinuationOutline|.
-  DCHECK(IsAnonymous() && !IsInline());
-  const auto* block_flow = DynamicTo<LayoutBlockFlow>(this);
-  if (!block_flow)
-    return nullptr;
-
-  // Check ancestors of the continuation in case nested inline boxes; e.g.
-  // <span style="outline: auto">
-  //   <span>
-  //     <div>block</div>
-  //   </span>
-  // </span>
-  for (const LayoutObject* continuation = block_flow->Continuation();
-       UNLIKELY(continuation && continuation->IsLayoutInline());
-       continuation = continuation->Parent()) {
-    const ComputedStyle& style = continuation->StyleRef();
-    if (style.OutlineStyleIsAuto() &&
-        NGOutlineUtils::HasPaintedOutline(style, continuation->GetNode()))
-      return &style;
-  }
-  return nullptr;
-}
-
 // Called when an object that was floating or positioned becomes a normal flow
 // object again. We have to make sure the layout tree updates as needed to
 // accommodate the new normal flow object.
@@ -2454,8 +2413,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
         // do special painting (e.g. fraction bar).
         (IsText() && !IsBR() && To<LayoutText>(this)->HasInlineFragments()) ||
         (IsSVG() && StyleRef().IsFillColorCurrentColor()) ||
-        (IsSVG() && StyleRef().IsStrokeColorCurrentColor()) ||
-        IsListMarkerForNormalContent() || IsMathML()) {
+        (IsSVG() && StyleRef().IsStrokeColorCurrentColor()) || IsMathML()) {
       diff.SetNeedsSimplePaintInvalidation();
     }
   }
@@ -3315,8 +3273,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   // TODO(smcgruer): This is inefficient. Instead we should avoid including
   // offsetForInFlowPosition in offsetFromContainer when ignoring sticky.
   if (mode & kIgnoreStickyOffset && IsStickyPositioned()) {
-    container_offset -=
-        To<LayoutBoxModelObject>(this)->OffsetForInFlowPosition();
+    container_offset -= To<LayoutBoxModelObject>(this)->StickyPositionOffset();
   }
 
   if (IsLayoutFlowThread()) {
@@ -3622,7 +3579,6 @@ PhysicalOffset LayoutObject::OffsetFromAncestor(
 }
 
 LayoutRect LayoutObject::LocalCaretRect(
-    const InlineBox*,
     int,
     LayoutUnit* extra_width_to_end_of_line) const {
   NOT_DESTROYED();
@@ -3700,8 +3656,6 @@ void LayoutObject::WillBeDestroyed() {
                                      EventHandlerRegistry::kTouchAction);
     }
   }
-
-  SetAncestorLineBoxDirty(false);
 
   ClearLayoutRootIfNeeded();
 
@@ -3937,13 +3891,6 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers(
   for (; destroy_root_parent && destroy_root_parent->IsAnonymous();
        destroy_root = destroy_root_parent,
        destroy_root_parent = destroy_root_parent->Parent()) {
-    // Anonymous block continuations are tracked and destroyed elsewhere (see
-    // the bottom of LayoutBlockFlow::RemoveChild)
-    auto* destroy_root_parent_block =
-        DynamicTo<LayoutBlockFlow>(destroy_root_parent);
-    if (destroy_root_parent_block &&
-        destroy_root_parent_block->IsAnonymousBlockContinuation())
-      break;
     // A flow thread is tracked by its containing block. Whether its children
     // are removed or not is irrelevant.
     if (destroy_root_parent->IsLayoutFlowThread())
@@ -3966,6 +3913,7 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers(
     if (destroy_root->PreviousSibling())
       break;
     if (const LayoutObject* sibling = destroy_root->NextSibling()) {
+      // TODO(ikilpatrick): Delete this branch - logic unreachable.
       if (destroy_root->GetNode()) {
         // When there are inline continuations, there may be multiple layout
         // objects generated from the same node, and those are special. They
@@ -3979,7 +3927,6 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers(
       if (sibling)
         break;
       DCHECK(destroy_root->IsLayoutInline());
-      DCHECK(To<LayoutInline>(destroy_root)->Continuation());
     }
   }
 
@@ -4298,20 +4245,6 @@ bool LayoutObject::GetImageAnimationPolicy(
     return false;
   policy = GetDocument().GetSettings()->GetImageAnimationPolicy();
   return true;
-}
-
-bool LayoutObject::IsInsideListMarker() const {
-  NOT_DESTROYED();
-  return (IsListMarkerForNormalContent() &&
-          To<LayoutListMarker>(this)->IsInside()) ||
-         IsInsideListMarkerForCustomContent();
-}
-
-bool LayoutObject::IsOutsideListMarker() const {
-  NOT_DESTROYED();
-  return (IsListMarkerForNormalContent() &&
-          !To<LayoutListMarker>(this)->IsInside()) ||
-         IsOutsideListMarkerForCustomContent();
 }
 
 void LayoutObject::ImageChanged(ImageResourceContent* image,
@@ -4926,6 +4859,7 @@ Vector<PhysicalRect> LayoutObject::CollectOutlineRectsAndAdvance(
   Vector<PhysicalRect> outline_rects;
   PhysicalOffset paint_offset = iterator.GetFragmentData()->PaintOffset();
 
+  VectorOutlineRectCollector collector;
   if (iterator.Cursor()) {
     wtf_size_t fragment_index = iterator.Cursor()->ContainerFragmentIndex();
     do {
@@ -4935,23 +4869,25 @@ Vector<PhysicalRect> LayoutObject::CollectOutlineRectsAndAdvance(
       if (const NGPhysicalBoxFragment* box_fragment = item->BoxFragment()) {
         box_fragment->AddSelfOutlineRects(
             paint_offset + item->OffsetInContainerFragment(), outline_type,
-            &outline_rects, nullptr);
+            collector, nullptr);
       } else {
         PhysicalRect rect;
         rect = item->RectInContainerFragment();
         rect.Move(paint_offset);
-        outline_rects.push_back(rect);
+        collector.AddRect(rect);
       }
       // Keep going as long as we're within the same container fragment. If
       // we're block-fragmented, there will be multiple container fragments,
       // each with their own FragmentData object.
     } while (iterator.Advance() &&
              iterator.Cursor()->ContainerFragmentIndex() == fragment_index);
+    outline_rects = collector.TakeRects();
   } else {
     if (const NGPhysicalBoxFragment* box_fragment =
             iterator.GetPhysicalBoxFragment()) {
-      box_fragment->AddSelfOutlineRects(paint_offset, outline_type,
-                                        &outline_rects, nullptr);
+      box_fragment->AddSelfOutlineRects(paint_offset, outline_type, collector,
+                                        nullptr);
+      outline_rects = collector.TakeRects();
     } else {
       outline_rects = OutlineRects(nullptr, paint_offset, outline_type);
     }
@@ -4966,9 +4902,9 @@ Vector<PhysicalRect> LayoutObject::OutlineRects(
     const PhysicalOffset& additional_offset,
     NGOutlineType outline_type) const {
   NOT_DESTROYED();
-  Vector<PhysicalRect> outline_rects;
-  AddOutlineRects(outline_rects, info, additional_offset, outline_type);
-  return outline_rects;
+  VectorOutlineRectCollector collector;
+  AddOutlineRects(collector, info, additional_offset, outline_type);
+  return collector.TakeRects();
 }
 
 void LayoutObject::SetModifiedStyleOutsideStyleRecalc(
@@ -5017,29 +4953,6 @@ void LayoutObject::MarkSelfPaintingLayerForVisualOverflowRecalc() {
 #if DCHECK_IS_ON()
   InvalidateVisualOverflow();
 #endif
-}
-
-bool LayoutObject::ForceLegacyLayoutForChildren() const {
-  NOT_DESTROYED();
-  if (bitfields_.ForceLegacyLayout())
-    return true;
-
-  // For container queries, we may end up marking an element for forcing legacy
-  // layout without re-attaching the container itself because we are performing
-  // layout for the container when this is detected. Descendants should still
-  // have legacy forced.
-  //
-  // We skip over anonymous ancestors to do the check because anonymous children
-  // may need to be kept in sync with its parent (For instance LayoutFlowThread
-  // for multicol), in which case the ForceLegacyLayout flag matches the
-  // size container LayoutObject flag and not the element flag.
-  const LayoutObject* non_anonymous =
-      IsAnonymous() ? NonAnonymousAncestor() : this;
-  if (!non_anonymous)
-    return false;
-  if (Element* element = DynamicTo<Element>(non_anonymous->GetNode()))
-    return element->ShouldForceLegacyLayout();
-  return false;
 }
 
 void LayoutObject::SetSVGDescendantMayHaveTransformRelatedAnimation() {
@@ -5130,23 +5043,6 @@ void ShowTree(const blink::LayoutObject* object) {
     object->ShowTreeForThis();
   else
     DLOG(INFO) << "Cannot showTree. Root is (nil)";
-}
-
-void ShowLineTree(const blink::LayoutObject* object) {
-  if (getenv("RUNNING_UNDER_RR")) {
-    // Printing timestamps requires an IPC to get the local time, which
-    // does not work in an rr replay session. Just disable timestamp printing
-    // globally, since we don't need them. Affecting global state isn't a
-    // problem because invoking this from a rr session creates a temporary
-    // program environment that will be destroyed as soon as the invocation
-    // completes.
-    logging::SetLogItems(true, true, false, false);
-  }
-
-  if (object)
-    object->ShowLineTreeForThis();
-  else
-    DLOG(INFO) << "Cannot showLineTree. Root is (nil)";
 }
 
 void ShowLayoutTree(const blink::LayoutObject* object1) {

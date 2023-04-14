@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs.features.partialcustomtab;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
@@ -18,10 +19,14 @@ import static org.chromium.chrome.browser.browserservices.intents.BrowserService
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_FULL_SCREEN;
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_SIDE_SHEET;
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_SIDE_SHEET_MAXIMIZED;
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT;
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_POSITION_END;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 
 import androidx.annotation.Px;
 
@@ -47,7 +52,7 @@ import org.chromium.ui.base.LocalizationUtils;
 
 /** Tests for {@link PartialCustomTabDisplayManager}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {PartialCustomTabTestRule.ShadowSemanticColorUtils.class})
 @LooperMode(Mode.PAUSED)
 @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
         ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES})
@@ -66,16 +71,17 @@ public class PartialCustomTabDisplayManagerTest {
 
     private PartialCustomTabDisplayManager createPcctDisplayManager(
             @Px int heightPx, @Px int widthPx) {
-        return createPcctDisplayManager(heightPx, widthPx, 1850);
+        return createPcctDisplayManager(
+                heightPx, widthPx, 1850, ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT);
     }
 
     private PartialCustomTabDisplayManager createPcctDisplayManager(
-            @Px int heightPx, @Px int widthPx, int breakPointDp) {
+            @Px int heightPx, @Px int widthPx, int breakPointDp, int decorationType) {
         PartialCustomTabDisplayManager displayManager = new PartialCustomTabDisplayManager(
                 mPCCTTestRule.mActivity, heightPx, widthPx, breakPointDp, false,
                 mPCCTTestRule.mOnResizedCallback, mPCCTTestRule.mOnActivityLayoutCallback,
                 mPCCTTestRule.mActivityLifecycleDispatcher, mPCCTTestRule.mFullscreenManager, false,
-                true, /*showMaximizeButton=*/true, 0, ACTIVITY_SIDE_SHEET_POSITION_END,
+                true, /*showMaximizeButton=*/true, decorationType, ACTIVITY_SIDE_SHEET_POSITION_END,
                 ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE);
         var sizeStrategyCreator = displayManager.getSizeStrategyCreatorForTesting();
         SizeStrategyCreator testSizeStrategyCreator =
@@ -101,15 +107,26 @@ public class PartialCustomTabDisplayManagerTest {
     }
 
     @Test
+    public void create_FullSize_WidthSetCompactDevice() {
+        mPCCTTestRule.configCompactDevice();
+        PartialCustomTabDisplayManager displayManager = createPcctDisplayManager(0, 500);
+        assertEquals("Full-Size PCCT should be created", PartialCustomTabType.FULL_SIZE,
+                displayManager.getActiveStrategyType());
+    }
+
+    @Test
     public void create_SideSheet_WidthSetHeightNot_BelowBreakpoint() {
-        PartialCustomTabDisplayManager displayManager = createPcctDisplayManager(0, 100);
+        PartialCustomTabDisplayManager displayManager = createPcctDisplayManager(0, 800);
         assertEquals("Full-Size PCCT should be created", PartialCustomTabType.FULL_SIZE,
                 displayManager.getActiveStrategyType());
     }
 
     @Test
     public void create_SideSheet_WidthSetHeightNot_AboveBreakpoint() {
-        PartialCustomTabDisplayManager displayManager = createPcctDisplayManager(0, 2000, 840);
+        PartialCustomTabDisplayManager displayManager =
+                createPcctDisplayManager(0, 2000, 840, ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT);
+        assertEquals(
+                "Breakpoint value is incorrect", 840, displayManager.getBreakPointDpForTesting());
         assertEquals("Side-Sheet PCCT should be created", PartialCustomTabType.SIDE_SHEET,
                 displayManager.getActiveStrategyType());
     }
@@ -120,6 +137,17 @@ public class PartialCustomTabDisplayManagerTest {
         PartialCustomTabDisplayManager displayManager = createPcctDisplayManager();
 
         assertEquals("Side-Sheet PCCT should be created", PartialCustomTabType.SIDE_SHEET,
+                displayManager.getActiveStrategyType());
+    }
+
+    @Test
+    public void create_BottomSheet_HeightWidthSet_Compact() {
+        mPCCTTestRule.configCompactDevice();
+        PartialCustomTabDisplayManager displayManager = createPcctDisplayManager(
+                350, 450, 400, ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT);
+        assertEquals(
+                "Breakpoint value is incorrect", 600, displayManager.getBreakPointDpForTesting());
+        assertEquals("Bottom-Sheet PCCT should be created", PartialCustomTabType.BOTTOM_SHEET,
                 displayManager.getActiveStrategyType());
     }
 
@@ -183,6 +211,30 @@ public class PartialCustomTabDisplayManagerTest {
     }
 
     @Test
+    public void transitionFromBottomSheetToSideSheetWhileSoftkeyboardIsOn() {
+        mPCCTTestRule.configPortraitMode();
+        PartialCustomTabDisplayManager displayManager = createPcctDisplayManager();
+        verify(mPCCTTestRule.mOnActivityLayoutCallback)
+                .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),
+                        eq(ACTIVITY_LAYOUT_STATE_BOTTOM_SHEET));
+        clearInvocations(mPCCTTestRule.mOnActivityLayoutCallback);
+
+        assertEquals("Bottom-Sheet should be the active strategy",
+                PartialCustomTabType.BOTTOM_SHEET, displayManager.getActiveStrategyType());
+        displayManager.onShowSoftInput(() -> {});
+        PartialCustomTabTestRule.waitForAnimationToFinish();
+        assertTrue(displayManager.getSizeStrategyForTesting().isMaximized());
+
+        // Rotate while the soft keyboard is on.
+        mPCCTTestRule.configLandscapeMode();
+        displayManager.onConfigurationChanged(mPCCTTestRule.mConfiguration);
+        PartialCustomTabTestRule.waitForAnimationToFinish();
+
+        // The destroyed bottom sheet should have its height state back to 'initial'.
+        assertFalse(displayManager.getSizeStrategyForTesting().isMaximized());
+    }
+
+    @Test
     public void
     transitionFromBottomSheetTo900dpBottomSheetWhenOrientationChangedToLandscape_andHeightSetWidthNot() {
         mPCCTTestRule.configPortraitMode();
@@ -228,6 +280,37 @@ public class PartialCustomTabDisplayManagerTest {
 
         assertEquals("Bottom-Sheet should be the active strategy",
                 PartialCustomTabType.BOTTOM_SHEET, displayManager.getActiveStrategyType());
+        verify(mPCCTTestRule.mOnActivityLayoutCallback)
+                .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),
+                        eq(ACTIVITY_LAYOUT_STATE_BOTTOM_SHEET));
+        clearInvocations(mPCCTTestRule.mOnActivityLayoutCallback);
+    }
+
+    @Config(sdk = Build.VERSION_CODES.Q)
+    @Test
+    public void transitionFromDividerSideSheetToBottomSheetWhenOrientationChangedToPortrait() {
+        mPCCTTestRule.configLandscapeMode();
+        PartialCustomTabDisplayManager displayManager = createPcctDisplayManager(
+                850, 2000, 1850, ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER);
+        displayManager.onToolbarInitialized(
+                mPCCTTestRule.mToolbarCoordinator, mPCCTTestRule.mToolbarView, 5);
+        assertEquals("Side-Sheet should be the active strategy", PartialCustomTabType.SIDE_SHEET,
+                displayManager.getActiveStrategyType());
+        verify(mPCCTTestRule.mOnActivityLayoutCallback)
+                .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),
+                        eq(ACTIVITY_LAYOUT_STATE_SIDE_SHEET));
+        clearInvocations(mPCCTTestRule.mOnActivityLayoutCallback);
+        verify(mPCCTTestRule.mCoordinatorLayout).setBackground(any(Drawable.class));
+        mPCCTTestRule.configInsetDrawableBg();
+        mPCCTTestRule.configPortraitMode();
+        displayManager.onConfigurationChanged(mPCCTTestRule.mConfiguration);
+
+        PartialCustomTabTestRule.waitForAnimationToFinish();
+
+        assertEquals("Bottom-Sheet should be the active strategy",
+                PartialCustomTabType.BOTTOM_SHEET, displayManager.getActiveStrategyType());
+
+        verify(mPCCTTestRule.mCoordinatorLayout).getPaddingRight();
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
                 .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),
                         eq(ACTIVITY_LAYOUT_STATE_BOTTOM_SHEET));

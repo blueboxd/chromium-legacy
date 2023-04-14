@@ -89,6 +89,44 @@ TEST_P(SupportsUserDataTest, ClearAllUserData) {
   EXPECT_FALSE(supports_user_data.GetUserData(&key2));
 }
 
+TEST_P(SupportsUserDataTest, TakeUserData) {
+  TestSupportsUserData supports_user_data;
+  char key1 = 0;
+  supports_user_data.SetUserData(&key1, std::make_unique<TestData>());
+
+  TestSupportsUserData::Data* data1_ptr = supports_user_data.GetUserData(&key1);
+  EXPECT_NE(data1_ptr, nullptr);
+
+  char wrong_key = 0;
+  EXPECT_FALSE(supports_user_data.TakeUserData(&wrong_key));
+
+  EXPECT_EQ(supports_user_data.GetUserData(&key1), data1_ptr);
+
+  std::unique_ptr<TestSupportsUserData::Data> data1 =
+      supports_user_data.TakeUserData(&key1);
+  EXPECT_EQ(data1.get(), data1_ptr);
+
+  EXPECT_FALSE(supports_user_data.GetUserData(&key1));
+  EXPECT_FALSE(supports_user_data.TakeUserData(&key1));
+}
+
+class DataOwnsSupportsUserData : public SupportsUserData::Data {
+ public:
+  TestSupportsUserData* supports_user_data() { return &supports_user_data_; }
+
+ private:
+  TestSupportsUserData supports_user_data_;
+};
+
+// Tests that removing a `SupportsUserData::Data` that owns a `SupportsUserData`
+// does not crash.
+TEST_P(SupportsUserDataTest, ReentrantRemoveUserData) {
+  DataOwnsSupportsUserData* data = new DataOwnsSupportsUserData;
+  char key = 0;
+  data->supports_user_data()->SetUserData(&key, WrapUnique(data));
+  data->supports_user_data()->RemoveUserData(&key);
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          SupportsUserDataTest,
                          testing::Values(false, true));

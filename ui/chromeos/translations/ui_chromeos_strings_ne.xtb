@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र स्थायी रूपमा अस्विकार गरियो</translation>
 <translation id="1775381402323441512">भिडियोको जानकारी</translation>
 <translation id="180035236176489073">यी फाइलहरू पहुँच गर्न तपाईं अनलाइन हुनु पर्छ।</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{निम्न ID भएको एक्स्टेन्सन:}other{निम्न ID भएका एक्स्टेन्सनहरू:}}</translation>
 <translation id="1807938677607439181">सबै फाइलहरू</translation>
 <translation id="1810764548349082891">कुनै पूर्वावलोकन उपलब्ध छैन</translation>
 <translation id="1812302367230252929">अम्हारिक लिपि रूपान्तरण</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">विषयको वैकल्पिक नामसँग मिल्दोजुल्दो प्रविष्टि अवैध छ</translation>
 <translation id="1838709767668011582">Google को साइट</translation>
 <translation id="1853795129690976061">यो फोल्डर Linux सँग सेयर गरिएको छ</translation>
-<translation id="1859422890169495746">यो Chromebook</translation>
 <translation id="1864756863218646478">फाइल फेला पर्न सकेन।</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /> मध्ये नेटवर्क <ph name="NETWORK_INDEX" />, जोड्नुहोस्</translation>
 <translation id="1920670151694390848">मलयालम लिपि रूपान्तरण</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">ग्रह</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> हटाइएको छ।</translation>
 <translation id="2307462900900812319">नेटवर्क कन्फिगर गर्नुहोस्</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{निम्न ID भएको एक्स्टेन्सन <ph name="BEGIN_LIST" /><ph name="END_LIST" /> भेट्टाउन सकिएन। आफ्ना एड्मिनसँग सम्पर्क गर्नुहोस्।}other{निम्न ID भएका एक्स्टेन्सनहरू <ph name="BEGIN_LIST" /><ph name="END_LIST" /> भेट्टाउन सकिएन। आफ्ना एड्मिनसँग सम्पर्क गर्नुहोस्।}}</translation>
 <translation id="2325650632570794183">यो फाइल प्रकार समर्थन गरिएको छैन। यो फाइल खोल्न सक्ने एक अनु्प्रयोग फेला पार्नको लागि कृपया Chrome वेब भण्डार भ्रमण गर्नुहोस्।</translation>
 <translation id="2326539130272988168">बुल्गेरियाली</translation>
 <translation id="2337715497728194187">Bruschetta सँग सेयर गर्नुहोस्</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">असुरक्षित</translation>
 <translation id="3291218047831493686">SIM लकसम्बन्धी सेटिङ बदल्न यो नेटवर्कमा कनेक्ट गर्नुहोस्</translation>
 <translation id="3293023191599135697">WEP नेटवर्कमा कनेक्ट गर्न मिल्दैन</translation>
+<translation id="3295006446256079333">यो भोल्युम</translation>
 <translation id="3295357220137379386">डिभाइस व्यस्त छ</translation>
 <translation id="3296763833017966289">जोर्जियन</translation>
 <translation id="3307875152560779385">युक्रेनियाली</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">हेर्नुहोस्</translation>
 <translation id="485316830061041779">जर्मन</translation>
+<translation id="4862885579661885411">Files का सेटिङ</translation>
 <translation id="4867079195717347957">स्तम्भलाई घट्दो क्रममा क्रमबद्ध गर्न क्लिक गर्नुहोस्।</translation>
 <translation id="4867297348137739678">गत हप्ता</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> बाइट</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> वस्तुहरू प्रतिलिपि गर्दै...</translation>
 <translation id="7375951387215729722"><ph name="COLUMN_NAME" /> का आधारमा घट्दो क्रममा क्रमबद्ध गरिएको फाइलको सूची।</translation>
 <translation id="7377161162143020057">एड्मिनले तोक्नुभएको नीतिअनुसार यो फाइल कपी गर्न पाइँदैन</translation>
-<translation id="7392500733467492920">भेटिएन। आफ्ना एड्मिनसँग सम्पर्क गर्नुहोस्।</translation>
 <translation id="7402503521691663770">ChromeOS Flex चल्ने डिभाइसहरू</translation>
 <translation id="7408870451288633753">चेक</translation>
 <translation id="7417453074306512035">इथियोपिक किबोर्ड</translation>

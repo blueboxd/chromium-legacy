@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">تمّ رفض شهادة المصادقة محليًا</translation>
 <translation id="1775381402323441512">معلومات الفيديو</translation>
 <translation id="180035236176489073">يجب أن تكون متصلاً بالإنترنت للدخول إلى هذه الملفات.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{إضافة تتضمّن المعرّف}zero{إضافات تتضمّن المعرّفات}two{إضافتان تتضمّنان المعرّفيَن}few{إضافات تتضمّن المعرّفات}many{إضافات تتضمّن المعرّفات}other{إضافات تتضمّن المعرّفات}}</translation>
 <translation id="1807938677607439181">كل الملفات</translation>
 <translation id="1810764548349082891">لا تتوفر معاينة</translation>
 <translation id="1812302367230252929">تحويل صوتي إلى اللغة الأمهرية</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">إدخال غير صالح لمطابقة الاسم البديل الخاص بالموضوع</translation>
 <translation id="1838709767668011582">‏موقع Google</translation>
 <translation id="1853795129690976061">‏تمّت مشاركة هذا المجلد مع نظام التشغيل Linux.</translation>
-<translation id="1859422890169495746">‏جهاز Chromebook هذا</translation>
 <translation id="1864756863218646478">تعذر العثور على الملف.</translation>
 <translation id="1884013283844450420">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، الاتصال</translation>
 <translation id="1920670151694390848">تحويل صوتي إلى اللغة الماليالامية</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">كوكب</translation>
 <translation id="2305020378527873881">تم إخراج <ph name="VOLUME_NAME" />.</translation>
 <translation id="2307462900900812319">إعداد الشبكة</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{لا يمكن تحديد مكان الإضافة التي تتضمّن المعرّف: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}zero{لا يمكن تحديد مكان الإضافات التي تتضمّن المعرّفات: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}two{لا يمكن تحديد مكان الإضافتَين اللتَين تتضمّنَان المعرّفَين: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}few{لا يمكن تحديد مكان الإضافات التي تتضمّن المعرّفات: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}many{لا يمكن تحديد مكان الإضافات التي تتضمّن المعرّفات: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}other{لا يمكن تحديد مكان الإضافات التي تتضمّن المعرّفات: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}}</translation>
 <translation id="2325650632570794183">‏نوع الملف هذا غير متوافق. يُرجى الانتقال إلى سوق Chrome الإلكتروني للعثور على تطبيق يمكنه فتح هذا النوع من الملفات.</translation>
 <translation id="2326539130272988168">البلغارية</translation>
 <translation id="2337715497728194187">‏المشاركة مع الجهاز الافتراضي Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">غير مؤمّن</translation>
 <translation id="3291218047831493686">‏يمكنك الاتصال بهذه الشبكة لتغيير إعدادات قفل شريحة SIM.</translation>
 <translation id="3293023191599135697">‏شبكات WEP غير متوافقة.</translation>
+<translation id="3295006446256079333">هذا المجلد</translation>
 <translation id="3295357220137379386">الجهاز مشغول.</translation>
 <translation id="3296763833017966289">الجورجية</translation>
 <translation id="3307875152560779385">الأوكرانية</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">‏أجهزة Chromebase</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="485316830061041779">الألمانية</translation>
+<translation id="4862885579661885411">إعدادات الملفات</translation>
 <translation id="4867079195717347957">انقر لترتيب محتوى العمود ترتيبًا تنازليًا.</translation>
 <translation id="4867297348137739678">الأسبوع الماضي</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> بايت</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">جارٍ نسخ <ph name="NUMBER_OF_ITEMS" /> من العناصر...</translation>
 <translation id="7375951387215729722">تم ترتيب قائمة الملف تنازليًا حسب <ph name="COLUMN_NAME" />.</translation>
 <translation id="7377161162143020057">تحظر سياسة المشرف إمكانية نسخ هذا الملف.</translation>
-<translation id="7392500733467492920">لا يمكن العثور على الإضافات. يُرجى التواصل مع المشرف.</translation>
 <translation id="7402503521691663770">‏أجهزة ChromeOS Flex</translation>
 <translation id="7408870451288633753">التشيكية</translation>
 <translation id="7417453074306512035">لوحة المفاتيح الإثيوبية</translation>

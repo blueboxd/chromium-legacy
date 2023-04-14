@@ -543,7 +543,8 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
       // configure result, else we'll dcheck when we try to read the sync error.
       expect_sync_configuration_aborted_ = true;
       if (shutdown_reason != ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA) {
-        data_type_manager_->Stop(shutdown_reason);
+        data_type_manager_->Stop(
+            ShutdownReasonToSyncStopMetadataFate(shutdown_reason));
       }
     }
     data_type_manager_.reset();
@@ -1211,21 +1212,24 @@ ModelTypeSet SyncServiceImpl::GetActiveDataTypes() const {
 
   // Persistent auth errors lead to PAUSED, which implies
   // data_type_manager_==null above.
-  DCHECK(!GetAuthError().IsPersistentError());
+  CHECK(!GetAuthError().IsPersistentError());
 
   return data_type_manager_->GetActiveDataTypes();
 }
 
-void SyncServiceImpl::SetSyncRequestedAndIgnoreNotification(bool is_requested) {
-  // For a no-op, OnSyncRequestedPrefChange() wouldn't be called and
-  // |is_setting_sync_requested_| wouldn't get reset, so check.
-  if (is_requested != user_settings_->IsSyncRequested()) {
-    DCHECK(!is_setting_sync_requested_);
-    is_setting_sync_requested_ = true;
-    user_settings_->SetSyncRequested(is_requested);
-    // OnSyncRequestedPrefChange() should have cleared the flag.
-    DCHECK(!is_setting_sync_requested_);
+ModelTypeSet SyncServiceImpl::GetTypesWithPendingDownloadForInitialSync()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!data_type_manager_) {
+    return ModelTypeSet();
   }
+
+  // Persistent auth errors lead to PAUSED, which implies
+  // data_type_manager_==null above.
+  CHECK(!GetAuthError().IsPersistentError());
+
+  return data_type_manager_->GetTypesWithPendingDownloadForInitialSync();
 }
 
 void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
@@ -1786,7 +1790,20 @@ void SyncServiceImpl::StopAndClear() {
   // For explicit passphrase users, clear the encryption key, such that they
   // will need to reenter it if sync gets re-enabled.
   sync_prefs_.ClearEncryptionBootstrapToken();
-  SetSyncRequestedAndIgnoreNotification(false);
+
+  // Clear the sync-requested bit, but avoid side effects in
+  // OnSyncRequestedPrefChange() by leveraging |is_setting_sync_requested_|.
+  //
+  // For a no-op, OnSyncRequestedPrefChange() wouldn't be called and
+  // |is_setting_sync_requested_| wouldn't get reset, so check.
+  if (user_settings_->IsSyncRequested()) {
+    CHECK(!is_setting_sync_requested_);
+    is_setting_sync_requested_ = true;
+    user_settings_->ClearSyncRequested();
+    // OnSyncRequestedPrefChange() should have cleared the flag.
+    CHECK(!is_setting_sync_requested_);
+  }
+
   // Also let observers know that Sync-the-feature is now fully disabled
   // (before it possibly starts up again in transport-only mode).
   NotifyObservers();
@@ -1856,8 +1873,6 @@ void SyncServiceImpl::OverrideNetworkForTest(
                 ResetEngineReason::kShutdown);
     // The startup logic and DCHECKs require that datatypes start stopped.
     // Since ResetEngine() doesn't do this, it is necessary to stop them here.
-    // STOP_SYNC_AND_KEEP_DATA is used instead of BROWSER_SHUTDOWN_AND_KEEP_DATA
-    // because crbug.com/1400437 is removing shutdown logic from controllers.
     for (const auto& [type, controller] : data_type_controllers_) {
       controller->Stop(SyncStopMetadataFate::KEEP_METADATA, base::DoNothing());
     }

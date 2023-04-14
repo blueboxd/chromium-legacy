@@ -116,9 +116,9 @@ source_set("constants") {
   deps = [ "//base" ]
 }
 
-buildflag_header("ios_cronet_buildflags") {
-  header = "ios_cronet_buildflags.h"
-  header_dir = "net/socket"
+buildflag_header("cronet_buildflags") {
+  header = "cronet_buildflags.h"
+  header_dir = "net/base"
   flags = [ "CRONET_BUILD=$is_cronet_build" ]
 }
 
@@ -249,6 +249,8 @@ component("net") {
     "base/sockaddr_storage.cc",
     "base/sockaddr_storage.h",
     "base/sys_addrinfo.h",
+    "base/trace_event_stub.h",
+    "base/tracing.h",
     "base/transport_info.cc",
     "base/transport_info.h",
     "base/upload_bytes_element_reader.cc",
@@ -658,6 +660,7 @@ component("net") {
     "http/http_status_code.cc",
     "http/http_status_code.h",
     "http/http_status_code_list.h",
+    "http/http_stream.cc",
     "http/http_stream.h",
     "http/http_stream_factory.cc",
     "http/http_stream_factory.h",
@@ -1075,7 +1078,7 @@ component("net") {
   }
 
   deps = [
-    ":ios_cronet_buildflags",
+    ":cronet_buildflags",
     ":net_deps",
     "//build:chromeos_buildflags",
     "//net/data/ssl/chrome_root_store:gen_root_store_inc",
@@ -1207,11 +1210,19 @@ component("net") {
 
   if (is_linux || is_chromeos || is_android) {
     sources += [
+      "base/address_map_linux.h",
       "base/address_tracker_linux.cc",
       "base/address_tracker_linux.h",
       "base/network_interfaces_linux.cc",
       "base/network_interfaces_linux.h",
       "base/platform_mime_util_linux.cc",
+    ]
+  }
+
+  if (is_linux) {
+    sources += [
+      "base/address_map_cache_linux.cc",
+      "base/address_map_cache_linux.h",
     ]
   }
 
@@ -1270,10 +1281,6 @@ component("net") {
       "base/winsock_init.h",
       "base/winsock_util.cc",
       "base/winsock_util.h",
-      "cert/cert_verify_proc_win.cc",
-      "cert/cert_verify_proc_win.h",
-      "cert/known_roots_win.cc",
-      "cert/known_roots_win.h",
       "cert/test_root_certs_win.cc",
       "cert/x509_util_win.cc",
       "cert/x509_util_win.h",
@@ -1345,7 +1352,7 @@ component("net") {
     }
   }
 
-  if (is_android || is_chromeos) {
+  if (is_android || is_chromeos || is_linux) {
     sources += [
       "base/network_change_notifier_passive.cc",
       "base/network_change_notifier_passive.h",
@@ -1647,6 +1654,7 @@ source_set("net_deps") {
 
   public_deps = [
     ":constants",
+    ":cronet_buildflags",
     ":isolation_info_proto",
     ":net_export_header",
     ":net_resources",
@@ -1993,6 +2001,7 @@ static_library("test_support") {
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
+    ":cronet_buildflags",
     ":gtest_util",
     "//base",
     "//base/test:test_support",
@@ -2592,7 +2601,6 @@ test("net_unittests") {
     "disk_cache/simple/simple_test_util.h",
     "disk_cache/simple/simple_util_unittest.cc",
     "disk_cache/simple/simple_version_upgrade_unittest.cc",
-    "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
     "filter/filter_source_stream_unittest.cc",
     "filter/gzip_source_stream_unittest.cc",
     "first_party_sets/addition_overlaps_union_find_unittest.cc",
@@ -2657,7 +2665,6 @@ test("net_unittests") {
     "log/net_log_unittest.cc",
     "log/net_log_util_unittest.cc",
     "log/net_log_values_unittest.cc",
-    "log/trace_net_log_observer_unittest.cc",
     "nqe/effective_connection_type_unittest.cc",
     "nqe/event_creator_unittest.cc",
     "nqe/network_id_unittest.cc",
@@ -2797,6 +2804,13 @@ test("net_unittests") {
     "url_request/view_cache_helper_unittest.cc",
   ]
 
+  if (!is_cronet_build) {
+    sources += [
+      "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
+      "log/trace_net_log_observer_unittest.cc",
+    ]
+  }
+
   if (is_android) {
     sources += [
       "android/dummy_spnego_authenticator.cc",
@@ -2845,7 +2859,6 @@ test("net_unittests") {
     sources += [
       "base/network_change_notifier_win_unittest.cc",
       "base/network_interfaces_win_unittest.cc",
-      "cert/cert_verify_proc_win_unittest.cc",
       "http/http_auth_sspi_win_unittest.cc",
       "http/mock_sspi_library_win.cc",
       "http/mock_sspi_library_win.h",
@@ -2862,7 +2875,7 @@ test("net_unittests") {
   defines = []
 
   deps = [
-    ":extras",
+    ":cronet_buildflags",
     ":net",
     ":preload_decoder",
     ":quic_test_tools",
@@ -2873,7 +2886,6 @@ test("net_unittests") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
-    "//components/sqlite_proto",
     "//crypto",
     "//crypto:test_support",
     "//net/base/registry_controlled_domains",
@@ -2884,7 +2896,6 @@ test("net_unittests") {
     "//net/http:transport_security_state_unittest_data_default",
     "//net/third_party/quiche:quiche_tests",
     "//net/tools/huffman_trie:huffman_trie_generator_sources",
-    "//sql",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
@@ -2897,6 +2908,16 @@ test("net_unittests") {
     deps += [ "//net/server:tests" ]
   }
 
+  if (is_cronet_build) {
+    deps += [ "//third_party/perfetto/include/perfetto/test:test_support" ]
+  } else {
+    deps += [
+      ":extras",
+      "//components/sqlite_proto",
+      "//sql",
+    ]
+  }
+
   if (is_posix) {
     sources += [ "base/sockaddr_util_posix_unittest.cc" ]
   }
@@ -2907,7 +2928,6 @@ test("net_unittests") {
 
   if (enable_reporting) {
     sources += [
-      "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
       "network_error_logging/mock_persistent_nel_store_unittest.cc",
       "network_error_logging/network_error_logging_service_unittest.cc",
       "reporting/mock_persistent_reporting_store_unittest.cc",
@@ -2921,6 +2941,11 @@ test("net_unittests") {
       "reporting/reporting_service_unittest.cc",
       "reporting/reporting_uploader_unittest.cc",
     ]
+    if (!is_cronet_build) {
+      sources += [
+        "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
+      ]
+    }
   }
 
   data = [
@@ -3043,7 +3068,6 @@ test("net_unittests") {
       "websockets/websocket_deflate_predictor_impl_test.cc",
       "websockets/websocket_deflate_stream_test.cc",
       "websockets/websocket_deflater_test.cc",
-      "websockets/websocket_end_to_end_test.cc",
       "websockets/websocket_errors_test.cc",
       "websockets/websocket_extension_parser_test.cc",
       "websockets/websocket_extension_test.cc",
@@ -3059,6 +3083,14 @@ test("net_unittests") {
       "websockets/websocket_test_util.cc",
       "websockets/websocket_test_util.h",
     ]
+
+    if (!is_ios) {
+      # TODO(crbug.com/1281277): iOS does not have support for the spawned test
+      # server, which is used by this test. The long term plan is to add
+      # websocket support to the embedded test server and when that happens,
+      # this test could be enabled.
+      sources += [ "websockets/websocket_end_to_end_test.cc" ]
+    }
   }
 
   if (!disable_file_support) {

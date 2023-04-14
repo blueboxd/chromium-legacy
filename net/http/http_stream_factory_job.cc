@@ -27,6 +27,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/port_util.h"
 #include "net/base/proxy_delegate.h"
+#include "net/base/tracing.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/http/bidirectional_stream_impl.h"
@@ -343,7 +344,8 @@ bool HttpStreamFactory::Job::HasAvailableSpdySession() const {
 bool HttpStreamFactory::Job::HasAvailableQuicSession() const {
   if (!using_quic_)
     return false;
-  bool require_dns_https_alpn = (job_type_ == DNS_ALPN_H3);
+  bool require_dns_https_alpn =
+      (job_type_ == DNS_ALPN_H3) || (job_type_ == PRECONNECT_DNS_ALPN_H3);
   return quic_request_.CanUseExistingSession(
       origin_url_, request_info_.privacy_mode, request_info_.socket_tag,
       request_info_.network_anonymization_key, request_info_.secure_dns_policy,

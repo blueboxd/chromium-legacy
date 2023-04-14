@@ -190,8 +190,6 @@ static_library("browser") {
     "password_notes_table.h",
     "password_requirements_service.cc",
     "password_requirements_service.h",
-    "password_reuse_detection_manager.cc",
-    "password_reuse_detection_manager.h",
     "password_reuse_detector.cc",
     "password_reuse_detector.h",
     "password_reuse_detector_consumer.cc",
@@ -295,6 +293,7 @@ static_library("browser") {
     ":password_hash_data",
     "//base",
     "//base:i18n",
+    "//build:blink_buildflags",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//components/autofill/core/browser",
@@ -302,7 +301,6 @@ static_library("browser") {
     "//components/autofill/core/common",
     "//components/autofill/core/common:features",
     "//components/autofill/core/common/mojom:mojo_types",
-    "//components/crash/core/common:crash_key",
     "//components/device_reauth",
     "//components/favicon/core",
     "//components/keyed_service/core",
@@ -637,6 +635,7 @@ source_set("unit_tests") {
     "login_database_unittest.cc",
     "old_google_credentials_cleaner_unittest.cc",
     "origin_credential_store_unittest.cc",
+    "passkey_credential_unittest.cc",
     "password_access_authenticator_unittest.cc",
     "password_account_storage_settings_watcher_unittest.cc",
     "password_autofill_manager_unittest.cc",
@@ -659,7 +658,6 @@ source_set("unit_tests") {
     "password_manager_util_unittest.cc",
     "password_notes_table_unittest.cc",
     "password_requirements_service_unittest.cc",
-    "password_reuse_detection_manager_unittest.cc",
     "password_reuse_detector_unittest.cc",
     "password_reuse_manager_impl_unittest.cc",
     "password_save_manager_impl_unittest.cc",
@@ -744,6 +742,7 @@ source_set("unit_tests") {
     "//components/password_manager/core/common",
     "//components/password_manager/core/common:features",
     "//components/prefs:test_support",
+    "//components/safe_browsing/core/browser/password_protection:test_support",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/core",
@@ -857,6 +856,7 @@ if (is_android) {
 
   fuzzable_proto_library("unified_password_manager_proto") {
     sources = [
+      "protos/list_affiliated_passwords_result.proto",
       "protos/list_passwords_result.proto",
       "protos/password_with_local_data.proto",
     ]
@@ -867,6 +867,7 @@ if (is_android) {
   proto_java_library("unified_password_manager_proto_java") {
     proto_path = "//"
     sources = [
+      "protos/list_affiliated_passwords_result.proto",
       "protos/list_passwords_result.proto",
       "protos/password_with_local_data.proto",
     ]

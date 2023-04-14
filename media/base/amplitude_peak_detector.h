@@ -21,7 +21,8 @@ namespace media {
 // should estimating the end-to-end latency from microphone input to speakers.
 //
 // An example test page with instructions can be found under
-// third_party/blink/manual_tests/audio_latency.html
+// third_party/blink/manual_tests/audio_latency.html, and more general
+// documentation can be found under docs/media/latency_tracing.md.
 //
 // Note: does nothing if the "audio.latency" tracing category is disabled.
 //
@@ -41,6 +42,8 @@ class MEDIA_EXPORT AmplitudePeakDetector {
   // a threshold (but not when amplitude falls back bellow the threshold).
   void FindPeak(const void* data, int frames, int bytes_per_sample);
   void FindPeak(const AudioBus* audio_bus);
+
+  void SetIsTracingEnabledForTests(bool is_tracing_enabled);
 
  private:
   bool AreFramesLoud(const AudioBus* audio_bus);

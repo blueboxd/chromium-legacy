@@ -25,6 +25,7 @@ namespace ash {
 namespace {
 
 constexpr int kAlpha20 = SK_AlphaOPAQUE * 0.2f;
+constexpr int kAlpha25 = SK_AlphaOPAQUE * 0.25f;
 constexpr int kAlpha40 = SK_AlphaOPAQUE * 0.4f;
 constexpr int kAlpha60 = SK_AlphaOPAQUE * 0.6f;
 constexpr int kAlpha80 = SK_AlphaOPAQUE * 0.8f;
@@ -124,7 +125,7 @@ void AddContentColors(ui::ColorMixer& mixer,
       use_dark_color ? ui::ColorTransform(SkColorSetA(SK_ColorWHITE, 0x24))
                      : ui::ColorTransform(SkColorSetA(SK_ColorBLACK, 0x24));
   mixer[kColorAshTextColorPrimary] = {cros_tokens::kColorPrimary};
-  mixer[kColorAshTextColorSecondary] = {cros_tokens::kColorSecondary};
+  mixer[kColorAshTextColorSecondary] = {cros_tokens::kTextColorSecondary};
   mixer[kColorAshTextColorAlert] = {cros_tokens::kColorAlert};
   mixer[kColorAshTextColorWarning] = {cros_tokens::kColorWarning};
   mixer[kColorAshTextColorPositive] = {cros_tokens::kColorPositive};
@@ -240,6 +241,13 @@ void RemapLegacySemanticColors(ui::ColorMixer& mixer) {
 
   mixer[cros_tokens::kColorSelection] = {
       cros_tokens::kCrosSysOnPrimaryContainer};
+
+  mixer[cros_tokens::kTextColorSecondaryLight] = {
+      cros_tokens::kCrosSysOnSurfaceVariantLight};
+  mixer[cros_tokens::kTextColorSecondaryDark] = {
+      cros_tokens::kCrosSysOnSurfaceVariantDark};
+  mixer[cros_tokens::kTextColorSecondary] = {
+      cros_tokens::kCrosSysOnSurfaceVariant};
 
   mixer[cros_tokens::kBgColor] = {cros_tokens::kCrosSysAppBase};
   mixer[cros_tokens::kBgColorElevation1] = {cros_tokens::kCrosSysBaseElevated};
@@ -601,6 +609,8 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   mixer[kColorAshFolderItemCountBackgroundColor] =
       use_dark_color ? ui::ColorTransform(gfx::kGoogleBlue300)
                      : ui::ColorTransform(gfx::kGoogleBlue600);
+  mixer[kColorAshPhantomWindowBackgroundColor] =
+      ui::SetAlpha(cros_tokens::kCrosSysPrimary, kAlpha25);
 
   mixer[ui::kColorToggleButtonThumbOn] = {cros_tokens::kCrosSysOnPrimary};
   mixer[ui::kColorToggleButtonThumbOff] = {cros_tokens::kCrosSysOnSecondary};

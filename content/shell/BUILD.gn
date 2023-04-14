@@ -212,6 +212,10 @@ static_library("content_shell_lib") {
 
   if (is_ios) {
     sources += [
+      "browser/bluetooth/shell_bluetooth_delegate_impl_client.cc",
+      "browser/bluetooth/shell_bluetooth_delegate_impl_client.h",
+      "browser/shell_file_select_helper.cc",
+      "browser/shell_file_select_helper.h",
       "browser/shell_platform_delegate_ios.mm",
       "browser/shell_web_contents_view_delegate_ios.mm",
     ]
@@ -357,8 +361,10 @@ static_library("content_shell_lib") {
 
   if (is_ios) {
     deps += [
+      "//components/permissions",
       "//services/tracing/public/cpp",
       "//services/tracing/public/mojom:mojom",
+      "//ui/shell_dialogs",
     ]
   }
 
@@ -519,7 +525,7 @@ repack("pak") {
     sources +=
         [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
   }
-  if (!is_android && !is_fuchsia) {
+  if (!is_android && !is_fuchsia && !is_ios) {
     sources +=
         [ "$root_gen_dir/content/browser/devtools/devtools_resources.pak" ]
     deps += [ "//content/browser/devtools:devtools_resources" ]
@@ -796,6 +802,7 @@ if (is_mac) {
       # Specify a sensible install_name for static builds. The library is
       # dlopen()ed so this is not used to resolve the module.
       ldflags = [ "-Wl,-install_name,@executable_path/../Frameworks/$output_name.framework/$output_name" ]
+      deps += [ "//base/test:test_trace_processor_bundle_data" ]
     } else {
       # Both the main :content_shell and :content_shell_helper_app executables
       # need to link the framework. Because they are at different directory

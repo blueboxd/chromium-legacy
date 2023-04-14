@@ -4,6 +4,8 @@
 <translation id="1012876632442809908">Dispositivo USB-C (porta anteriore)</translation>
 <translation id="1013598600051641573">La risoluzione di <ph name="DISPLAY_NAME" /> è stata impostata su <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Fai clic su Conferma per mantenere le modifiche. Le impostazioni precedenti verranno ripristinate tra <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questo codice PIN sul dispositivo: <ph name="PINCODE" /></translation>
+<translation id="1014722676793506285"><ph name="APP_NAME" /> e tutti i siti web e le app che dispongono dell'autorizzazione di accesso alla posizione e di ChromeOS possono usare la posizione rilevata da reti Wi-Fi e mobili.</translation>
+<translation id="1017556409696559990">Riduci a icona la finestra principale quando non è presente una cronologia precedente in Chrome</translation>
 <translation id="1024364763893396229">Salva <ph name="NAME" /></translation>
 <translation id="1032891413405719768">Batteria dello stilo in esaurimento</translation>
 <translation id="1036073649888683237">Per gestire le notifiche, vai alle Impostazioni</translation>
@@ -28,7 +30,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1104621072296271835">I tuoi dispositivi funzionano ancora meglio insieme</translation>
 <translation id="1111021433905331574">Puoi cambiare il colore della retroilluminazione della tastiera in Impostazioni &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Nascondi automaticamente barra delle app</translation>
-<translation id="1135788167815124787">Correzione luce ritratto</translation>
 <translation id="1142002900084379065">Foto recenti</translation>
 <translation id="1148499908455722006">Apri la finestra di dialogo delle informazioni per <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendario</translation>
@@ -147,6 +148,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1651914502370159744">Apri la pagina Cronologia</translation>
 <translation id="1654477262762802994">Avvia una query vocale</translation>
 <translation id="1668469839109562275">VPN integrata</translation>
+<translation id="1675844249244994876">Aggiorna la finestra destra</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
 <translation id="1677507110654891115">La funzionalità <ph name="FEATURE_NAME" /> non è connessa.</translation>
 <translation id="1677582821739292812">Qualcuno sta guardando il tuo schermo</translation>
@@ -191,6 +193,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
         <ph name="IME" />
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
+<translation id="1824922790784036530">Attiva l'accesso alla posizione</translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> è stato sbloccato</translation>
 <translation id="1838895407229022812">Luminosità notturna non attiva.</translation>
 <translation id="1854180393107901205">Interrompi trasmissione</translation>
@@ -220,6 +223,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Ciao <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">Inserimento testo</translation>
+<translation id="1980808257969311265">Unisciti a <ph name="EVENT_SUMMARY" /></translation>
 <translation id="1982717156487272186">Mostra la settimana precedente</translation>
 <translation id="1989113344093894667">Impossibile acquisire i contenuti</translation>
 <translation id="1990046457226896323">File di contenuti vocali scaricati</translation>
@@ -343,6 +347,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2621713457727696555">Protetta</translation>
 <translation id="263399434338050016">"Seleziona tutto"</translation>
+<translation id="2644422758626431000">Blocca la finestra a sinistra</translation>
 <translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2647092942972307022"><ph name="USED_MEMORY" /> su <ph name="TOTAL_MEMORY" /> disponibili</translation>
 <translation id="2653019840645008922">Acquisizione finestra</translation>
@@ -363,7 +368,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2726420622004325180">Il telefono deve avere i dati mobili per poter fornire un hotspot</translation>
 <translation id="2727175239389218057">Rispondi</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2750932254614666392">"Elimina"</translation>
 <translation id="2750941250130734256">Finestra attiva sganciata.</translation>
@@ -466,6 +470,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3255483164551725916">Cosa sai fare?</translation>
 <translation id="3256109297135787951">Consente di rimuovere l'evidenziazione da un elemento sulla barra delle app</translation>
 <translation id="3260969790895726815">Il riconoscimento vocale viene elaborato localmente e la dettatura funziona offline, ma alcuni comandi vocali non funzionano.</translation>
+<translation id="3265032511221679826">Vuoi attivare l'accesso alla posizione esatta?</translation>
 <translation id="3269597722229482060">Clic con il pulsante destro</translation>
 <translation id="3289364673986435196">Menu del tasto di accensione</translation>
 <translation id="3289544412142055976">Al momento le app Linux non sono supportate</translation>
@@ -570,7 +575,9 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3659814201068740063">Tempo rimanente: circa <ph name="TIME_LEFT" /> (<ph name="PERCENTAGE" />%).
 Collega il dispositivo all'alimentazione.</translation>
 <translation id="366222428570480733">Utente gestito <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="3666266999138159418">Scorri per nascondere la finestra mobile</translation>
 <translation id="367531336287639526">Seleziona la prima icona a sinistra della barra degli indirizzi</translation>
+<translation id="3677931086890821290">Tutti i siti web e le app che dispongono dell'autorizzazione di accesso alla posizione e di ChromeOS possono usare la posizione rilevata da reti Wi-Fi e mobili.</translation>
 <translation id="3679827876008292680">Vai all'ultima scheda nella finestra</translation>
 <translation id="36813544980941320">Il tuo telefono e il dispositivo <ph name="DEVICE_NAME" /> useranno le stesse reti Wi-Fi</translation>
 <translation id="3694122362646626770">Siti web</translation>
@@ -838,6 +845,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="493076006037866439">Diminuisci lo zoom dello schermo</translation>
 <translation id="4936329710968938986">Per tutti, off</translation>
 <translation id="4938176435186993759">Nascondi tutti i suggerimenti</translation>
+<translation id="4943007472417128747">L'hotspot è stato disattivato per utilizzare il Wi-Fi. Per utilizzare l'hotspot, disattiva il Wi-Fi.</translation>
 <translation id="4945196315133970626">Disattiva le notifiche</translation>
 <translation id="4946376291507881335">Acquisisci</translation>
 <translation id="495046168593986294">Scorri verso l'alto</translation>
@@ -976,6 +984,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="5578188167649348993">memoria</translation>
 <translation id="5580000943347215299">Raccolta</translation>
 <translation id="558849140439112033">Trascina per selezionare l'area da acquisire</translation>
+<translation id="5596627076506792578">Altre opzioni</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Premi CTRL + ALT + Z per disattivare la funzione di lettura vocale.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -1049,6 +1058,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5920710855273935292">L'audio del microfono è disattivato.</translation>
+<translation id="5922962980596822074">Passa da una finestra all'altra dalla finestra usata più recentemente</translation>
 <translation id="5924855612669061715">L'hotspot è attivato</translation>
 <translation id="5946788582095584774">La funzionalità <ph name="FEATURE_NAME" /> è attiva.</translation>
 <translation id="5947494881799873997">Ripristina</translation>
@@ -1059,6 +1069,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="5976112937189445008">Premi Invio per registrare la finestra</translation>
 <translation id="5978382165065462689">Condividi il controllo dello schermo tramite Assistenza remota.</translation>
 <translation id="5980301590375426705">Esci come Ospite</translation>
+<translation id="5983567367406220847">L'hotspot è stato disattivato per inattività.</translation>
 <translation id="598407983968395253">Utilizza modello</translation>
 <translation id="598882571027504733">Per scaricare l'aggiornamento, riavvia il Chromebook con la tastiera collegata.</translation>
 <translation id="6002179289567220515">Hai utilizzato il sensore fisico per spegnere una videocamera. Puoi anche disattivare l'accesso per tutte le videocamere.</translation>
@@ -1138,6 +1149,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="6352082849089527770">Reti sconosciute</translation>
 <translation id="6359587239691116345">Ottieni le funzionalità e i miglioramenti della sicurezza più recenti. Se rifiuti questo aggiornamento, il tuo dispositivo potrebbe non funzionare più correttamente e potresti riscontrare problemi di prestazioni e sicurezza.</translation>
 <translation id="6376931439017688372">Bluetooth attivo.</translation>
+<translation id="6378515133128829137">Blocca la finestra a destra</translation>
 <translation id="6381109794406942707">Per sbloccare il dispositivo, inserisci il PIN.</translation>
 <translation id="638716340450135524">Attiva l'accesso alla fotocamera</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
@@ -1157,6 +1169,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME" /></translation>
 <translation id="6477681113376365978">Impossibile scaricare il file</translation>
 <translation id="6482559668224714696">Lente d'ingrandimento a schermo intero</translation>
+<translation id="6483727822843292440">Passa da una finestra all'altra dalla finestra meno usata</translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta a destra)</translation>
 <translation id="6491071886865974820"><ph name="MANAGER" /> richiede l'aggiornamento di <ph name="DEVICE_TYPE" /> entro il termine ultimo</translation>
 <translation id="649452524636452238">PIN della smart card</translation>
@@ -1210,6 +1223,7 @@ Nuova installazione</translation>
 <translation id="6683022854667115063">Cuffie</translation>
 <translation id="6696025732084565524">La tastiera rimovibile richiede un aggiornamento critico</translation>
 <translation id="6700713906295497288">Pulsante di menu IME</translation>
+<translation id="6705577071209924099">Regola l'illuminazione</translation>
 <translation id="6707693040195709527">Il termine ultimo per il ripristino della versione precedente del dispositivo è trascorso</translation>
 <translation id="6710213216561001401">Precedente</translation>
 <translation id="6723839937902243910">Alimentazione</translation>
@@ -1230,6 +1244,7 @@ Nuova installazione</translation>
 <translation id="6782182743534150858">Scrivania 13</translation>
 <translation id="6782919488259222803">Cerca nella pagina corrente</translation>
 <translation id="6786750046913594791">Chiudi cartella</translation>
+<translation id="6787839852456839824">Scorciatoie da tastiera</translation>
 <translation id="6790428901817661496">Riproduci</translation>
 <translation id="679368458793552943">Aumenta lo zoom quando la lente d'ingrandimento è attiva</translation>
 <translation id="6801878137098616817">Modificato di recente</translation>
@@ -1242,7 +1257,6 @@ Nuova installazione</translation>
 <translation id="6820676911989879663">Fai una pausa!</translation>
 <translation id="6827049576281411231">Chiudi il riquadro degli eventi</translation>
 <translation id="6836499262298959512">File pericoloso</translation>
-<translation id="6837064795450991317">Nascondi deskbar</translation>
 <translation id="6852052252232534364">Fai clic per attivare</translation>
 <translation id="6855029042976311970">Modificato poco fa</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> sec</translation>
@@ -1300,7 +1314,6 @@ Nuova installazione</translation>
 <translation id="7098053464892629930">Scarica l'app per <ph name="NAME" /> su Google Play per vedere tutte le funzionalità disponibili</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="7100906357717321275">Mostra i file nascosti nell'app File</translation>
-<translation id="7106330611027933926">Mostra deskbar</translation>
 <translation id="7116969082764510092">Scrivania 11</translation>
 <translation id="7118268675952955085">screenshot</translation>
 <translation id="7119327711295338600">Consente di selezionare la parola o la lettera successiva</translation>
@@ -1359,6 +1372,7 @@ Nuova installazione</translation>
 <translation id="7452560014878697800">Un'applicazione sta utilizzando la fotocamera</translation>
 <translation id="7453330308669753048">Risultato della cronologia delle ricerche rimosso</translation>
 <translation id="7455047553373871740"><ph name="BATTERY_PERCENTAGE" />% | <ph name="TIME" /> alla ricarica completa</translation>
+<translation id="7459485586006128091">L'hotspot è stato disattivato a causa di un errore interno. Prova a riconnetterti tra qualche minuto.</translation>
 <translation id="7461924472993315131">Blocca</translation>
 <translation id="746232733191930409">Modalità Registrazione dello schermo</translation>
 <translation id="7466449121337984263">Tocca il sensore</translation>
@@ -1378,6 +1392,7 @@ Nuova installazione</translation>
 Per arrestare il dispositivo, tieni di nuovo premuto il relativo tasto di accensione.</translation>
 <translation id="7526573455193969409">La rete potrebbe essere monitorata</translation>
 <translation id="7536035074519304529">Indirizzo IP: <ph name="ADDRESS" /></translation>
+<translation id="7536832381700852123">Aggiorna la finestra sinistra</translation>
 <translation id="7543399541175347147">Al momento le app Linux e le finestre di navigazione in incognito non sono supportate. Le altre app verranno salvate.</translation>
 <translation id="7544300628205093162">La retroilluminazione della tastiera è attiva</translation>
 <translation id="7548434653388805669">È ora di andare a letto</translation>
@@ -1431,6 +1446,7 @@ Per arrestare il dispositivo, tieni di nuovo premuto il relativo tasto di accens
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>
 <translation id="7768784765476638775">Seleziona per ascoltare</translation>
 <translation id="7769299611924763557">La tua GIF sarà pronta a breve</translation>
+<translation id="7773536009433685931">Attiva invece il Wi-Fi</translation>
 <translation id="7780094051999721182">scorciatoie</translation>
 <translation id="7780159184141939021">Ruota lo schermo</translation>
 <translation id="7796735576426975947">Nuova notifica nascosta</translation>
@@ -1458,6 +1474,7 @@ Per arrestare il dispositivo, tieni di nuovo premuto il relativo tasto di accens
 <translation id="7893503627044934815">Non voglio che venga mostrato questo file</translation>
 <translation id="7895348134893321514">Tote</translation>
 <translation id="7897375687985782769">Hai premuto la scorciatoia da tastiera per la rotazione dello schermo. Vuoi ruotare lo schermo?</translation>
+<translation id="7901190436359881020">Scambia le finestre</translation>
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7902625623987030061">Tocca il sensore di impronte digitali</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
@@ -1732,6 +1749,7 @@ Per arrestare il dispositivo, tieni di nuovo premuto il relativo tasto di accens
 <translation id="9198992156681343238">La risoluzione di <ph name="DISPLAY_NAME" /> è stata cambiata in <ph name="RESOLUTION" />. Fai clic su Conferma per mantenere le modifiche. Le impostazioni precedenti verranno ripristinate tra <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201044636667689546">Connetti <ph name="NAME" /> a questo Chromebook</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, gestita dall'amministratore</translation>
+<translation id="9207682216934703221"><ph name="APP_NAME" />, <ph name="APP2_NAME" /> e tutti i siti web e le app che dispongono dell'autorizzazione di accesso alla posizione e di ChromeOS possono usare la posizione rilevata da reti Wi-Fi e mobili.</translation>
 <translation id="9210037371811586452">Uscita dalla modalità Desktop unificato</translation>
 <translation id="9211490828691860325">Tutte le scrivanie</translation>
 <translation id="9211681782751733685">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING" /></translation>

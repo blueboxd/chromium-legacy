@@ -5,6 +5,8 @@
 #include "content/browser/buckets/bucket_manager_host.h"
 
 #include "base/containers/contains.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/types/pass_key.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
@@ -16,6 +18,21 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
+
+// These enums are used in metrics. Do not reorder or change their values.
+// Append new values to the end.
+enum class DurabilityMetric {
+  kNoneProvided = 0,
+  kRelaxed = 1,
+  kStrict = 2,
+  kMaxValue = kStrict,
+};
+enum class PersistenceMetric {
+  kNoneProvided = 0,
+  kNotPersisted = 1,
+  kPersisted = 2,
+  kMaxValue = kPersisted,
+};
 
 BucketManagerHost::BucketManagerHost(BucketManager* manager,
                                      const blink::StorageKey& storage_key)
@@ -74,10 +91,49 @@ void BucketManagerHost::OpenBucket(const std::string& name,
         params.persistent = policies->persisted;
       }
     }
+
+    // Count the number of minutes until expiration. This doesn't use the TIMES
+    // histogram variant because that counts in milliseconds and caps the max at
+    // ~24 days. Note that negative counts are logged as zero, so all
+    // expirations less than one minute in the future (including none specified)
+    // will be logged in the underflow bucket. Max duration we care about is 500
+    // days.
+    base::UmaHistogramCustomCounts(
+        "Storage.Buckets.Parameters.Expiration",
+        (params.expiration - base::Time::Now()).InMinutes(), 1,
+        base::Days(500).InMinutes(), 50);
+    // Convert quota to kB before logging.
+    base::UmaHistogramCustomCounts("Storage.Buckets.Parameters.QuotaKb",
+                                   params.quota / 1024, 1,
+                                   /* 20 GB */ 20L * 1024 * 1024, 50);
+    base::UmaHistogramEnumeration(
+        "Storage.Buckets.Parameters.Durability",
+        policies->has_durability
+            ? policies->durability == blink::mojom::BucketDurability::kStrict
+                  ? DurabilityMetric::kStrict
+                  : DurabilityMetric::kRelaxed
+            : DurabilityMetric::kNoneProvided);
+    base::UmaHistogramEnumeration("Storage.Buckets.Parameters.Persisted",
+                                  policies->has_persisted
+                                      ? policies->persisted
+                                            ? PersistenceMetric::kPersisted
+                                            : PersistenceMetric::kNotPersisted
+                                      : PersistenceMetric::kNoneProvided);
   }
 
   GetQuotaManagerProxy()->UpdateOrCreateBucket(
       params, base::SequencedTaskRunner::GetCurrentDefault(),
+      base::BindOnce(&BucketManagerHost::DidGetBucket,
+                     weak_factory_.GetWeakPtr(), receivers_.current_context(),
+                     std::move(callback)));
+}
+
+void BucketManagerHost::GetBucketForDevtools(
+    const std::string& name,
+    GetBucketForDevtoolsCallback callback) {
+  GetQuotaManagerProxy()->GetBucketByNameUnsafe(
+      storage_key_, name, blink::mojom::StorageType::kTemporary,
+      base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&BucketManagerHost::DidGetBucket,
                      weak_factory_.GetWeakPtr(), receivers_.current_context(),
                      std::move(callback)));
@@ -142,11 +198,11 @@ void BucketManagerHost::DidGetBucket(
         case storage::QuotaError::kInvalidExpiration:
           return blink::mojom::BucketError::kInvalidExpiration;
         case storage::QuotaError::kNone:
-        case storage::QuotaError::kNotFound:
         case storage::QuotaError::kEntryExistsError:
         case storage::QuotaError::kFileOperationError:
           NOTREACHED();
           ABSL_FALLTHROUGH_INTENDED;
+        case storage::QuotaError::kNotFound:
         case storage::QuotaError::kDatabaseError:
         case storage::QuotaError::kUnknownError:
           return blink::mojom::BucketError::kUnknown;

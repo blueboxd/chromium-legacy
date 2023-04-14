@@ -875,15 +875,14 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData& proto) {
   VISIT(notes);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData_PasswordIssues& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PasswordIssues& proto) {
   VISIT(leaked_password_issue);
   VISIT(reused_password_issue);
   VISIT(weak_password_issue);
   VISIT(phished_password_issue);
 }
 
-VISIT_PROTO_FIELDS(
-    const sync_pb::PasswordSpecificsData_PasswordIssues_PasswordIssue& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PasswordIssues_PasswordIssue& proto) {
   VISIT(date_first_detection_windows_epoch_micros);
   VISIT(is_muted);
 }
@@ -903,6 +902,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
   VISIT(url);
   VISIT(blacklisted);
   VISIT(date_last_used_windows_epoch_micros);
+  VISIT(password_issues);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PowerBookmarkSpecifics& proto) {

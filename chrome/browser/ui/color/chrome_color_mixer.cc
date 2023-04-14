@@ -12,6 +12,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/color/chrome_color_provider_utils.h"
+#include "chrome_color_id.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_features.h"
@@ -89,7 +90,8 @@ constexpr SkAlpha kTabGroupChipAlpha = 61;
 void ApplyGM3OmniboxBackgroundColor(ui::ColorMixer& mixer,
                                     const ui::ColorProviderManager::Key& key) {
   const bool gm3_background_color_enabled =
-      features::IsChromeRefresh2023() ||
+      features::GetChromeRefresh2023Level() ==
+          features::ChromeRefresh2023Level::kLevel2 ||
       base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateBackgroundColor);
 
   // Apply omnibox background color updates only to non-themed clients.
@@ -720,29 +722,38 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
                 : kColorReadAnythingBackgroundLight};
   mixer[kColorReadAnythingBackgroundBlue] = {gfx::kGoogleBlue200};
   mixer[kColorReadAnythingBackgroundDark] = {gfx::kGoogleGrey900};
-  mixer[kColorReadAnythingBackgroundLight] = {gfx::kGoogleGrey050};
+  mixer[kColorReadAnythingBackgroundLight] = {gfx::kGoogleGrey100};
   mixer[kColorReadAnythingBackgroundYellow] = {gfx::kGoogleYellow200};
   mixer[kColorReadAnythingForeground] = {
       dark_mode ? kColorReadAnythingForegroundDark
                 : kColorReadAnythingForegroundLight};
-  mixer[kColorReadAnythingForegroundBlue] = ui::PickGoogleColor(
-      kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundBlue,
+  mixer[kColorReadAnythingForegroundBlue] = ui::PickGoogleColorTwoBackgrounds(
+      kColorReadAnythingForegroundLight,
+      kColorReadAnythingDropdownBackgroundBlue,
+      kColorReadAnythingDropdownSelectedBlue,
       color_utils::kMinimumReadableContrastRatio);
-  mixer[kColorReadAnythingForegroundDark] = {gfx::kGoogleGrey200};
-  mixer[kColorReadAnythingForegroundLight] = {gfx::kGoogleGrey900};
-  mixer[kColorReadAnythingForegroundYellow] = ui::PickGoogleColor(
+  mixer[kColorReadAnythingForegroundDark] = ui::PickGoogleColorTwoBackgrounds(
+      gfx::kGoogleGrey200, kColorReadAnythingDropdownBackgroundDark,
+      kColorReadAnythingDropdownSelectedDark,
+      color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorReadAnythingForegroundLight] = ui::PickGoogleColorTwoBackgrounds(
+      gfx::kGoogleGrey800, kColorReadAnythingBackgroundLight,
+      kColorReadAnythingDropdownSelectedLight,
+      color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorReadAnythingForegroundYellow] = ui::PickGoogleColorTwoBackgrounds(
       kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundYellow,
+      kColorReadAnythingDropdownSelectedYellow,
       color_utils::kMinimumReadableContrastRatio);
   mixer[kColorReadAnythingSeparator] = {dark_mode
                                             ? kColorReadAnythingSeparatorDark
                                             : kColorReadAnythingSeparatorLight};
-  mixer[kColorReadAnythingSeparatorBlue] = ui::PickGoogleColor(
-      kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundBlue,
-      color_utils::kMinimumVisibleContrastRatio);
+  mixer[kColorReadAnythingSeparatorBlue] =
+      ui::PickGoogleColor(gfx::kGoogleGrey500, kColorReadAnythingBackgroundBlue,
+                          color_utils::kMinimumVisibleContrastRatio);
   mixer[kColorReadAnythingSeparatorDark] = {gfx::kGoogleGrey800};
   mixer[kColorReadAnythingSeparatorLight] = {gfx::kGoogleGrey300};
   mixer[kColorReadAnythingSeparatorYellow] = ui::PickGoogleColor(
-      kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundYellow,
+      gfx::kGoogleGrey500, kColorReadAnythingBackgroundYellow,
       color_utils::kMinimumVisibleContrastRatio);
   mixer[kColorReadAnythingDropdownBackground] = {
       dark_mode ? kColorReadAnythingDropdownBackgroundDark
@@ -751,7 +762,13 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorReadAnythingDropdownBackgroundDark] = {gfx::kGoogleGrey900};
   mixer[kColorReadAnythingDropdownBackgroundLight] = {SK_ColorWHITE};
   mixer[kColorReadAnythingDropdownBackgroundYellow] = {gfx::kGoogleYellow050};
-
+  mixer[kColorReadAnythingDropdownSelected] = {
+      dark_mode ? kColorReadAnythingDropdownSelectedDark
+                : kColorReadAnythingDropdownSelectedLight};
+  mixer[kColorReadAnythingDropdownSelectedBlue] = {gfx::kGoogleBlue200};
+  mixer[kColorReadAnythingDropdownSelectedDark] = {gfx::kGoogleGrey800};
+  mixer[kColorReadAnythingDropdownSelectedLight] = {gfx::kGoogleGrey200};
+  mixer[kColorReadAnythingDropdownSelectedYellow] = {gfx::kGoogleYellow200};
   // Apply high contrast recipes if necessary.
   if (!ShouldApplyHighContrastColors(key)) {
     return;

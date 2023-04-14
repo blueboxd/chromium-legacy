@@ -33,8 +33,6 @@ using testing::Not;
 using testing::NotNull;
 using testing::Return;
 
-const char kNigoriKeyName[] = "nigori-key";
-
 NigoriMetadataBatch CreateDummyNigoriMetadataBatch(
     const std::string& progress_marker_token,
     int64_t entity_metadata_sequence_number);
@@ -47,11 +45,8 @@ MATCHER_P(HasDefaultKeyDerivedFrom, key_params, "") {
   const Cryptographer& cryptographer = arg;
   std::unique_ptr<Nigori> expected_default_nigori = Nigori::CreateByDerivation(
       key_params.derivation_params, key_params.password);
-  std::string expected_default_key_name;
-  EXPECT_TRUE(expected_default_nigori->Permute(
-      Nigori::Type::Password, kNigoriKeyName, &expected_default_key_name));
   return cryptographer.GetDefaultEncryptionKeyName() ==
-         expected_default_key_name;
+         expected_default_nigori->GetKeyName();
 }
 
 MATCHER(HasKeystoreNigori, "") {
@@ -89,12 +84,9 @@ MATCHER_P(CanDecryptWith, key_params, "") {
   const Cryptographer& cryptographer = arg;
   std::unique_ptr<Nigori> nigori = Nigori::CreateByDerivation(
       key_params.derivation_params, key_params.password);
-  std::string nigori_name;
-  EXPECT_TRUE(
-      nigori->Permute(Nigori::Type::Password, kNigoriKeyName, &nigori_name));
   const std::string unencrypted = "test";
   sync_pb::EncryptedData encrypted;
-  encrypted.set_key_name(nigori_name);
+  encrypted.set_key_name(nigori->GetKeyName());
   encrypted.set_blob(nigori->Encrypt(unencrypted));
 
   if (!cryptographer.CanDecrypt(encrypted)) {
@@ -528,9 +520,10 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldRotateKeystoreKey) {
 
   // Populate new remote specifics to bridge, which is actually still
   // |not_rotated_specifics|.
-  *entity_data.specifics.mutable_nigori() = not_rotated_specifics;
+  EntityData new_entity_data;
+  *new_entity_data.specifics.mutable_nigori() = not_rotated_specifics;
   EXPECT_CALL(*processor(), Put(HasKeystoreNigori()));
-  EXPECT_THAT(bridge()->ApplySyncChanges(std::move(entity_data)),
+  EXPECT_THAT(bridge()->ApplySyncChanges(std::move(new_entity_data)),
               Eq(absl::nullopt));
 
   // Mimic commit completion.
@@ -822,9 +815,9 @@ TEST_F(NigoriSyncBridgeImplTest,
   ASSERT_TRUE(passphrase_cryptographer->Encrypt(
       old_key_key_bag.ToProto(), specifics.mutable_encryption_keybag()));
   EntityData corrupted_entity_data;
-  *entity_data.specifics.mutable_nigori() = specifics;
+  *corrupted_entity_data.specifics.mutable_nigori() = specifics;
 
-  EXPECT_THAT(bridge()->ApplySyncChanges(std::move(entity_data)),
+  EXPECT_THAT(bridge()->ApplySyncChanges(std::move(corrupted_entity_data)),
               Ne(absl::nullopt));
 }
 

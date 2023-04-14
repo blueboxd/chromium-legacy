@@ -11,11 +11,11 @@
 #import "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/shared/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/shared/ui/elements/fade_truncating_label.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/attributed_string_util.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_view.h"
@@ -33,12 +33,13 @@
 
 namespace {
 const CGFloat kTextTopMargin = 6.0;
-const CGFloat kMultilineTextTopMargin = 13.0;
+const CGFloat kMultilineTextTopMargin = 12.0;
 /// Trailing margin of the text. This margin is increased when the text is on
 /// multiple lines, otherwise text of the first lines without the gradient seems
 /// too close to the trailing (button/end).
 const CGFloat kTextTrailingMargin = 0.0;
 const CGFloat kMultilineTextTrailingMargin = 4.0;
+const CGFloat kMultilineLineSpacing = 2.0;
 const CGFloat kTrailingButtonSize = 24;
 const CGFloat kTrailingButtonTrailingMargin = 14;
 const CGFloat kTopGradientColorOpacity = 0.85;
@@ -128,6 +129,7 @@ BOOL IsMultilineSearchSuggestionEnabled() {
     [_textTruncatingLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
                                         forAxis:UILayoutConstraintAxisVertical];
+    _textTruncatingLabel.lineSpacing = kMultilineLineSpacing;
 
     _textStackView = [[UIStackView alloc]
         initWithArrangedSubviews:@[ _textTruncatingLabel ]];
@@ -278,6 +280,13 @@ BOOL IsMultilineSearchSuggestionEnabled() {
       constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
                                   constant:kTextTopMargin];
 
+  // When there is no trailing button, the text should extend to the cell's
+  // trailing edge with a padding.
+  self.textTrailingConstraint = [self.contentView.trailingAnchor
+      constraintEqualToAnchor:self.textStackView.trailingAnchor
+                     constant:kTextTrailingMargin];
+  self.textTrailingConstraint.priority = UILayoutPriorityRequired - 1;
+
   [NSLayoutConstraint activateConstraints:@[
     // Row has a minimum height.
     [self.contentView.heightAnchor
@@ -295,6 +304,7 @@ BOOL IsMultilineSearchSuggestionEnabled() {
     // is actually left off because it will be added via a
     // layout guide once the cell has been added to the view hierarchy.
     self.textTopConstraint,
+    self.textTrailingConstraint,
     [self.textStackView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
 
@@ -340,15 +350,6 @@ BOOL IsMultilineSearchSuggestionEnabled() {
   DCHECK(self.imageLayoutGuide);
   DCHECK(self.textLayoutGuide);
 
-  // When there is no trailing button, the text should extend to the cell's
-  // trailing edge with a padding.
-  NSLayoutConstraint* stackViewToCellTrailing =
-      [self.textStackView.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kTextTrailingMargin];
-  stackViewToCellTrailing.priority = UILayoutPriorityRequired - 1;
-  self.textTrailingConstraint = stackViewToCellTrailing;
-
   // These constraints need to be removed when freezing the position of these
   // views. See -freezeLayoutGuidePositions for the reason why.
   [NSLayoutConstraint
@@ -360,7 +361,6 @@ BOOL IsMultilineSearchSuggestionEnabled() {
         constraintEqualToAnchor:self.imageLayoutGuide.widthAnchor],
     [self.textStackView.leadingAnchor
         constraintEqualToAnchor:self.textLayoutGuide.leadingAnchor],
-    stackViewToCellTrailing,
   ];
 
   [NSLayoutConstraint

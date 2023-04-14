@@ -294,52 +294,6 @@ id<GREYMatcher> DuplicateCredentialViewPasswordButton() {
                     nullptr);
 }
 
-// Matcher for the "Set up…"
-GREYElementInteraction* SetUpTrustedVaultLink() {
-  return [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kOnDeviceEncryptionSetUpId),
-                                          grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollAmount)
-      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
-}
-
-// Matcher for the link allowing to learn more about
-// on device encryption. Only present when the user has opted-in.
-GREYElementInteraction* OptedInTrustedVaultLink() {
-  return [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kOnDeviceEncryptionLearnMoreId),
-                                          grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollAmount)
-      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
-}
-
-// Matcher for the link explaining Trusted Vault.
-// Only present when the user has opted-in.
-GREYElementInteraction* OptedInTrustedVaultText() {
-  return [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kOnDeviceEncryptionOptedInTextId),
-                                          grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollAmount)
-      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
-}
-
-// Matcher for the text offering the user to opt-in trusted vault.
-GREYElementInteraction* OptInTrustedVaultLink() {
-  return [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kOnDeviceEncryptionOptInId),
-                                          grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollAmount)
-      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
-}
-
 // Matches the pop-up (call-out) menu item with accessibility label equal to the
 // translated string identified by `label`.
 id<GREYMatcher> PopUpMenuItemWithLabel(int label) {
@@ -602,20 +556,6 @@ id<GREYMatcher> EditDoneButton() {
   }
 
   return config;
-}
-
-// Check that a user which is not logged in any account do not get
-// offered to use trusted vault.
-- (void)testNoOndeviceEncryptionSetupWhenSignedOut {
-  OpenPasswordManager();
-
-  // Check that the menus related to on-device encryptions are not displayed.
-  [OptedInTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [OptedInTrustedVaultText() assertWithMatcher:grey_nil()];
-  [OptInTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [SetUpTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
 }
 
 // Verifies the UI elements are accessible on the Passwords page.
@@ -1773,7 +1713,7 @@ id<GREYMatcher> EditDoneButton() {
 
   if ([self groupingEnabled]) {
     [GetInteractionForPasswordEntry([NSString
-        stringWithFormat:@"www01.example.com, %d accounts", kPasswordsCount])
+        stringWithFormat:@"example.com, %d accounts", kPasswordsCount])
         performAction:grey_tap()];
   } else {
     // The scrolling in GetInteractionForPasswordEntry has too fine steps to
@@ -1952,11 +1892,6 @@ id<GREYMatcher> EditDoneButton() {
 
   [[EarlGrey selectElementWithMatcher:SearchTextField()]
       performAction:grey_typeText(@"2")];
-
-  // Check that the "Save Passwords" switch is hidden.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
-                                          kSavePasswordSwitchTableViewId, YES)]
-      assertWithMatcher:grey_nil()];
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example11.com"
                                             username:@"user1"]
@@ -2328,7 +2263,7 @@ id<GREYMatcher> EditDoneButton() {
   TapEdit();
 
   if ([self groupingEnabled]) {
-    [[GetInteractionForPasswordEntry(@"www01.example.com, 4 accounts")
+    [[GetInteractionForPasswordEntry(@"example.com, 4 accounts")
         assertWithMatcher:grey_notNil()] performAction:grey_tap()];
     [[GetInteractionForPasswordEntry(@"example11.com")
         assertWithMatcher:grey_notNil()] performAction:grey_tap()];
@@ -2772,7 +2707,10 @@ id<GREYMatcher> EditDoneButton() {
   NSString* text = l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS);
   NSString* detailText =
       base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
-          IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 1));
+          password_manager::features::IsPasswordCheckupEnabled()
+              ? IDS_IOS_PASSWORD_CHECKUP_COMPROMISED_COUNT
+              : IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
+          1));
 
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel([NSString
                                           stringWithFormat:@"%@, %@", text,
@@ -3225,6 +3163,61 @@ id<GREYMatcher> EditDoneButton() {
       @"Stored form was not found in the PasswordStore results.");
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
                                 enableSync:NO];
+  OpenPasswordManager();
+
+  // `passwordMatcher` includes grey_sufficientlyVisible() because there are
+  // other invisible cells when password details is closed later.
+  id<GREYMatcher> passwordMatcher =
+      grey_allOf([self groupingEnabled]
+                     ? ButtonWithAccessibilityID(@"local.com")
+                     : ButtonWithAccessibilityID(@"local.com, username"),
+                 grey_sufficientlyVisible(), nil);
+  id<GREYMatcher> localIconMatcher =
+      grey_allOf(grey_accessibilityID(kLocalOnlyPasswordIconId),
+                 grey_ancestor(passwordMatcher), nil);
+  [GetInteractionForListItem(localIconMatcher, kGREYDirectionDown)
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:passwordMatcher]
+      performAction:grey_tap()];
+
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kMovePasswordToAccountButtonId)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kMovePasswordToAccountButtonId)]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kMovePasswordToAccountButtonId)]
+      assertWithMatcher:grey_notVisible()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+
+  [GetInteractionForListItem(localIconMatcher, kGREYDirectionDown)
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Regression test for crbug.com/1431975. Similar to testMovePasswordToAccount
+// above but the only open tab is an incognito one.
+- (void)testMovePasswordToAccountWithOnlyIncognitoTabOpen {
+  GREYAssert(
+      [PasswordSettingsAppInterface saveExamplePassword:@"localPassword"
+                                               userName:@"username"
+                                                 origin:@"https://local.com"],
+      @"Stored form was not found in the PasswordStore results.");
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:NO];
+
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey closeAllNormalTabs];
+
   OpenPasswordManager();
 
   // `passwordMatcher` includes grey_sufficientlyVisible() because there are

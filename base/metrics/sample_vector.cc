@@ -7,6 +7,7 @@
 #include <ostream>
 
 #include "base/check_op.h"
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -30,11 +31,12 @@ typedef HistogramBase::Sample Sample;
 namespace {
 
 // An iterator for sample vectors.
-class SampleVectorIterator : public SampleCountIterator {
+template <typename T>
+class IteratorTemplate : public SampleCountIterator {
  public:
-  SampleVectorIterator(const HistogramBase::AtomicCount* counts,
-                       size_t counts_size,
-                       const BucketRanges* bucket_ranges)
+  IteratorTemplate(T* counts,
+                   size_t counts_size,
+                   const BucketRanges* bucket_ranges)
       : counts_(counts),
         counts_size_(counts_size),
         bucket_ranges_(bucket_ranges) {
@@ -42,7 +44,7 @@ class SampleVectorIterator : public SampleCountIterator {
     SkipEmptyBuckets();
   }
 
-  ~SampleVectorIterator() override = default;
+  ~IteratorTemplate() override;
 
   // SampleCountIterator:
   bool Done() const override { return index_ >= counts_size_; }
@@ -53,12 +55,7 @@ class SampleVectorIterator : public SampleCountIterator {
   }
   void Get(HistogramBase::Sample* min,
            int64_t* max,
-           HistogramBase::Count* count) override {
-    DCHECK(!Done());
-    *min = bucket_ranges_->range(index_);
-    *max = strict_cast<int64_t>(bucket_ranges_->range(index_ + 1));
-    *count = subtle::NoBarrier_Load(&counts_[index_]);
-  }
+           HistogramBase::Count* count) override;
 
   // SampleVector uses predefined buckets, so iterator can return bucket index.
   bool GetBucketIndex(size_t* index) const override {
@@ -83,12 +80,49 @@ class SampleVectorIterator : public SampleCountIterator {
     }
   }
 
-  raw_ptr<const HistogramBase::AtomicCount> counts_;
+  raw_ptr<T> counts_;
   size_t counts_size_;
   raw_ptr<const BucketRanges> bucket_ranges_;
 
   size_t index_ = 0;
 };
+
+typedef IteratorTemplate<const HistogramBase::AtomicCount> SampleVectorIterator;
+
+template <>
+SampleVectorIterator::~IteratorTemplate() = default;
+
+// Get() for an iterator of a SampleVector.
+template <>
+void SampleVectorIterator::Get(HistogramBase::Sample* min,
+                               int64_t* max,
+                               HistogramBase::Count* count) {
+  DCHECK(!Done());
+  *min = bucket_ranges_->range(index_);
+  *max = strict_cast<int64_t>(bucket_ranges_->range(index_ + 1));
+  *count = subtle::NoBarrier_Load(&counts_[index_]);
+}
+
+typedef IteratorTemplate<HistogramBase::AtomicCount>
+    ExtractingSampleVectorIterator;
+
+template <>
+ExtractingSampleVectorIterator::~IteratorTemplate() {
+  // Ensure that the user has consumed all the samples in order to ensure no
+  // samples are lost.
+  DCHECK(Done());
+}
+
+// Get() for an extracting iterator of a SampleVector.
+template <>
+void ExtractingSampleVectorIterator::Get(HistogramBase::Sample* min,
+                                         int64_t* max,
+                                         HistogramBase::Count* count) {
+  DCHECK(!Done());
+  *min = bucket_ranges_->range(index_);
+  *max = strict_cast<int64_t>(bucket_ranges_->range(index_ + 1));
+  *count = subtle::NoBarrier_AtomicExchange(&counts_[index_], 0);
+}
 
 }  // namespace
 
@@ -188,7 +222,8 @@ std::unique_ptr<SampleCountIterator> SampleVectorBase::Iterator() const {
   if (sample.count != 0) {
     return std::make_unique<SingleSampleIterator>(
         bucket_ranges_->range(sample.bucket),
-        bucket_ranges_->range(sample.bucket + 1), sample.count, sample.bucket);
+        bucket_ranges_->range(sample.bucket + 1), sample.count, sample.bucket,
+        /*value_was_extracted=*/false);
   }
 
   // Handle the multi-sample case.
@@ -199,6 +234,36 @@ std::unique_ptr<SampleCountIterator> SampleVectorBase::Iterator() const {
 
   // And the no-value case.
   return std::make_unique<SampleVectorIterator>(nullptr, 0, bucket_ranges_);
+}
+
+std::unique_ptr<SampleCountIterator> SampleVectorBase::ExtractingIterator() {
+  // Handle the single-sample case.
+  SingleSample sample = single_sample().Extract();
+  if (sample.count != 0) {
+    // Note that we have already extracted the samples (i.e., reset the
+    // underlying data back to 0 samples), even before the iterator has been
+    // used. This means that the caller needs to ensure that this value is
+    // eventually consumed, otherwise the sample is lost. There is no iterator
+    // that simply points to the underlying SingleSample and extracts its value
+    // on-demand because there are tricky edge cases when the SingleSample is
+    // disabled between the creation of the iterator and the actual call to
+    // Get() (for example, due to histogram changing to use a vector to store
+    // its samples).
+    return std::make_unique<SingleSampleIterator>(
+        bucket_ranges_->range(sample.bucket),
+        bucket_ranges_->range(sample.bucket + 1), sample.count, sample.bucket,
+        /*value_was_extracted=*/true);
+  }
+
+  // Handle the multi-sample case.
+  if (counts() || MountExistingCountsStorage()) {
+    return std::make_unique<ExtractingSampleVectorIterator>(
+        counts(), counts_size(), bucket_ranges_);
+  }
+
+  // And the no-value case.
+  return std::make_unique<ExtractingSampleVectorIterator>(nullptr, 0,
+                                                          bucket_ranges_);
 }
 
 bool SampleVectorBase::AddSubtractImpl(SampleCountIterator* iter,
@@ -260,6 +325,16 @@ bool SampleVectorBase::AddSubtractImpl(SampleCountIterator* iter,
     // Ensure that the sample's min/max match the ranges min/max.
     if (min != bucket_ranges_->range(dest_index) ||
         max != bucket_ranges_->range(dest_index + 1)) {
+#if !BUILDFLAG(IS_NACL)
+      // TODO(crbug/1432981): Remove these. They are used to investigate
+      // unexpected failures.
+      SCOPED_CRASH_KEY_NUMBER("SampleVector", "min", min);
+      SCOPED_CRASH_KEY_NUMBER("SampleVector", "max", max);
+      SCOPED_CRASH_KEY_NUMBER("SampleVector", "range_min",
+                              bucket_ranges_->range(dest_index));
+      SCOPED_CRASH_KEY_NUMBER("SampleVector", "range_max",
+                              bucket_ranges_->range(dest_index + 1));
+#endif  // !BUILDFLAG(IS_NACL)
       NOTREACHED() << "sample=" << min << "," << max
                    << "; range=" << bucket_ranges_->range(dest_index) << ","
                    << bucket_ranges_->range(dest_index + 1);

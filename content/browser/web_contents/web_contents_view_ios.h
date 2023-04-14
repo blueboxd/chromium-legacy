@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 
+#include "content/browser/renderer_host/popup_menu_helper_ios.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
@@ -24,6 +25,7 @@ class WebContentsUIViewHolder;
 // iOS-specific implementation of the WebContentsView. It owns an UIView that
 // contains all of the contents of the tab and associated child views.
 class WebContentsViewIOS : public WebContentsView,
+                           public PopupMenuHelper::Delegate,
                            public RenderViewHostDelegateView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
@@ -67,6 +69,20 @@ class WebContentsViewIOS : public WebContentsView,
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
 
+  void ShowPopupMenu(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
+      const gfx::Rect& bounds,
+      int item_height,
+      double item_font_size,
+      int selected_item,
+      std::vector<blink::mojom::MenuItemPtr> menu_items,
+      bool right_aligned,
+      bool allow_multiple_selection) override;
+
+  // PopupMenuHelper::Delegate:
+  void OnMenuClosed() override;
+
   using RenderWidgetHostViewCreateFunction =
       RenderWidgetHostViewIOS* (*)(RenderWidgetHost*);
 
@@ -78,6 +94,8 @@ class WebContentsViewIOS : public WebContentsView,
   // The WebContentsImpl whose contents we display.
   raw_ptr<WebContentsImpl> web_contents_;
   std::unique_ptr<WebContentsUIViewHolder> ui_view_;
+
+  std::unique_ptr<PopupMenuHelper> popup_menu_helper_;
 };
 
 }  // namespace content

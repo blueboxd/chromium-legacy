@@ -34,13 +34,13 @@ static const AudioChannelLabel kCoreAudioChannelMapping[] = {
     kAudioChannelLabel_Right,
     kAudioChannelLabel_Center,
     kAudioChannelLabel_LFEScreen,
-    kAudioChannelLabel_LeftSurround,
-    kAudioChannelLabel_RightSurround,
+    kAudioChannelLabel_RearSurroundLeft,
+    kAudioChannelLabel_RearSurroundRight,
     kAudioChannelLabel_LeftCenter,
     kAudioChannelLabel_RightCenter,
     kAudioChannelLabel_CenterSurround,
-    kAudioChannelLabel_LeftSurroundDirect,
-    kAudioChannelLabel_RightSurroundDirect,
+    kAudioChannelLabel_LeftSurround,
+    kAudioChannelLabel_RightSurround
 };
 static_assert(0 == LEFT && 1 == RIGHT && 2 == CENTER && 3 == LFE &&
                   4 == BACK_LEFT &&
@@ -162,7 +162,7 @@ void ReportFramesRequestedUma(int number_of_frames_requested) {
 
 }  // namespace
 
-AUHALStream::AUHALStream(AUHALStreamClient* client,
+AUHALStream::AUHALStream(AudioIOStreamClient* client,
                          const AudioParameters& params,
                          AudioDeviceID device,
                          const AudioManager::LogCallback& log_callback)
@@ -277,6 +277,11 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
     source_ = callback;
   }
 
+#if BUILDFLAG(IS_MAC)
+  peak_detector_ = std::make_unique<AmplitudePeakDetector>(base::BindRepeating(
+      &AudioIOStreamClient::StopAmplitudePeakTrace, base::Unretained(client_)));
+#endif
+
   OSStatus result = AudioOutputUnitStart(audio_unit_->audio_unit());
   if (result == noErr)
     return;
@@ -333,6 +338,10 @@ void AUHALStream::Stop() {
     last_number_of_frames_ = 0;
     audio_fifo_.reset();
   }
+
+#if BUILDFLAG(IS_MAC)
+  peak_detector_.reset();
+#endif
 
   stopped_ = true;
 }
@@ -398,6 +407,10 @@ OSStatus AUHALStream::Render(AudioUnitRenderActionFlags* flags,
     audio_fifo_->Consume(output_bus_.get(), output_bus_->frames());
   else
     ProvideInput(0, output_bus_.get());
+
+#if BUILDFLAG(IS_MAC)
+  peak_detector_->FindPeak(output_bus_.get());
+#endif
 
   last_number_of_frames_ = number_of_frames;
 

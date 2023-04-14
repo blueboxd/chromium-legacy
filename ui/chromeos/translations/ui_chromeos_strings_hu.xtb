@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">A hitelesítési tanúsítvány helyileg elutasítva</translation>
 <translation id="1775381402323441512">Videófájl adatai</translation>
 <translation id="180035236176489073">Online kell lennie a fájlok eléréséhez.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Nem található a következő azonosítóval rendelkező bővítmény:}other{Nem találhatók a következő azonosítókkal rendelkező bővítmények:}}</translation>
 <translation id="1807938677607439181">Minden fájl</translation>
 <translation id="1810764548349082891">Nincs előnézet</translation>
 <translation id="1812302367230252929">amhara, betű szerinti átírás</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Érvénytelen bejegyzés: Tárgy alternatív egyéb neve – egyezés</translation>
 <translation id="1838709767668011582">Google-webhely</translation>
 <translation id="1853795129690976061">Ez a mappa meg van osztva a Linux rendszerrel</translation>
-<translation id="1859422890169495746">Ez a Chromebook</translation>
 <translation id="1864756863218646478">A fájl nem található.</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" />. hálózat (összesen <ph name="NETWORK_COUNT" />), <ph name="NETWORK_NAME" />, csatlakozás</translation>
 <translation id="1920670151694390848">malajálam, betű szerinti átírás</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Bolygó</translation>
 <translation id="2305020378527873881">A(z) <ph name="VOLUME_NAME" /> kiadása megtörtént.</translation>
 <translation id="2307462900900812319">Hálózat beállítása</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Nem található a(z) <ph name="BEGIN_LIST" /><ph name="END_LIST" /> azonosítójú bővítmény. Forduljon a rendszergazdához.}other{Nem találhatók a(z) <ph name="BEGIN_LIST" /><ph name="END_LIST" /> azonosítójú bővítmények. Forduljon a rendszergazdához.}}</translation>
 <translation id="2325650632570794183">Ez a fájltípus nem támogatott. Kérjük, látogasson el a Chrome Internetes áruházba olyan alkalmazás kereséséhez, amely meg tudja nyitni ezt a fájltípust.</translation>
 <translation id="2326539130272988168">bolgár</translation>
 <translation id="2337715497728194187">Megosztás a Bruschettával</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Nem bizt.</translation>
 <translation id="3291218047831493686">A SIM-zárolási beállítás módosítása érdekében csatlakozzon ehhez a hálózathoz</translation>
 <translation id="3293023191599135697">A WEP-hálózatok nem támogatottak</translation>
+<translation id="3295006446256079333">Ez a mennyiség</translation>
 <translation id="3295357220137379386">Az eszköz elfoglalt</translation>
 <translation id="3296763833017966289">grúz</translation>
 <translation id="3307875152560779385">ukrán</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase-ek</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="485316830061041779">német</translation>
+<translation id="4862885579661885411">Fájlbeállítások</translation>
 <translation id="4867079195717347957">Kattintson az oszlop csökkenő sorrendben való rendezéséhez.</translation>
 <translation id="4867297348137739678">Múlt héten</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bájt</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> elem másolása…</translation>
 <translation id="7375951387215729722"><ph name="COLUMN_NAME" /> szerint rendezett, csökkenő sorrendben lévő fájllista.</translation>
 <translation id="7377161162143020057">A fájl másolását rendszergazdai házirend tiltja</translation>
-<translation id="7392500733467492920">Forduljon a rendszergazdához.</translation>
 <translation id="7402503521691663770">ChromeOS Flex-eszközök</translation>
 <translation id="7408870451288633753">cseh</translation>
 <translation id="7417453074306512035">Etióp billentyűzet</translation>

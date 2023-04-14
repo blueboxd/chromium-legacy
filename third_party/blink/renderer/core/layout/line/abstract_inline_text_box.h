@@ -34,16 +34,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/range.h"
-#include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
-#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
-class InlineTextBox;
-
-// High-level abstraction of InlineTextBox to allow the accessibility module to
-// get information about InlineTextBoxes without tight coupling.
+// High-level abstraction of a text box fragment, to allow the accessibility
+// module to get information without tight coupling.
 class CORE_EXPORT AbstractInlineTextBox
     : public RefCounted<AbstractInlineTextBox> {
  public:
@@ -59,9 +56,7 @@ class CORE_EXPORT AbstractInlineTextBox
 
   static void GetWordBoundariesForText(Vector<WordBoundaries>&, const String&);
 
-  virtual ~AbstractInlineTextBox();
-
-  LineLayoutText GetLineLayoutItem() const { return line_layout_item_; }
+  virtual ~AbstractInlineTextBox() { DCHECK(!layout_text_); }
 
   virtual void Detach();
   virtual scoped_refptr<AbstractInlineTextBox> NextInlineTextBox() const = 0;
@@ -75,7 +70,7 @@ class CORE_EXPORT AbstractInlineTextBox
   virtual unsigned TextOffsetInFormattingContext(unsigned) const = 0;
   virtual Direction GetDirection() const = 0;
   Node* GetNode() const;
-  LayoutObject* GetLayoutObject() const;
+  LayoutText* GetLayoutText() const { return layout_text_; }
   AXObjectCache* ExistingAXObjectCache() const;
   virtual void CharacterWidths(Vector<float>&) const = 0;
   void GetWordBoundaries(Vector<WordBoundaries>&) const;
@@ -88,52 +83,13 @@ class CORE_EXPORT AbstractInlineTextBox
   virtual bool NeedsTrailingSpace() const = 0;
 
  protected:
-  explicit AbstractInlineTextBox(LineLayoutText line_layout_item);
+  explicit AbstractInlineTextBox(LayoutText* layout_text)
+      : layout_text_(layout_text) {}
 
   LayoutText* GetFirstLetterPseudoLayoutText() const;
 
  private:
-  // Weak ptrs; these are nulled when InlineTextBox::destroy() calls
-  // AbstractInlineTextBox::willDestroy.
-  LineLayoutText line_layout_item_;
-};
-
-// The implementation of |AbstractInlineTextBox| for legacy layout.
-// See also |NGAbstractInlineTextBox| for LayoutNG.
-class CORE_EXPORT LegacyAbstractInlineTextBox final
-    : public AbstractInlineTextBox {
- private:
-  LegacyAbstractInlineTextBox(LineLayoutText line_layout_item,
-                              InlineTextBox* inline_text_box);
-
-  static scoped_refptr<AbstractInlineTextBox> GetOrCreate(LineLayoutText,
-                                                          InlineTextBox*);
-  static void WillDestroy(InlineTextBox*);
-
-  friend class LayoutText;
-  friend class InlineTextBox;
-
- public:
-  ~LegacyAbstractInlineTextBox() final;
-
- private:
-  // Implementations of AbstractInlineTextBox member functions.
-  void Detach() final;
-  scoped_refptr<AbstractInlineTextBox> NextInlineTextBox() const final;
-  LayoutRect LocalBounds() const final;
-  unsigned Len() const final;
-  unsigned TextOffsetInFormattingContext(unsigned offset) const final;
-  Direction GetDirection() const final;
-  void CharacterWidths(Vector<float>&) const final;
-  String GetText() const final;
-  bool IsFirst() const final;
-  bool IsLast() const final;
-  scoped_refptr<AbstractInlineTextBox> NextOnLine() const final;
-  scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const final;
-  bool IsLineBreak() const final;
-  bool NeedsTrailingSpace() const final;
-
-  Persistent<InlineTextBox> inline_text_box_;
+  WeakPersistent<LayoutText> layout_text_;
 };
 
 }  // namespace blink

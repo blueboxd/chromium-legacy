@@ -49,10 +49,14 @@
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/settings/sync/utils/sync_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/buildflags.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_cell.h"
@@ -71,6 +75,7 @@
 #import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
@@ -79,10 +84,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
-#import "ios/chrome/browser/ui/icons/buildflags.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
@@ -99,6 +100,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_utils.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
 #import "ios/chrome/browser/ui/settings/price_notifications/price_notifications_coordinator.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_coordinator.h"
@@ -109,6 +111,7 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
+#import "ios/chrome/browser/ui/settings/tabs/tabs_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
 #import "ios/chrome/browser/upgrade/upgrade_utils.h"
@@ -127,9 +130,6 @@
 #endif
 
 namespace {
-
-// The size of trailing symbol icons for unsafe state.
-NSInteger kTrailingSymbolImagePointSize = 22;
 
 // Key used for storing NSUserDefault entry to keep track of the last timestamp
 // we've shown the default browser blue dot promo.
@@ -246,6 +246,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
   // Whether Settings have been dismissed.
   BOOL _settingsAreDismissed;
+
+  // Tabs settings coordinator.
+  TabsSettingsCoordinator* _tabsCoordinator;
 }
 
 // The item related to the switch for the show feed settings.
@@ -397,6 +400,12 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       UINavigationItemLargeTitleDisplayModeAlways;
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  // Update the `_safetyCheckItem` icon when returning to this view controller.
+  [self updateSafetyCheckItemTrailingIcon];
+}
+
 #pragma mark SettingsRootTableViewController
 
 - (void)loadModel {
@@ -459,15 +468,33 @@ UIImage* GetBrandedGoogleServicesSymbol() {
           toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
     }
   }
-  [model addItem:[self languageSettingsDetailItem]
-      toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
-  [model addItem:[self contentSettingsDetailItem]
-      toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
-  [model addItem:[self bandwidthManagementDetailItem]
-      toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
 
-  // Info Section
-  [model addSectionWithIdentifier:SettingsSectionIdentifierInfo];
+  // `IsInactiveTabsEnabled` returns NO if the user explicitly disabled inactive
+  // tabs. As the user should have the choice to enabled it back, the settings
+  // should be displayed even if the feature has been explicitly disabled.
+  if (IsInactiveTabsEnabled() || IsInactiveTabsExplictlyDisabledByUser()) {
+    [model addItem:[self tabsSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+
+    // Info Section
+    [model addSectionWithIdentifier:SettingsSectionIdentifierInfo];
+    [model addItem:[self languageSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierInfo];
+    [model addItem:[self contentSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierInfo];
+    [model addItem:[self bandwidthManagementDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierInfo];
+  } else {
+    [model addItem:[self languageSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+    [model addItem:[self contentSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+    [model addItem:[self bandwidthManagementDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+
+    // Info Section
+    [model addSectionWithIdentifier:SettingsSectionIdentifierInfo];
+  }
   [model addItem:[self aboutChromeDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierInfo];
 
@@ -877,10 +904,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       kColorfulBackgroundSymbolCornerRadius;
   // Check if an issue state should be shown for updates.
   if (!IsAppUpToDate() && PreviousSafetyCheckIssueFound()) {
-    UIImage* unSafeIconImage = DefaultSymbolTemplateWithPointSize(
-        kWarningFillSymbol, kTrailingSymbolImagePointSize);
-    _safetyCheckItem.trailingImage = unSafeIconImage;
-    _safetyCheckItem.trailingImageTintColor = [UIColor colorNamed:kRedColor];
+    [self updateSafetyCheckItemTrailingIcon];
   }
 
   return _safetyCheckItem;
@@ -960,6 +984,16 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                        symbol:DefaultSettingsRootSymbol(kSettingsFilledSymbol)
         symbolBackgroundColor:[UIColor colorNamed:kGrey400Color]
       accessibilityIdentifier:kSettingsContentSettingsCellId];
+}
+
+- (TableViewItem*)tabsSettingsDetailItem {
+  return [self detailItemWithType:SettingsItemTypeTabs
+                             text:l10n_util::GetNSString(
+                                      IDS_IOS_TABS_MANAGEMENT_SETTINGS)
+                       detailText:nil
+                           symbol:DefaultSettingsRootSymbol(kTabsSymbol)
+            symbolBackgroundColor:[UIColor colorNamed:kOrange500Color]
+          accessibilityIdentifier:kSettingsTabsCellId];
 }
 
 - (TableViewItem*)bandwidthManagementDetailItem {
@@ -1324,6 +1358,10 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       controller =
           [[ContentSettingsTableViewController alloc] initWithBrowser:_browser];
       break;
+    case SettingsItemTypeTabs:
+      // TODO(crbug.com/1418021): Add metrics about tabs settings.
+      [self showTabsSettings];
+      break;
     case SettingsItemTypeBandwidth:
       base::RecordAction(base::UserMetricsAction("Settings.Bandwidth"));
       controller = [[BandwidthManagementTableViewController alloc]
@@ -1482,6 +1520,13 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [_googleServicesSettingsCoordinator start];
 }
 
+- (void)showTabsSettings {
+  _tabsCoordinator = [[TabsSettingsCoordinator alloc]
+      initWithBaseNavigationController:self.navigationController
+                               browser:_browser];
+  [_tabsCoordinator start];
+}
+
 - (void)showGoogleSync {
   DCHECK(!_manageSyncSettingsCoordinator);
   _manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
@@ -1513,20 +1558,38 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 // Checks if there are any remaining password issues that are not muted from the
 // last time password check was run.
 - (BOOL)hasPasswordIssuesRemaining {
+  CHECK(!_settingsAreDismissed);
+  CHECK(_passwordCheckManager);
   return !_passwordCheckManager->GetInsecureCredentials().empty();
 }
 
-// Displays a red issue state on `_safetyCheckItem` if there is a reamining
-// issue for any of the checks.
-- (void)setSafetyCheckIssueStateUnsafe:(BOOL)isUnsafe {
-  if (isUnsafe && PreviousSafetyCheckIssueFound()) {
-    UIImage* unSafeIconImage = DefaultSymbolTemplateWithPointSize(
-        kWarningFillSymbol, kTrailingSymbolImagePointSize);
-    _safetyCheckItem.trailingImage = unSafeIconImage;
-    _safetyCheckItem.trailingImageTintColor = [UIColor colorNamed:kRedColor];
-  } else {
+// Displays a warning icon in the `_safetyCheckItem` if there is a reamining
+// issue for any of the safety checks.
+- (void)updateSafetyCheckItemTrailingIcon {
+  if (!_safetyCheckItem) {
+    return;
+  }
+
+  if (!PreviousSafetyCheckIssueFound()) {
     _safetyCheckItem.trailingImage = nil;
     _safetyCheckItem.trailingImageTintColor = nil;
+    return;
+  }
+
+  if (!IsAppUpToDate()) {
+    _safetyCheckItem.warningState = WarningState::kSevereWarning;
+  } else if ([self hasPasswordIssuesRemaining]) {
+    password_manager::WarningType warningType = GetWarningOfHighestPriority(
+        _passwordCheckManager->GetInsecureCredentials());
+    if (warningType ==
+        password_manager::WarningType::kCompromisedPasswordsWarning) {
+      _safetyCheckItem.warningState = WarningState::kSevereWarning;
+    } else {
+      // Severe warning is of higher priority than a regular warning. Only show
+      // the regular warning icon if there isn't any severe warning existing for
+      // another part of the Safety Check module.
+      _safetyCheckItem.warningState = WarningState::kWarning;
+    }
   }
   [self reconfigureCellsForItems:@[ _safetyCheckItem ]];
 }
@@ -1825,6 +1888,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [_manageSyncSettingsCoordinator stop];
   _manageSyncSettingsCoordinator = nil;
 
+  [_tabsCoordinator stop];
+  _tabsCoordinator = nil;
+
   // Stop observable prefs.
   [_showMemoryDebugToolsEnabled stop];
   [_showMemoryDebugToolsEnabled setObserver:nil];
@@ -1971,11 +2037,19 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 #pragma mark - PasswordCheckObserver
 
 - (void)passwordCheckStateDidChange:(PasswordCheckState)state {
-  [self setSafetyCheckIssueStateUnsafe:[self hasPasswordIssuesRemaining]];
+  // Settings may have been dismissed in the meantime as the callback is
+  // asynchronous. There is no UI to update in that case.
+  if (!_settingsAreDismissed) {
+    [self updateSafetyCheckItemTrailingIcon];
+  }
 }
 
 - (void)insecureCredentialsDidChange {
-  [self setSafetyCheckIssueStateUnsafe:[self hasPasswordIssuesRemaining]];
+  // Settings may have been dismissed in the meantime as the callback is
+  // asynchronous. There is no UI to update in that case.
+  if (!_settingsAreDismissed) {
+    [self updateSafetyCheckItemTrailingIcon];
+  }
 }
 
 #pragma mark - PrefObserverDelegate

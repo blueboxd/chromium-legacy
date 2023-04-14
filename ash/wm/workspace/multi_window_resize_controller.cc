@@ -12,8 +12,9 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/snap_group/snap_group_constants.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
-#include "ash/wm/snap_group/snap_group_lock_button.h"
+#include "ash/wm/snap_group/snap_group_lock_or_unlock_button.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_metrics.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -561,7 +562,7 @@ void MultiWindowResizeController::ShowNow() {
       lock_widget_->Init(CreateWidgetParams(
           parent_window, /*widget_name=*/"SnapGroupLockWidget"));
       lock_button_ = lock_widget_->SetContentsView(
-          std::make_unique<SnapGroupLockButton>(window1, window2));
+          std::make_unique<SnapGroupLockOrUnlockButton>(window1, window2));
 
       gfx::Rect lock_widget_show_bounds_in_screen =
           ConvertRectToScreen(windows_.window1->parent(),
@@ -730,14 +731,17 @@ gfx::Rect MultiWindowResizeController::CalculateLockWidgetBounds(
     const gfx::Rect& resize_widget_bounds) const {
   if (windows_.direction == Direction::kLeftRight) {
     return gfx::Rect(
-        resize_widget_bounds.x(),
+        resize_widget_bounds.top_center().x() -
+            snap_group::kLockButtonCornerRadius,
         resize_widget_bounds.y() + kResizeWidgetAndLockWidgetDistance,
-        resize_widget_bounds.width(), resize_widget_bounds.width());
+        snap_group::kLockButtonCornerRadius * 2,
+        snap_group::kLockButtonCornerRadius * 2);
   } else {
     return gfx::Rect(
         resize_widget_bounds.x() + kResizeWidgetAndLockWidgetDistance,
-        resize_widget_bounds.y(), resize_widget_bounds.height(),
-        resize_widget_bounds.height());
+        resize_widget_bounds.y() - snap_group::kLockButtonCornerRadius,
+        snap_group::kLockButtonCornerRadius * 2,
+        snap_group::kLockButtonCornerRadius * 2);
   }
 }
 

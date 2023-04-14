@@ -113,7 +113,7 @@ BASE_FEATURE(kIOSPasswordUISplit,
 // Enables password saving and filling in cross-origin iframes on IOS.
 BASE_FEATURE(kIOSPasswordManagerCrossOriginIframeSupport,
              "IOSPasswordManagerCrossOriginIframeSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables displaying and managing compromised, weak and reused credentials in
 // the Password Manager.
@@ -125,7 +125,7 @@ BASE_FEATURE(kIOSPasswordCheckup,
 // subtitle.
 BASE_FEATURE(kIOSShowPasswordStorageInSaveInfobar,
              "IOSShowPasswordStorageInSaveInfobar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables password bottom sheet to be displayed (on iOS) when a user is
 // signed-in and taps on a username or password field on a website that has at
@@ -148,6 +148,13 @@ BASE_FEATURE(kNewRegexForOtpFields,
              "NewRegexForOtpFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Killswitch for changes regarding password issues in
+// `PasswordSpcificsMetadata`. Guards writing issues to metadata and preserving
+// the new notification field.
+BASE_FEATURE(kPasswordIssuesInSpecificsMetadata,
+             "PasswordIssuesInSpecificsMetadata",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables the new password viewing subpage.
 BASE_FEATURE(kPasswordViewPageInSettings,
              "PasswordViewPageInSettings",
@@ -168,20 +175,13 @@ BASE_FEATURE(kPasswordChangeWellKnown,
              "PasswordChangeWellKnown",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables import passwords flow from Chrome's settings page.
-BASE_FEATURE(kPasswordImport,
-             "PasswordImport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kPasswordsImportM2,
+             "PasswordsImportM2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 BASE_FEATURE(kPasswordManagerRedesign,
              "PasswordManagerRedesign",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-BASE_FEATURE(kPasswordsImportM2,
-             "PasswordsImportM2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -260,6 +260,11 @@ BASE_FEATURE(kUnifiedPasswordManagerErrorMessages,
              "UnifiedPasswordManagerErrorMessages",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables showing the warning about UPM migrating local passwords.
+BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
+             "UnifiedPasswordManagerLocalPasswordsMigrationWarning",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, the built-in sync functionality in PasswordSyncBridge becomes
 // unused, meaning that SyncService/SyncEngine will no longer download or
 // upload changes to/from the Sync server. Instead, an external Android-specific
@@ -294,6 +299,12 @@ BASE_FEATURE(kExploratorySaveUpdatePasswordStrings,
 // we don't need additional signals.
 BASE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing,
              "UsernameFirstFlowFallbackCrowdsourcing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables suggesting username in the save/update prompt in the case of
+// autocomplete="username".
+BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
+             "UsernameFirstFlowHonorAutocomplete",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables previewing password generation suggestion in the target form in

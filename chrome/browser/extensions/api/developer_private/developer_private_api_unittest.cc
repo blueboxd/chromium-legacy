@@ -7,11 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/path_service.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -20,7 +22,6 @@
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -46,6 +47,7 @@
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_error_test_util.h"
+#include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -67,6 +69,12 @@
 #include "extensions/test/test_extension_dir.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/common/features.h"
+#endif
 
 namespace extensions {
 
@@ -265,6 +273,10 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
   DeveloperPrivateApiUnitTest& operator=(const DeveloperPrivateApiUnitTest&) =
       delete;
 
+  // ExtensionServiceTestBase:
+  void SetUp() override;
+  void TearDown() override;
+
  protected:
   DeveloperPrivateApiUnitTest() {}
   ~DeveloperPrivateApiUnitTest() override {}
@@ -274,7 +286,7 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
     service()->AddProviderForTesting(std::move(provider));
   }
 
-  // A wrapper around extension_function_test_utils::RunFunction that runs with
+  // A wrapper around api_test_utils::RunFunction that runs with
   // the associated browser, no flags, and can take stack-allocated arguments.
   bool RunFunction(const scoped_refptr<ExtensionFunction>& function,
                    const base::Value::List& args);
@@ -324,23 +336,21 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
   }
 
  private:
-  // ExtensionServiceTestBase:
-  void SetUp() override;
-  void TearDown() override;
-
   // The browser (and accompanying window).
   std::unique_ptr<TestBrowserWindow> browser_window_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<content::RenderProcessHost> render_process_host_;
 
-  std::vector<std::unique_ptr<TestExtensionDir>> test_extension_dirs_;
+  std::vector<TestExtensionDir> test_extension_dirs_;
 };
 
 bool DeveloperPrivateApiUnitTest::RunFunction(
     const scoped_refptr<ExtensionFunction>& function,
     const base::Value::List& args) {
-  return extension_function_test_utils::RunFunction(
-      function.get(), args.Clone(), browser(), api_test_utils::NONE);
+  return api_test_utils::RunFunction(
+      function.get(), args.Clone(),
+      std::make_unique<ExtensionFunctionDispatcher>(profile()),
+      api_test_utils::FunctionMode::kNone);
 }
 
 const Extension* DeveloperPrivateApiUnitTest::LoadUnpackedExtension() {
@@ -352,16 +362,16 @@ const Extension* DeveloperPrivateApiUnitTest::LoadUnpackedExtension() {
            "permissions": ["*://*/*"]
          })";
 
-  test_extension_dirs_.push_back(std::make_unique<TestExtensionDir>());
-  TestExtensionDir* dir = test_extension_dirs_.back().get();
-  dir->WriteManifest(kManifest);
+  test_extension_dirs_.emplace_back();
+  TestExtensionDir& dir = test_extension_dirs_.back();
+  dir.WriteManifest(kManifest);
 
   ChromeTestExtensionLoader loader(profile());
   // The fact that unpacked extensions get file access by default is an
   // irrelevant detail to these tests. Disable it.
   loader.set_allow_file_access(false);
 
-  return loader.LoadExtension(dir->UnpackedPath()).get();
+  return loader.LoadExtension(dir.UnpackedPath()).get();
 }
 
 const Extension* DeveloperPrivateApiUnitTest::LoadSimpleExtension() {
@@ -1398,8 +1408,8 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithoutDevMode) {
   auto function =
       base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
   function->SetRenderFrameHost(web_contents->GetPrimaryMainFrame());
-  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
-      function.get(), "[]", browser());
+  std::string error = api_test_utils::RunFunctionAndReturnError(
+      function.get(), "[]", profile());
   EXPECT_THAT(error, testing::HasSubstr("developer mode"));
   prefs->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
 }
@@ -1431,8 +1441,8 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlocklistingPolicy) {
   auto function =
       base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
   function->SetRenderFrameHost(web_contents->GetPrimaryMainFrame());
-  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
-      function.get(), "[]", browser());
+  std::string error = api_test_utils::RunFunctionAndReturnError(
+      function.get(), "[]", profile());
   EXPECT_THAT(error, testing::HasSubstr("policy"));
 }
 
@@ -1962,7 +1972,42 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
       api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED));
 }
 
-TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileZip) {
+class DeveloperPrivateApiZipFileUnitTest
+    : public DeveloperPrivateApiUnitTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void SetUp() override {
+    DeveloperPrivateApiUnitTest::SetUp();
+    const bool kFeatureEnabled = GetParam();
+    feature_list_.InitWithFeatureState(
+        extensions_features::kExtensionsZipFileInstalledInProfileDir,
+        kFeatureEnabled);
+    if (kFeatureEnabled) {
+      expected_extension_install_directory_ =
+          service()->unpacked_install_directory();
+    } else {
+      base::FilePath dir_temp;
+      ASSERT_TRUE(base::PathService::Get(base::DIR_TEMP, &dir_temp));
+      expected_extension_install_directory_ = dir_temp;
+    }
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::FilePath expected_extension_install_directory_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    DeveloperPrivateApiZipFileUnitTest,
+    // extensions_features::kExtensionsZipFileInstalledInProfileDir enabled.
+    testing::Bool(),
+    [](const testing::TestParamInfo<
+        DeveloperPrivateApiZipFileUnitTest::ParamType>& info) {
+      return info.param ? "ProfileDir" : "TempDir";
+    });
+
+TEST_P(DeveloperPrivateApiZipFileUnitTest, InstallDroppedFileZip) {
   base::FilePath zip_path = data_dir().AppendASCII("simple_empty.zip");
   extensions::ExtensionInstallUI::set_disable_ui_for_tests();
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
@@ -1983,6 +2028,17 @@ TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileZip) {
       observer.WaitForExtensionInstalled();
   ASSERT_TRUE(extension);
   EXPECT_EQ("Simple Empty Extension", extension->name());
+
+  // Expect extension install directory to be immediate subdir of expected
+  // unpacked install directory. E.g. /a/b/c/d == /a/b/c + /d.
+  EXPECT_EQ(extension->path(), expected_extension_install_directory_.Append(
+                                   extension->path().BaseName()));
+
+  // Expect extension install directory to exist and be named with the right
+  // prefix.
+  EXPECT_TRUE(base::PathExists(extension->path()));
+  EXPECT_TRUE(
+      extension->path().BaseName().AsUTF8Unsafe().starts_with("simple_empty"));
 }
 
 // Test developerPrivate.getUserSiteSettings.
@@ -2769,10 +2825,23 @@ TEST_F(DeveloperPrivateApiAllowlistUnitTest,
       api::developer_private::EVENT_TYPE_PREFS_CHANGED));
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 class DeveloperPrivateApiSupervisedUserUnitTest
-    : public DeveloperPrivateApiUnitTest {
+    : public DeveloperPrivateApiUnitTest,
+      public testing::WithParamInterface<bool> {
  public:
-  DeveloperPrivateApiSupervisedUserUnitTest() = default;
+  DeveloperPrivateApiSupervisedUserUnitTest() {
+    if (extensions_permissions_for_supervised_users_on_desktop()) {
+      feature_list_.InitAndEnableFeature(
+          supervised_user::
+              kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+
+    } else {
+      feature_list_.InitAndDisableFeature(
+          supervised_user::
+              kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+    }
+  }
 
   DeveloperPrivateApiSupervisedUserUnitTest(
       const DeveloperPrivateApiSupervisedUserUnitTest&) = delete;
@@ -2782,27 +2851,53 @@ class DeveloperPrivateApiSupervisedUserUnitTest
   ~DeveloperPrivateApiSupervisedUserUnitTest() override = default;
 
   bool ProfileIsSupervised() const override { return true; }
+
+  bool extensions_permissions_for_supervised_users_on_desktop() const {
+    return GetParam();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests trying to call loadUnpacked when the profile shouldn't be allowed to.
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-TEST_F(DeveloperPrivateApiSupervisedUserUnitTest,
+TEST_P(DeveloperPrivateApiSupervisedUserUnitTest,
        LoadUnpackedFailsForSupervisedUsers) {
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-
   base::FilePath path = data_dir().AppendASCII("simple_with_popup");
   api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
 
-  ASSERT_TRUE(profile()->IsChild());
-
-  auto function =
-      base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
-  function->SetRenderFrameHost(web_contents->GetPrimaryMainFrame());
-  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
-      function.get(), "[]", browser());
-  EXPECT_THAT(error, testing::HasSubstr("Child account"));
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(profile());
+  EXPECT_NE(service, nullptr);
+  if (extensions_permissions_for_supervised_users_on_desktop()) {
+    EXPECT_TRUE(service->AreExtensionsPermissionsEnabled());
+    auto function =
+        base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
+    function->SetRenderFrameHost(web_contents->GetPrimaryMainFrame());
+    std::string error = api_test_utils::RunFunctionAndReturnError(
+        function.get(), "[]", profile());
+    EXPECT_THAT(error, testing::HasSubstr("Child account"));
+  } else {
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+    EXPECT_TRUE(service->AreExtensionsPermissionsEnabled());
+    auto function =
+        base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
+    function->SetRenderFrameHost(web_contents->GetPrimaryMainFrame());
+    std::string error = api_test_utils::RunFunctionAndReturnError(
+        function.get(), "[]", profile());
+    EXPECT_THAT(error, testing::HasSubstr("Child account"));
+#else
+    EXPECT_FALSE(service->AreExtensionsPermissionsEnabled());
+#endif
+  }
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    ExtensionsPermissionsForSupervisedUsersOnDesktopFeature,
+    DeveloperPrivateApiSupervisedUserUnitTest,
+    testing::Bool());
 #endif
 
 }  // namespace extensions

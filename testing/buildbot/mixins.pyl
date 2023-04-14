@@ -404,6 +404,14 @@
       ],
     },
   },
+  'chromeos-eve': {
+    'swarming': {
+      'dimensions': {
+        'os': 'ChromeOS',
+        'device_type': 'eve',
+      },
+    },
+  },
   'chromeos-jacuzzi': {
     'swarming': {
       'dimensions': {
@@ -420,12 +428,6 @@
         'pool': 'chromium.tests',
       },
     },
-  },
-  'chromeos-kevin-skylab': {
-    'cros_board': 'kevin',
-    'cros_img': 'kevin-public/R114-15397.0.0',
-    'bucket': 'chromiumos-image-archive',
-    'timeout_sec': 10800,
   },
   'chromeos-octopus': {
     'swarming': {
@@ -613,18 +615,6 @@
       ],
     },
   },
-  'ios_runtime_cache_14_5': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'runtime_ios_14_5',
-            'path': 'Runtime-ios-14.5',
-          },
-        ],
-      },
-    },
-  },
   'ios_runtime_cache_15_5': {
     '$mixin_append': {
       'swarming': {
@@ -644,6 +634,18 @@
           {
             'name': 'runtime_ios_16_2',
             'path': 'Runtime-ios-16.2',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_16_4': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_16_4',
+            'path': 'Runtime-ios-16.4',
           },
         ],
       },
@@ -707,6 +709,13 @@
     'swarming': {
       'dimensions': {
         'os': 'Ubuntu-20.04',
+      },
+    },
+  },
+  'linux-jammy': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04',
       },
     },
   },
@@ -790,6 +799,9 @@
         },
       ]
     },
+  },
+  'long_skylab_timeout': {
+    'timeout_sec': 10800,
   },
   'mac-archive-rel-args': {
     'args': [
@@ -967,9 +979,9 @@
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
-        'gpu': '1002:6821',
+        'gpu': '1002:67ef',
         'hidpi': '1',
-        'os': 'Mac-12.1',
+        'os': 'Mac-13.2.1',
         'pool': 'chromium.tests.gpu',
         'display_attached': '1',
       },
@@ -1006,7 +1018,7 @@
         {
           "cipd_package": 'infra/tools/mac_toolchain/${platform}',
           'location': '.',
-          'revision': 'git_revision:5468d28877d7106d8ab4f7e23b784578ffc86aff',
+          'revision': 'git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118',
         },
       ],
     },
@@ -1336,6 +1348,7 @@
   'win10_amd_rx_5500_xt': {
     'swarming': {
       'dimensions': {
+        'display_attached': '1',
         'gpu': '1002:7340',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu.experimental',
@@ -1355,6 +1368,7 @@
   'win10_intel_uhd_630_experimental': {
     'swarming': {
       'dimensions': {
+        'display_attached': '1',
         'gpu': '8086:9bc5-31.0.101.2111',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu',
@@ -1364,6 +1378,7 @@
   'win10_intel_uhd_630_stable': {
     'swarming': {
       'dimensions': {
+        'display_attached': '1',
         'gpu': '8086:9bc5-31.0.101.2111',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu',
@@ -1377,6 +1392,7 @@
       # to trigger tests on multiple configurations.
       'dimension_sets': [
         {
+          'display_attached': '1',
           'gpu': '8086:9bc5-31.0.101.2111',
           'os': 'Windows-10',
           'pool': 'chromium.tests.gpu',
@@ -1387,6 +1403,7 @@
   'win10_nvidia_gtx_1660_experimental': {
     'swarming': {
       'dimensions': {
+        'display_attached': '1',
         'gpu': '10de:2184-27.21.14.5638',
         'os': 'Windows-10-18363',
         'pool': 'chromium.tests.gpu',
@@ -1400,6 +1417,7 @@
     # this one, which is used by Dawn Win10 x64 Release (NVIDIA).
     'swarming': {
       'dimensions': {
+        'display_attached': '1',
         'gpu': '10de:2184-27.21.14.5638',
         'os': 'Windows-10-18363',
         'pool': 'chromium.tests.gpu',
@@ -1413,6 +1431,7 @@
     'swarming': {
       'dimension_sets': [
         {
+          'display_attached': '1',
           'gpu': '10de:2184-27.21.14.5638',
           'os': 'Windows-10-18363',
           'pool': 'chromium.tests.gpu',
@@ -1453,13 +1472,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14c18'
+        '14e222b'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14c18',
+          'name': 'xcode_ios_14e222b',
           'path': 'Xcode.app',
         },
       ],

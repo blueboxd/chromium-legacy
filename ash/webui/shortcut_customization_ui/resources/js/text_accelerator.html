@@ -1,5 +1,7 @@
 <style>
   .spacing {
+    color: var(--cros-text-color-secondary);
+    font: var(--cros-button-2-font);
     margin-inline-end: 8px;
   }
 
@@ -17,6 +19,7 @@
     align-items: center;
     display: flex;
     flex-wrap: wrap;
+    row-gap: 8px;
   }
 
   :host([narrow]) .parts-container {
@@ -26,6 +29,8 @@
 
   iron-icon {
     --iron-icon-width: 16px;
+    --iron-icon-height: 16px;
+    --iron-icon-fill-color: var(--cros-text-color-secondary);
   }
 </style>
 

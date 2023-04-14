@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.subscriptions;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +34,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
@@ -105,9 +108,10 @@ public class CommerceSubscriptionsServiceUnitTest {
 
         mTestValues = new FeatureList.TestValues();
         mTestValues.addFeatureFlagOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING, true);
-        mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
-                PriceTrackingFeatures.PRICE_NOTIFICATION_PARAM, "true");
         FeatureList.setTestValues(mTestValues);
+
+        ShoppingFeatures.setShoppingListEligibleForTesting(true);
+        doReturn(true).when(mShoppingService).isShoppingListEligible();
 
         mMockNotificationManager = new MockNotificationManagerProxy();
         mMockNotificationManager.setNotificationsEnabled(false);
@@ -126,6 +130,7 @@ public class CommerceSubscriptionsServiceUnitTest {
     @After
     public void tearDown() {
         PriceDropNotificationManagerImpl.setNotificationManagerForTesting(null);
+        ShoppingFeatures.setShoppingListEligibleForTesting(null);
     }
 
     @Test
@@ -169,9 +174,7 @@ public class CommerceSubscriptionsServiceUnitTest {
     @Test
     @SmallTest
     public void testOnResume_FeatureDisabled() {
-        mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
-                PriceTrackingFeatures.PRICE_NOTIFICATION_PARAM, "false");
-        FeatureList.setTestValues(mTestValues);
+        doReturn(false).when(mShoppingService).isShoppingListEligible();
 
         setupTestOnResume();
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(

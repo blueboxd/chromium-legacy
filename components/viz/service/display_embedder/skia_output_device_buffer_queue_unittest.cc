@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/functional/callback_helpers.h"
@@ -158,6 +159,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       bool is_thread_safe) override {
     size_t estimated_size = format.EstimatedSizeInBytes(size);
     auto result = std::make_unique<gpu::TestImageBacking>(
@@ -174,6 +176,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       base::span<const uint8_t> pixel_data) override {
     auto result = std::make_unique<gpu::TestImageBacking>(
         mailbox, format, size, color_space, surface_origin, alpha_type, usage,
@@ -190,7 +193,8 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage) override {
+      uint32_t usage,
+      std::string debug_label) override {
     NOTREACHED();
     return nullptr;
   }
@@ -468,14 +472,12 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
   gpu::Mailbox MakeOverlayMailbox() {
     gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
-    SharedImageFormat si_format =
-        SharedImageFormat::SinglePlane(ResourceFormat::RGBA_8888);
     bool success = shared_image_factory_->CreateSharedImage(
-        mailbox, si_format, gfx::Size(1000, 1000),
+        mailbox, SinglePlaneFormat::kRGBA_8888, gfx::Size(1000, 1000),
         gfx::ColorSpace::CreateSRGB(),
         GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
         SkAlphaType::kPremul_SkAlphaType, gpu::kNullSurfaceHandle,
-        gpu::SHARED_IMAGE_USAGE_SCANOUT);
+        gpu::SHARED_IMAGE_USAGE_SCANOUT, "TestLabel");
     CHECK(success);
 
     shared_image_representation_factory_->ProduceOverlay(mailbox)->SetCleared();

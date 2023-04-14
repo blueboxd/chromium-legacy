@@ -56,7 +56,7 @@ const char kAndroidOneDriveAuthority[] =
 std::vector<ProvidedFileSystemInfo> GetODFSFileSystems(Profile* profile) {
   Service* service = Service::Get(profile);
   ProviderId provider_id = ProviderId::CreateFromExtensionId(
-      file_manager::file_tasks::kODFSExtensionId);
+      file_manager::file_tasks::GetODFSExtensionId(profile));
   return service->GetProvidedFileSystemInfoList(provider_id);
 }
 
@@ -183,7 +183,7 @@ bool FileIsOnODFS(Profile* profile, const FileSystemURL& url) {
 
   file_system_provider::ProviderId provider_id =
       file_system_provider::ProviderId::CreateFromExtensionId(
-          file_manager::file_tasks::kODFSExtensionId);
+          file_manager::file_tasks::GetODFSExtensionId(profile));
   if (parser.file_system()->GetFileSystemInfo().provider_id() != provider_id) {
     return false;
   }
@@ -638,10 +638,9 @@ void CloudOpenTask::SetTaskArgs(
     for (const file_manager::file_tasks::FullTaskDescriptor& task :
          resulting_tasks->tasks) {
       // Ignore Google Docs and MS Office tasks as they are already
-      // set up to show in the dialog. And ignore QuickOffice.
+      // set up to show in the dialog.
       if (IsWebDriveOfficeTask(task.task_descriptor) ||
-          file_manager::file_tasks::IsOpenInOfficeTask(task.task_descriptor) ||
-          extension_misc::IsQuickOfficeExtension(task.task_descriptor.app_id)) {
+          file_manager::file_tasks::IsOpenInOfficeTask(task.task_descriptor)) {
         continue;
       }
       mojom::DialogTaskPtr dialog_task = mojom::DialogTask::New();
@@ -665,12 +664,14 @@ void CloudOpenTask::FilesAppWindowCreated(
   if (result != platform_util::OpenOperationResult::OPEN_SUCCEEDED) {
     // We keep going even if we failed to launch files app. The dialog
     // just won't be modal in this case.
+    dialog->set_modal_type(ui::MODAL_TYPE_NONE);
     dialog->ShowSystemDialog();
     return;
   }
   Browser* browser =
       FindSystemWebAppBrowser(profile_, SystemWebAppType::FILE_MANAGER);
   if (!browser) {
+    dialog->set_modal_type(ui::MODAL_TYPE_NONE);
     dialog->ShowSystemDialog();
     return;
   }
@@ -870,7 +871,7 @@ CloudUploadDialog::CloudUploadDialog(mojom::DialogArgsPtr args,
 CloudUploadDialog::~CloudUploadDialog() = default;
 
 ui::ModalType CloudUploadDialog::GetDialogModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return modal_type_;
 }
 
 bool CloudUploadDialog::ShouldCloseDialogOnEscape() const {
@@ -888,7 +889,7 @@ const int kDialogWidthForOneDriveSetup = 512;
 const int kDialogHeightForOneDriveSetup = 556;
 
 const int kDialogWidthForFileHandlerDialog = 512;
-const int kDialogHeightForFileHandlerDialog = 475;
+const int kDialogHeightForFileHandlerDialog = 375;
 const int kDialogHeightForFileHandlerDialogNoLocalApp = 311;
 
 const int kDialogWidthForMoveConfirmation = 512;

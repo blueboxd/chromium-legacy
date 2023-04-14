@@ -19,6 +19,7 @@ import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
+import './input_device_settings_shared.css.js';
 import './per_device_keyboard_remap_keys.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
@@ -34,8 +35,8 @@ import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router} from '../router.js';
 
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
-import {InputDeviceSettingsProviderInterface, Keyboard, KeyboardSettings} from './input_device_settings_types.js';
-import {settingsAreEqual} from './input_device_settings_utils.js';
+import {InputDeviceSettingsProviderInterface, Keyboard, KeyboardPolicies, KeyboardSettings} from './input_device_settings_types.js';
+import {getPrefPolicyFields, settingsAreEqual} from './input_device_settings_utils.js';
 import {getTemplate} from './per_device_keyboard_subsection.html.js';
 
 const SettingsPerDeviceKeyboardSubsectionElementBase =
@@ -79,6 +80,10 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
         type: Object,
       },
 
+      keyboardPolicies: {
+        type: Object,
+      },
+
       remapKeyboardKeysSublabel: {
         type: String,
         value: '',
@@ -108,6 +113,7 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
           'enableAutoRepeatPref.value,' +
           'autoRepeatDelaysPref.value,' +
           'autoRepeatIntervalsPref.value)',
+      'onPoliciesChanged(keyboardPolicies)',
       'onModifierRemappingsChanged(keyboard.settings.modifierRemappings)',
       'updateSettingsToCurrentPrefs(keyboard)',
     ];
@@ -130,6 +136,7 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
   }
 
   protected keyboard: Keyboard;
+  protected keyboardPolicies: KeyboardPolicies;
   private route_: Route = routes.PER_DEVICE_KEYBOARD;
   private topRowAreFunctionKeysPref: chrome.settingsPrivate.PrefObject;
   private blockMetaFunctionKeyRewritesPref: chrome.settingsPrivate.PrefObject;
@@ -151,6 +158,13 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
         'blockMetaFunctionKeyRewritesPref.value',
         this.keyboard.settings.suppressMetaFkeyRewrites);
     this.isInitialized = true;
+  }
+
+  private onPoliciesChanged() {
+    this.topRowAreFunctionKeysPref = {
+      ...this.topRowAreFunctionKeysPref,
+      ...getPrefPolicyFields(this.keyboardPolicies.topRowAreFkeysPolicy),
+    };
   }
 
   private onLearnMoreLinkClicked_(event: Event): void {

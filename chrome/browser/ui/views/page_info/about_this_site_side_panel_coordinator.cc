@@ -81,8 +81,8 @@ void AboutThisSideSidePanelCoordinator::RegisterEntry(
         SidePanelEntry::Id::kAboutThisSite,
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE),
         ui::ImageModel::FromVectorIcon(
-            PageInfoViewFactory::GetAboutThisSiteVectorIcon(), ui::kColorIcon,
-            icon_size),
+            PageInfoViewFactory::GetAboutThisSiteColorVectorIcon(),
+            ui::kColorIcon, icon_size),
         base::BindRepeating(
             &AboutThisSideSidePanelCoordinator::CreateAboutThisSiteWebView,
             base::Unretained(this)),
@@ -149,14 +149,14 @@ void AboutThisSideSidePanelCoordinator::DidFinishNavigation(
 
   // Update the SidePanel when a user navigates to another url with the
   // correct Diner URL.
-  // TODO(1425421): Check for valid urls (non IP address, localhost and
-  // similar) before creating the Diner URL
   if (page_info::IsKeepSidePanelOnSameTabNavsFeatureEnabled() &&
       about_this_site_side_panel_view_ &&
       side_panel_coordinator->GetCurrentEntryId() ==
           SidePanelEntry::Id::kAboutThisSite) {
-    RegisterEntryAndShow(page_info::AboutThisSiteService::CreateMoreAboutUrl(
-        navigation_handle->GetURL()));
+    page_info::AboutThisSiteService::OnSameTabNavigation();
+    RegisterEntryAndShow(
+        page_info::AboutThisSiteService::CreateMoreAboutUrlForNavigation(
+            navigation_handle->GetURL()));
   }
 
   // If the about this site side panel is no longer being shown and the view is

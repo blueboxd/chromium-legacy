@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +61,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -296,7 +298,8 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(createAutofillChipAndTab("John", null));
         });
         KeyboardAccessoryModernView view = mKeyboardAccessoryView.take();
-        CriteriaHelper.pollUiThread(view.mBarItemsView::isShown);
+        CriteriaHelper.pollUiThread(
+                () -> view.mBarItemsView.isShown() && view.mBarItemsView.getChildAt(1) != null);
         CriteriaHelper.pollUiThread(viewsAreRightAligned(view, view.mBarItemsView.getChildAt(1)));
 
         rotateActivityToLandscape();
@@ -391,6 +394,7 @@ public class KeyboardAccessoryModernViewTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1432551")
     public void testDismissesSwipingEducationBubbleOnTap() {
         TestTracker tracker = new TestTracker() {
             @Override
@@ -476,6 +480,7 @@ public class KeyboardAccessoryModernViewTest {
 
     @Test
     @MediumTest
+    @EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES})
     public void testCustomIconUrlSet_imageReturnedByPersonalDataManager_customIconSetOnChipView()
             throws InterruptedException {
         GURL customIconUrl = mock(GURL.class);
@@ -484,7 +489,8 @@ public class KeyboardAccessoryModernViewTest {
         // Return the cached image when
         // PersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable is called for the
         // above url.
-        when(mMockPersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable(any()))
+        when(mMockPersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable(
+                     any(), any(), anyInt(), anyInt(), anyInt()))
                 .thenReturn(TEST_CARD_ART_IMAGE);
         // Create an autofill suggestion and set the `customIconUrl`.
         AutofillBarItem customIconItem = new AutofillBarItem(
@@ -516,7 +522,8 @@ public class KeyboardAccessoryModernViewTest {
         when(customIconUrl.getSpec()).thenReturn(CUSTOM_ICON_URL);
         // Return the response of PersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable
         // to null to indicate that the image is not present in the cache.
-        when(mMockPersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable(any()))
+        when(mMockPersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable(
+                     any(), any(), anyInt(), anyInt(), anyInt()))
                 .thenReturn(null);
         AutofillBarItem customIconItem = new AutofillBarItem(
                 getDefaultAutofillSuggestionBuilder().setCustomIconUrl(customIconUrl).build(),

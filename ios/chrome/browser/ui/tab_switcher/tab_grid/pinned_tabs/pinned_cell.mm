@@ -10,8 +10,8 @@
 #import "base/check.h"
 #import "base/notreached.h"
 #import "ios/chrome/browser/shared/ui/elements/top_aligned_image_view.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_animation.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -162,16 +162,7 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
 }
 
 - (void)setIcon:(UIImage*)icon {
-  if (icon) {
-    _faviconView.image = icon;
-  } else {
-    NSString* symbolName = kGlobeSymbol;
-    if (@available(iOS 15, *)) {
-      symbolName = kGlobeAmericasSymbol;
-    }
-    _faviconView.image = DefaultSymbolWithPointSize(
-        symbolName, kPinnedCellFaviconSymbolPointSize);
-  }
+  _faviconView.image = icon;
 }
 
 - (UIImage*)snapshot {

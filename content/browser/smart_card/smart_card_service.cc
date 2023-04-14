@@ -133,14 +133,14 @@ void SmartCardService::OnReaderRemoved(
 
 void SmartCardService::OnReaderChanged(
     const blink::mojom::SmartCardReaderInfo& reader_info) {
-  NOTIMPLEMENTED();
-  // TODO(crbug.com/1386175): Implement and test.
+  for (auto& client : clients_) {
+    client->ReaderChanged(reader_info.Clone());
+  }
 }
 
-void SmartCardService::OnError(
-    blink::mojom::SmartCardResponseCode response_code) {
+void SmartCardService::OnError(device::mojom::SmartCardError error) {
   for (auto& client : clients_) {
-    client->Error(response_code);
+    client->Error(error);
   }
 }
 

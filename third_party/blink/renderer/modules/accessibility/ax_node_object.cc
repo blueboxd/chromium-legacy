@@ -1395,10 +1395,10 @@ ax::mojom::blink::Role InferredCSSToggleRole(Node* node) {
     case CSSToggleRole::kAccordionItemButton:
       return ax::mojom::blink::Role::kButton;
     case CSSToggleRole::kTabContainer:
-      // TODO(dbaron): We should verify that using kTabList really
-      // works here, since this is a container that has both the tab
-      // list *and* the tab panels.  We should also make sure that
-      // posinset/setsize work correctly for the tabs.
+      // TODO(https://crbug.com/1250716): We should verify that using
+      // kTabList really works here, since this is a container that has
+      // both the tab list *and* the tab panels.  We should also make
+      // sure that posinset/setsize work correctly for the tabs.
       return ax::mojom::blink::Role::kTabList;
     case CSSToggleRole::kTab:
       return ax::mojom::blink::Role::kTab;
@@ -1445,8 +1445,8 @@ ax::mojom::blink::Role AXNodeObject::DetermineAccessibilityRole() {
   //   3. Native markup role
   // but we may decide to change how the CSS Toggle inference fits in.
   //
-  // TODO(dbaron): Perhaps revisit whether there are types of elements
-  // where toggles should not work.
+  // TODO(https://crbug.com/1250716): Perhaps revisit whether there are
+  // types of elements where toggles should not work.
 
   if (aria_role_ != ax::mojom::blink::Role::kUnknown) {
     return aria_role_;
@@ -1638,7 +1638,7 @@ bool AXNodeObject::IsLineBreakingObject() const {
   // Line 2</pre>
   if (const LayoutText* layout_text = DynamicTo<LayoutText>(layout_object)) {
     const ComputedStyle& style = layout_object->StyleRef();
-    if (layout_text->HasNonCollapsedText() && style.PreserveNewline() &&
+    if (layout_text->HasNonCollapsedText() && style.ShouldPreserveBreaks() &&
         layout_text->PlainText().find('\n') != WTF::kNotFound) {
       return true;
     }
@@ -3678,6 +3678,11 @@ String AXNodeObject::TextFromDescendants(
   base::AutoReset<bool> auto_reset(&is_computing_text_from_descendants_, true);
 #endif
   for (AXObject* child : children) {
+    if (!child || child->IsDetached()) {
+      // If this child was destroyed while processing another, the weak member
+      // will become null.
+      continue;
+    }
     constexpr size_t kMaxDescendantsForTextAlternativeComputation = 100;
     if (visited.size() > kMaxDescendantsForTextAlternativeComputation)
       break;
@@ -4977,6 +4982,7 @@ String AXNodeObject::TextAlternativeFromTooltip(
 
   if (name_sources) {
     NameSource& source = name_sources->back();
+    source.related_objects = *related_objects;
     source.text = *text_alternative;
     *found_text_alternative = true;
   }
@@ -5796,7 +5802,7 @@ String AXNodeObject::Description(
         }
         AXObject* popover_ax_object =
             AXObjectCache().GetOrCreate(popover_target.popover);
-        if (popover_ax_object) {
+        if (popover_ax_object && popover_ax_object->IsPlainContent()) {
           AXObjectSet visited;
           description = RecursiveTextAlternative(*popover_ax_object,
                                                  popover_ax_object, visited);

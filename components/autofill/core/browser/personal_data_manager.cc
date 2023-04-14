@@ -17,7 +17,6 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
 #include "base/logging.h"
@@ -28,6 +27,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -799,28 +799,24 @@ AutofillProfile* PersonalDataManager::GetProfileByGUID(
 }
 
 bool PersonalDataManager::IsEligibleForAddressAccountStorage() const {
-  if (base::FeatureList::IsEnabled(
-          autofill::features::test::
-              kAutofillCreateAccountProfilesFromSettings)) {
-    return true;
-  }
   // The CONTACT_INFO data type is only running for eligible users. See
-  // ContactInfoModelTypeController.
+  // ContactInfoModelTypeController. Some additional countries are excluded
+  // based on their GeoIP.
   return sync_service_ &&
          sync_service_->GetActiveDataTypes().Has(syncer::CONTACT_INFO) &&
          base::FeatureList::IsEnabled(
              features::kAutofillAccountProfilesUnionView) &&
-         base::FeatureList::IsEnabled(features::kAutofillAccountProfileStorage);
+         base::FeatureList::IsEnabled(
+             features::kAutofillAccountProfileStorage) &&
+         (features::kAutofillAccountProfileStorageFromUnsupportedIPs.Get() ||
+          IsCountryEligibleForAccountStorage(variations_country_code_));
 }
 
-void PersonalDataManager::MigrateProfileToAccount(
-    const AutofillProfile& profile) {
-  DCHECK_EQ(profile.source(), AutofillProfile::Source::kLocalOrSyncable);
-  AutofillProfile account_profile = profile.ConvertToAccountProfile();
-  DCHECK_NE(profile.guid(), account_profile.guid());
-  // Update the database (and this way indirectly Sync).
-  RemoveByGUID(profile.guid());
-  AddProfile(account_profile);
+bool PersonalDataManager::IsCountryEligibleForAccountStorage(
+    base::StringPiece country_code) const {
+  constexpr char const* kUnsupportedCountries[] = {"CU", "IR", "KP", "SD",
+                                                   "SY"};
+  return !base::Contains(kUnsupportedCountries, country_code);
 }
 
 std::string PersonalDataManager::AddIBAN(const IBAN& iban) {
@@ -1796,6 +1792,14 @@ void PersonalDataManager::AddStrikeToBlockProfileMigration(
   GetProfileMigrationStrikeDatabase()->AddStrike(guid);
 }
 
+void PersonalDataManager::AddMaxStrikesToBlockProfileMigration(
+    const std::string& guid) {
+  if (AutofillProfileMigrationStrikeDatabase* db =
+          GetProfileMigrationStrikeDatabase()) {
+    db->AddStrikes(db->GetMaxStrikesLimit() - db->GetStrikes(guid), guid);
+  }
+}
+
 void PersonalDataManager::RemoveStrikesToBlockProfileMigration(
     const std::string& guid) {
   if (!GetProfileMigrationStrikeDatabase()) {
@@ -1855,6 +1859,15 @@ void PersonalDataManager::RemoveStrikesToBlockProfileUpdate(
 bool PersonalDataManager::IsSyncEnabledFor(syncer::ModelType model_type) const {
   return sync_service_ != nullptr && sync_service_->CanSyncFeatureStart() &&
          sync_service_->GetPreferredDataTypes().Has(model_type);
+}
+
+bool PersonalDataManager::IsAutofillPaymentMethodsMandatoryReauthEnabled() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsMandatoryReauth)) {
+    return false;
+  }
+
+  return prefs::IsAutofillPaymentMethodsMandatoryReauthEnabled(pref_service_);
 }
 
 AutofillProfileMigrationStrikeDatabase*

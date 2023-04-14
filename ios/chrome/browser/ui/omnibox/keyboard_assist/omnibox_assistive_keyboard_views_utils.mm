@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_views_utils.h"
 
+#import "ios/chrome/browser/shared/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
@@ -48,7 +49,8 @@ NSArray<UIControl*>* OmniboxAssistiveKeyboardLeadingControls(
     bool useLens) {
   NSMutableArray<UIControl*>* controls = [NSMutableArray<UIControl*> array];
 
-  UIButton* voiceSearchButton = [[UIButton alloc] initWithFrame:CGRectZero];
+  UIButton* voiceSearchButton =
+      [[ExtendedTouchTargetButton alloc] initWithFrame:CGRectZero];
   SetUpButtonWithIcon(voiceSearchButton, @"keyboard_accessory_voice_search");
   voiceSearchButton.enabled = ios::provider::IsVoiceSearchEnabled();
   NSString* accessibilityLabel =
@@ -60,15 +62,17 @@ NSArray<UIControl*>* OmniboxAssistiveKeyboardLeadingControls(
               forControlEvents:UIControlEventTouchUpInside];
   [controls addObject:voiceSearchButton];
 
-  UIButton* cameraButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  UIButton* cameraButton =
+      [ExtendedTouchTargetButton buttonWithType:UIButtonTypeCustom];
   if (useLens) {
     // Set up the camera button for Lens.
     SetUpButtonWithIcon(cameraButton, @"keyboard_accessory_lens");
     [cameraButton addTarget:delegate
                      action:@selector(keyboardAccessoryLensTapped)
            forControlEvents:UIControlEventTouchUpInside];
-    SetA11yLabelAndUiAutomationName(
-        cameraButton, IDS_IOS_KEYBOARD_ACCESSORY_VIEW_LENS, @"QR code Search");
+    SetA11yLabelAndUiAutomationName(cameraButton,
+                                    IDS_IOS_KEYBOARD_ACCESSORY_VIEW_LENS,
+                                    @"Search With Lens");
   } else {
     // Set up the camera button for the QR scanner.
     SetUpButtonWithIcon(cameraButton, @"keyboard_accessory_qr_scanner");

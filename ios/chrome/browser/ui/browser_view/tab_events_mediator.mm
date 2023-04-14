@@ -123,20 +123,54 @@
 }
 
 - (void)webStateList:(WebStateList*)webStateList
+    willCloseWebState:(web::WebState*)webState
+              atIndex:(int)atIndex
+           userAction:(BOOL)userAction {
+  // When an NTP web state is closed, check if the coordinator should be
+  // stopped.
+  NewTabPageTabHelper* NTPTabHelper =
+      NewTabPageTabHelper::FromWebState(webState);
+  if (NTPTabHelper->IsActive()) {
+    [self stopNTPIfNeeded];
+  }
+}
+
+- (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
+  // If the user is leaving an NTP web state, trigger a visibility change.
+  if (oldWebState && _ntpCoordinator.started) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(oldWebState);
+    if (NTPHelper->IsActive()) {
+      [_ntpCoordinator didNavigateAwayFromNTP];
+    }
+  }
+
   if (reason == ActiveWebStateChangeReason::Inserted) {
     [self didInsertActiveWebState:newWebState];
   }
   if (oldWebState) {
     [self.consumer prepareForNewTabAnimation];
   }
-  // NOTE: webStateSelected expects to always be called with a
-  // non-null WebState.
   if (newWebState) {
-    [self.consumer webStateSelected:newWebState];
+    // Activating without inserting an NTP requires starting it in two
+    // scenarios: 1) After doing a batch tab restore (i.e. undo tab removals,
+    // initial startup). 2) After re-activating the Browser and a non-active
+    // WebState is showing the NTP. BrowserCoordinator's -setActive: only starts
+    // the NTP if it is the active view.
+    [self startNTPIfNeededForActiveWebState:newWebState];
+
+    // If the user is entering an NTP web state, trigger a visibility change.
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(newWebState);
+    if (NTPHelper->IsActive()) {
+      [_ntpCoordinator didNavigateToNTPInWebState:newWebState];
+    }
+
+    [self.consumer webStateSelected];
   }
 }
 
@@ -145,6 +179,12 @@
     didReplaceWebState:(web::WebState*)oldWebState
           withWebState:(web::WebState*)newWebState
                atIndex:(int)atIndex {
+  NewTabPageTabHelper* NTPTabHelper =
+      NewTabPageTabHelper::FromWebState(oldWebState);
+  if (NTPTabHelper->IsActive()) {
+    [self stopNTPIfNeeded];
+  }
+
   web::WebState* currentWebState = _webStateList->GetActiveWebState();
   // Add `newTab`'s view to the hierarchy if it's the current Tab.
   if (currentWebState == newWebState) {
@@ -156,6 +196,24 @@
 }
 
 #pragma mark - WebStateListObserving helpers (Private)
+
+- (void)startNTPIfNeededForActiveWebState:(web::WebState*)webState {
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (NTPHelper && NTPHelper->IsActive() && !_ntpCoordinator.started) {
+    [_ntpCoordinator start];
+  }
+}
+
+- (void)stopNTPIfNeeded {
+  for (int i = 0; i < _webStateList->count(); i++) {
+    NewTabPageTabHelper* iterNtpHelper =
+        NewTabPageTabHelper::FromWebState(_webStateList->GetWebStateAt(i));
+    if (iterNtpHelper->IsActive()) {
+      return;
+    }
+  }
+  [_ntpCoordinator stop];
+}
 
 - (void)didInsertActiveWebState:(web::WebState*)newWebState {
   DCHECK(newWebState);
@@ -170,16 +228,10 @@
     // Remove the helper because it isn't needed anymore.
     NewTabAnimationTabHelper::RemoveFromWebState(newWebState);
   }
-  // Since we share the NTP coordinator across web states, the feed type could
-  // be different from default, so we reset it.
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(newWebState);
-  if (NTPHelper && NTPHelper->IsActive()) {
+  if (NTPHelper->IsActive()) {
     [_ntpCoordinator start];
-    FeedType defaultFeedType = NTPHelper->DefaultFeedType();
-    if (_ntpCoordinator.selectedFeed != defaultFeedType) {
-      [_ntpCoordinator selectFeedType:defaultFeedType];
-    }
   }
   BOOL inBackground =
       (NTPHelper && NTPHelper->ShouldShowStartSurface()) || !animated;

@@ -30,6 +30,9 @@ constexpr int kFocusBorderThickness = 2;
 // The thickness of the focus bar for launcher search.
 constexpr int kFocusBarThickness = 3;
 
+// Offset added to the shelf so tray bubble bounds are in the correct display.
+constexpr int kShelfDisplayOffset = 1;
+
 constexpr int kDefaultLargeCursorSize = 64;
 
 constexpr SkColor kDefaultCursorColor = SK_ColorBLACK;
@@ -63,6 +66,9 @@ constexpr int kDefaultAutoclickDelayMs = 1000;
 // The default threshold of mouse movement, measured in DIP, that will initiate
 // a new autoclick.
 constexpr int kDefaultAutoclickMovementThreshold = 20;
+
+// Whether long press diacritics is enabled by default.
+constexpr bool kDefaultLongPressDiacriticsEnabled = true;
 
 // Whether keyboard auto repeat is enabled by default.
 constexpr bool kDefaultKeyAutoRepeatEnabled = true;

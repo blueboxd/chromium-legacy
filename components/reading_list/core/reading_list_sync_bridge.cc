@@ -113,9 +113,13 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::MergeSyncData(
     synced_entries.insert(change->storage_key());
     const sync_pb::ReadingListSpecifics& specifics =
         change->data().specifics.reading_list();
+
+    // The specifics validity is guaranteed by IsEntityDataValid().
+    CHECK(ReadingListEntry::IsSpecificsValid(specifics));
     // Deserialize entry.
     scoped_refptr<ReadingListEntry> entry(
-        ReadingListEntry::FromReadingListSpecifics(specifics, clock_->Now()));
+        ReadingListEntry::FromReadingListValidSpecifics(specifics,
+                                                        clock_->Now()));
 
     scoped_refptr<const ReadingListEntry> existing_entry =
         model_->GetEntryByURL(entry->URL());
@@ -130,7 +134,8 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::MergeSyncData(
           merged_entry->AsReadingListSpecifics();
 #if !defined(NDEBUG)
       scoped_refptr<ReadingListEntry> initial_entry(
-          ReadingListEntry::FromReadingListSpecifics(specifics, clock_->Now()));
+          ReadingListEntry::FromReadingListValidSpecifics(specifics,
+                                                          clock_->Now()));
       DCHECK(CompareEntriesForSync(*(initial_entry->AsReadingListSpecifics()),
                                    *entry_sync_pb));
 #endif
@@ -190,8 +195,12 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::ApplySyncChanges(
       // Deserialize entry.
       const sync_pb::ReadingListSpecifics& specifics =
           change->data().specifics.reading_list();
+
+      // The specifics validity is guaranteed by IsEntityDataValid().
+      CHECK(ReadingListEntry::IsSpecificsValid(specifics));
       scoped_refptr<ReadingListEntry> entry(
-          ReadingListEntry::FromReadingListSpecifics(specifics, clock_->Now()));
+          ReadingListEntry::FromReadingListValidSpecifics(specifics,
+                                                          clock_->Now()));
 
       scoped_refptr<const ReadingListEntry> existing_entry =
           model_->GetEntryByURL(entry->URL());
@@ -270,28 +279,30 @@ std::string ReadingListSyncBridge::GetStorageKey(
   return entity_data.specifics.reading_list().entry_id();
 }
 
-void ReadingListSyncBridge::ApplyStopSyncChanges(
+void ReadingListSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  // A non-null |delete_metadata_change_list| indicates sync (or reading list
-  // sync) is permanently disabled (as opposed to temporarily paused).
-  if (delete_metadata_change_list) {
-    switch (storage_type_) {
-      case syncer::StorageType::kUnspecified:
-        // Fall back to the default behavior.
-        break;
-      case syncer::StorageType::kAccount:
-        // For account storage, in addition to sync metadata deletion (which
-        // |delete_metadata_change_list| represents), the actual reading list
-        // entries need to be deleted. This function does both and is even
-        // robust against orphan or unexpected data in storage.
-        model_->SyncDeleteAllEntriesAndSyncMetadata();
-        break;
-    }
+  switch (storage_type_) {
+    case syncer::StorageType::kUnspecified:
+      // Fall back to the default behavior.
+      ModelTypeSyncBridge::ApplyDisableSyncChanges(
+          std::move(delete_metadata_change_list));
+      break;
+    case syncer::StorageType::kAccount:
+      // For account storage, in addition to sync metadata deletion (which
+      // |delete_metadata_change_list| represents), the actual reading list
+      // entries need to be deleted. This function does both and is even
+      // robust against orphan or unexpected data in storage.
+      model_->SyncDeleteAllEntriesAndSyncMetadata();
+      break;
   }
+}
 
-  // Exercise the default codepath to be safe (but should be a no-op).
-  ModelTypeSyncBridge::ApplyStopSyncChanges(
-      std::move(delete_metadata_change_list));
+bool ReadingListSyncBridge::IsEntityDataValid(
+    const syncer::EntityData& entity_data) const {
+  CHECK(entity_data.specifics.ByteSize() != 0);
+
+  return ReadingListEntry::IsSpecificsValid(
+      entity_data.specifics.reading_list());
 }
 
 bool ReadingListSyncBridge::CompareEntriesForSync(

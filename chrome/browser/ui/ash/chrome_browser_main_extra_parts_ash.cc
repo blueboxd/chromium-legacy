@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -17,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
+#include "chrome/browser/ash/arc/util/arc_window_watcher.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/game_mode/game_mode_controller.h"
 #include "chrome/browser/ash/geolocation/system_geolocation_source.h"
@@ -29,6 +31,7 @@
 #include "chrome/browser/ash/privacy_hub/privacy_hub_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/sync/sync_error_notifier_factory.h"
+#include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -147,6 +150,11 @@ void ChromeBrowserMainExtraPartsAsh::PreCreateMainMessageLoop() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
+  if (base::FeatureList::IsEnabled(arc::kEnableArcIdleManager)) {
+    // Early init so that later objects can rely on this one.
+    arc_window_watcher_ = std::make_unique<ash::ArcWindowWatcher>();
+  }
+
   // NetworkConnect handles the network connection state machine for the UI.
   network_connect_delegate_ = std::make_unique<NetworkConnectDelegate>();
   ash::NetworkConnect::Initialize(network_connect_delegate_.get());
@@ -217,6 +225,11 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
           std::make_unique<wallpaper_handlers::WallpaperFetcherDelegateImpl>());
   wallpaper_controller_client_->Init();
 
+  if (ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    screensaver_images_policy_handler_ =
+        std::make_unique<policy::ScreensaverImagesPolicyHandler>();
+  }
+
   session_controller_client_ = std::make_unique<SessionControllerClientImpl>();
   session_controller_client_->Init();
   // By this point ash shell should have initialized its D-Bus signal
@@ -251,6 +264,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #endif
 
   night_light_client_ = std::make_unique<ash::NightLightClient>(
+      g_browser_process->platform_part()->GetTimezoneResolverManager(),
       g_browser_process->shared_url_loader_factory());
   night_light_client_->Start();
 
@@ -267,6 +281,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
           : nullptr;
 
   ash::bluetooth_config::Initialize(delegate);
+
+  // Create geolocation manager
+  g_browser_process->SetGeolocationManager(
+      ash::SystemGeolocationSource::CreateGeolocationManagerOnAsh());
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
@@ -325,15 +343,6 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
 
   // Initialize TabScrubberChromeOS after the Ash Shell has been initialized.
   TabScrubberChromeOS::GetInstance();
-
-  // Create geolocation manager
-  g_browser_process->SetGeolocationManager(
-      ash::SystemGeolocationSource::CreateGeolocationManagerOnAsh());
-
-  if (ash::features::IsAmbientModeManagedScreensaverEnabled()) {
-    screensaver_images_policy_handler_ =
-        std::make_unique<policy::ScreensaverImagesPolicyHandler>();
-  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -368,7 +377,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   tab_cluster_ui_client_.reset();
 
   // Initialized in PostProfileInit (which may not get called in some tests).
-  screensaver_images_policy_handler_.reset();
   game_mode_controller_.reset();
   quick_answers_controller_.reset();
   ash_web_view_factory_.reset();
@@ -385,6 +393,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   g_browser_process->SetGeolocationManager(nullptr);
   system_tray_client_.reset();
   session_controller_client_.reset();
+  screensaver_images_policy_handler_.reset();
   ime_controller_client_.reset();
   in_session_auth_dialog_client_.reset();
   arc_open_url_delegate_impl_.reset();
@@ -405,6 +414,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
     ash::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
   user_profile_loaded_observer_.reset();
+  arc_window_watcher_.reset();
 }
 
 class ChromeBrowserMainExtraPartsAsh::UserProfileLoadedObserver

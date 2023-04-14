@@ -589,11 +589,14 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
   void UserModifiedPasswordField() override {
     DeferMsg(&mojom::PasswordManagerDriver::UserModifiedPasswordField);
   }
-  void UserModifiedNonPasswordField(FieldRendererId renderer_id,
-                                    const std::u16string& field_name,
-                                    const std::u16string& value) override {
+  void UserModifiedNonPasswordField(
+      FieldRendererId renderer_id,
+      const std::u16string& field_name,
+      const std::u16string& value,
+      bool autocomplete_attribute_has_username) override {
     DeferMsg(&mojom::PasswordManagerDriver::UserModifiedNonPasswordField,
-             renderer_id, field_name, value);
+             renderer_id, field_name, value,
+             autocomplete_attribute_has_username);
   }
   void ShowPasswordSuggestions(::base::i18n::TextDirection text_direction,
                                const std::u16string& typed_username,
@@ -764,9 +767,12 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
     }
     GetPasswordManagerDriver().UserModifiedPasswordField();
   } else {
+    static base::NoDestructor<WebString> kAutocomplete("autocomplete");
+    std::string autocomplete_attribute =
+        element.GetAttribute(*kAutocomplete).Utf8();
     GetPasswordManagerDriver().UserModifiedNonPasswordField(
         GetFieldRendererId(element), element.NameForAutofill().Utf16(),
-        element_value);
+        element_value, base::Contains(autocomplete_attribute, "username"));
   }
 }
 
@@ -1519,7 +1525,10 @@ void PasswordAutofillAgent::TouchToFillClosed(bool show_virtual_keyboard) {
   // elements' SuggestedValue(), which Touch To Fill does not set.
   auto focused_input_element =
       autofill_agent_->focused_element().DynamicTo<WebInputElement>();
-  CHECK(!focused_input_element.IsNull());
+  if (focused_input_element.IsNull()) {
+    return;
+  }
+
   WebInputElement username_element;
   WebInputElement password_element;
   PasswordInfo* password_info = nullptr;

@@ -445,3 +445,19 @@ async function createFrameSource(type, width, height) {
     }
   }
 }
+
+function addManualTestButton(configs) {
+  document.addEventListener('DOMContentLoaded', _ => {
+    configs.forEach(config => {
+      const btn = document.createElement('button');
+      const label = document.createTextNode(
+          'Run test with config: ' + JSON.stringify(config));
+      btn.onclick = function() {
+        main(config);
+      };
+      btn.appendChild(label);
+      btn.style.margin = '5px';
+      document.body.appendChild(btn);
+    });
+  }, true);
+}

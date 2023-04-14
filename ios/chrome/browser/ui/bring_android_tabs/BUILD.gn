@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ios/swift_source_set.gni")
+
 source_set("bring_android_tabs") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -16,7 +18,10 @@ source_set("bring_android_tabs") {
   ]
   deps = [
     ":bring_android_tabs_ui",
+    ":bring_android_tabs_ui_swift",
+    ":constants",
     "//base",
+    "//components/favicon/core",
     "//ios/chrome/browser/bring_android_tabs",
     "//ios/chrome/browser/bring_android_tabs:features",
     "//ios/chrome/browser/bring_android_tabs:metrics",
@@ -26,6 +31,7 @@ source_set("bring_android_tabs") {
     "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/browser/shared/ui/list_model",
     "//ios/chrome/browser/shared/ui/table_view",
     "//ios/chrome/browser/synced_sessions",
     "//ios/chrome/browser/url_loading",
@@ -38,12 +44,47 @@ source_set("bring_android_tabs_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "bring_android_tabs_prompt_view_controller_delegate.h",
+    "tab_list_from_android_consumer.h",
+    "tab_list_from_android_table_view_item.h",
+    "tab_list_from_android_table_view_item.mm",
+    "tab_list_from_android_view_controller.h",
+    "tab_list_from_android_view_controller.mm",
     "tab_list_from_android_view_controller_delegate.h",
   ]
   deps = [
     ":constants",
     "//base",
+    "//components/url_formatter",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/bring_android_tabs",
+    "//ios/chrome/browser/net:crurl",
+    "//ios/chrome/browser/shared/ui/list_model",
+    "//ios/chrome/browser/shared/ui/table_view",
+    "//ios/chrome/browser/shared/ui/table_view:utils",
+    "//ios/chrome/browser/synced_sessions",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/favicon",
+    "//ios/chrome/common/ui/table_view:cells_constants",
+  ]
+}
+
+swift_source_set("bring_android_tabs_ui_swift") {
+  bridge_header = "bring_android_tabs_swift_bridge.h"
+  sources = [
+    "bring_android_tabs_prompt_bottom_message_provider.swift",
+    "bring_android_tabs_prompt_bottom_message_view.swift",
+    "bring_android_tabs_prompt_confirmation_alert_view_controller.swift",
+  ]
+  deps = [
+    ":bring_android_tabs_ui",
+    ":constants",
+    "resources:bring_android_tabs_icon",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/common/ui/colors:swift",
+    "//ios/chrome/common/ui/confirmation_alert",
+    "//ui/base",
   ]
 }
 

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
+#include "third_party/blink/renderer/core/frame/font_matching_metrics.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
@@ -71,7 +72,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
-#include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -154,8 +154,6 @@ FontFaceSet* WorkerGlobalScope::fonts() {
 }
 
 WorkerGlobalScope::~WorkerGlobalScope() {
-  if (font_matching_metrics_)
-    font_matching_metrics_->PublishAllMetrics();
   DCHECK(!ScriptController());
   InstanceCounters::DecrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
@@ -188,6 +186,9 @@ void WorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
   loading_virtual_time_pauser_ = WebScopedVirtualTimePauser();
   closing_ = true;
+  if (font_matching_metrics_) {
+    font_matching_metrics_->PublishAllMetrics();
+  }
   WorkerOrWorkletGlobalScope::Dispose();
 }
 
@@ -610,7 +611,9 @@ WorkerGlobalScope::WorkerGlobalScope(
           creation_params->worker_clients,
           std::move(creation_params->content_settings_client),
           std::move(creation_params->web_worker_fetch_context),
-          thread->GetWorkerReportingProxy()),
+          thread->GetWorkerReportingProxy(),
+          creation_params->script_url.ProtocolIsData()),
+      ActiveScriptWrappable<WorkerGlobalScope>({}),
       script_type_(creation_params->script_type),
       user_agent_(creation_params->user_agent),
       ua_metadata_(creation_params->ua_metadata),
@@ -728,10 +731,10 @@ ukm::UkmRecorder* WorkerGlobalScope::UkmRecorder() {
   if (ukm_recorder_)
     return ukm_recorder_.get();
 
-  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
   GetBrowserInterfaceBroker().GetInterface(
-      recorder.InitWithNewPipeAndPassReceiver());
-  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+      factory.BindNewPipeAndPassReceiver());
+  ukm_recorder_ = ukm::MojoUkmRecorder::Create(*factory);
 
   return ukm_recorder_.get();
 }
@@ -755,8 +758,7 @@ void WorkerGlobalScope::Trace(Visitor* visitor) const {
 FontMatchingMetrics* WorkerGlobalScope::GetFontMatchingMetrics() {
   if (!font_matching_metrics_) {
     font_matching_metrics_ = std::make_unique<FontMatchingMetrics>(
-        UkmRecorder(), UkmSourceID(),
-        GetTaskRunner(TaskType::kInternalDefault));
+        this, GetTaskRunner(TaskType::kInternalDefault));
   }
   return font_matching_metrics_.get();
 }

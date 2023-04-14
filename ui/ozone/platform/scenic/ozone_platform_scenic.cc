@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include <fidl/fuchsia.ui.views/cpp/hlcpp_conversion.h>
 #include <fuchsia/ui/views/cpp/fidl.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 
@@ -155,7 +156,8 @@ class OzonePlatformScenic : public OzonePlatform,
     return std::make_unique<InputMethodFuchsia>(
         window_manager_->GetWindow(widget)->is_virtual_keyboard_enabled(),
         ime_key_event_dispatcher,
-        window_manager_->GetWindow(widget)->CloneViewRef());
+        fidl::HLCPPToNatural(
+            window_manager_->GetWindow(widget)->CloneViewRef()));
   }
 
   bool InitializeUI(const InitParams& params) override {
@@ -204,12 +206,8 @@ class OzonePlatformScenic : public OzonePlatform,
 
   const PlatformRuntimeProperties& GetPlatformRuntimeProperties() override {
     static OzonePlatform::PlatformRuntimeProperties properties;
-
-    // This property is set when the GetPlatformRuntimeProperties is
-    // called on the gpu process side.
-    if (has_initialized_gpu())
-      properties.supports_native_pixmaps = true;
-
+    properties.supports_native_pixmaps = true;
+    properties.supports_overlays = true;
     return properties;
   }
 

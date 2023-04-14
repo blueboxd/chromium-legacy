@@ -9,6 +9,9 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 
+@protocol InactiveTabsCommands;
+@protocol InactiveTabsInfoConsumer;
+class PrefService;
 @class SnapshotCache;
 @protocol TabCollectionConsumer;
 class WebStateList;
@@ -18,10 +21,13 @@ class WebStateList;
 @interface InactiveTabsMediator : NSObject <GridImageDataSource>
 
 // Initializer with `consumer` as the receiver of `webStateList` updates.
-- (instancetype)initWithConsumer:(id<TabCollectionConsumer>)consumer
-                    webStateList:(WebStateList*)webStateList
-                   snapshotCache:(SnapshotCache*)snapshotCache
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)
+    initWithConsumer:
+        (id<TabCollectionConsumer, InactiveTabsInfoConsumer>)consumer
+      commandHandler:(id<InactiveTabsCommands>)commandHandler
+        webStateList:(WebStateList*)webStateList
+         prefService:(PrefService*)prefService
+       snapshotCache:(SnapshotCache*)snapshotCache NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Returns the number of items pushed to the consumer.
@@ -30,11 +36,11 @@ class WebStateList;
 // Tells the receiver to close the item with the `itemID` identifier.
 - (void)closeItemWithID:(NSString*)itemID;
 
-// Tells the receiver to stop observing the list and pushing updates to its
-// consumer, and to close all items of the web state list (the consumer will
-// disappear, there is no need to empty it explicitly).
-// Note: this mediator is then no longer useful and should be disposed of.
-- (void)shutdownAndCloseAllItems;
+// Tells the receiver to close all items of the web state list.
+- (void)closeAllItems;
+
+// Disconnects the mediator.
+- (void)disconnect;
 
 @end
 

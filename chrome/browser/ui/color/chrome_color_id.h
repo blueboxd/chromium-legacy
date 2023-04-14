@@ -214,6 +214,7 @@
   E_CPONLY(kColorOmniboxChipForegroundLowVisibility) \
   E_CPONLY(kColorOmniboxChipForegroundNormalVisibility) \
   E_CPONLY(kColorOmniboxKeywordSelected) \
+  E_CPONLY(kColorOmniboxKeywordSeparator) \
   E_CPONLY(kColorOmniboxResultsBackground) \
   E_CPONLY(kColorOmniboxResultsBackgroundHovered) \
   E_CPONLY(kColorOmniboxResultsBackgroundSelected) \
@@ -242,6 +243,7 @@
   E_CPONLY(kColorOmniboxText) \
   E_CPONLY(kColorOmniboxTextDimmed) \
   /* Page Info colors */ \
+  E_CPONLY(kColorPageActionIcon) \
   E_CPONLY(kColorPageActionIconHover) \
   E_CPONLY(kColorPageActionIconPressed) \
   E_CPONLY(kColorPageInfoBackground) \
@@ -330,6 +332,7 @@
   E_CPONLY(kColorSidePanelFilterChipForegroundSelected) \
   E_CPONLY(kColorSidePanelFilterChipIcon) \
   E_CPONLY(kColorSidePanelFilterChipIconSelected) \
+  E_CPONLY(kColorSidePanelFilterChipBackgroundHover) \
   E_CPONLY(kColorSidePanelFilterChipBackgroundSelected) \
   E_CPONLY(kColorSidePanelScrollbarThumb) \
   E_CPONLY(kColorSidePanelTextfieldBorder) \
@@ -462,6 +465,7 @@
   E_CPONLY(kColorToolbarContentAreaSeparator) \
   E_CPONLY(kColorToolbarFeaturePromoHighlight) \
   E_CPONLY(kColorToolbarInkDrop) \
+  E_CPONLY(kColorToolbarInkDropRipple) \
   E_CPONLY(kColorToolbarSeparator) \
   E_CPONLY(kColorToolbarSeparatorDefault) \
   E_CPONLY(kColorToolbarText) \
@@ -518,6 +522,11 @@
   E_CPONLY(kColorReadAnythingDropdownBackgroundDark) \
   E_CPONLY(kColorReadAnythingDropdownBackgroundLight) \
   E_CPONLY(kColorReadAnythingDropdownBackgroundYellow) \
+  E_CPONLY(kColorReadAnythingDropdownSelected) \
+  E_CPONLY(kColorReadAnythingDropdownSelectedBlue) \
+  E_CPONLY(kColorReadAnythingDropdownSelectedDark) \
+  E_CPONLY(kColorReadAnythingDropdownSelectedLight) \
+  E_CPONLY(kColorReadAnythingDropdownSelectedYellow) \
 
 #if BUILDFLAG(IS_CHROMEOS)
 #define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \

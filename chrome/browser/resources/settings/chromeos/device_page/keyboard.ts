@@ -20,9 +20,9 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DropdownMenuOptionList} from '../../controls/settings_dropdown_menu.js';
-import {FocusConfig} from '../../focus_config.js';
 import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {FocusConfig} from '../focus_config.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
@@ -122,6 +122,11 @@ class SettingsKeyboardElement extends SettingsKeyboardElementBase {
       },
 
       /**
+       * Whether the setting for long press diacritics should be shown
+       */
+      shouldShowDiacriticSetting_: Boolean,
+
+      /**
        * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
@@ -130,6 +135,7 @@ class SettingsKeyboardElement extends SettingsKeyboardElementBase {
           Setting.kKeyboardFunctionKeys,
           Setting.kKeyboardAutoRepeat,
           Setting.kKeyboardShortcuts,
+          Setting.kShowDiacritic,
         ]),
       },
     };
@@ -143,6 +149,8 @@ class SettingsKeyboardElement extends SettingsKeyboardElementBase {
   private showAppleCommandKey_: boolean;
   private showCapsLock_: boolean;
   private showExternalMetaKey_: boolean;
+  private shouldShowDiacriticSetting_ =
+      loadTimeData.getBoolean('allowDiacriticsOnPhysicalKeyboardLongpress');
 
   constructor() {
     super();
@@ -230,11 +238,11 @@ class SettingsKeyboardElement extends SettingsKeyboardElementBase {
     this.showAppleCommandKey_ = keyboardParams['showAppleCommandKey'];
   }
 
-  private onShowKeyboardShortcutViewerTap_() {
+  private onShowKeyboardShortcutViewerClick_() {
     this.browserProxy_.showKeyboardShortcutViewer();
   }
 
-  private onShowInputSettingsTap_() {
+  private onShowInputSettingsClick_() {
     Router.getInstance().navigateTo(
         routes.OS_LANGUAGES_INPUT,
         /*dynamicParams=*/ undefined, /*removeSearch=*/ true);

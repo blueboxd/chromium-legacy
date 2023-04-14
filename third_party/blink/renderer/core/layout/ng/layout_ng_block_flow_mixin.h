@@ -45,9 +45,6 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
   void ClearNGInlineNodeData() final;
   bool HasNGInlineNodeData() const final;
 
-  LayoutUnit FirstLineBoxBaseline() const final;
-  LayoutUnit InlineBlockBaseline(LineDirectionMode) const final;
-
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
@@ -64,7 +61,7 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
   void AddLayoutOverflowFromChildren() final;
 #endif
 
-  void AddOutlineRects(Vector<PhysicalRect>&,
+  void AddOutlineRects(OutlineRectCollector&,
                        LayoutObject::OutlineInfo*,
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;

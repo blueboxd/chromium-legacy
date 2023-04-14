@@ -26,6 +26,7 @@ class VariableType:
     UNTYPED_CSS = 'untyped_css'
     TYPEFACE = 'typeface'
     FONT_FAMILY = 'font_family'
+    LEGACY_MAPPING = 'legacy_mappings'
 
 
 class StyleVariable(object):
@@ -73,6 +74,10 @@ class Submodel(ABC):
 
 
 class ModeKeyedModel(collections.OrderedDict, Submodel):
+    def __init__(self):
+        # A map of all variables to their |StyleVariable| object.
+        self.variable_map = dict()
+
     def Add(self, name, value_obj, context):
         if name not in self:
             self[name] = {}
@@ -90,7 +95,10 @@ class ModeKeyedModel(collections.OrderedDict, Submodel):
                 self[name][mode] = value
         else:
             self[name][Modes.DEFAULT] = self._CreateValue(value_obj)
-        return [StyleVariable(self.variable_type, name, value_obj, context)]
+
+        variable = StyleVariable(self.variable_type, name, value_obj, context)
+        self.variable_map[name] = variable
+        return [variable]
 
     # Returns the value that |name| will have in |mode|. Resolves to the default
     # mode's value if the a value for |mode| isn't specified. Always returns a
@@ -125,6 +133,7 @@ class OpacityModel(ModeKeyedModel):
     '''
 
     def __init__(self):
+        super().__init__()
         self.variable_type = VariableType.OPACITY
 
     # Returns a float from 0-1 representing the concrete value of |opacity|.
@@ -144,6 +153,7 @@ class ColorModel(ModeKeyedModel):
     '''
 
     def __init__(self, opacity_model):
+        super().__init__()
         self.opacity_model = opacity_model
         self.variable_type = VariableType.COLOR
 
@@ -219,17 +229,22 @@ class ColorModel(ModeKeyedModel):
         (result.r, result.g, result.b) = (rgb.r, rgb.g, rgb.b)
         return result
 
-    def _ResolveBlendedColors(self):
+    def _ProcessBlendedColors(self, default_preblend):
         # Calculate the final RGBA for all blended colors because the
         # generator's subclasses can't blend yet.
         temp_model = {}
         for name, value in self.items():
             for mode, color in value.items():
-                if color.blended_colors:
+                context = self.variable_map[name].context
+                should_preblend = context.get('CSS',
+                                              {}).get('preblend',
+                                                      default_preblend)
+                if color.blended_colors and should_preblend:
                     assert len(color.blended_colors) == 2
                     if name not in temp_model:
                         temp_model[name] = {}
                     temp_model[name][mode] = self.ResolveToRGBA(name, mode)
+
         for name, value in temp_model.items():
             for mode, color in value.items():
                 self[name][mode] = temp_model[name][mode]
@@ -293,6 +308,9 @@ class Model(object):
         self.untyped_css = SimpleModel(VariableType.UNTYPED_CSS)
         self.submodels[VariableType.UNTYPED_CSS] = self.untyped_css
 
+        self.legacy_mappings = SimpleModel(VariableType.LEGACY_MAPPING)
+        self.submodels[VariableType.LEGACY_MAPPING] = self.legacy_mappings
+
         def CheckTypeFace(name, value_obj, context):
             assert value_obj['font_family']
             assert value_obj['font_size']
@@ -332,14 +350,14 @@ class Model(object):
             return f'{namespace}.{name}'
         return name
 
-    def PostProcess(self, resolve_blended_colors=True):
+    def PostProcess(self, default_preblend=True):
         '''Called after all variables have been added to perform operations that
            require a complete worldview.
         '''
-        if resolve_blended_colors:
-            # Resolve blended colors after all the files are added because some
-            # color dependencies are between different files.
-            self.colors._ResolveBlendedColors()
+
+        # Resolve blended colors after all the files are added because some
+        # color dependencies are between different files.
+        self.colors._ProcessBlendedColors(default_preblend)
 
         self.Validate()
 

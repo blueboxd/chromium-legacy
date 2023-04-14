@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Сертыфікат аўтэнтыфікацыі адхілены ў лакальнай сетцы</translation>
 <translation id="1775381402323441512">Звесткі пра відэа</translation>
 <translation id="180035236176489073">Каб атрымаць доступ да гэтых файлаў, трэба выйсці ў інтэрнэт.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Пашырэнне з ідэнтыфікатарам}one{Пашырэнні з ідэнтыфікатарамі}few{Пашырэнні з ідэнтыфікатарамі}many{Пашырэнні з ідэнтыфікатарамі}other{Пашырэнні з ідэнтыфікатарамі}}</translation>
 <translation id="1807938677607439181">Усе файлы</translation>
 <translation id="1810764548349082891">Перадпрагляд недаступны</translation>
 <translation id="1812302367230252929">Амхарская (транслітарацыя)</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Несапраўдны запіс супадзення па альтэрнатыўным імені суб'екта</translation>
 <translation id="1838709767668011582">Сайт Google</translation>
 <translation id="1853795129690976061">Гэта папка абагулена з Linux</translation>
-<translation id="1859422890169495746">Гэта прылада Chromebook</translation>
 <translation id="1864756863218646478">Не ўдалося знайсці файл.</translation>
 <translation id="1884013283844450420">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, падключыцца</translation>
 <translation id="1920670151694390848">Малаялам (транслітарацыя)</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Планета</translation>
 <translation id="2305020378527873881">Носьбіт <ph name="VOLUME_NAME" /> выняты.</translation>
 <translation id="2307462900900812319">Наладзіць сетку</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Пашырэнне з ідэнтыфікатарам <ph name="BEGIN_LIST" /><ph name="END_LIST" /> знайсці не ўдалося. Звярніцеся да адміністратара.}one{Пашырэнні з ідэнтыфікатарам <ph name="BEGIN_LIST" /><ph name="END_LIST" /> знайсці не ўдалося. Звярніцеся да адміністратара.}few{Пашырэнні з ідэнтыфікатарам <ph name="BEGIN_LIST" /><ph name="END_LIST" /> знайсці не ўдалося. Звярніцеся да адміністратара.}many{Пашырэнні з ідэнтыфікатарам <ph name="BEGIN_LIST" /><ph name="END_LIST" /> знайсці не ўдалося. Звярніцеся да адміністратара.}other{Пашырэнні з ідэнтыфікатарам <ph name="BEGIN_LIST" /><ph name="END_LIST" /> знайсці не ўдалося. Звярніцеся да адміністратара.}}</translation>
 <translation id="2325650632570794183">Гэты тып файла не падтрымліваецца. Знайсці праграму для адкрыцця файлаў такога тыпу можна ў Вэб-краме Chrome.</translation>
 <translation id="2326539130272988168">Балгарская</translation>
 <translation id="2337715497728194187">Абагуліць з Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Не абаронена</translation>
 <translation id="3291218047831493686">Каб змяніць налады блакіроўкі SIM-карты, падключыцеся да гэтай сеткі</translation>
 <translation id="3293023191599135697">Сеткі WEP не падтрымліваюцца</translation>
+<translation id="3295006446256079333">Гэты том</translation>
 <translation id="3295357220137379386">Прылада занятая</translation>
 <translation id="3296763833017966289">Грузінская</translation>
 <translation id="3307875152560779385">Украінская</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">Праглядзець</translation>
 <translation id="485316830061041779">Нямецкая</translation>
+<translation id="4862885579661885411">Налады Файлаў</translation>
 <translation id="4867079195717347957">Каб адсартаваць слупок па ўбыванні, націсніце тут.</translation>
 <translation id="4867297348137739678">Мінулы тыдзень</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> Б</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347">Ідзе капіраванне элементаў (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7375951387215729722">Файлы ў спісе адсартаваны па параметры "<ph name="COLUMN_NAME" />" (у пачатку будуць нядаўна змененыя).</translation>
 <translation id="7377161162143020057">Зададзеная адміністратарам палітыка блакіруе магчымасць капіраваць гэты файл</translation>
-<translation id="7392500733467492920">знайсці не ўдалося. Звярніцеся да адміністратара.</translation>
 <translation id="7402503521691663770">Прылады з Chrome OS Flex</translation>
 <translation id="7408870451288633753">Чэшская</translation>
 <translation id="7417453074306512035">Эфіопская раскладка</translation>

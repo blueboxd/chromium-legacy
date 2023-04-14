@@ -11,6 +11,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
@@ -379,6 +380,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                             int max_width,
                             int max_height);
   void DisableAutomaticDragDrop();
+  void GoToOffset(int offset);
   v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
       int world_id,
       const std::string& script);
@@ -825,7 +827,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                    &TestRunnerBindings::WebHistoryItemCount)
       .SetMethod("windowCount", &TestRunnerBindings::WindowCount)
       .SetMethod("disableAutomaticDragDrop",
-                 &TestRunnerBindings::DisableAutomaticDragDrop);
+                 &TestRunnerBindings::DisableAutomaticDragDrop)
+      .SetMethod("goToOffset", &TestRunnerBindings::GoToOffset);
 }
 
 BoundV8Callback TestRunnerBindings::WrapV8Callback(
@@ -2048,7 +2051,7 @@ void TestRunnerBindings::RunIdleTasks(v8::Local<v8::Function> v8_callback) {
   blink::scheduler::WebThreadScheduler* scheduler =
       content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
   blink::scheduler::RunIdleTasksForTesting(
-      scheduler, WrapV8Closure(std::move(v8_callback)));
+      CHECK_DEREF(scheduler), WrapV8Closure(std::move(v8_callback)));
 }
 
 std::string TestRunnerBindings::PlatformName() {
@@ -2191,6 +2194,13 @@ void TestRunnerBindings::DisableAutomaticDragDrop() {
     return;
   }
   runner_->DisableAutomaticDragDrop();
+}
+
+void TestRunnerBindings::GoToOffset(int offset) {
+  if (invalid_) {
+    return;
+  }
+  runner_->GoToOffset(offset);
 }
 
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {}

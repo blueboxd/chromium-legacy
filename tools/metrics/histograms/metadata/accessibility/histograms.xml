@@ -211,9 +211,10 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Tracks the number of AccessibilityEvents dropped when the OnDemand
-    accessibility services feature is enabled, and the ComputeAXMode feature is
-    enabled, and the number of events dropped is 100%. Tracks for when the
-    AXMode is set to {AXMode}. Recorded a the end of a session.
+    accessibility services feature is enabled, and the AccessibilityAXModes
+    feature is enabled, and the number of events dropped is 100%. Tracks for
+    when the AXMode is set to {AXMode}. Recorded at the end of a session.
+    Updated in M114 to add FormControls variant.
   </summary>
   <token key="AXMode">
     <variant name="Basic"
@@ -221,6 +222,9 @@ chromium-metrics-reviews@google.com.
     <variant name="Complete"
         summary="kAXModeComplete - Includes NativeAPIs, WebContents,
                  InlineTextBoxes, ScreenReader, and HTML"/>
+    <variant name="FormControls"
+        summary="kAXModeFormControls - Includes only NativeAPIs, WebContents,
+                 HTML, and ExperimentalFormControls"/>
   </token>
 </histogram>
 
@@ -242,9 +246,9 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Tracks the percentage of AccessibilityEvents dropped when the OnDemand
-    accessibility services feature is enabled, and the ComputeAXMode feature is
-    enabled. Tracks for when the AXMode is set to {AXMode}. Recorded at the end
-    of a session.
+    accessibility services feature is enabled, and the AccessibilityAXModes
+    feature is enabled. Tracks for when the AXMode is set to {AXMode}. Recorded
+    at the end of a session. Updated in M114 to add FormControls variant.
   </summary>
   <token key="AXMode">
     <variant name="Basic"
@@ -252,6 +256,9 @@ chromium-metrics-reviews@google.com.
     <variant name="Complete"
         summary="kAXModeComplete - Includes NativeAPIs, WebContents,
                  InlineTextBoxes, ScreenReader, and HTML"/>
+    <variant name="FormControls"
+        summary="kAXModeFormControls - Includes only NativeAPIs, WebContents,
+                 HTML, and ExperimentalFormControls"/>
   </token>
 </histogram>
 
@@ -1169,7 +1176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.InactiveTime" units="ms"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>aleventhal@chromium.org</owner>
   <owner>abigailbklein@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
@@ -1504,6 +1511,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.LiveTranslate.EnableFrom{Entrypoint}"
+    enum="BooleanEnabled" expires_after="2023-06-13">
+  <owner>evliu@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records when a user enables or disables the Live Translate feature from
+    {Entrypoint}.
+  </summary>
+  <token key="Entrypoint">
+    <variant name="GlobalMediaControls"
+        summary="global media controls (Zenith)"/>
+    <variant name="Settings" summary="chrome://settings"/>
+  </token>
+</histogram>
+
 <histogram name="Accessibility.Mac.ScreenReader{AccessibilityEveryReport}"
     enum="BooleanEnabled" expires_after="never">
 <!-- expires-never: usage drives a11y prioritization in browser and content. -->
@@ -1575,7 +1597,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Performance.AXTree.Destroy" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>agarwaltushar@google.com</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -1774,6 +1796,16 @@ chromium-metrics-reviews@google.com.
     <variant name="Failure" summary="has failed"/>
     <variant name="Success" summary="has succeeded"/>
   </token>
+</histogram>
+
+<histogram name="Accessibility.ScreenAI.LibraryLoadDetailedResultOnWindows"
+    enum="WinGetLastError" expires_after="2023-11-30">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records a Screen AI library load result on Windows. The result is recorded
+    after initialization of Screen AI service and loading chrome_screen_ai.dll.
+  </summary>
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.LoadLibraryResult"

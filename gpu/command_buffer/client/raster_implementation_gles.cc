@@ -192,11 +192,12 @@ void RasterImplementationGLES::CopySharedImage(
 void RasterImplementationGLES::WritePixels(const gpu::Mailbox& dest_mailbox,
                                            int dst_x_offset,
                                            int dst_y_offset,
+                                           int dst_plane_index,
                                            GLenum texture_target,
-                                           GLuint row_bytes,
-                                           const SkImageInfo& src_info,
-                                           const void* src_pixels) {
-  DCHECK_GE(row_bytes, src_info.minRowBytes());
+                                           const SkPixmap& src_sk_pixmap) {
+  const auto& src_info = src_sk_pixmap.info();
+  const auto& src_row_bytes = src_sk_pixmap.rowBytes();
+  DCHECK_GE(src_row_bytes, src_info.minRowBytes());
   GLuint texture_id = CreateAndConsumeForGpuRaster(dest_mailbox);
   BeginSharedImageAccessDirectCHROMIUM(
       texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
@@ -204,13 +205,14 @@ void RasterImplementationGLES::WritePixels(const gpu::Mailbox& dest_mailbox,
   GLint old_align = 0;
   gl_->GetIntegerv(GL_UNPACK_ALIGNMENT, &old_align);
   gl_->PixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, row_bytes / src_info.bytesPerPixel());
+  gl_->PixelStorei(GL_UNPACK_ROW_LENGTH,
+                   src_row_bytes / src_info.bytesPerPixel());
   gl_->BindTexture(texture_target, texture_id);
   gl_->TexSubImage2D(
       texture_target, 0, dst_x_offset, dst_y_offset, src_info.width(),
       src_info.height(),
       SkColorTypeToGLDataFormat(src_info.colorType(), capabilities_.texture_rg),
-      SkColorTypeToGLDataType(src_info.colorType()), src_pixels);
+      SkColorTypeToGLDataType(src_info.colorType()), src_sk_pixmap.addr());
   gl_->BindTexture(texture_target, 0);
   gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
   gl_->PixelStorei(GL_UNPACK_ALIGNMENT, old_align);

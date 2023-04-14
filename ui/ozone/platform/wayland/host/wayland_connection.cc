@@ -27,8 +27,6 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/common/features.h"
-#include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/platform/wayland/host/fractional_scale_manager.h"
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/host/gtk_shell1.h"
 #include "ui/ozone/platform/wayland/host/org_kde_kwin_idle.h"
@@ -131,8 +129,6 @@ WaylandConnection::~WaylandConnection() = default;
 bool WaylandConnection::Initialize() {
   // Register factories for classes that implement wl::GlobalObjectRegistrar<T>.
   // Keep alphabetical order for convenience.
-  RegisterGlobalObjectFactory(FractionalScaleManager::kInterfaceName,
-                              &FractionalScaleManager::Instantiate);
   RegisterGlobalObjectFactory(GtkPrimarySelectionDeviceManager::kInterfaceName,
                               &GtkPrimarySelectionDeviceManager::Instantiate);
   RegisterGlobalObjectFactory(GtkShell1::kInterfaceName,
@@ -535,6 +531,13 @@ void WaylandConnection::Global(void* data,
     }
   } else if (!connection->xdg_output_manager_ &&
              strcmp(interface, "zxdg_output_manager_v1") == 0) {
+    // Responsibilities of zxdg_output_manager_v1 have been subsumed into the
+    // zaura_output_manager. If using the zaura_output_manager avoid binding
+    // unnecessarily.
+    if (connection->zaura_output_manager_) {
+      LOG(WARNING) << "Skipping bind to zxdg_output_manager_v1";
+      return;
+    }
     connection->xdg_output_manager_ = wl::Bind<struct zxdg_output_manager_v1>(
         registry, name, std::min(version, kMaxXdgOutputManagerVersion));
     if (!connection->xdg_output_manager_) {

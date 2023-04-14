@@ -101,6 +101,9 @@ HistoryClustersAction::HistoryClustersAction(
     const history::ClusterKeywordData& matched_keyword_data,
     bool takes_over_match)
     : OmniboxAction(
+          // TODO(manukh:) this is the only use case of
+          //   IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT. Remove it when
+          //   removing journey actions.
           OmniboxAction::LabelStrings(
               IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT,
               IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS,
@@ -109,11 +112,7 @@ HistoryClustersAction::HistoryClustersAction(
           GetFullJourneysUrlForQuery(query),
           takes_over_match),
       matched_keyword_data_(matched_keyword_data),
-      query_(query) {
-#if BUILDFLAG(IS_ANDROID)
-    CreateOrUpdateJavaObject(query);
-#endif
-}
+      query_(query) {}
 
 void HistoryClustersAction::RecordActionShown(size_t position,
                                               bool executed) const {
@@ -179,13 +178,13 @@ const gfx::VectorIcon& HistoryClustersAction::GetVectorIcon() const {
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-base::android::ScopedJavaGlobalRef<jobject>
-HistoryClustersAction::GetJavaObject() const {
-  return j_omnibox_action_;
-}
-
-void HistoryClustersAction::CreateOrUpdateJavaObject(const std::string& query) {
-  j_omnibox_action_.Reset(BuildHistoryClustersAction(strings_.hint, query));
+base::android::ScopedJavaLocalRef<jobject>
+HistoryClustersAction::GetOrCreateJavaObject(JNIEnv* env) const {
+  if (!j_omnibox_action_) {
+    j_omnibox_action_.Reset(
+        BuildHistoryClustersAction(env, strings_.hint, query_));
+  }
+  return base::android::ScopedJavaLocalRef<jobject>(j_omnibox_action_);
 }
 #endif
 

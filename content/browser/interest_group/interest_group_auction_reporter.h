@@ -152,6 +152,9 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     // Ad cost returned by the bidder.
     absl::optional<double> ad_cost;
 
+    // Modeling signals returned by the bidder.
+    absl::optional<uint16_t> modeling_signals;
+
     // How long it took to generate the bid.
     base::TimeDelta bid_duration;
 
@@ -240,6 +243,8 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   base::RepeatingClosure OnNavigateToWinningAdCallback();
 
   const std::vector<std::string>& errors() const { return errors_; }
+
+  const WinningBidInfo& winning_bid_info() const { return winning_bid_info_; }
 
   // The FencedFrameReporter that `this` will pass event-level ad beacon
   // information received from reporting worklets to, as they're received.

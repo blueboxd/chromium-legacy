@@ -10,7 +10,7 @@ import android.app.Instrumentation;
 import android.content.Intent;
 
 import androidx.test.InstrumentationRegistry;
-import androidx.test.filters.MediumTest;
+import androidx.test.filters.LargeTest;
 
 import com.google.common.util.concurrent.SettableFuture;
 
@@ -21,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.content_public.browser.test.util.ClickUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -29,7 +30,7 @@ import org.chromium.webengine.Tab;
 import org.chromium.webengine.WebEngine;
 import org.chromium.webengine.WebEngineParams;
 import org.chromium.webengine.WebSandbox;
-import org.chromium.webengine.shell.InstrumentationActivity;
+import org.chromium.webengine.test.instrumentation_test_apk.InstrumentationActivity;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -50,7 +51,8 @@ public class ExternalIntentsTest {
     // We need plenty time to load up a page, launch a new activity, and return.
     // We need to be confident that those events also did not happen in the disabled
     // case if this times out.
-    private static final int TEST_TIMEOUT_MS = 5_000;
+    // The is quite a slow set of tests because we need this to be a large value to avoid flaking.
+    private static final int TEST_TIMEOUT_MS = 20_000;
 
     private EmbeddedTestServer mServer;
     private WebSandbox mSandbox;
@@ -75,7 +77,8 @@ public class ExternalIntentsTest {
     }
 
     @Test
-    @MediumTest
+    @LargeTest
+    @DisabledTest(message = "Flaky because this relies on waiting for an activity to launch")
     public void testOpensExternalIntents_shouldLaunch() throws Exception {
         // Awful hack heads up:
         // The problem is that the application is a separate application from the
@@ -105,7 +108,7 @@ public class ExternalIntentsTest {
     }
 
     @Test
-    @MediumTest
+    @LargeTest
     public void testDisableExternalIntents_shouldNotLaunch() throws Exception {
         final SettableFuture<Boolean> launchedExternal = SettableFuture.create();
         mActivityTestRule.getActivity().setLifeCycleListener(

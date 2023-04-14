@@ -170,7 +170,7 @@ FakeSkiaOutputSurface::CreateImageContext(
 SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(
     const AggregatedRenderPassId& id,
     const gfx::Size& surface_size,
-    ResourceFormat format,
+    SharedImageFormat format,
     bool mipmap,
     bool scanout_dcomp_surface,
     sk_sp<SkColorSpace> color_space,
@@ -185,7 +185,7 @@ SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(
 
   if (!sk_surface) {
     SkColorType color_type =
-        ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
+        ToClosestSkColorType(true /* gpu_compositing */, format);
     SkImageInfo image_info = SkImageInfo::Make(
         surface_size.width(), surface_size.height(), color_type,
         kPremul_SkAlphaType, std::move(color_space));
@@ -218,7 +218,7 @@ void FakeSkiaOutputSurface::EndPaint(
 sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromRenderPass(
     const AggregatedRenderPassId& id,
     const gfx::Size& size,
-    ResourceFormat format,
+    SharedImageFormat format,
     bool mipmap,
     sk_sp<SkColorSpace> color_space,
     const gpu::Mailbox& mailbox) {
@@ -400,7 +400,7 @@ void FakeSkiaOutputSurface::InitDelegatedInkPointRendererReceiver(
 }
 
 gpu::Mailbox FakeSkiaOutputSurface::CreateSharedImage(
-    ResourceFormat format,
+    SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,

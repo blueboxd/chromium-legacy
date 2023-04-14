@@ -261,6 +261,21 @@ void HttpsUpgradesInterceptor::MaybeCreateLoader(
   if (net::IsHostnameNonUnique(tentative_resource_request.url.host())) {
     RecordNavigationRequestSecurityLevel(
         NavigationRequestSecurityLevel::kNonUniqueHostname);
+
+    // For HTTPS-Upgrades, skip attempting to upgrade non-routable IP address
+    // literals (i.e., RFC1918/4193) as they can't get publicly-trusted
+    // certificates.
+    //
+    // HTTPS-First Mode does not exempt these hosts in order to ensure that
+    // Chrome shows the HTTP interstitial before navigation to them.
+    // Potentially, these could fast-fail instead and skip directly to the
+    // interstitial.
+    if (base::FeatureList::IsEnabled(features::kHttpsUpgrades) &&
+        !http_interstitial_enabled_ &&
+        tentative_resource_request.url.HostIsIPAddress()) {
+      std::move(callback).Run({});
+      return;
+    }
   }
 
   // Check whether this host would be upgraded to HTTPS by HSTS. This requires a
@@ -548,10 +563,13 @@ void HttpsUpgradesInterceptor::RedirectHandler(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!receiver_.is_bound());
-  DCHECK(!client_.is_bound());
 
-  // Set up Mojo connection and initiate the redirect.
+  // Set up Mojo connection and initiate the redirect. `client_` and `receiver_`
+  // may have been previously bound from handling a previous upgrade earlier in
+  // the same navigation, so reset them before re-binding them to handle a new
+  // redirect.
+  receiver_.reset();
+  client_.reset();
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(
       base::BindOnce(&HttpsUpgradesInterceptor::OnConnectionClosed,

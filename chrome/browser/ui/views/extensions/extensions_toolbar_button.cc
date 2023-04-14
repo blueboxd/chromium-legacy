@@ -17,12 +17,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button_controller.h"
 
 namespace {
 
 const gfx::VectorIcon& kExtensionIcon = vector_icons::kExtensionIcon;
+const gfx::VectorIcon& kExtensionChromeRefreshIcon =
+    vector_icons::kExtensionChromeRefreshIcon;
 
 }  // namespace
 
@@ -47,7 +50,8 @@ ExtensionsToolbarButton::ExtensionsToolbarButton(
       views::ButtonController::NotifyAction::kOnPress);
 
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_EXTENSIONS_BUTTON));
-  SetVectorIcon(kExtensionIcon);
+  SetVectorIcon(features::IsChromeRefresh2023() ? kExtensionChromeRefreshIcon
+                                                : kExtensionIcon);
 
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
 }
@@ -143,8 +147,10 @@ bool ExtensionsToolbarButton::GetExtensionsMenuShowing() const {
 
 int ExtensionsToolbarButton::GetIconSize() const {
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-  return (touch_ui && !browser_->app_controller()) ? kDefaultTouchableIconSize
-                                                   : kDefaultIconSize;
+  return (touch_ui && !browser_->app_controller())
+             ? kDefaultTouchableIconSize
+             : (features::IsChromeRefresh2023() ? kDefaultIconSizeChromeRefresh
+                                                : kDefaultIconSize);
 }
 
 BEGIN_METADATA(ExtensionsToolbarButton, ToolbarButton)

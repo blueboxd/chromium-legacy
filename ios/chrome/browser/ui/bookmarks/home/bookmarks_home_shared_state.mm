@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_shared_state.h"
 
 #import "base/check.h"
+#import "components/bookmarks/common/bookmark_features.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_editing.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
@@ -23,16 +25,36 @@ const NSUInteger kMaxDownloadFaviconCount = 50;
 
 }  // namespace
 
+bool IsABookmarkNodeSectionIdentifier(
+    BookmarksHomeSectionIdentifier sectionIdentifier) {
+  switch (sectionIdentifier) {
+    case BookmarksHomeSectionIdentifierPromo:
+    case BookmarksHomeSectionIdentifierMessages:
+      return false;
+    case BookmarksHomeSectionIdentifierBookmarks:
+    case BookmarksHomeSectionIdentifierRootProfile:
+    case BookmarksHomeSectionIdentifierRootAccount:
+      return true;
+  }
+}
+
 @implementation BookmarksHomeSharedState {
   std::set<const bookmarks::BookmarkNode*> _editNodes;
 }
 
 - (instancetype)
     initWithProfileBookmarkModel:(bookmarks::BookmarkModel*)profileBookmarkModel
+            accountBookmarkModel:(bookmarks::BookmarkModel*)accountBookmarkModel
                displayedRootNode:
                    (const bookmarks::BookmarkNode*)displayedRootNode {
   if ((self = [super init])) {
+    CHECK(profileBookmarkModel);
+    CHECK(!base::FeatureList::IsEnabled(
+              bookmarks::kEnableBookmarksAccountStorage) ||
+          accountBookmarkModel);
+    CHECK(displayedRootNode);
     _profileBookmarkModel = profileBookmarkModel;
+    _accountBookmarkModel = accountBookmarkModel;
     _tableViewDisplayedRootNode = displayedRootNode;
   }
   return self;

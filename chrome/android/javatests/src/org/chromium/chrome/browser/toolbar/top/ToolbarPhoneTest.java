@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.toolbar.top;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeastOnce;
@@ -16,6 +18,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
@@ -47,7 +50,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -59,13 +61,16 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
+import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
+import org.chromium.chrome.browser.toolbar.optional_button.OptionalButtonCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -73,6 +78,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.test.util.ViewUtils;
 
 /**
  * Instrumentation tests for {@link ToolbarPhone}.
@@ -98,6 +104,8 @@ public class ToolbarPhoneTest {
     ThemeColorProvider mThemeColorProvider;
     @Mock
     GradientDrawable mLocationbarBackgroundDrawable;
+    @Mock
+    OptionalButtonCoordinator mOptionalButtonCoordinator;
 
     private Canvas mCanvas = new Canvas();
     private ToolbarPhone mToolbar;
@@ -164,7 +172,7 @@ public class ToolbarPhoneTest {
                     new TestControlsVisibilityDelegate(),
                     mActivityTestRule.getActivity().getWindowAndroid(), mFocusFunction,
                     mRequestRenderRunnable, true, () -> false, mThemeColorProvider,
-                    () -> null, () -> {}, org.chromium.chrome.R.id.menu_button_wrapper);
+                    () -> null, () -> {}, R.id.menu_button_wrapper);
             // clang-format on
             mToolbar.setMenuButtonCoordinatorForTesting(realMenuButtonCoordinator);
             mToolbar.updateOptionalButton(new ButtonDataImpl(false, drawable, null,
@@ -366,9 +374,8 @@ public class ToolbarPhoneTest {
             Criteria.checkThat(tabModelSelector.getTotalTabCount(), Matchers.is(1));
         });
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            cta.findViewById(org.chromium.chrome.tab_ui.R.id.tab_switcher_button).performClick();
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { cta.findViewById(R.id.tab_switcher_button).performClick(); });
 
         // When the Start surface refactoring is enabled, the ToolbarPhone is shown on the grid tab
         // switcher rather than the Start surface toolbar.
@@ -403,9 +410,8 @@ public class ToolbarPhoneTest {
             Criteria.checkThat(tabModelSelector.getTotalTabCount(), Matchers.is(1));
         });
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            cta.findViewById(org.chromium.chrome.tab_ui.R.id.tab_switcher_button).performClick();
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { cta.findViewById(R.id.tab_switcher_button).performClick(); });
 
         boolean isTabToGtsAnimationEnabled = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> { return TabUiFeatureUtilities.isTabToGtsAnimationEnabled(cta); });
@@ -445,9 +451,8 @@ public class ToolbarPhoneTest {
             Criteria.checkThat(tabModelSelector.getTotalTabCount(), Matchers.is(1));
         });
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            cta.findViewById(org.chromium.chrome.tab_ui.R.id.tab_switcher_button).performClick();
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { cta.findViewById(R.id.tab_switcher_button).performClick(); });
 
         boolean isTabToGtsAnimationEnabled = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> { return TabUiFeatureUtilities.isTabToGtsAnimationEnabled(cta); });
@@ -479,9 +484,8 @@ public class ToolbarPhoneTest {
     testToolbarTabSwitcherButtonNotClickableDuringTransition_startSurfaceEnabled() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabModelSelector tabModelSelector = cta.getTabModelSelectorSupplier().get();
-        ImageButton tabSwitcherButton = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            return cta.findViewById(org.chromium.chrome.tab_ui.R.id.tab_switcher_button);
-        });
+        ImageButton tabSwitcherButton = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return cta.findViewById(R.id.tab_switcher_button); });
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(tabModelSelector.isTabStateInitialized(), Matchers.is(true));
             Criteria.checkThat(tabModelSelector.getTotalTabCount(), Matchers.is(1));
@@ -535,9 +539,8 @@ public class ToolbarPhoneTest {
     testToolbarTabSwitcherButtonNotClickableDuringTransition_startSurfaceEnabled_noAnimation() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabModelSelector tabModelSelector = cta.getTabModelSelectorSupplier().get();
-        ImageButton tabSwitcherButton = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            return cta.findViewById(org.chromium.chrome.tab_ui.R.id.tab_switcher_button);
-        });
+        ImageButton tabSwitcherButton = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return cta.findViewById(R.id.tab_switcher_button); });
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(tabModelSelector.isTabStateInitialized(), Matchers.is(true));
             Criteria.checkThat(tabModelSelector.getTotalTabCount(), Matchers.is(1));
@@ -591,9 +594,8 @@ public class ToolbarPhoneTest {
     testToolbarTabSwitcherButtonNotClickableDuringTransition_startSurfaceDisabled() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabModelSelector tabModelSelector = cta.getTabModelSelectorSupplier().get();
-        ImageButton tabSwitcherButton = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            return cta.findViewById(org.chromium.chrome.tab_ui.R.id.tab_switcher_button);
-        });
+        ImageButton tabSwitcherButton = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return cta.findViewById(R.id.tab_switcher_button); });
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(tabModelSelector.isTabStateInitialized(), Matchers.is(true));
             Criteria.checkThat(tabModelSelector.getTotalTabCount(), Matchers.is(1));
@@ -636,6 +638,104 @@ public class ToolbarPhoneTest {
         // Ensure it is possible to return to tab switcher.
         TestThreadUtils.runOnUiThreadBlocking(() -> { tabSwitcherButton.performClick(); });
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
+    }
+
+    @Test
+    @MediumTest
+    public void testOptionalButton_NotDrawnWhenZeroWidth() {
+        Drawable drawable = AppCompatResources.getDrawable(
+                mActivityTestRule.getActivity(), R.drawable.ic_toolbar_share_offset_24dp);
+        ButtonData buttonData = new ButtonDataImpl(true, drawable, null,
+                mActivityTestRule.getActivity().getString(R.string.share), false, null, true,
+                AdaptiveToolbarButtonVariant.UNKNOWN);
+
+        // Show a button, this will inflate the optional button view and create its coordinator.
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mToolbar.updateOptionalButton(buttonData); });
+
+        CriteriaHelper.pollUiThread(()
+                                            -> mToolbar.getOptionalButtonViewForTesting() != null
+                        && mToolbar.getOptionalButtonViewForTesting().getVisibility()
+                                == View.VISIBLE);
+
+        // Replace the coordinator with a mock, and set the button to visible with 0 width.
+        View optionalButtonView = mToolbar.findViewById(R.id.optional_toolbar_button_container);
+        when(mOptionalButtonCoordinator.getViewForDrawing()).thenReturn(optionalButtonView);
+        when(mOptionalButtonCoordinator.getViewWidth()).thenReturn(0);
+        when(mOptionalButtonCoordinator.getViewVisibility()).thenReturn(View.VISIBLE);
+
+        mToolbar.setOptionalButtonCoordinatorForTesting(mOptionalButtonCoordinator);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Draw the toolbar.
+            mToolbar.draWithoutBackground(mCanvas);
+            // Optional button shouldn't be drawn because its width is zero.
+            verify(mOptionalButtonCoordinator, never()).getViewForDrawing();
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testOptionalButton_NotDrawnWhenNotVisible() {
+        Drawable drawable = AppCompatResources.getDrawable(
+                mActivityTestRule.getActivity(), R.drawable.ic_toolbar_share_offset_24dp);
+        ButtonData buttonData = new ButtonDataImpl(true, drawable, null,
+                mActivityTestRule.getActivity().getString(R.string.share), false, null, true,
+                AdaptiveToolbarButtonVariant.UNKNOWN);
+
+        // Show a button, this will inflate the optional button view and create its coordinator.
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mToolbar.updateOptionalButton(buttonData); });
+
+        CriteriaHelper.pollUiThread(()
+                                            -> mToolbar.getOptionalButtonViewForTesting() != null
+                        && mToolbar.getOptionalButtonViewForTesting().getVisibility()
+                                == View.VISIBLE);
+
+        // Replace the coordinator with a mock, and set the button to gone with regular width.
+        View optionalButtonView = mToolbar.findViewById(R.id.optional_toolbar_button_container);
+        when(mOptionalButtonCoordinator.getViewForDrawing()).thenReturn(optionalButtonView);
+        when(mOptionalButtonCoordinator.getViewWidth()).thenReturn(optionalButtonView.getWidth());
+        when(mOptionalButtonCoordinator.getViewVisibility()).thenReturn(View.GONE);
+
+        mToolbar.setOptionalButtonCoordinatorForTesting(mOptionalButtonCoordinator);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Draw the toolbar.
+            mToolbar.draWithoutBackground(mCanvas);
+            // Optional button shouldn't be drawn because its visibility is gone.
+            verify(mOptionalButtonCoordinator, never()).getViewForDrawing();
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testOptionalButton_DrawnWhenVisible() {
+        Drawable drawable = AppCompatResources.getDrawable(
+                mActivityTestRule.getActivity(), R.drawable.ic_toolbar_share_offset_24dp);
+        ButtonData buttonData = new ButtonDataImpl(true, drawable, null,
+                mActivityTestRule.getActivity().getString(R.string.share), false, null, true,
+                AdaptiveToolbarButtonVariant.UNKNOWN);
+
+        // Show a button, this will inflate the optional button view and create its coordinator.
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mToolbar.updateOptionalButton(buttonData); });
+
+        CriteriaHelper.pollUiThread(() -> mToolbar.getOptionalButtonViewForTesting() != null);
+        ViewUtils.onViewWaiting(
+                allOf(equalTo(mToolbar.getOptionalButtonViewForTesting()), isDisplayed()));
+
+        // Replace the coordinator with a mock, and set the button to visible with regular width.
+        View optionalButtonView = mToolbar.findViewById(R.id.optional_toolbar_button_container);
+        when(mOptionalButtonCoordinator.getViewForDrawing()).thenReturn(optionalButtonView);
+        when(mOptionalButtonCoordinator.getViewWidth()).thenReturn(optionalButtonView.getWidth());
+        when(mOptionalButtonCoordinator.getViewVisibility()).thenReturn(View.VISIBLE);
+
+        mToolbar.setOptionalButtonCoordinatorForTesting(mOptionalButtonCoordinator);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Draw the toolbar.
+            mToolbar.draWithoutBackground(mCanvas);
+            // Optional button should be drawn.
+            verify(mOptionalButtonCoordinator, atLeastOnce()).getViewForDrawing();
+        });
     }
 
     private static class TestControlsVisibilityDelegate

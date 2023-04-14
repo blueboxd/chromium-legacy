@@ -231,6 +231,7 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
 
     if (cl->HasSwitch(switches::kWebViewFencedFrames)) {
       features.EnableIfNotSet(blink::features::kFencedFrames);
+      features.EnableIfNotSet(blink::features::kFencedFramesAPIChanges);
       features.EnableIfNotSet(blink::features::kSharedStorageAPI);
       features.EnableIfNotSet(::features::kPrivacySandboxAdsAPIsOverride);
     }
@@ -313,6 +314,9 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
 
     // FedCM is not yet supported on WebView.
     features.DisableIfNotSet(::features::kFedCm);
+
+    // Disable network-change migration on WebView due to crbug.com/1430082.
+    features.DisableIfNotSet(net::features::kMigrateSessionsOnNetworkChangeV2);
   }
 
   android_webview::RegisterPathProvider();

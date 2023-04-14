@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {fetchGooglePhotosAlbum, fetchGooglePhotosAlbums, fetchGooglePhotosPhotos, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, GooglePhotosPhotosByAlbumId, initializeGooglePhotosData, PersonalizationActionName, SetErrorAction, WallpaperGridItem, WallpaperLayout, WallpaperType} from 'chrome://personalization/js/personalization_app.js';
+import {fetchGooglePhotosAlbum, fetchGooglePhotosAlbums, fetchGooglePhotosEnabled, fetchGooglePhotosPhotos, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, GooglePhotosPhotosByAlbumId, PersonalizationActionName, SetErrorAction, WallpaperGridItem, WallpaperLayout, WallpaperType} from 'chrome://personalization/js/personalization_app.js';
 import {assertDeepEquals, assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -66,7 +66,7 @@ suite('GooglePhotosPhotosByAlbumIdTest', function() {
                 album.id, undefined);
 
             // Initialize Google Photos data in the |personalizationStore|.
-            await initializeGooglePhotosData(
+            await fetchGooglePhotosEnabled(
                 wallpaperProvider, personalizationStore);
             await fetchGooglePhotosAlbums(
                 wallpaperProvider, personalizationStore);
@@ -317,7 +317,7 @@ suite('GooglePhotosPhotosByAlbumIdTest', function() {
         album.id, [photo, anotherPhoto]);
 
     // Initialize Google Photos data in the |personalizationStore|.
-    await initializeGooglePhotosData(wallpaperProvider, personalizationStore);
+    await fetchGooglePhotosEnabled(wallpaperProvider, personalizationStore);
     await fetchGooglePhotosAlbums(wallpaperProvider, personalizationStore);
     await fetchGooglePhotosPhotos(wallpaperProvider, personalizationStore);
 
@@ -355,7 +355,8 @@ suite('GooglePhotosPhotosByAlbumIdTest', function() {
     personalizationStore.data.wallpaper.pendingSelected = null;
     personalizationStore.data.wallpaper.currentSelected = {
       attribution: [],
-      description: undefined,
+      descriptionContent: '',
+      descriptionTitle: '',
       key: photo.id,
       layout: WallpaperLayout.kCenter,
       type: WallpaperType.kOnceGooglePhotos,
@@ -380,7 +381,8 @@ suite('GooglePhotosPhotosByAlbumIdTest', function() {
     personalizationStore.data.wallpaper.pendingSelected = null;
     personalizationStore.data.wallpaper.currentSelected = {
       attribution: [],
-      description: undefined,
+      descriptionContent: '',
+      descriptionTitle: '',
       key: anotherPhoto.id,
       layout: WallpaperLayout.kCenter,
       type: WallpaperType.kOnceGooglePhotos,
@@ -405,7 +407,8 @@ suite('GooglePhotosPhotosByAlbumIdTest', function() {
     personalizationStore.data.wallpaper.pendingSelected = null;
     personalizationStore.data.wallpaper.currentSelected = {
       attribution: [],
-      description: undefined,
+      descriptionContent: '',
+      descriptionTitle: '',
       key: yetAnotherPhoto.dedupKey!,
       layout: WallpaperLayout.kCenter,
       type: WallpaperType.kOnceGooglePhotos,
@@ -430,7 +433,8 @@ suite('GooglePhotosPhotosByAlbumIdTest', function() {
     personalizationStore.data.wallpaper.pendingSelected = null;
     personalizationStore.data.wallpaper.currentSelected = {
       attribution: [],
-      description: undefined,
+      descriptionContent: '',
+      descriptionTitle: '',
       key: '//foo',
       layout: WallpaperLayout.kCenter,
       type: WallpaperType.kCustomized,
@@ -578,7 +582,7 @@ suite('GooglePhotosPhotosByAlbumIdTest', function() {
         album.id, resumeToken);
 
     // Initialize Google Photos data in |personalizationStore|.
-    await initializeGooglePhotosData(wallpaperProvider, personalizationStore);
+    await fetchGooglePhotosEnabled(wallpaperProvider, personalizationStore);
     await fetchGooglePhotosAlbums(wallpaperProvider, personalizationStore);
     await fetchGooglePhotosPhotos(wallpaperProvider, personalizationStore);
     assertDeepEquals(

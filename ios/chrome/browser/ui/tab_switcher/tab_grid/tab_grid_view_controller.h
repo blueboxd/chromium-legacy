@@ -21,7 +21,7 @@
 @protocol PriceCardDataSource;
 @protocol GridShareableItemsProvider;
 class GURL;
-@protocol InactiveTabsCountConsumer;
+@protocol InactiveTabsInfoConsumer;
 @protocol IncognitoReauthCommands;
 @protocol IncognitoReauthConsumer;
 @class LayoutGuideCenter;
@@ -120,7 +120,7 @@ enum class TabGridPageConfiguration {
 
 // Consumers send updates from the model layer to the UI layer.
 @property(nonatomic, readonly)
-    id<TabCollectionConsumer, InactiveTabsCountConsumer>
+    id<TabCollectionConsumer, InactiveTabsInfoConsumer>
         regularTabsConsumer;
 @property(nonatomic, readonly)
     id<TabCollectionConsumer, IncognitoReauthConsumer>
@@ -177,11 +177,9 @@ enum class TabGridPageConfiguration {
 @property(nonatomic, weak) id<TabContextMenuProvider>
     incognitoTabsContextMenuProvider;
 
-// The view controller for the "Bring Android Tabs" prompt for Android
-// switchers. Note that setting this value immediately adds it to the view
-// hierarchy.
-@property(nonatomic, strong)
-    UIViewController* bringAndroidTabsPromptViewController;
+// The view controller that shows below the tab grid as a bottom message. Note
+// that setting this value immediately adds it to the view hierarchy.
+@property(nonatomic, strong) UIViewController* regularTabsBottomMessage;
 
 // The layout guide center to use to refer to the bottom toolbar.
 @property(nonatomic, strong) LayoutGuideCenter* layoutGuideCenter;

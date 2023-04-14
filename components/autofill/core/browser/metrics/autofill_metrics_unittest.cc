@@ -8350,11 +8350,13 @@ TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
           {UFIT::kIsFocusableName, true},
           {UFIT::kWasAutofilledName, i != 2},
           {UFIT::kAutofillSkippedStatusName,
-           DenseSet<SkipStatus>{status}.to_uint64()},
+           DenseSet<SkipStatus>{status}.data()[0]},
           {UFIT::kWasRefillName, false},
           {UFIT::kHadValueBeforeFillingName, false},
           {UFIT::kUserTypedIntoFieldName, i == 0},
           {UFIT::kHadTypedOrFilledValueAtSubmissionName, i != 2},
+          {UFIT::kFormControlTypeName,
+           static_cast<int>(FormControlType::kText)},
       };
       if (i == 0) {
         expected[UFIT::kSuggestionWasAvailableName] = true;
@@ -8387,7 +8389,8 @@ TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
          AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
         {UFST::kFormSignatureName,
          Collapse(CalculateFormSignature(form)).value()},
-        {UFST::kAutofillFormEventsName, form_events.to_uint64()},
+        {UFST::kAutofillFormEventsName, form_events.data()[0]},
+        {UFST::kAutofillFormEvents2Name, form_events.data()[1]},
         {UFST::kIsInMainframeName, true},
         {UFST::kSampleRateName, 1},
         {UFST::kWasSubmittedName, true},
@@ -8518,6 +8521,7 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
         {UFIT::kRankInFieldSignatureGroupName, 1},
         {UFIT::kWasFocusedName, false},
         {UFIT::kUserTypedIntoFieldName, false},
+        {UFIT::kFormControlTypeName, static_cast<int>(FormControlType::kText)},
     };
     if (heuristic_types[i] != UNKNOWN_TYPE) {
       expected.merge(std::map<std::string, int64_t>({
@@ -8558,7 +8562,8 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
        AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
       {UFST::kFormSignatureName,
        Collapse(CalculateFormSignature(form)).value()},
-      {UFST::kAutofillFormEventsName, form_events.to_uint64()},
+      {UFST::kAutofillFormEventsName, form_events.data()[0]},
+      {UFST::kAutofillFormEvents2Name, form_events.data()[1]},
       {UFST::kIsInMainframeName, true},
       {UFST::kSampleRateName, 1},
       {UFST::kWasSubmittedName, true},
@@ -8651,6 +8656,7 @@ TEST_F(AutofillMetricsFromLogEventsTest,
         {UFIT::kIsFocusableName, true},
         {UFIT::kUserTypedIntoFieldName, true},
         {UFIT::kHadTypedOrFilledValueAtSubmissionName, true},
+        {UFIT::kFormControlTypeName, static_cast<int>(FormControlType::kText)},
     };
 
     EXPECT_EQ(expected.size(), entry->metrics.size());
@@ -8671,7 +8677,8 @@ TEST_F(AutofillMetricsFromLogEventsTest,
        AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
       {UFST::kFormSignatureName,
        Collapse(CalculateFormSignature(form)).value()},
-      {UFST::kAutofillFormEventsName, form_events.to_uint64()},
+      {UFST::kAutofillFormEventsName, form_events.data()[0]},
+      {UFST::kAutofillFormEvents2Name, form_events.data()[1]},
       {UFST::kIsInMainframeName, true},
       {UFST::kSampleRateName, 1},
       {UFST::kWasSubmittedName, true},
@@ -8894,6 +8901,9 @@ TEST_F(AutofillMetricsFromLogEventsTest,
   auto entries =
       test_ukm_recorder_->GetEntriesByName(UkmFieldInfoType::kEntryName);
   ASSERT_EQ(4u, entries.size());
+  std::vector<FormControlType> form_control_types = {
+      FormControlType::kText, FormControlType::kText, FormControlType::kRadio,
+      FormControlType::kRadio};
   for (size_t i = 0; i < entries.size(); ++i) {
     SCOPED_TRACE(testing::Message() << i);
     using UFIT = UkmFieldInfoType;
@@ -8911,6 +8921,7 @@ TEST_F(AutofillMetricsFromLogEventsTest,
         {UFIT::kOverallTypeName, field_types[i]},
         {UFIT::kSectionIdName, 1},
         {UFIT::kTypeChangedByRationalizationName, false},
+        {UFIT::kFormControlTypeName, static_cast<int>(form_control_types[i])},
     };
 
     EXPECT_EQ(expected.size(), entry->metrics.size());
@@ -8931,7 +8942,8 @@ TEST_F(AutofillMetricsFromLogEventsTest,
        AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
       {UFST::kFormSignatureName,
        Collapse(CalculateFormSignature(form)).value()},
-      {UFST::kAutofillFormEventsName, form_events.to_uint64()},
+      {UFST::kAutofillFormEventsName, form_events.data()[0]},
+      {UFST::kAutofillFormEvents2Name, form_events.data()[1]},
       {UFST::kIsInMainframeName, true},
       {UFST::kSampleRateName, 1},
       {UFST::kWasSubmittedName, true},

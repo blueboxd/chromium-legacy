@@ -351,7 +351,7 @@ _PB_IMAGE_PATHS = {
 }
 
 _FUCHSIA_IMAGE_DIR = '../../third_party/fuchsia-sdk/images-internal/%s/%s'
-_COMMON_FUCHSIA_ARGS = ['-d', '--os-check=update']
+_COMMON_FUCHSIA_ARGS = ['-d', '--os-check=check']
 for board, path_parts in _IMAGE_PATHS.items():
   image_dir = _FUCHSIA_IMAGE_DIR % path_parts
   FUCHSIA_EXEC_ARGS[board] = _COMMON_FUCHSIA_ARGS + [
@@ -421,6 +421,11 @@ _MAC_M1_MINI_2020_BENCHMARK_CONFIGS = PerfSuite(
         'v8.runtime_stats.top_25',
     ]).Add(['speedometer2-minormc'])
 _MAC_M1_MINI_2020_PGO_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('jetstream2'),
+    _GetBenchmarkConfig('speedometer2'),
+    _GetBenchmarkConfig('rendering.desktop'),
+])
+_MAC_M1_PRO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('jetstream2'),
     _GetBenchmarkConfig('speedometer2'),
     _GetBenchmarkConfig('rendering.desktop'),
@@ -644,6 +649,12 @@ MAC_M1_MINI_2020_PGO = PerfPlatform(
     'Mac M1 Mini 2020',
     _MAC_M1_MINI_2020_PGO_BENCHMARK_CONFIGS,
     4,
+    'mac')
+MAC_M1_PRO = PerfPlatform(
+    'mac-m1-pro-perf',
+    'Mac M1 PRO 2020',
+    _MAC_M1_PRO_BENCHMARK_CONFIGS,
+    5,
     'mac')
 
 # Win

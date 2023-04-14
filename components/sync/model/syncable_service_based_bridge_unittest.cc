@@ -126,7 +126,8 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
     syncer::DataTypeActivationRequest request;
     request.error_handler = mock_error_handler_.Get();
     request.cache_guid = "TestCacheGuid";
-    request.authenticated_account_id = CoreAccountId("SomeAccountId");
+    request.authenticated_account_id =
+        CoreAccountId::FromGaiaId("SomeAccountId");
     return request;
   }
 
@@ -141,6 +142,11 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
               loop.Quit();
             }));
     loop.Run();
+
+    // ClientTagBasedModelTypeProcessor requires connecting before other
+    // interactions with the worker happen.
+    DCHECK(worker_);
+    real_processor_->ConnectSync(worker_->MakeForwardingCommitQueue());
   }
 
   std::map<std::string, std::unique_ptr<EntityData>> GetAllData() {

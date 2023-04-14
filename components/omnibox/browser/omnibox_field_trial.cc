@@ -28,7 +28,6 @@
 #include "components/variations/hashing.h"
 #include "components/variations/variations_associated_data.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
-#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/ui_base_features.h"
 
 using metrics::OmniboxEventProto;
@@ -607,27 +606,6 @@ const base::FeatureParam<int>
         "FuzzyUrlSuggestionsPenaltyTaperLength",
         0);
 
-bool OmniboxFieldTrial::IsDefaultBrowserPedalEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxDefaultBrowserPedal);
-}
-
-const base::FeatureParam<bool> OmniboxFieldTrial::kDefaultBrowserPedalImmediate(
-    &omnibox::kOmniboxDefaultBrowserPedal,
-    "DefaultBrowserPedalImmediate",
-    false);
-
-const base::FeatureParam<bool>
-    OmniboxFieldTrial::kDefaultBrowserPedalInteractive(
-        &omnibox::kOmniboxDefaultBrowserPedal,
-        "DefaultBrowserPedalInteractive",
-        true);
-
-const base::FeatureParam<bool>
-    OmniboxFieldTrial::kDefaultBrowserPedalUnattended(
-        &omnibox::kOmniboxDefaultBrowserPedal,
-        "DefaultBrowserPedalUnattended",
-        true);
-
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
 }
@@ -709,34 +687,41 @@ const base::FeatureParam<int> OmniboxFieldTrial::kRichSuggestionVerticalMargin(
     "OmniboxRichSuggestionVerticalMargin",
     4);
 
+bool OmniboxFieldTrial::IsChromeRefreshIconsEnabled() {
+  return features::GetChromeRefresh2023Level() ==
+             features::ChromeRefresh2023Level::kLevel2 ||
+         base::FeatureList::IsEnabled(omnibox::kOmniboxCR23SteadyStateIcons);
+}
+
 bool OmniboxFieldTrial::IsGM3TextStyleEnabled() {
-  return features::IsChromeRefresh2023() ||
+  return features::GetChromeRefresh2023Level() ==
+             features::ChromeRefresh2023Level::kLevel2 ||
          base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextStyle);
 }
 
 // In order to control the value of this "font size" param via Finch, the
-// kOmniboxSteadyStateTextStyle feature flag must be enabled.
+// `kOmniboxSteadyStateTextStyle` feature flag must be enabled.
 //
-// Enabling only the kChromeRefresh2023 flag, while leaving the
-// kOmniboxSteadyStateTextStyle flag disabled, will result in the param being
+// Enabling `ChromeRefresh2023` Level 2 while leaving the
+// `kOmniboxSteadyStateTextStyle` flag disabled, will result in the param being
 // locked to its default value and ignoring any overrides provided via Finch.
 //
-// If neither kChromeRefresh2023 nor kOmniboxSteadyStateTextStyle are enabled,
-// then this "font size" param will have zero effect on Chrome UI.
+// If neither `ChromeRefresh2023` Level 2 nor `kOmniboxSteadyStateTextStyle` are
+// enabled, then this "font size" param will have zero effect on Chrome UI.
 const base::FeatureParam<int> OmniboxFieldTrial::kFontSizeTouchUI(
     &omnibox::kOmniboxSteadyStateTextStyle,
     "OmniboxFontSizeTouchUI",
     15);
 
 // In order to control the value of this "font size" param via Finch, the
-// kOmniboxSteadyStateTextStyle feature flag must be enabled.
+// `kOmniboxSteadyStateTextStyle` feature flag must be enabled.
 //
-// Enabling only the kChromeRefresh2023 flag, while leaving the
-// kOmniboxSteadyStateTextStyle flag disabled, will result in the param being
+// Enabling `ChromeRefresh2023` Level 2 while leaving the
+// `kOmniboxSteadyStateTextStyle` flag disabled, will result in the param being
 // locked to its default value and ignoring any overrides provided via Finch.
 //
-// If neither kChromeRefresh2023 nor kOmniboxSteadyStateTextStyle are enabled,
-// then this "font size" param will have zero effect on Chrome UI.
+// If neither `ChromeRefresh2023` Level 2 nor `kOmniboxSteadyStateTextStyle` are
+// enabled, then this "font size" param will have zero effect on Chrome UI.
 const base::FeatureParam<int> OmniboxFieldTrial::kFontSizeNonTouchUI(
     &omnibox::kOmniboxSteadyStateTextStyle,
     "OmniboxFontSizeNonTouchUI",
@@ -941,13 +926,6 @@ const base::FeatureParam<int>
         &omnibox::kShortBookmarkSuggestionsByTotalInputLength,
         "ShortBookmarkSuggestionsByTotalInputLengthThreshold",
         3);
-
-// Bookmark paths.
-
-const base::FeatureParam<std::string> kBookmarkPathsCounterfactual(
-    &omnibox::kBookmarkPaths,
-    "OmniboxBookmarkPathsCounterfactual",
-    "");
 
 // Shortcut Expanding
 
@@ -1164,7 +1142,17 @@ bool IsUrlScoringModelEnabled() {
 
 // <- ML Relevance Scoring
 // ---------------------------------------------------------
+// Two-column realbox ->
+
+const base::FeatureParam<int> kRealboxMaxPreviousSearchRelatedSuggestions(
+    &omnibox::kRealboxSecondaryZeroSuggest,
+    "RealboxMaxPreviousSearchRelatedSuggestions",
+    3);
+
+// <- Two-column realbox
+// ---------------------------------------------------------
 // Inspire Me ->
+
 const base::FeatureParam<int> kInspireMeAdditionalRelatedQueries(
     &omnibox::kInspireMe,
     "AdditionalRelatedQueries",
@@ -1174,7 +1162,17 @@ const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
     &omnibox::kInspireMe,
     "AdditionalTrendingQueries",
     0);
+
 // <- Inspire Me
+// ---------------------------------------------------------
+// Actions In Suggest ->
+// When set to true, permits Entity suggestion with associated Actions to be
+// promoted over the Escape Hatch.
+const base::FeatureParam<bool> kActionsInSuggestPromoteEntitySuggestion(
+    &omnibox::kActionsInSuggest,
+    "PromoteEntitySuggestion",
+    false);
+// <- Actions In Suggest
 // ---------------------------------------------------------
 
 }  // namespace OmniboxFieldTrial

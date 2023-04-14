@@ -100,6 +100,7 @@ Tieni presente che su <ph name="MS_WIN_NAME" />, <ph name="MAC_OS_NAME" /> e <ph
 <translation id="1079425471279127373">La configurazione di questo criterio consente di stabilire se consentire o meno ad alcune origini delle applicazioni web con installazione forzata di ricevere gli attributi dei dispositivi (ad esempio, numero di serie, nome host) usando l'API Device Attributes.
 
       L'API Device Attributes è un elenco di API web; visita la pagina https://wicg.github.io/WebApiDevice/device_attributes. Sono disponibili soltanto per le origini che corrispondono ad applicazioni web con installazione forzata tramite <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" /> o per quella configurata nella sessione kiosk.</translation>
+<translation id="1079498696402787191">Usa il valore predefinito per gli hash consentiti in handshake TLS.</translation>
 <translation id="1079801999187584280">Non consentire l'utilizzo degli Strumenti per sviluppatori</translation>
 <translation id="1082802595100075771">Consenti agli utenti di scegliere un servizio Google anonimo per fornire descrizioni automatiche alle immagini senza etichetta</translation>
 <translation id="1087057100912843460">Consenti aggiornamenti</translation>
@@ -571,6 +572,11 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 
       Se il criterio non viene configurato o se viene impostato su Disattivato, non è possibile unire i criteri relativi al cloud a livello di utente ai criteri di altre fonti.</translation>
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
+<translation id="152740744678799092">Se il criterio viene impostato su Enabled, viene eseguita una ricerca predefinita quando un utente inserisce nella barra degli indirizzi un testo che non è un URL. Per specificare il provider di ricerca predefinito, imposta gli altri criteri relativi alla ricerca predefinita. Se non configuri questi criteri, l'utente può scegliere il provider predefinito. Se il criterio viene impostato su Disabled, non viene eseguita alcuna ricerca quando l'utente inserisce nella barra degli indirizzi un testo che non è un URL. Il valore Disabled non è supportato da <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME" />.
+
+      Se il criterio viene configurato, gli utenti non possono modificarlo in <ph name="PRODUCT_NAME" />. Se non viene configurato, il provider di ricerca predefinito è attivo e gli utenti possono impostare l'elenco dei provider di ricerca.
+
+      Su <ph name="MS_WIN_NAME" />, questa funzionalità è disponibile soltanto sulle istanze che fanno parte di un dominio <ph name="MS_AD_NAME" />, sono in esecuzione su Windows 10 Pro o sono registrate in Chrome Browser Cloud Management. Su <ph name="MAC_OS_NAME" />, questa funzionalità è disponibile soltanto nelle istanze gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
 <translation id="1542491165152947087">Consenti agli utenti di attivare o disattivare sul loro dispositivo l'impostazione di <ph name="PRIVACY_SANDBOX_NAME" /> relativa agli argomenti degli annunci.</translation>
 <translation id="1547424904796464052">Hash SHA-256 esadecimale codificato dell'immagine del firmware.</translation>
@@ -1168,6 +1174,13 @@ Questo criterio non avrà alcun effetto se il criterio <ph name="DEVICE_SCREENSA
 
       Se il criterio è attivato o non impostato, la funzionalità di definizione di Risposte rapide sarà attiva.
       Se il criterio è disattivato, la funzionalità di definizione di Risposte rapide sarà disattivata.</translation>
+<translation id="2095778449451007308">Questo criterio consente di stabilire se gli utenti possono attivare o meno la modalità solo HTTPS (Utilizza sempre connessioni sicure) nelle Impostazioni. La modalità solo HTTPS esegue l'upgrade di tutte le navigazioni ad HTTPS.
+      Se questa impostazione non viene configurata o se viene impostata su allowed, gli utenti potranno attivare la modalità solo HTTPS.
+      Se viene impostata su disallowed, gli utenti non potranno attivare la modalità solo HTTPS.
+      Se viene impostata su force_enabled, la modalità solo HTTPS verrà attivata e gli utenti non potranno disattivarla.
+      L'attivazione forzata della modalità solo HTTPS è supportata a partire dalla versione M112.
+
+Il criterio <ph name="HTTP_ALLOWLIST_POLICY_NAME" /> separato può essere utilizzato per escludere determinati nomi host o pattern dei nomi host dall'upgrade ad HTTPS da parte di questa funzionalità.</translation>
 <translation id="209586405398070749">Canale stabile</translation>
 <translation id="2096932573113293941">Chiedi all'utente l'autorizzazione a eseguire plug-in che la richiedono</translation>
 <translation id="2098658257603918882">Attiva rapporti sull'utilizzo e sui dati relativi agli arresti anomali</translation>
@@ -1523,6 +1536,7 @@ Se questo criterio viene impostato, l'utente non potrà sostituire il valore.
 Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizialmente disattivata, ma potrà essere controllata dall'utente.</translation>
 <translation id="2413899611035194909">Mostra opzioni di accessibilità nel menu della barra delle applicazioni della schermata di accesso</translation>
 <translation id="2415715982424988916">Esplora (supportata dalla versione 91)</translation>
+<translation id="2420958105721932612">Consente di specificare la modalità di installazione di un'app. AVAILABLE: l'app non viene installata automaticamente, ma può essere installata dall'utente. Si tratta del comportamento predefinito se questo criterio non viene specificato. FORCE_INSTALLED: l'app viene installata automaticamente e l'utente non può disinstallarla. BLOCKED: l'app è bloccata e non può essere installata. Se l'app è stata installata in base a un criterio precedente, verrà disinstallata.</translation>
 <translation id="2421400544595297401">Non consentire a utenti non affiliati di utilizzare app per Android</translation>
 <translation id="2421677964966613267">Questo criterio è deprecato in M88 e Flash non è più supportato da Chrome. Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che non possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
@@ -3217,6 +3231,7 @@ Questo criterio è una soluzione alternativa temporanea e verrà rimosso dopo il
 <translation id="3973371701361892765">Non nascondere mai automaticamente la barra delle app</translation>
 <translation id="3977304360459208438">Utilizza l'impostazione predefinita per le suite di crittografia 3DES in TLS</translation>
 <translation id="3979738908158213640">URL a cui verrà concesso l'accesso per eseguire l'attestazione del dispositivo durante l'autenticazione SAML</translation>
+<translation id="3982322576186033243">Non consentire hash non sicuri in handshake TLS</translation>
 <translation id="3983162212222338509">La risoluzione DNS di sistema può essere essere eseguita nel processo di rete, all'esterno del processo di rete o parzialmente all'interno e all'esterno, a seconda della configurazione del sistema e dei flag funzionalità.</translation>
 <translation id="3986700049001404598">Consenti agli utenti di terminare i processi con il Task Manager di Chrome</translation>
 <translation id="398884292557092447">Se il criterio viene impostato su true o se non viene configurato, gli utenti possono controllare i suggerimenti di compilazione automatica per le carte di credito nella UI.
@@ -4274,11 +4289,6 @@ Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Blu
 <translation id="4996161752665479028">Attiva SSH in Terminal System App</translation>
 <translation id="4997074784107449343">L'opzione Stampa come immagine non viene impostata per impostazione predefinita per le anteprime di stampa dei documenti PDF quando disponibile.</translation>
 <translation id="500149597848135831">Attiva tutte le varianti</translation>
-<translation id="5014511262203433035">Questo criterio consente di stabilire se gli utenti possono attivare o meno la Modalità solo HTTPS nelle Impostazioni. La Modalità solo HTTPS esegue l'upgrade di tutte le navigazioni alle estensioni HTTPS.
-      Se questa impostazione non viene configurata o se viene impostata su allowed, gli utenti potranno attivare la Modalità solo HTTPS.
-      Se viene impostata su disallowed, gli utenti non potranno attivare la Modalità solo HTTPS.
-      Se viene impostata su force_enabled, la Modalità solo HTTPS verrà attivata e gli utenti non potranno disattivarla.
-      L'attivazione forzata della Modalità solo HTTPS è supportata a partire dalla versione M112.</translation>
 <translation id="5017369989680827157">Se il criterio è impostato su True o se non viene configurato, gli utenti possono controllare la compilazione automatica per gli indirizzi nella UI.
 
       Se il criterio è impostato su False, la compilazione automatica non fornisce mai suggerimenti né compila le informazioni relative agli indirizzi, né salva le nuove informazioni inviate dagli utenti durante la navigazione sul Web.</translation>
@@ -4522,11 +4532,6 @@ Se questo criterio non viene configurato o se l'elenco non contiene riferimenti 
       Se il criterio viene impostato su Enabled, lo stato dell'attività del dispositivo verrà segnalato al server, che potrà rilevare se il dispositivo è offline, purché l'utente sia affiliato.</translation>
 <translation id="5238275681097851753">Consenti il blocco di determinati contenuti in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5238976843489093540">Forza l'attivazione della funzionalità Accoppiamento rapido (accoppiamento rapido tramite Bluetooth)</translation>
-<translation id="52393120393725840">Se il criterio viene impostato su Attivato, <ph name="PRODUCT_NAME" /> ricorda le password degli utenti e le suggerisce all'accesso successivo a un sito.
-
-      Se viene impostato su Disattivato, gli utenti non possono salvare le nuove password, ma quelle salvate in precedenza restano attive.
-
-      Se il criterio viene configurato, gli utenti non possono modificarlo in <ph name="PRODUCT_NAME" />. Se non viene configurato, gli utenti possono disattivare il salvataggio delle password.</translation>
 <translation id="5239333626804545932">Se il criterio viene impostato su Attivato o se non viene configurato, Chrome Software Cleaner analizza periodicamente il sistema per individuare eventuale software indesiderato e, qualora fosse presente, chiede all'utente se vuole rimuoverlo. L'attivazione manuale di Chrome Software Cleaner da chrome://settings è consentita.
 
       Se il criterio viene impostato su Disattivato, Chrome Software Cleaner non esegue alcuna scansione periodica e l'attivazione manuale è disattivata.
@@ -4627,6 +4632,7 @@ Nota: questo criterio non viene applicato agli upgrade a HSTS.</translation>
 <translation id="5328965694451556034">Segnala accesso/uscita</translation>
 <translation id="5329018127554115226">La modalità ad alta efficienza verrà disattivata.</translation>
 <translation id="5330684698007383292">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuti</translation>
+<translation id="5331342092479819688">Consenti hash non sicuri in handshake TLS</translation>
 <translation id="5331746669335642668">La norma relativa al cloud <ph name="PRODUCT_NAME" /> esegue l'override della norma relativa alla piattaforma.</translation>
 <translation id="5334501839642146593">Non inviare mai le metriche a Google</translation>
 <translation id="5340008866815063393">Attiva la generazione di report sui dati dei criteri</translation>
@@ -4770,6 +4776,13 @@ Nota: questo criterio non viene applicato agli upgrade a HSTS.</translation>
 <translation id="5448022937220253000">Scegli cosa fare con i dati utente dopo la disattivazione di <ph name="LACROS_NAME" /></translation>
 <translation id="5449690328792750354">L'API Event.path sarà disponibile.</translation>
 <translation id="5452024130413254050">Consente di stabilire se le VM che utilizzano questa configurazione hanno accesso a un vTPM; il valore predefinito è false e, se il criterio non viene configurato, viene usato il valore <ph name="FORCE_SHUTDOWN_IF_MORE_RESTRICTED" />.</translation>
+<translation id="5452167809842762761">Questo criterio è stato rimosso nella versione M114. Serviva per disattivare CECPQ2, ma CECPQ2 è stato disattivato per impostazione predefinita e verrà sostituito da Kyber, un meccanismo di incapsulamento della chiave (KEM) post-quantistico selezionato dal NIST, nuovamente associato al nostro accordo chiave classico standard, X25519.
+
+Se questo criterio non viene configurato o se viene attivato, <ph name="PRODUCT_NAME" /> seguirà la procedura di implementazione predefinita di CECPQ2, un algoritmo di accordo chiave post-quantistico in TLS.
+
+      CECPQ2 comporta la generazione di messaggi TLS di dimensioni maggiori che, in rarissimi casi, potrebbero attivare bug in alcuni componenti hardware di rete. Questo criterio può essere impostato su False per disattivare ECPQ2 durante la risoluzione dei problemi di rete.
+
+      Questo criterio è una misura temporanea e verrà rimosso nelle future versioni di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5454128917282602937">Quando un utente passa da un dispositivo <ph name="PRODUCT_OS_NAME" /> a un altro dello stesso tipo, il servizio <ph name="PRODUCT_NAME" /> V2 avvia le finestre del browser e delle app del dispositivo precedente su quello nuovo.
 Se il criterio viene impostato su Enabled, le finestre del browser e delle app verranno avviate automaticamente al momento dell'accesso dall'ultimo dispositivo <ph name="PRODUCT_OS_NAME" /> utilizzato dall'utente corrente.
 Se il criterio viene impostato su Disabled o se non viene configurato, gli elementi da avviare al momento dell'accesso verranno determinati in base alle impostazioni di ripristino totale.</translation>
@@ -4788,9 +4801,6 @@ Se il criterio viene impostato su Disabled o se non viene configurato, gli eleme
 
       Il valore del criterio deve essere specificato in giorni.</translation>
 <translation id="5457065417344056871">Attiva modalità ospite nel browser</translation>
-<translation id="5457387982448145430">Se il criterio viene impostato su Attivato, le password salvate nel precedente browser predefinito verranno importate alla prima esecuzione. Se il criterio viene impostato su Disattivato o se non viene configurato, nessuna password salvata errà importata alla prima esecuzione.
-
-      Gli utenti possono attivare una finestra di dialogo per l'importazione e la casella di controllo delle password salvate verrà selezionata o deselezionata in modo che corrisponda al valore del criterio.</translation>
 <translation id="5457924070961220141">Consente di configurare il renderer HTML predefinito se <ph name="PRODUCT_FRAME_NAME" /> è installato. Se questa norma non viene impostata, per impostazione predefinita il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="545817252640069915">Attiva l'intercettazione dell'accesso</translation>
 <translation id="5460797984317417682">Attiva avviso schermo intero</translation>
@@ -4937,6 +4947,9 @@ Se il criterio non viene configurato, tutti i domini non possono accedere agli U
           Se disattivi questa impostazione, Gestione password impedisce la visualizzazione delle password memorizzate in testo non criptato nella finestra Gestione password.
 
           Se attivi questa norma o non la imposti, gli utenti potranno visualizzare le loro password in testo non criptato in Gestione password.</translation>
+<translation id="5618908165853580022">Questo criterio consente a <ph name="PRODUCT_NAME" /> di usare hash non sicuri precedenti durante la procedura di handshake TLS.
+
+      Se questo criterio non viene configurato, <ph name="PRODUCT_NAME" /> seguirà la procedura di implementazione predefinita per non consentire gli hash non sicuri. Se il criterio viene attivato, <ph name="PRODUCT_NAME" /> consentirà l'uso di hash non sicuri da parte di un server durante la negoziazione di un handshake TLS. Se viene disattivato, <ph name="PRODUCT_NAME" /> non consentirà l'uso di hash non sicuri da parte di un server durante la negoziazione di un handshake TLS. Questo criterio verrà rimosso nella versione 119.</translation>
 <translation id="5619498195290770056">Se il criterio viene configurato, puoi creare un elenco di pattern URL che specificano i siti che non possono impostare i cookie.
 
       Se il criterio non viene configurato, viene usato <ph name="DEFAULT_COOKIES_SETTINGS_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
@@ -5368,6 +5381,7 @@ Se il criterio non viene configurato, tutti i domini non possono accedere agli U
 <translation id="6049117606554031363">Attiva i report sullo stato della scheda del dispositivo</translation>
 <translation id="6050796253724099706">Attiva la funzione di lettura vocale nella schermata di accesso</translation>
 <translation id="605132676434455096">Non consentire l'aggiunta di nuovi profili</translation>
+<translation id="6053260874233331700">Non consentire l'accesso alla geolocalizzazione nella schermata di accesso.</translation>
 <translation id="6053681087509103368">Consenti a WebRTC di usare versioni obsolete del protocollo TLS/DTLS</translation>
 <translation id="6056517174496942473">Attiva flusso di attestazione <ph name="CHROME_ENTERPRISE_DEVICE_TRUST_CONNECTOR" /> per un elenco di URL</translation>
 <translation id="6058879286588763839">A meno che <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_POLICY_NAME" /> non venga specificato, sovrascrivendo <ph name="DEVICE_BATTERY_CHARGE_MODE_POLICY_NAME" />, la configurazione di <ph name="DEVICE_BATTERY_CHARGE_MODE_POLICY_NAME" /> consente di specificare il criterio di gestione della modalità di ricarica della batteria (se supportato dal dispositivo). Per estendere la durata della batteria, il criterio controlla dinamicamente la ricarica della batteria riducendo al minimo l'usura e preservandone l'efficienza.
@@ -5393,7 +5407,7 @@ Se il criterio non viene configurato, tutti i domini non possono accedere agli U
 <translation id="6083631234867522991">Windows (client Windows):</translation>
 <translation id="608788685013546076">Imposta un valore percentuale per il limite di consumo della batteria per la variazione dei picchi energetici</translation>
 <translation id="6089679180657323464">Consente di stabilire le impostazioni del controller DTC (Diagnostics and Telemetry Controller) wilco.</translation>
-<translation id="6091233616732024397">Obbliga gli utenti ad eseguire l'accesso per poter usare il browser</translation>
+<translation id="6091233616732024397">Forza gli utenti a eseguire l'accesso per usare il browser</translation>
 <translation id="6093156968240188330">Consente agli utenti remoti di interagire con finestre con privilegi più elevati nelle sessioni di assistenza remota</translation>
 <translation id="6094314311474620462">Viene disattivata la stampa</translation>
 <translation id="6095048925836115505">Attiva la tastiera virtuale nella schermata di accesso</translation>
@@ -7097,6 +7111,11 @@ Questo sostituisce il criterio <ph name="WINDOW_PLACEMENT_BLOCKED_FOR_URLS_POLIC
 <translation id="759957074386651883">Impostazioni di Navigazione sicura</translation>
 <translation id="7602621823177962064">Disattiva i report sulle informazioni relative alla memoria del dispositivo</translation>
 <translation id="7604169113182304895">Le app Android potrebbero decidere volontariamente se rispettare o meno questo elenco. Non è possibile imporre il rispetto dell'elenco.</translation>
+<translation id="7605203688694672897">Imposta il livello di accesso alla geolocalizzazione a livello di dispositivo per il sistema <ph name="PRODUCT_OS_NAME" />, che viene applicato prima dell'accesso dell'utente. Dopo l'accesso, gli utenti possono controllare il livello di accesso alla geolocalizzazione tramite le impostazioni per utente.
+
+Se il criterio non viene configurato o se viene impostato su <ph name="ALLOW" />, l'accesso alla geolocalizzazione nella schermata di accesso sarà consentito per i dispositivi gestiti. Se viene inviato un valore del criterio non valido, l'accesso viene reimpostato su <ph name="DISALLOW" />. Per i dispositivi non gestiti il valore è sempre <ph name="DISALLOW" />.
+
+AVVISO: fai attenzione quando modifichi questa impostazione perché potrebbe violare altri criteri che riguardano la geolocalizzazione (ad esempio <ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY" />). In particolare, se questo criterio viene impostato su <ph name="DISALLOW" />, le opzioni <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" /> e <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" /> del criterio <ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY" /> non funzioneranno correttamente e nella schermata di <ph name="LOG_IN" /> verrà usata soltanto la risoluzione della posizione basata sull'<ph name="IP" />.</translation>
 <translation id="7608186022704392724">La funzionalità di invio automatico del PIN modifica il modo in cui i PIN vengono inseriti in <ph name="PRODUCT_OS_NAME" />.
           Anziché mostrare lo stesso campo di testo utilizzato per l'inserimento della password, questa funzionalità mostra un'UI speciale che indica chiaramente all'utente da quante cifre deve essere formato il PIN. Di conseguenza, la lunghezza del PIN dell'utente viene memorizzata al di fuori dei dati criptati dell'utente. Sono supportati soltanto i PIN formati da 6-12 cifre.
 
@@ -7507,6 +7526,13 @@ Questo criterio aziendale consente agli amministratori di stabilire se gli utent
 <translation id="7999336306414770162">Disattiva i report sulle informazioni VPD del dispositivo</translation>
 <translation id="7999818120028621358">Attiva la generazione di rapporti sugli eventi di prevenzione di fughe di dati</translation>
 <translation id="8001701200415781021">Limita gli Account Google che è possibile impostare come account principali del browser in <ph name="PRODUCT_NAME" /></translation>
+<translation id="8005143535239983809">Questo criterio consente di stabilire se il browser può o meno memorizzare automaticamente le password sui siti web e salvarle nel gestore delle password integrato. Non consente di limitare l'accesso o di modificare i contenuti delle password salvate nel gestore delle password e potenzialmente sincronizzate nel profilo dell'Account Google e su <ph name="ANDROID_NAME" />.
+
+Se il criterio viene attivato, gli utenti possono impostare <ph name="PRODUCT_NAME" /> in modo che memorizzi le password e le fornisca all'accesso successivo a un sito.
+
+Se il criterio viene disattivato, gli utenti non possono salvare nuove password, ma quelle salvate in precedenza restano attive.
+
+Se il criterio viene configurato, gli utenti non possono modificarlo in <ph name="PRODUCT_NAME" />. Se non viene configurato, gli utenti possono disattivare il salvataggio delle password.</translation>
 <translation id="800595420827930383">Utilizza lo strumento di verifica dei certificati della piattaforma precedente</translation>
 <translation id="8006219716745491366">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'assegnazione di un valore al criterio <ph name="DEFAULT_SEARCH_PROVIDER_ALTERNATE_URLS_POLICY_NAME" /> consente di specificare un elenco di URL alternativi per l'estrazione dei termini di ricerca dal motore di ricerca. Gli URL devono includere la stringa <ph name="SEARCH_TERM_MARKER" />.
 
@@ -7725,11 +7751,6 @@ Se questo criterio non viene impostato, verrà applicato il comportamento predef
       Ulteriori informazioni su Navigazione sicura (https://developers.google.com/safe-browsing).</translation>
 <translation id="8199823751103472868">Se il criterio viene impostato, viene attivato il layout Hindi Inscript su <ph name="PRODUCT_OS_NAME" />. Se viene impostato su False o se non viene configurato, il layout non è disponibile.</translation>
 <translation id="8202834945144737726">Attiva il flusso di attestazione <ph name="CHROME_ENTERPRISE_DEVICE_TRUST_CONNECTOR" /> per un elenco di URL nella schermata di accesso</translation>
-<translation id="8212900161626657849">Se questo criterio non viene configurato o se viene impostato su Attivato, <ph name="PRODUCT_NAME" /> seguirà la procedura di lancio predefinita di CECPQ2, un algoritmo di scambio di chiavi post-quantistico di TLS.
-
-      CECPQ2 comporta la generazione di messaggi TLS di dimensioni maggiori che, in rarissimi casi, potrebbero attivare bug in alcuni componenti hardware di rete. Questo criterio può essere impostato su Falso per disattivare ECPQ2 durante la risoluzione dei problemi di rete.
-
-      Questo criterio è una misura temporanea e verrà rimosso nelle future versioni di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8213770777756919897">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 85 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Se viene impostato, questo criterio specifica l'azione compiuta da <ph name="PRODUCT_OS_NAME" /> quando l'utente rimane inattivo per il periodo di tempo indicato dal ritardo di inattività, che può essere configurato separatamente.
@@ -7875,6 +7896,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       Se viene impostato su Disattivato, non viene mostrata una finestra di dialogo di avviso quando l'utente sta tentando di uscire.</translation>
 <translation id="830440838848984847">Consenti agli utenti di accedere a <ph name="PRODUCT_NAME" /></translation>
 <translation id="8306117673860983372">Impostazioni di accesso</translation>
+<translation id="8307340233340602723">Consenti o nega l'accesso alla geolocalizzazione del dispositivo</translation>
 <translation id="830819203330820450">Se il criterio è attivato o non configurato (impostazione predefinita), una pagina web può usare le API di condivisione schermo (ad esempio, getDisplayMedia() o l'API dell'estensione di acquisizione schermata desktop) per richiedere all'utente di selezionare una scheda, una finestra o una schermata desktop da acquisire.
 
       Se il criterio è disattivato, le chiamate alle API di condivisione schermo avranno esito negativo con un errore; tuttavia, questo criterio non viene preso in considerazione (e un sito sarà autorizzato a utilizzare le API di condivisione schermo) se il sito corrisponde a un modello di origine in uno dei seguenti criteri:
@@ -8274,6 +8296,11 @@ Questo criterio è una mappatura degli ID di configurazione alle configurazioni 
 <translation id="8687958770985542440">Riattiva l'API Web Components v0 fino alla versione M84</translation>
 <translation id="8693243869659262736">Utilizza client DNS integrato</translation>
 <translation id="8695006038397632296">Crea o carica richieste di installazione di estensioni nella Console di amministrazione</translation>
+<translation id="8695108198606654558">Questo criterio consente di controllare soltanto il comportamento di importazione alla prima esecuzione dopo l'installazione. Consente una transizione più semplice a <ph name="PRODUCT_NAME" /> negli ambienti in cui è stato ampiamente utilizzato un browser diverso prima dell'installazione del browser. Questo criterio non influisce sulle funzionalità del gestore delle password per gli Account Google.
+
+Se il criterio viene attivato, alla prima esecuzione vengono importate le password salvate dal browser predefinito precedente ed è possibile anche l'importazione manuale dalla pagina Impostazioni.
+Se il criterio viene disattivato, alla prima esecuzione non vengono importate le password salvate e l'importazione manuale dalla pagina Impostazioni viene bloccata.
+Se il criterio non viene configurato, alla prima esecuzione non vengono importate le password salvate, ma l'utente può scegliere di farlo dalla pagina Impostazioni.</translation>
 <translation id="8698286761337647563">Numero di giorni di anticipo con cui avvisare gli utenti SAML quando la loro password sta per scadere</translation>
 <translation id="8699392919012430269">Segnala informazioni sul Bluetooth di un dispositivo.
 
@@ -8312,6 +8339,7 @@ Questo criterio è una mappatura degli ID di configurazione alle configurazioni 
       "http://notexample.com/", "http://example.com.invalid.com/" e "http://example.comabc/" corrispondono soltanto in modalità "Default".
 
       "http://acme.com/ABC" corrisponde soltanto in "IESiteListMode".</translation>
+<translation id="8728854710675158426">Hash non sicuri in handshake TLS attivi</translation>
 <translation id="8734543507835977857">Avvia i ritardi di gestione dell'alimentazione e i limiti di durata delle sessioni all'inizio della sessione</translation>
 <translation id="8736538322216687231">Imponi livello minimo della Modalità con restrizioni di YouTube</translation>
 <translation id="8744844164152340112">Consente di stabilire il tema (scuro/chiaro/automatico) usato per eseguire il rendering dell'UI durante l'OOBE e nella sessione.
@@ -8829,6 +8857,7 @@ Se il criterio non viene configurato, per impostazione predefinita <ph name="PRO
 <translation id="9213751049772256263">Disattiva tutte le varianti</translation>
 <translation id="9217154963008402249">Frequenza dei pacchetti di rete di monitoraggio</translation>
 <translation id="9220314833408124365">Viene usato un criterio relativo al referrer predefinito no-referrer-when-downgrade</translation>
+<translation id="9221827710437832530">Consenti l'accesso alla geolocalizzazione nella schermata di accesso.</translation>
 <translation id="922540222991413931">Configura fonti di installazione di estensioni, applicazioni e script utente</translation>
 <translation id="924557436754151212">Importa password salvate dal browser predefinito alla prima esecuzione</translation>
 <translation id="926104720905645793">Questo criterio consente di controllare il reporting su cloud di <ph name="PRODUCT_NAME" />, che consente di caricare informazioni sul funzionamento del browser nella <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME" />.

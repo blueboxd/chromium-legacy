@@ -74,6 +74,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_util.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/preloading/prerender/prerender_metrics.h"
@@ -218,6 +219,11 @@ namespace {
 
 // The window which we dobounce load info updates in.
 constexpr auto kUpdateLoadStatesInterval = base::Milliseconds(250);
+
+// Kill switch for `BackNavigationLikely`.
+BASE_FEATURE(kBackNavigationPredictionMetrics,
+             "BackNavigationPredictionMetrics",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 using LifecycleState = RenderFrameHost::LifecycleState;
 using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
@@ -1777,7 +1783,6 @@ class AXTreeSnapshotCombiner : public base::RefCounted<AXTreeSnapshotCombiner> {
 
 void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
                                             ui::AXMode ax_mode,
-                                            bool exclude_offscreen,
                                             size_t max_nodes,
                                             base::TimeDelta timeout) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RequestAXTreeSnapshot",
@@ -1788,7 +1793,6 @@ void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
   // delete |combiner|.
   auto params = mojom::SnapshotAccessibilityTreeParams::New();
   params->ax_mode = ax_mode.flags();
-  params->exclude_offscreen = exclude_offscreen;
   params->max_nodes = max_nodes;
   params->timeout = timeout;
 
@@ -2874,15 +2878,24 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.threaded_scrolling_enabled =
       !command_line.HasSwitch(blink::switches::kDisableThreadedScrolling);
 
+  if (prefs.viewport_enabled &&
+      base::FeatureList::IsEnabled(
+          blink::features::kDefaultViewportIsDeviceWidth)) {
+    prefs.viewport_style = blink::mojom::ViewportStyle::kDefault;
+  }
+
   if (GetController().GetVisibleEntry() &&
       GetController().GetVisibleEntry()->GetIsOverridingUserAgent()) {
 #if BUILDFLAG(IS_ANDROID)
     // Only ignore viewport meta tag when Request Desktop Site is used, but not
     // in other situations where embedder changes to arbitrary mobile UA string.
-    if (renderer_preferences_.user_agent_override.ua_metadata_override &&
-        !renderer_preferences_.user_agent_override.ua_metadata_override->mobile)
+    bool is_request_desktop_site =
+        renderer_preferences_.user_agent_override.ua_metadata_override &&
+        !renderer_preferences_.user_agent_override.ua_metadata_override->mobile;
+    prefs.viewport_meta_enabled = !is_request_desktop_site;
+#else
+    prefs.viewport_meta_enabled = false;
 #endif
-      prefs.viewport_meta_enabled = false;
   }
 
   prefs.spatial_navigation_enabled =
@@ -8114,6 +8127,13 @@ void WebContentsImpl::DidReceiveInputEvent(
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::DidReceiveInputEvent",
                         "render_widget_host", render_widget_host);
 
+  if (event.GetType() == blink::WebInputEvent::Type::kMouseDown &&
+      static_cast<const blink::WebMouseEvent&>(event).button ==
+          blink::WebPointerProperties::Button::kBack) {
+    BackNavigationLikely(content_preloading_predictor::kMouseBackButton,
+                         WindowOpenDisposition::CURRENT_TAB);
+  }
+
   if (!IsUserInteractionInputType(event.GetType()))
     return;
 
@@ -8292,12 +8312,6 @@ void WebContentsImpl::NotifyMainFrameSwappedFromRenderManager(
   }
   NotifyViewSwapped(old_frame ? old_frame->GetRenderViewHost() : nullptr,
                     new_frame->GetRenderViewHost());
-}
-
-std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderFrameHost(
-    RenderFrameHostImpl* frame_host,
-    const GURL& url) {
-  return CreateWebUI(frame_host, url);
 }
 
 void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
@@ -8643,24 +8657,6 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
   const gfx::Size new_size = GetPreferredSize();
   if (new_size != old_size)
     delegate_->UpdatePreferredSize(this, new_size);
-}
-
-std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(
-    RenderFrameHostImpl* frame_host,
-    const GURL& url) {
-  TRACE_EVENT2("content", "WebContentsImpl::CreateWebUI", "frame_host",
-               frame_host, "url", url);
-  std::unique_ptr<WebUIImpl> web_ui =
-      std::make_unique<WebUIImpl>(this, frame_host);
-  std::unique_ptr<WebUIController> controller(
-      WebUIControllerFactoryRegistry::GetInstance()
-          ->CreateWebUIControllerForURL(web_ui.get(), url));
-  if (controller) {
-    web_ui->SetController(std::move(controller));
-    return web_ui;
-  }
-
-  return nullptr;
 }
 
 FindRequestManager* WebContentsImpl::GetFindRequestManager() {
@@ -9666,6 +9662,33 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
         prerendering_url);
   }
   return nullptr;
+}
+
+void WebContentsImpl::BackNavigationLikely(PreloadingPredictor predictor,
+                                           WindowOpenDisposition disposition) {
+  if (!base::FeatureList::IsEnabled(kBackNavigationPredictionMetrics)) {
+    return;
+  }
+
+  CHECK(!IsBeingDestroyed());
+
+  // See the comment of `last_back_navigation_hint_time_` for why this cooldown
+  // exists. The choice of 5 seconds is arbitrary.
+  constexpr base::TimeDelta kCooldown = base::Seconds(5);
+  base::TimeTicks now = ui::EventTimeForNow();
+  if (now - last_back_navigation_hint_time_ < kCooldown) {
+    return;
+  }
+  last_back_navigation_hint_time_ = now;
+
+  if (disposition != WindowOpenDisposition::CURRENT_TAB) {
+    RecordPrerenderBackNavigationEligibility(
+        predictor, PrerenderBackNavigationEligibility::kTargetingOtherWindow,
+        nullptr);
+    return;
+  }
+
+  GetPrerenderHostRegistry()->BackNavigationLikely(predictor);
 }
 
 void WebContentsImpl::AboutToBeDiscarded(WebContents* new_contents) {

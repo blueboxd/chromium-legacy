@@ -150,8 +150,6 @@ using password_manager::WarningType;
                   syncSetupService:SyncSetupServiceFactory::GetForBrowserState(
                                        browserState)
                      faviconLoader:faviconLoader
-                   identityManager:IdentityManagerFactory::GetForBrowserState(
-                                       browserState)
                        syncService:SyncServiceFactory::GetForBrowserState(
                                        browserState)];
   self.reauthModule = [[ReauthenticationModule alloc]
@@ -236,7 +234,7 @@ using password_manager::WarningType;
                                browser:self.browser
                             credential:credential
                           reauthModule:self.reauthModule
-                  supportMoveToAccount:YES];
+                               context:DetailsContext::kGeneral];
   self.passwordDetailsCoordinator.delegate = self;
   [self.passwordDetailsCoordinator start];
 }
@@ -249,7 +247,7 @@ using password_manager::WarningType;
                                browser:self.browser
                        affiliatedGroup:affiliatedGroup
                           reauthModule:self.reauthModule
-                  supportMoveToAccount:YES];
+                               context:DetailsContext::kGeneral];
   self.passwordDetailsCoordinator.delegate = self;
   [self.passwordDetailsCoordinator start];
 }
@@ -262,16 +260,6 @@ using password_manager::WarningType;
                     reauthModule:self.reauthModule];
   self.addPasswordCoordinator.delegate = self;
   [self.addPasswordCoordinator start];
-}
-
-- (void)showPasswordsInOtherAppsPromo {
-  DCHECK(!self.passwordsInOtherAppsCoordinator);
-  self.passwordsInOtherAppsCoordinator =
-      [[PasswordsInOtherAppsCoordinator alloc]
-          initWithBaseNavigationController:self.baseNavigationController
-                                   browser:self.browser];
-  self.passwordsInOtherAppsCoordinator.delegate = self;
-  [self.passwordsInOtherAppsCoordinator start];
 }
 
 - (void)showPasswordDeleteDialogWithOrigins:(NSArray<NSString*>*)origins

@@ -39,6 +39,13 @@ BASE_FEATURE(kAutofillDetectRemovedFormControls,
              "AutofillDetectRemovedFormControls",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If disabled (default for many years), autofilling triggers KeyDown and
+// KeyUp events that do not send any key codes. If enabled, these events
+// contain the "Unidentified" key.
+BASE_FEATURE(kAutofillSendUnidentifiedKeyAfterFill,
+             "AutofillSendUnidentifiedKeyAfterFill",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Apply lazy-loading to ad frames which have embeds likely impacting Core Web
 // Vitals.
 BASE_FEATURE(kAutomaticLazyFrameLoadingToAds,
@@ -111,8 +118,8 @@ BASE_FEATURE(kBackForwardCacheDedicatedWorker,
              "BackForwardCacheDedicatedWorker",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kBackForwardCacheNotReachedOnJavaScriptExecution,
-             "BackForwardCacheNotReachedOnJavaScriptExecution",
+BASE_FEATURE(kBackForwardCacheDWCOnJavaScriptExecution,
+             "BackForwardCacheDWCOnJavaScriptExecution",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows pages with keepalive requests to stay eligible for the back/forward
@@ -223,6 +230,13 @@ BASE_FEATURE(kPrivacySandboxAdsAPIs,
              "PrivacySandboxAdsAPIs",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, pages that don't specify a layout width will default to the
+// window width rather than the traditional mobile fallback width of 980px.
+// Has no effect unless viewport handling is enabled.
+BASE_FEATURE(kDefaultViewportIsDeviceWidth,
+             "DefaultViewportIsDeviceWidth",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kMixedContentAutoupgrade,
              "AutoupgradeMixedContent",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -292,6 +306,15 @@ constexpr base::FeatureParam<bool>
 constexpr base::FeatureParam<int> kPrivateAggregationApiMaxBudgetPerScope{
     &kPrivateAggregationApi, "max_budget_per_scope", /*default_value=*/65536};
 
+// Has the same effect as enabling
+// kPrivateAggregationApiFledgeExtensionsEnabled. This is intended as a
+// convenience for local testing only.
+// TODO(alexmt): Remove when kPrivateAggregationApiFledgeExtensionsEnabled is
+// enabled by default.
+BASE_FEATURE(kPrivateAggregationApiFledgeExtensionsLocalTestingOverride,
+             "PrivateAggregationApiFledgeExtensionsLocalTestingOverride",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable the shared storage API. Note that enabling this feature does not
 // automatically expose this API to the web, it only allows the element to be
 // enabled by the runtime enabled feature, for origin trials.
@@ -347,18 +370,11 @@ BASE_FEATURE(kSharedStorageSelectURLLimit,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int> kSharedStorageSelectURLBitBudgetPerPageLoad = {
     &kSharedStorageSelectURLLimit, "SharedStorageSelectURLBitBudgetPerPageLoad",
-    60};
+    12};
 const base::FeatureParam<int>
     kSharedStorageSelectURLBitBudgetPerOriginPerPageLoad = {
         &kSharedStorageSelectURLLimit,
-        "SharedStorageSelectURLBitBudgetPerOriginPerPageLoad", 24};
-
-BASE_FEATURE(kSharedStorageReportEventLimit,
-             "SharedStorageReportEventLimit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<int> kSharedStorageReportEventBitBudgetPerPageLoad = {
-    &kSharedStorageReportEventLimit,
-    "SharedStorageReportEventBitBudgetPerPageLoad", 9};
+        "SharedStorageSelectURLBitBudgetPerOriginPerPageLoad", 6};
 
 BASE_FEATURE(kPrerender2SequentialPrerendering,
              "Prerender2SequentialPrerendering",
@@ -972,10 +988,12 @@ BASE_FEATURE(kInterestGroupStorage,
 // TODO(crbug.com/1197209): Adjust these limits in response to usage.
 const base::FeatureParam<int> kInterestGroupStorageMaxOwners{
     &kInterestGroupStorage, "max_owners", 1000};
+const base::FeatureParam<int> kInterestGroupStorageMaxStoragePerOwner{
+    &kInterestGroupStorage, "max_storage_per_owner", 10 * 1024 * 1024};
 const base::FeatureParam<int> kInterestGroupStorageMaxGroupsPerOwner{
     &kInterestGroupStorage, "max_groups_per_owner", 1000};
 const base::FeatureParam<int> kInterestGroupStorageMaxOpsBeforeMaintenance{
-    &kInterestGroupStorage, "max_ops_before_maintenance", 1000000};
+    &kInterestGroupStorage, "max_ops_before_maintenance", 1000};
 
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 // Enables FLEDGE implementation. See https://crbug.com/1186444.
@@ -1245,10 +1263,11 @@ BASE_FEATURE(kReportFCPOnlyOnSuccessfulCommit,
              "ReportFCPOnlyOnSuccessfulCommit",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// TODO(crbug.com/1382005): Deprecate this flag.
-BASE_FEATURE(kRegionCaptureExperimentalSubtypes,
-             "RegionCaptureExperimentalSubtypes",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// When enabled, Source Location blocking BFCache is captured
+// to send it to the browser.
+BASE_FEATURE(kRegisterJSSourceLocationBlockingBFCache,
+             "RegisterJSSourceLocationBlockingBFCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allow access to WebSQL APIs.
 BASE_FEATURE(kWebSQLAccess, "kWebSQLAccess", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1490,7 +1509,7 @@ BASE_FEATURE(kStylusWritingToInput,
 
 BASE_FEATURE(kAndroidExtendedKeyboardShortcuts,
              "AndroidExtendedKeyboardShortcuts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStylusPointerAdjustment,
              "StylusPointerAdjustment",
@@ -1728,7 +1747,7 @@ BASE_FEATURE(kQuoteEmptySecChUaStringHeadersConsistently,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kStorageAccessAPIImplicitGrantLimit{
-    &kStorageAccessAPI, "storage-access-api-implicit-grant-limit", 5};
+    &kStorageAccessAPI, "storage-access-api-implicit-grant-limit", 0};
 const base::FeatureParam<bool> kStorageAccessAPIAutoGrantInFPS{
     &kStorageAccessAPI, "storage_access_api_auto_grant_in_fps", true};
 const base::FeatureParam<bool> kStorageAccessAPIAutoDenyOutsideFPS{

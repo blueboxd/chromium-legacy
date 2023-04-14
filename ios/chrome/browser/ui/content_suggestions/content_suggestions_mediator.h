@@ -31,9 +31,11 @@ class PrefRegistrySyncable;
 @protocol ApplicationCommands;
 class Browser;
 @protocol BrowserCoordinatorCommands;
+@class ContentSuggestionsMetricsRecorder;
 @protocol FeedDelegate;
 class GURL;
 class LargeIconCache;
+@class NTPHomeMetrics;
 class PromosManager;
 class ReadingListModel;
 @protocol SnackbarCommands;
@@ -86,6 +88,13 @@ class WebStateList;
 
 // The promos manager to alert if the user uses What's New.
 @property(nonatomic, assign) PromosManager* promosManager;
+
+// Recorder for the metrics related to the NTP.
+@property(nonatomic, assign) NTPHomeMetrics* NTPMetrics;
+
+// Recorder for content suggestions metrics.
+@property(nonatomic, assign)
+    ContentSuggestionsMetricsRecorder* contentSuggestionsMetricsRecorder;
 
 // Disconnects the mediator.
 - (void)disconnect;

@@ -66,6 +66,7 @@ export class AcceleratorRowElement extends PolymerElement {
       action: {
         type: Number,
         value: 0,
+        reflectToAttribute: true,
       },
 
       source: {
@@ -90,14 +91,6 @@ export class AcceleratorRowElement extends PolymerElement {
     if (!this.isLocked) {
       this.removeEventListener('click', () => this.showDialog());
     }
-  }
-
-  override ready(): void {
-    super.ready();
-    const numberOfAccelerators = this.layoutStyle == LayoutStyle.kDefault ?
-        this.acceleratorInfos.length :
-        1;
-    this.updateStyles({'--accelerator-row-num-accels': numberOfAccelerators});
   }
 
   protected onSourceChanged(): void {

@@ -1913,7 +1913,9 @@ TEST_P(AnimationAnimationTestCompositing,
 
   auto* scroller =
       To<LayoutBoxModelObject>(GetLayoutObjectByElementId("scroller"));
-  ASSERT_TRUE(scroller->UsesCompositedScrolling());
+  if (!RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
+    ASSERT_TRUE(scroller->UsesCompositedScrolling());
+  }
 
   // Create ScrollTimeline
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
@@ -2314,8 +2316,11 @@ TEST_P(AnimationAnimationTestCompositing,
 
   UpdateAllLifecyclePhasesForTest();
   scroll_animation->play();
-  EXPECT_EQ(scroll_animation->CheckCanStartAnimationOnCompositor(nullptr),
-            CompositorAnimations::kTimelineSourceHasInvalidCompositingState);
+  EXPECT_EQ(
+      scroll_animation->CheckCanStartAnimationOnCompositor(nullptr),
+      RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()
+          ? CompositorAnimations::kNoFailure
+          : CompositorAnimations::kTimelineSourceHasInvalidCompositingState);
 }
 
 #if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)

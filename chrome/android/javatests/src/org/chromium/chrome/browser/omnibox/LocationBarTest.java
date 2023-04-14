@@ -28,6 +28,7 @@ import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,10 +44,10 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Promise;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -60,6 +61,7 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -179,7 +181,7 @@ public class LocationBarTest {
 
     private void doPostActivitySetup(ChromeActivity activity) {
         mOmnibox = new OmniboxTestUtils(activity);
-        mUrlBar = activity.findViewById(org.chromium.chrome.R.id.url_bar);
+        mUrlBar = activity.findViewById(R.id.url_bar);
         mLocationBarCoordinator = ((LocationBarCoordinator) activity.getToolbarManager()
                                            .getToolbarLayoutForTesting()
                                            .getLocationBar());
@@ -263,9 +265,9 @@ public class LocationBarTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> mLocationBarMediator.setSearchQuery(query));
 
         triggerAndWaitForDeferredNativeInitialization();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(query, mUrlBar.getTextWithoutAutocomplete());
-            Assert.assertTrue(mLocationBarMediator.isUrlBarFocused());
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mUrlBar.getTextWithoutAutocomplete(), Matchers.is(query));
+            Criteria.checkThat(mLocationBarMediator.isUrlBarFocused(), Matchers.is(true));
         });
     }
 

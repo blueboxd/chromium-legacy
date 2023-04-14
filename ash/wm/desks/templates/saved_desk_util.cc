@@ -9,8 +9,10 @@
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "components/app_restore/window_properties.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -56,17 +58,9 @@ bool AreDesksTemplatesEnabled() {
   return features::AreDesksTemplatesEnabled();
 }
 
-bool IsDeskSaveAndRecallEnabled() {
-  if (IsGuestSession())
-    return false;
-
-  return features::IsSavedDesksEnabled();
-}
-
 bool IsSavedDesksEnabled() {
-  return AreDesksTemplatesEnabled() || IsDeskSaveAndRecallEnabled();
+  return !IsGuestSession();
 }
-
 SavedDeskDialogController* GetSavedDeskDialogController() {
   auto* overview_controller = Shell::Get()->overview_controller();
   if (!overview_controller->InOverviewSession())
@@ -87,6 +81,13 @@ SavedDeskPresenter* GetSavedDeskPresenter() {
       overview_controller->overview_session()->saved_desk_presenter();
   DCHECK(presenter);
   return presenter;
+}
+
+bool IsAdminTemplateWindow(aura::Window* window) {
+  const int32_t* activation_index =
+      window->GetProperty(app_restore::kActivationIndexKey);
+  return activation_index &&
+         *activation_index <= kAdminTemplateStartingActivationIndex;
 }
 
 }  // namespace saved_desk_util

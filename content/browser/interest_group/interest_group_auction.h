@@ -241,6 +241,10 @@ class CONTENT_EXPORT InterestGroupAuction
     std::map<url::Origin, PrivateAggregationRequests>
         private_aggregation_requests;
 
+    // Requests made to Private aggregation API in generateBid() for the
+    // non-k-anonymous enforced bid when k-anonymity enforcement is active.
+    PrivateAggregationRequests non_kanon_private_aggregation_requests;
+
     // The reason this bid was rejected by the auction (i.e., reason why score
     // was non-positive).
     auction_worklet::mojom::RejectReason reject_reason =
@@ -259,9 +263,11 @@ class CONTENT_EXPORT InterestGroupAuction
     Bid(BidRole bid_role,
         std::string ad_metadata,
         double bid,
+        std::string bid_currency,
         absl::optional<double> ad_cost,
         blink::AdDescriptor ad_descriptor,
         std::vector<blink::AdDescriptor> ad_component_descriptors,
+        absl::optional<uint16_t> modeling_signals,
         base::TimeDelta bid_duration,
         absl::optional<uint32_t> bidding_signals_data_version,
         const blink::InterestGroup::Ad* bid_ad,
@@ -291,9 +297,11 @@ class CONTENT_EXPORT InterestGroupAuction
     // auction_worklet::mojom::BidderWorkletBid.
     const std::string ad_metadata;
     const double bid;
+    const std::string bid_currency;
     const absl::optional<double> ad_cost;
     const blink::AdDescriptor ad_descriptor;
     const std::vector<blink::AdDescriptor> ad_component_descriptors;
+    const absl::optional<uint16_t> modeling_signals;
     const base::TimeDelta bid_duration;
     const absl::optional<uint32_t> bidding_signals_data_version;
 
@@ -890,6 +898,9 @@ class CONTENT_EXPORT InterestGroupAuction
   // is invoked when the phase completes.
   AuctionPhaseCompletionCallback load_interest_groups_phase_callback_;
   AuctionPhaseCompletionCallback bidding_and_scoring_phase_callback_;
+
+  // Start time of the BiddingAndScoring phase for UKM metrics.
+  base::TimeTicks bidding_and_scoring_phase_start_time_;
 
   // Invoked in the bidding and scoring phase, once the seller worklet has
   // loaded. May be null.

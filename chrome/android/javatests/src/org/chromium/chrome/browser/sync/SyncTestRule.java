@@ -28,12 +28,12 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Promise;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -191,7 +191,6 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
 
     private void ruleTearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mSyncService.setSyncRequested(false);
             mFakeServerHelper = null;
             FakeServerHelper.destroyInstance();
             SyncService.resetForTests();
@@ -277,24 +276,8 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     public CoreAccountInfo setUpTestAccountAndSignInWithSyncSetupAsIncomplete() {
         CoreAccountInfo accountInfo = mSigninTestRule.addTestAccountThenSigninAndEnableSync(
                 /* syncService= */ null);
-        // Enable UKM when enabling sync as it is done by the sync confirmation UI.
-        enableUKM();
         SyncTestUtil.waitForSyncTransportActive();
         return accountInfo;
-    }
-
-    public void startSync() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mSyncService.setSyncRequested(true); });
-    }
-
-    public void startSyncAndWait() {
-        startSync();
-        SyncTestUtil.waitForSyncFeatureActive();
-    }
-
-    public void stopSync() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mSyncService.setSyncRequested(false); });
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     public void signinAndEnableSync(final CoreAccountInfo accountInfo) {

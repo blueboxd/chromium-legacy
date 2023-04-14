@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_cell.h"
 
-#import "ios/chrome/browser/ui/icons/symbols.h"
-#import "ios/chrome/browser/ui/image_util/image_util.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
+#import "ios/chrome/browser/shared/ui/util/image/image_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

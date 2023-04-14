@@ -32,7 +32,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -232,7 +232,11 @@ class WebRtcDesktopCaptureBrowserTest : public WebRtcTestBase {
     command_line->AppendSwitchASCII(switches::kAutoSelectDesktopCaptureSource,
                                     "Entire screen");
     command_line->AppendSwitch(switches::kEnableUserMediaScreenCapturing);
-    command_line->AppendSwitch(switches::kUseGpuInTests);
+    // TODO(https://crbug.com/1424557): Remove this after fixing feature
+    // detection in 0c tab capture path as it'll no longer be needed.
+    if constexpr (!BUILDFLAG(IS_CHROMEOS)) {
+      command_line->AppendSwitch(switches::kUseGpuInTests);
+    }
   }
 
  protected:

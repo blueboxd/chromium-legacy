@@ -48,6 +48,11 @@ BASE_FEATURE(kAutofillAccountProfileStorage,
              "AutofillAccountProfileStorage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Determines if users located in an unsupported country (based on GeoIP) are
+// eligible to write to the account storage.
+const base::FeatureParam<bool> kAutofillAccountProfileStorageFromUnsupportedIPs{
+    &kAutofillAccountProfileStorage, "allow_writes_from_unsupported_ips", true};
+
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
 // When enabled, address profile save problem will contain a dropdown for
@@ -307,6 +312,21 @@ BASE_FEATURE(kAutofillExtractAllDatalists,
 BASE_FEATURE(kAutofillFeedback,
              "AutofillFeedback",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Makes is_autofilled = true cached only after filling and not previewing.
+BASE_FEATURE(kAutofillOnlyCacheIsAutofilledOnFill,
+             "AutofillOnlyCacheIsAutofilledOnFill",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables converging towards the longer or shorter street address in profile
+// merging.
+BASE_FEATURE(kAutofillConvergeToExtremeLengthStreetAddress,
+             "AutofillConvergeToExtremeLengthStreetAddress",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<bool> kAutofillConvergeToLonger{
+    &kAutofillConvergeToExtremeLengthStreetAddress, "converge_to_longer", true};
+
 BASE_FEATURE(kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
              "AutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -365,22 +385,6 @@ BASE_FEATURE(kAutofillLabelAffixRemoval,
 BASE_FEATURE(kAutofillPreventOverridingPrefilledValues,
              "AutofillPreventOverridingPrefilledValues",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// We used to consider local heuristics only if at least 3 fields were
-// classified by the heuristics [*]. With this feature enabled, we require that
-// local heuristics discover at least 3 different fillable field *types*,
-// meaning that 3 fields of the same type don't meet the bar. This is motivated
-// by cases where we saw the same field type multiple times (e.g. due to the
-// occurrence of the term "name") which produced false positives. crbug/1352826
-// contains some statistics.
-// Note that "fillable" refers to the field type, not whether a specific field
-// is visible and editable by the user.
-// [*] Precisely, at least 3 fields had to have a fillable field type, except
-// that emails and other single field types were not bound to this rule.
-// TODO(crbug/1352826): Remove once experiment is finished.
-BASE_FEATURE(kAutofillMin3FieldTypesForLocalHeuristics,
-             "AutofillMin3FieldTypesForLocalHeuristics",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, use the parsing patterns from a JSON file for heuristics, rather
 // than the hardcoded ones from autofill_regex_constants.cc.
@@ -467,11 +471,6 @@ BASE_FEATURE(kAutofillRemoveInaccessibleProfileValuesOnStartup,
 BASE_FEATURE(kAutofillRequireNameForProfileImport,
              "AutofillRequireNameForProfileImport",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether or not overall prediction are retrieved from the cache.
-BASE_FEATURE(kAutofillRetrieveOverallPredictionsFromCache,
-             "AutofillRetrieveOverallPredictionsFromCache",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether UPI/VPA values will be saved and filled into payment forms.
 BASE_FEATURE(kAutofillSaveAndFillVPA,
@@ -624,6 +623,13 @@ const base::FeatureParam<int> kAutofillMoreProminentPopupMaxOffsetToCenterParam{
 // https://docs.google.com/document/d/1ZH0JbL6bES3cD4KqZWsGR6n8I-rhnkx6no6nQOgYq5w/.
 BASE_FEATURE(kAutofillLogUKMEventsWithSampleRate,
              "AutofillLogUKMEventsWithSampleRate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Autofill is experimenting with an updated set of country specific rules.
+// Controls whether we use the current country-specific address import field
+// requirements or the updated ones.
+BASE_FEATURE(kAutofillUseUpdatedRequiredFieldsForAddressImport,
+             "AutofillUseUpdatedRequiredFieldsForAddressImport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether virtual card suggestions are shown on the touch to fill

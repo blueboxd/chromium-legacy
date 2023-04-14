@@ -110,9 +110,11 @@ void InputDeviceSettingsProvider::ObserveKeyboardSettings(
   DCHECK(features::IsInputDeviceSettingsSplitEnabled());
   DCHECK(InputDeviceSettingsController::Get());
   const auto id = keyboard_settings_observers_.Add(std::move(observer));
-  keyboard_settings_observers_.Get(id)->OnKeyboardListUpdated(
-      SanitizeAndSortDeviceList(
-          InputDeviceSettingsController::Get()->GetConnectedKeyboards()));
+  auto* keyboard_settings_observer = keyboard_settings_observers_.Get(id);
+  keyboard_settings_observer->OnKeyboardListUpdated(SanitizeAndSortDeviceList(
+      InputDeviceSettingsController::Get()->GetConnectedKeyboards()));
+  keyboard_settings_observer->OnKeyboardPoliciesUpdated(
+      InputDeviceSettingsController::Get()->GetKeyboardPolicies().Clone());
 }
 
 void InputDeviceSettingsProvider::ObserveTouchpadSettings(
@@ -140,9 +142,11 @@ void InputDeviceSettingsProvider::ObserveMouseSettings(
   DCHECK(features::IsInputDeviceSettingsSplitEnabled());
   DCHECK(InputDeviceSettingsController::Get());
   const auto id = mouse_settings_observers_.Add(std::move(observer));
-  mouse_settings_observers_.Get(id)->OnMouseListUpdated(
-      SanitizeAndSortDeviceList(
-          InputDeviceSettingsController::Get()->GetConnectedMice()));
+  auto* mouse_settings_observer = mouse_settings_observers_.Get(id);
+  mouse_settings_observer->OnMouseListUpdated(SanitizeAndSortDeviceList(
+      InputDeviceSettingsController::Get()->GetConnectedMice()));
+  mouse_settings_observer->OnMousePoliciesUpdated(
+      InputDeviceSettingsController::Get()->GetMousePolicies().Clone());
 }
 
 void InputDeviceSettingsProvider::OnKeyboardConnected(
@@ -155,12 +159,29 @@ void InputDeviceSettingsProvider::OnKeyboardDisconnected(
   NotifyKeyboardsUpdated();
 }
 
+void InputDeviceSettingsProvider::OnKeyboardSettingsUpdated(
+    const ::ash::mojom::Keyboard& keyboard) {
+  NotifyKeyboardsUpdated();
+}
+
+void InputDeviceSettingsProvider::OnKeyboardPoliciesUpdated(
+    const ::ash::mojom::KeyboardPolicies& keyboard_policies) {
+  for (const auto& observer : keyboard_settings_observers_) {
+    observer->OnKeyboardPoliciesUpdated(keyboard_policies.Clone());
+  }
+}
+
 void InputDeviceSettingsProvider::OnTouchpadConnected(
     const ::ash::mojom::Touchpad& touchpad) {
   NotifyTouchpadsUpdated();
 }
 
 void InputDeviceSettingsProvider::OnTouchpadDisconnected(
+    const ::ash::mojom::Touchpad& touchpad) {
+  NotifyTouchpadsUpdated();
+}
+
+void InputDeviceSettingsProvider::OnTouchpadSettingsUpdated(
     const ::ash::mojom::Touchpad& touchpad) {
   NotifyTouchpadsUpdated();
 }
@@ -175,6 +196,11 @@ void InputDeviceSettingsProvider::OnPointingStickDisconnected(
   NotifyPointingSticksUpdated();
 }
 
+void InputDeviceSettingsProvider::OnPointingStickSettingsUpdated(
+    const ::ash::mojom::PointingStick& pointing_stick) {
+  NotifyPointingSticksUpdated();
+}
+
 void InputDeviceSettingsProvider::OnMouseConnected(
     const ::ash::mojom::Mouse& mouse) {
   NotifyMiceUpdated();
@@ -183,6 +209,19 @@ void InputDeviceSettingsProvider::OnMouseConnected(
 void InputDeviceSettingsProvider::OnMouseDisconnected(
     const ::ash::mojom::Mouse& mouse) {
   NotifyMiceUpdated();
+}
+
+void InputDeviceSettingsProvider::OnMouseSettingsUpdated(
+    const ::ash::mojom::Mouse& mouse) {
+  NotifyMiceUpdated();
+}
+
+void InputDeviceSettingsProvider::OnMousePoliciesUpdated(
+    const ::ash::mojom::MousePolicies& mouse) {
+  for (const auto& observer : mouse_settings_observers_) {
+    observer->OnMousePoliciesUpdated(
+        InputDeviceSettingsController::Get()->GetMousePolicies().Clone());
+  }
 }
 
 void InputDeviceSettingsProvider::NotifyKeyboardsUpdated() {

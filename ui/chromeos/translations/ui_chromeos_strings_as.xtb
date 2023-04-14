@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">বিশ্বাসযোগ্যতাৰ প্ৰমাণপত্ৰ স্থানীয়ভাৱে অগ্ৰাহ্য কৰা হৈছে</translation>
 <translation id="1775381402323441512">ভিডিঅ’ সম্পৰ্কীয় তথ্য</translation>
 <translation id="180035236176489073">আপুনি এই ফাইলখিনি এক্সেছ কৰিবলৈ অনলাইন হ’ব লাগিব।</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{আইডিটোৰ সৈতে এটা এক্সটেনশ্বন}one{আইডিসমূহৰ সৈতে এক্সটেনশ্বনসমূহ}other{আইডিসমূহৰ সৈতে এক্সটেনশ্বনসমূহ}}</translation>
 <translation id="1807938677607439181">সকলো ফাইল</translation>
 <translation id="1810764548349082891">কোনো পূৰ্বদৰ্শন নাই</translation>
 <translation id="1812302367230252929">আমহেৰিক লিপ্যন্তৰণ</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">বিষয়ৰ বিকল্প নামৰ সৈতে মিলা প্ৰবিষ্টি অমান্য</translation>
 <translation id="1838709767668011582">Googleৰ ছাইট</translation>
 <translation id="1853795129690976061">এই ফ’ল্ডাৰটো Linuxৰ সৈতে শ্বেয়াৰ কৰা হৈছে</translation>
-<translation id="1859422890169495746">এই Chromebookটোত</translation>
 <translation id="1864756863218646478">ফাইলটো বিচাৰি পোৱা নগ’ল।</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" />টা নেটৱৰ্কৰ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, সংযোগ কৰক</translation>
 <translation id="1920670151694390848">মালায়ালম লিপ্যন্তৰণ</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">গ্ৰহ</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> সুৰক্ষিতভাৱে গুচোৱা হ’ল।</translation>
 <translation id="2307462900900812319">নেটৱৰ্ক কনফিগাৰ কৰক</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{<ph name="BEGIN_LIST" /><ph name="END_LIST" /> আইডিৰ এক্সেটেনশ্বনৰ অৱস্থান নিৰ্ধাৰণ কৰিব পৰা নগ’ল। আপোনাৰ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক।}one{<ph name="BEGIN_LIST" /><ph name="END_LIST" /> আইডিৰ এক্সেটেনশ্বনসমূহৰ অৱস্থান নিৰ্ধাৰণ কৰিব পৰা নগ’ল। আপোনাৰ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক।}other{<ph name="BEGIN_LIST" /><ph name="END_LIST" /> আইডিৰ এক্সেটেনশ্বনসমূহৰ অৱস্থান নিৰ্ধাৰণ কৰিব পৰা নগ’ল। আপোনাৰ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক।}}</translation>
 <translation id="2325650632570794183">এইধৰণৰ ফাইল সমৰ্থিত নহয়। অনুগ্ৰহ কৰি Chrome Web Storeত গৈ এইধৰণৰ ফাইল খুলিব পৰা কোনো এপ্ বিচাৰক।</translation>
 <translation id="2326539130272988168">বুলগেৰিয়ান</translation>
 <translation id="2337715497728194187">Bruschettaৰ সৈতে শ্বেয়াৰ কৰক</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">অসুৰক্ষিত</translation>
 <translation id="3291218047831493686">ছিম লকৰ ছেটিং সলনি কৰিবলৈ এই নেটৱৰ্কটোৰ সৈতে সংযোগ কৰক</translation>
 <translation id="3293023191599135697">WEP নেটৱৰ্ক সমৰ্থিত নহয়</translation>
+<translation id="3295006446256079333">এই ভলিউমটো</translation>
 <translation id="3295357220137379386">ডিভাইচটো ব্যস্ত আছে</translation>
 <translation id="3296763833017966289">জর্জিয়ান</translation>
 <translation id="3307875152560779385">ইউক্ৰেনিয়ান</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">চাওক</translation>
 <translation id="485316830061041779">জাৰ্মান</translation>
+<translation id="4862885579661885411">ফাইলৰ ছেটিং</translation>
 <translation id="4867079195717347957">স্তম্ভটো অধোগামী ভাৱে সজাবলৈ ক্লিক কৰক।</translation>
 <translation id="4867297348137739678">যোৱা সপ্তাহত</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> বাইট</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" />টা বস্তু প্ৰতিলিপি কৰি থকা হৈছে...</translation>
 <translation id="7375951387215729722">ফাইলৰ সূচী <ph name="COLUMN_NAME" /> অনুসৰি অধোগামীভাৱে সজোৱা হৈছে।</translation>
 <translation id="7377161162143020057">এই ফাইলটোৰ প্ৰতিলিপি কৰাটো প্ৰশাসকৰ নীতিয়ে অৱৰোধ কৰিছে</translation>
-<translation id="7392500733467492920">অৱস্থান নিৰ্ধাৰণ কৰিব পৰা নাই। আপোনাৰ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক।</translation>
 <translation id="7402503521691663770">ChromeOS Flex ডিভাইচ</translation>
 <translation id="7408870451288633753">ছেক</translation>
 <translation id="7417453074306512035">ইথিঅ’পিক কীব’র্ড</translation>

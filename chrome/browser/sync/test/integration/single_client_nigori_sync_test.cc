@@ -88,10 +88,7 @@ MATCHER_P(IsDataEncryptedWith, key_params, "") {
   const sync_pb::EncryptedData& encrypted_data = arg;
   std::unique_ptr<syncer::Nigori> nigori = syncer::Nigori::CreateByDerivation(
       key_params.derivation_params, key_params.password);
-  std::string nigori_name;
-  EXPECT_TRUE(nigori->Permute(syncer::Nigori::Type::Password,
-                              syncer::kNigoriKeyName, &nigori_name));
-  return encrypted_data.key_name() == nigori_name;
+  return encrypted_data.key_name() == nigori->GetKeyName();
 }
 
 MATCHER_P4(StatusLabelsMatch,
@@ -144,11 +141,9 @@ GURL GetFakeTrustedVaultRecoverabilityURL(
 }
 
 std::string ComputeKeyName(const KeyParamsForTesting& key_params) {
-  std::string key_name;
-  syncer::Nigori::CreateByDerivation(key_params.derivation_params,
-                                     key_params.password)
-      ->Permute(syncer::Nigori::Password, syncer::kNigoriKeyName, &key_name);
-  return key_name;
+  return syncer::Nigori::CreateByDerivation(key_params.derivation_params,
+                                            key_params.password)
+      ->GetKeyName();
 }
 
 // Helper function to install server redirects in the test HTTP server.

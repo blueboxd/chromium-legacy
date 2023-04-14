@@ -52,20 +52,18 @@ inline bool IsExcludedAttribute(const AtomicString& name) {
 inline void CollectElementIdentifierHashes(
     const Element& element,
     Vector<unsigned, 4>& identifier_hashes) {
-  identifier_hashes.push_back(
-      element.LocalNameForSelectorMatching().Impl()->ExistingHash() *
-      kTagNameSalt);
+  identifier_hashes.push_back(element.LocalNameForSelectorMatching().Hash() *
+                              kTagNameSalt);
   if (element.HasID()) {
-    identifier_hashes.push_back(
-        element.IdForStyleResolution().Impl()->ExistingHash() * kIdSalt);
+    identifier_hashes.push_back(element.IdForStyleResolution().Hash() *
+                                kIdSalt);
   }
 
   if (element.IsStyledElement() && element.HasClass()) {
     const SpaceSplitString& class_names = element.ClassNames();
     wtf_size_t count = class_names.size();
     for (wtf_size_t i = 0; i < count; ++i) {
-      identifier_hashes.push_back(class_names[i].Impl()->ExistingHash() *
-                                  kClassSalt);
+      identifier_hashes.push_back(class_names[i].Hash() * kClassSalt);
     }
   }
   AttributeCollection attributes = element.AttributesWithoutUpdate();
@@ -76,7 +74,7 @@ inline void CollectElementIdentifierHashes(
     }
     auto lower = attribute_name.IsLowerASCII() ? attribute_name
                                                : attribute_name.LowerASCII();
-    identifier_hashes.push_back(lower.Impl()->ExistingHash() * kAttributeSalt);
+    identifier_hashes.push_back(lower.Hash() * kAttributeSalt);
   }
 }
 
@@ -93,19 +91,18 @@ inline void CollectDescendantSelectorIdentifierHashes(
   switch (selector.Match()) {
     case CSSSelector::kId:
       if (!selector.Value().empty()) {
-        (*hash++) = selector.Value().Impl()->ExistingHash() * kIdSalt;
+        (*hash++) = selector.Value().Hash() * kIdSalt;
       }
       break;
     case CSSSelector::kClass:
       if (!selector.Value().empty()) {
-        (*hash++) = selector.Value().Impl()->ExistingHash() * kClassSalt;
+        (*hash++) = selector.Value().Hash() * kClassSalt;
       }
       break;
     case CSSSelector::kTag:
       if (selector.TagQName().LocalName() !=
           CSSSelector::UniversalSelectorAtom()) {
-        (*hash++) = selector.TagQName().LocalName().Impl()->ExistingHash() *
-                    kTagNameSalt;
+        (*hash++) = selector.TagQName().LocalName().Hash() * kTagNameSalt;
       }
       break;
     case CSSSelector::kAttributeExact:
@@ -122,7 +119,7 @@ inline void CollectDescendantSelectorIdentifierHashes(
       auto lower_name = attribute_name.IsLowerASCII()
                             ? attribute_name
                             : attribute_name.LowerASCII();
-      (*hash++) = lower_name.Impl()->ExistingHash() * kAttributeSalt;
+      (*hash++) = lower_name.Hash() * kAttributeSalt;
     } break;
     case CSSSelector::kPseudoClass:
       switch (selector.GetPseudoType()) {
@@ -156,7 +153,7 @@ void CollectDescendantCompoundSelectorIdentifierHashes(
   // Skip the rightmost compound. It is handled quickly by the rule hashes.
   bool skip_over_subselectors = true;
   for (const CSSSelector* current = selector; current;
-       current = current->TagHistory()) {
+       current = current->NextSimpleSelector()) {
     // Only collect identifiers that match ancestors.
     switch (relation) {
       case CSSSelector::kSubSelector:
@@ -265,7 +262,7 @@ void SelectorFilter::CollectIdentifierHashes(
   unsigned* end = identifier_hashes + maximum_identifier_count;
 
   CollectDescendantCompoundSelectorIdentifierHashes(
-      selector.TagHistory(), selector.Relation(), hash, end);
+      selector.NextSimpleSelector(), selector.Relation(), hash, end);
   if (hash != end) {
     *hash = 0;
   }

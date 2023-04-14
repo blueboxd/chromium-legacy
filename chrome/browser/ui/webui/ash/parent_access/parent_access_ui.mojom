@@ -67,14 +67,6 @@ struct WebApprovalsParams {
 
 // Parameters for the local extension approvals V2 feature.
 struct ExtensionApprovalsParams {
-  enum ExtensionApprovalType {
-    kAdd, // Adding a new extension
-    kEnable, // Enabling an existing extension
-  };
-
-  // The type of approval being requested.
-  ExtensionApprovalType approval_type;
-
   // Display name for the extension.
   mojo_base.mojom.String16 extension_name;
 
@@ -83,6 +75,20 @@ struct ExtensionApprovalsParams {
 
   // The child's name to be displayed to the parent.
   mojo_base.mojom.String16 child_display_name;
+
+  // Localized messages indicating the permissions requirements for an
+  // extension.
+  ExtensionPermissions permissions;
+};
+
+struct ExtensionPermissions {
+  // List of permissions for the extension.
+  array<mojo_base.mojom.String16> permissions;
+
+  // Details about each permission. Each permission will have a corresponding
+  // entry at the same index in the details array. If there are no details to
+  // be displayed, it will have an empty value.
+  array<mojo_base.mojom.String16> details;
 };
 
 union FlowTypeParams {
@@ -95,6 +101,7 @@ enum ParentAccessResult {
   kApproved,
   kDeclined,
   kCanceled,
+  kDisabled,
   kError,
 };
 

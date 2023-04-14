@@ -141,13 +141,15 @@ void NGContainerFragmentBuilder::PropagateChildData(
     const auto& child_style = child.Style();
     if (child.IsCSSBox() && child_style.GetPosition() == EPosition::kRelative) {
       if (IsHorizontalWritingMode(Style().GetWritingMode())) {
-        if (child_style.Top().IsPercentOrCalc() ||
-            child_style.Bottom().IsPercentOrCalc())
+        if (child_style.UsedTop().IsPercentOrCalc() ||
+            child_style.UsedBottom().IsPercentOrCalc()) {
           has_descendant_that_depends_on_percentage_block_size_ = true;
+        }
       } else {
-        if (child_style.Left().IsPercentOrCalc() ||
-            child_style.Right().IsPercentOrCalc())
+        if (child_style.UsedLeft().IsPercentOrCalc() ||
+            child_style.UsedRight().IsPercentOrCalc()) {
           has_descendant_that_depends_on_percentage_block_size_ = true;
+        }
       }
     }
   }
@@ -371,12 +373,6 @@ void NGContainerFragmentBuilder::
       candidate.inline_container = NGInlineContainer<LogicalOffset>(
           To<LayoutInline>(layout_object_),
           /* relative_offset */ LogicalOffset());
-    }
-
-    // Ensure that the inline_container is a continuation root.
-    if (candidate.inline_container.container) {
-      candidate.inline_container.container = To<LayoutInline>(
-          candidate.inline_container.container->ContinuationRoot());
     }
   }
 }
@@ -783,9 +779,6 @@ void NGContainerFragmentBuilder::AdjustFixedposContainerInfo(
         *fixedpos_containing_block_fragment = box_fragment;
       }
     } else if (fixedpos_inline_container->container) {
-      // Ensure that the inline_container is a continuation root.
-      fixedpos_inline_container->container = To<LayoutInline>(
-          fixedpos_inline_container->container->ContinuationRoot());
       // Candidates whose containing block is inline are always positioned
       // inside closest parent block flow.
       if (box_fragment->GetLayoutObject() ==

@@ -96,8 +96,7 @@ class AutocompleteResult {
                           AutocompleteResult* old_matches);
 
   // Adds a new set of matches to the result set.  Does not re-sort.
-  // When `preserve` is true, the matches are appended without modifications.
-  void AppendMatches(const ACMatches& matches, bool preserve = false);
+  void AppendMatches(const ACMatches& matches);
 
   // Removes duplicates, puts the list in sorted order and culls to leave only
   // the best GetMaxMatches() matches. Sets the default match to the best match
@@ -139,6 +138,9 @@ class AutocompleteResult {
   // Called after matches are deduped and sorted and before they are culled.
   void GroupAndDemoteMatchesInGroups();
 
+  // Filter and remove OmniboxActions according to Platform-specific rules.
+  void TrimOmniboxActions();
+
   // Sets |action| in matches that have Pedal-triggering text.
   void AttachPedalsToMatches(const AutocompleteInput& input,
                              const AutocompleteProviderClient& client);
@@ -176,9 +178,11 @@ class AutocompleteResult {
                                           ACMatches* matches);
 
   // If the top match is a Search Entity, and it was deduplicated with a
-  // non-entity match, split off the non-entity match from the list of
-  // duplicates, promote it to the top, and return true.
-  static bool DiscourageTopMatchFromBeingSearchEntity(ACMatches* matches);
+  // non-entity match, splits off the non-entity match from the list of
+  // duplicates and returns true. Otherwise returns false.
+  // The non-entity duplicate is promoted to the top, unless the entity match
+  // has Action in Suggest where it remains at the top.
+  static bool UndedupTopSearchEntityMatch(ACMatches* matches);
 
   // Just a helper function to encapsulate the logic of deciding how many
   // matches to keep, with respect to configured maximums, URL limits,

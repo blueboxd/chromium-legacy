@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import static org.chromium.chrome.browser.autofill.AutofillUiUtils.getCardIcon;
+
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -14,8 +13,7 @@ import androidx.annotation.DrawableRes;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.chrome.browser.autofill.AutofillUiUtils;
-import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
@@ -77,50 +75,40 @@ class CreditCardAccessorySheetViewBinder {
                                     || view.getExpMonth().getVisibility() == View.VISIBLE
                             ? View.VISIBLE
                             : View.GONE);
-            // If the icon url is present, fetch the bitmap from the PersonalDataManager. In
-            // the event that the bitmap is not present in the PersonalDataManager, fall back to the
-            // icon corresponding to the `mOrigin`.
-            Bitmap iconBitmap = null;
-            Resources res = view.getContext().getResources();
-            if (info.getIconUrl() != null && info.getIconUrl().isValid()) {
-                iconBitmap =
-                        PersonalDataManager.getInstance().getCustomImageForAutofillSuggestionIfAvailable(
-                                AutofillUiUtils.getCCIconURLWithParams(info.getIconUrl(),
-                                        res.getDimensionPixelSize(
-                                                R.dimen.keyboard_accessory_bar_item_cc_icon_width),
-                                        res.getDimensionPixelSize(
-                                                R.dimen.keyboard_accessory_suggestion_icon_size)));
-            }
-            if (iconBitmap != null) {
-                view.setIcon(new BitmapDrawable(res, iconBitmap));
-            } else {
-                view.setIcon(AppCompatResources.getDrawable(
-                        view.getContext(), getDrawableForOrigin(info.getOrigin())));
-            }
+            view.setIcon(getCardIcon(view.getContext(), info.getIconUrl(),
+                    getDrawableForOrigin(info.getOrigin()),
+                    R.dimen.keyboard_accessory_bar_item_cc_icon_width,
+                    R.dimen.keyboard_accessory_suggestion_icon_size, R.dimen.card_art_corner_radius,
+                    /* showCustomIcon= */ true));
         }
 
         private static @DrawableRes int getDrawableForOrigin(String origin) {
+            boolean use_new_data = ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES);
+
             switch (origin) {
                 case "americanExpressCC":
-                    return R.drawable.amex_card;
+                    return use_new_data ? R.drawable.amex_metadata_card : R.drawable.amex_card;
                 case "dinersCC":
-                    return R.drawable.diners_card;
+                    return use_new_data ? R.drawable.diners_metadata_card : R.drawable.diners_card;
                 case "discoverCC":
-                    return R.drawable.discover_card;
+                    return use_new_data ? R.drawable.discover_metadata_card
+                                        : R.drawable.discover_card;
                 case "eloCC":
-                    return R.drawable.elo_card;
+                    return use_new_data ? R.drawable.elo_metadata_card : R.drawable.elo_card;
                 case "jcbCC":
-                    return R.drawable.jcb_card;
+                    return use_new_data ? R.drawable.jcb_metadata_card : R.drawable.jcb_card;
                 case "masterCardCC":
-                    return R.drawable.mc_card;
+                    return use_new_data ? R.drawable.mc_metadata_card : R.drawable.mc_card;
                 case "mirCC":
-                    return R.drawable.mir_card;
+                    return use_new_data ? R.drawable.mir_metadata_card : R.drawable.mir_card;
                 case "troyCC":
-                    return R.drawable.troy_card;
+                    return use_new_data ? R.drawable.troy_metadata_card : R.drawable.troy_card;
                 case "unionPayCC":
-                    return R.drawable.unionpay_card;
+                    return use_new_data ? R.drawable.unionpay_metadata_card
+                                        : R.drawable.unionpay_card;
                 case "visaCC":
-                    return R.drawable.visa_card;
+                    return use_new_data ? R.drawable.visa_metadata_card : R.drawable.visa_card;
             }
             return R.drawable.infobar_autofill_cc;
         }

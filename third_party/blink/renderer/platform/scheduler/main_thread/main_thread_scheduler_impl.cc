@@ -355,18 +355,19 @@ MainThreadSchedulerImpl::~MainThreadSchedulerImpl() {
 }
 
 // static
-WebThreadScheduler* WebThreadScheduler::MainThreadScheduler() {
+WebThreadScheduler& WebThreadScheduler::MainThreadScheduler() {
   auto* main_thread = Thread::MainThread();
   // Enforce that this is not called before the main thread is initialized.
-  DCHECK(main_thread);
-  DCHECK(main_thread->Scheduler());
-  DCHECK(main_thread->Scheduler()->ToMainThreadScheduler());
-
-  // This can return nullptr if the main thread scheduler is not a
-  // MainThreadSchedulerImpl, which can happen in tests.
-  return main_thread->Scheduler()
-      ->ToMainThreadScheduler()
-      ->ToWebMainThreadScheduler();
+  CHECK(main_thread && main_thread->Scheduler() &&
+        main_thread->Scheduler()->ToMainThreadScheduler());
+  auto* scheduler = main_thread->Scheduler()
+                        ->ToMainThreadScheduler()
+                        ->ToWebMainThreadScheduler();
+  // `scheduler` can be null if it isn't a MainThreadSchedulerImpl, which can
+  // happen in tests. Tests should use a real main thread scheduler if a
+  // `WebThreadScheduler` is needed.
+  CHECK(scheduler);
+  return *scheduler;
 }
 
 MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
@@ -532,33 +533,6 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
           YesNoStateToString) {}
 
 MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
-  low_priority_background_page =
-      base::FeatureList::IsEnabled(kLowPriorityForBackgroundPages);
-  best_effort_background_page =
-      base::FeatureList::IsEnabled(kBestEffortPriorityForBackgroundPages);
-
-  low_priority_hidden_frame =
-      base::FeatureList::IsEnabled(kLowPriorityForHiddenFrame);
-  low_priority_subframe = base::FeatureList::IsEnabled(kLowPriorityForSubFrame);
-  low_priority_throttleable =
-      base::FeatureList::IsEnabled(kLowPriorityForThrottleableTask);
-  low_priority_subframe_throttleable =
-      base::FeatureList::IsEnabled(kLowPriorityForSubFrameThrottleableTask);
-
-  low_priority_ad_frame = base::FeatureList::IsEnabled(kLowPriorityForAdFrame);
-  best_effort_ad_frame =
-      base::FeatureList::IsEnabled(kBestEffortPriorityForAdFrame);
-
-  low_priority_cross_origin =
-      base::FeatureList::IsEnabled(kLowPriorityForCrossOrigin);
-
-  prioritize_compositing_and_loading_during_early_loading =
-      base::FeatureList::IsEnabled(
-          kPrioritizeCompositingAndLoadingDuringEarlyLoading);
-
-  prioritize_compositing_after_input =
-      base::FeatureList::IsEnabled(kPrioritizeCompositingAfterInput);
-
   mbi_override_task_runner_handle =
       base::FeatureList::IsEnabled(kMbiOverrideTaskRunnerHandle);
 
@@ -1582,12 +1556,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.should_pause_task_queues_for_android_webview() = true;
   }
 
-  if (scheduling_settings_
-          .prioritize_compositing_and_loading_during_early_loading &&
-      current_use_case() == UseCase::kEarlyLoading) {
-    new_policy.should_prioritize_loading_with_compositing() = true;
-  }
-
   new_policy.find_in_page_priority() =
       find_in_page_budget_pool_controller_->CurrentTaskPriority();
 
@@ -2588,10 +2556,6 @@ TaskPriority MainThreadSchedulerImpl::ComputeCompositorPriority() const {
     // Return the highest priority here otherwise consecutive heavy inputs (e.g.
     // typing) will starve rendering.
     return TaskPriority::kHighestPriority;
-  } else if (scheduling_settings_
-                 .prioritize_compositing_and_loading_during_early_loading &&
-             current_use_case() == UseCase::kEarlyLoading) {
-    return TaskPriority::kHighPriority;
   } else {
     absl::optional<TaskPriority> computed_compositor_priority =
         ComputeCompositorPriorityFromUseCase();
@@ -2655,8 +2619,7 @@ void MainThreadSchedulerImpl::
     main_thread_only().should_prioritize_compositor_task_queue_after_delay =
         false;
     main_thread_only().prioritize_compositing_after_input = false;
-  } else if (scheduling_settings().prioritize_compositing_after_input &&
-             queue &&
+  } else if (queue &&
              queue->queue_type() == MainThreadTaskQueue::QueueType::kInput &&
              main_thread_only().did_handle_discrete_input_event) {
     // Assume this input will result in a frame, which we want to show ASAP.

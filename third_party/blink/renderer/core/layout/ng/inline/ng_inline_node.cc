@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_initial_letter_utils.h"
@@ -1002,22 +1001,9 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
     return nullptr;
   }
 
-  // If |layout_block_flow| is LayoutNG, compute from |NGInlineNode|.
-  if (layout_block_flow->IsLayoutNGObject()) {
-    NGInlineNode node(layout_block_flow);
-    CHECK(node.IsPrepareLayoutFinished());
-    return node.ComputeOffsetMappingIfNeeded();
-  }
-
-  // If this is not LayoutNG, compute the offset mapping and store into
-  // |LayoutBlockFlowRareData|.
-  if (const NGOffsetMapping* mapping = layout_block_flow->GetOffsetMapping())
-    return mapping;
-  NGInlineNodeData* data = MakeGarbageCollected<NGInlineNodeData>();
-  ComputeOffsetMapping(layout_block_flow, data);
-  NGOffsetMapping* const mapping = data->offset_mapping.Release();
-  layout_block_flow->SetOffsetMapping(mapping);
-  return mapping;
+  NGInlineNode node(layout_block_flow);
+  CHECK(node.IsPrepareLayoutFinished());
+  return node.ComputeOffsetMappingIfNeeded();
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
@@ -1539,7 +1525,8 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) const {
   WTF::wtf_size_t size = items.size();
   for (WTF::wtf_size_t i = 0; i != size;) {
     LayoutObject* object = items[i].GetLayoutObject();
-    if (auto* layout_text = DynamicTo<LayoutNGText>(object)) {
+    auto* layout_text = DynamicTo<LayoutText>(object);
+    if (layout_text && !layout_text->IsBR()) {
 #if DCHECK_IS_ON()
       // Items split from a LayoutObject should be consecutive.
       DCHECK(associated_objects.insert(object).is_new_entry);
@@ -1825,8 +1812,8 @@ static LayoutUnit ComputeContentSize(
 
   if (UNLIKELY(node.IsInitialLetterBox())) {
     LayoutUnit inline_size = LayoutUnit();
+    NGLineInfo line_info;
     do {
-      NGLineInfo line_info;
       line_breaker.NextLine(&line_info);
       if (line_info.Results().empty())
         break;
@@ -1841,8 +1828,8 @@ static LayoutUnit ComputeContentSize(
   MaxSizeFromMinSize max_size_from_min_size(items_data, *max_size_cache,
                                             &floats_max_size);
 
+  NGLineInfo line_info;
   do {
-    NGLineInfo line_info;
     line_breaker.NextLine(&line_info);
     if (line_info.Results().empty())
       break;

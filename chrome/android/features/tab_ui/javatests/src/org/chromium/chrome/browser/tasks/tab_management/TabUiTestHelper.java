@@ -385,15 +385,15 @@ public class TabUiTestHelper {
      */
     public static int getTabSwitcherParentId(Context context) {
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return R.id.grid_tab_switcher_view_holder;
+            return R.id.tab_switcher_view_holder;
         }
 
         if (getIsStartSurfaceEnabledFromUIThread(context)
                 && !getIsStartSurfaceRefactorEnabledFromUIThread(context)) {
-            return org.chromium.chrome.R.id.tasks_surface_body;
+            return R.id.tasks_surface_body;
         }
 
-        return org.chromium.chrome.R.id.compositor_view_holder;
+        return R.id.compositor_view_holder;
     }
 
     private static boolean getIsStartSurfaceEnabledFromUIThread(Context context) {

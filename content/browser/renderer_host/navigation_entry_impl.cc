@@ -89,9 +89,16 @@ void RecursivelyGenerateFrameEntries(
 
   if (!entry) {
     absl::optional<GURL> initiator_base_url;
-    if (state.initiator_base_url_string) {
-      initiator_base_url =
+    if (blink::features::IsNewBaseUrlInheritanceBehaviorEnabled() &&
+        state.initiator_base_url_string) {
+      GURL initiator_base_url_from_state =
           GURL(UTF16ToUTF8(state.initiator_base_url_string.value()));
+      if (!initiator_base_url_from_state.is_empty()) {
+        // TODO(crbug.com/1356658): refactor the uses of
+        // `state.initiator_base_url_string` so they store nullopt instead of
+        // empty strings.
+        initiator_base_url = initiator_base_url_from_state;
+      }
     }
     entry = base::MakeRefCounted<FrameNavigationEntry>(
         UTF16ToUTF8(state.target.value_or(std::u16string())),
@@ -573,10 +580,13 @@ const std::u16string& NavigationEntryImpl::GetTitleForDisplay() {
 
   // Use the virtual URL first if any, and fall back on using the real URL.
   std::u16string title;
-  if (!virtual_url_.is_empty()) {
-    title = url_formatter::FormatUrl(virtual_url_);
-  } else if (!GetURL().is_empty()) {
-    title = url_formatter::FormatUrl(GetURL());
+  if (!virtual_url_.is_empty() || !GetURL().is_empty()) {
+    title = url_formatter::FormatUrl(
+        virtual_url_.is_empty() ? GetURL() : virtual_url_,
+        url_formatter::kFormatUrlOmitDefaults |
+            url_formatter::kFormatUrlOmitTrivialSubdomains |
+            url_formatter::kFormatUrlOmitHTTPS,
+        base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   }
 
   // For file:// URLs use the filename as the title, not the full path.

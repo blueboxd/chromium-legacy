@@ -89,8 +89,16 @@ void HTMLTableCellElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kNowrapAttr) {
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                            CSSValueID::kNowrap);
+    if (!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
+                                              CSSValueID::kNowrap);
+    } else {
+      // Longhands of `white-space: nowrap`.
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kWhiteSpaceCollapse, CSSValueID::kCollapse);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextWrap,
+                                              CSSValueID::kNowrap);
+    }
   } else if (name == html_names::kWidthAttr) {
     if (!value.empty()) {
       AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value,
@@ -111,9 +119,8 @@ void HTMLTableCellElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kRowspanAttr ||
       params.name == html_names::kColspanAttr) {
-    if (GetLayoutObject() && GetLayoutObject()->IsTableCell()) {
-      ToInterface<LayoutNGTableCellInterface>(GetLayoutObject())
-          ->ColSpanOrRowSpanChanged();
+    if (auto* cell = DynamicTo<LayoutNGTableCell>(GetLayoutObject())) {
+      cell->ColSpanOrRowSpanChanged();
     }
   } else {
     HTMLTablePartElement::ParseAttribute(params);

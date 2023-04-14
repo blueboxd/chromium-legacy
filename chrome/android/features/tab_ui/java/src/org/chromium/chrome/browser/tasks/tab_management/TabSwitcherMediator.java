@@ -542,13 +542,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     /**
      * Called after native initialization is completed.
-     * @param tabSelectionEditorController The controller that can control the visibility of the
-     *                                     TabSelectionEditor.
      */
-    public void initWithNative(@Nullable TabSelectionEditorCoordinator
-                                       .TabSelectionEditorController tabSelectionEditorController,
-            @Nullable SnackbarManager snackbarManager) {
-        setTabSelectionEditorController(tabSelectionEditorController);
+    public void initWithNative(@Nullable SnackbarManager snackbarManager) {
         mSnackbarManager = snackbarManager;
     }
 
@@ -696,8 +691,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             }
         }
         if (mMode == TabListCoordinator.TabListMode.GRID
-                && PriceTrackingUtilities.isTabModelPriceTrackingEligible(
-                        mTabModelSelector.getCurrentModel())
+                && !mTabModelSelector.getCurrentModel().getProfile().isOffTheRecord()
                 && PriceTrackingUtilities.isTrackPricesOnTabsEnabled()) {
             RecordUserAction.record("Commerce.TabGridSwitched."
                     + (ShoppingPersistedTabData.hasPriceDrop(tab) ? "HasPriceDrop"
@@ -737,6 +731,11 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     @Override
     public void hideTabSwitcherView(boolean animate) {
+        if (mMode == TabListMode.GRID) {
+            mIsTransitionInProgress = true;
+            notifyBackPressStateChangedInternal();
+        }
+
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(false);
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
@@ -747,10 +746,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             // We need to hide the dialog immediately.
             mTabGridDialogControllerSupplier.get().hideDialog(false);
         }
-        if (mMode != TabListMode.GRID) return;
-
-        mIsTransitionInProgress = animate;
-        notifyBackPressStateChangedInternal();
     }
 
     boolean prepareTabSwitcherView() {

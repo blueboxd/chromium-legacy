@@ -295,13 +295,16 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
   mojo::Remote<storage::mojom::MockFailureInjector> failure_injector_;
 };
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
-  SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"));
-}
+class IndexedDBIncognitoTest : public IndexedDBBrowserTest,
+                               public ::testing::WithParamInterface<bool> {
+ public:
+  IndexedDBIncognitoTest() = default;
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTestIncognito) {
-  SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"),
-             /*incognito=*/true);
+  bool IsIncognito() { return GetParam(); }
+};
+
+IN_PROC_BROWSER_TEST_P(IndexedDBIncognitoTest, CursorTest) {
+  SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"), IsIncognito());
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorPrefetch) {
@@ -603,7 +606,9 @@ class IndexedDBBrowserTestWithVersion3Schema
   }
 };
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion3Schema, MigrationTest) {
+// TODO(crbug.com/1431352): Re-enable this test
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion3Schema,
+                       DISABLED_MigrationTest) {
   const GURL kTestUrl = GetTestUrl("indexeddb", "v3_migration_test.html");
   // For some reason setting empty file modification time on Android fails with
   // EPERM. https://crbug.com/1045488
@@ -1354,19 +1359,24 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestBlobKeyCorruption, LifecycleTest) {
   SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityStrict) {
+IN_PROC_BROWSER_TEST_P(IndexedDBIncognitoTest, BucketDurabilityStrict) {
   FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
-  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_strict.html"));
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_strict.html"),
+             IsIncognito());
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityRelaxed) {
+IN_PROC_BROWSER_TEST_P(IndexedDBIncognitoTest, BucketDurabilityRelaxed) {
   FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
-  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_relaxed.html"));
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_relaxed.html"),
+             IsIncognito());
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityOverride) {
+IN_PROC_BROWSER_TEST_P(IndexedDBIncognitoTest, BucketDurabilityOverride) {
   FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
-  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_override.html"));
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_override.html"),
+             IsIncognito());
 }
+
+INSTANTIATE_TEST_SUITE_P(All, IndexedDBIncognitoTest, testing::Bool());
 
 }  // namespace content

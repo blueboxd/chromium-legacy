@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Сертифікат автентифікації відхилений локально</translation>
 <translation id="1775381402323441512">Інформація про відео</translation>
 <translation id="180035236176489073">Щоб отримати доступ до цих файлів, потрібно перебувати в режимі онлайн.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Не вдалося знайти розширення з наведеним нижче ідентифікатором.}one{Не вдалося знайти розширення з наведеними нижче ідентифікаторами.}few{Не вдалося знайти розширення з наведеними нижче ідентифікаторами.}many{Не вдалося знайти розширення з наведеними нижче ідентифікаторами.}other{Не вдалося знайти розширення з наведеними нижче ідентифікаторами.}}</translation>
 <translation id="1807938677607439181">Усі файли</translation>
 <translation id="1810764548349082891">Попередній перегляд недоступний</translation>
 <translation id="1812302367230252929">Амхарська, транслітерація</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Недійсний запис збігу з альтернативною назвою суб’єкта</translation>
 <translation id="1838709767668011582">Сайт Google</translation>
 <translation id="1853795129690976061">Linux має доступ до цієї папки</translation>
-<translation id="1859422890169495746">Цей пристрій Chromebook</translation>
 <translation id="1864756863218646478">Файл неможливо знайти.</translation>
 <translation id="1884013283844450420">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />. Підключитися</translation>
 <translation id="1920670151694390848">Малаялам, транслітерація</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Планета</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> відключено.</translation>
 <translation id="2307462900900812319">Установити параметри мережі</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Не вдалося знайти розширення з ідентифікатором <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Зв’яжіться з адміністратором.}one{Не вдалося знайти розширення з ідентифікаторами <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Зв’яжіться з адміністратором.}few{Не вдалося знайти розширення з ідентифікаторами <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Зв’яжіться з адміністратором.}many{Не вдалося знайти розширення з ідентифікаторами <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Зв’яжіться з адміністратором.}other{Не вдалося знайти розширення з ідентифікаторами <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Зв’яжіться з адміністратором.}}</translation>
 <translation id="2325650632570794183">Цей тип файлу не підтримується. Відвідайте Веб-магазин Chrome, щоб знайти програму, яка може відкрити файл цього типу.</translation>
 <translation id="2326539130272988168">Болгарська</translation>
 <translation id="2337715497728194187">Поділитися з Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Не захищено</translation>
 <translation id="3291218047831493686">Підключіться до цієї мережі, щоб змінити параметр блокування SIM-карти</translation>
 <translation id="3293023191599135697">Мережі WEP не підтримуються</translation>
+<translation id="3295006446256079333">Цей том</translation>
 <translation id="3295357220137379386">Пристрій зайнятий</translation>
 <translation id="3296763833017966289">Грузинська</translation>
 <translation id="3307875152560779385">Українська</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">Перегляд</translation>
 <translation id="485316830061041779">Німецька</translation>
+<translation id="4862885579661885411">Налаштування файлів</translation>
 <translation id="4867079195717347957">Натисніть, щоб відсортувати стовпці в порядку спадання.</translation>
 <translation id="4867297348137739678">Минулого тижня</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> Б</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Копіювання елементів (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="7375951387215729722">Список файлів відсортовано в порядку спадання за таким критерієм: <ph name="COLUMN_NAME" />.</translation>
 <translation id="7377161162143020057">Адміністратор заборонив копіювати цей файл</translation>
-<translation id="7392500733467492920">Зв’яжіться з адміністратором.</translation>
 <translation id="7402503521691663770">Пристрої з ОС Chrome Flex</translation>
 <translation id="7408870451288633753">Чеська</translation>
 <translation id="7417453074306512035">Ефіопська клавіатура</translation>

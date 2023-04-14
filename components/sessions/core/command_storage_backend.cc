@@ -202,6 +202,11 @@ CommandStorageBackend::ReadCommandsResult SessionFileReader::Read() {
     if (result.command->id() != kInitialStateMarkerCommandId)
       commands_result.commands.push_back(std::move(result.command));
   }
+
+  LOG_IF(ERROR, result.error_reading)
+      << "Commands successfully read before error: "
+      << commands_result.commands.size();
+
   // `error_reading` is only set if `command` is null.
   commands_result.error_reading = result.error_reading;
   return commands_result;
@@ -508,16 +513,17 @@ void CommandStorageBackend::AppendCommands(
     // `did_write_marker` should be false.
     DCHECK(!open_file_->did_write_marker);
     open_file_->did_write_marker = true;
-    if (last_file_with_valid_marker_) {
-      // `last_file_with_valid_marker_` is only set after a truncation, which
-      // signals a new path should be used and that the two paths should not
-      // be equal (TruncateOrOpenFile() assigns a new path every time it's
-      // called).
-      DCHECK_NE(*last_file_with_valid_marker_, open_file_->path);
-      base::DeleteFile(*last_file_with_valid_marker_);
-      last_file_with_valid_marker_.reset();
+    if (second_to_last_path_with_valid_marker_) {
+      // `last_or_current_path_with_valid_marker_` is only set after a
+      // truncation, which signals a new path should be used and that the two
+      // paths should not be equal (TruncateOrOpenFile() assigns a new path
+      // every time it's called).
+      CHECK_NE(*second_to_last_path_with_valid_marker_, open_file_->path);
+      base::DeleteFile(*second_to_last_path_with_valid_marker_);
     }
-    last_file_with_valid_marker_ = open_file_->path;
+    second_to_last_path_with_valid_marker_ =
+        std::move(last_or_current_path_with_valid_marker_);
+    last_or_current_path_with_valid_marker_ = open_file_->path;
   }
 
   // If `open_file_` is null, there was an error in writing.
@@ -582,10 +588,10 @@ void CommandStorageBackend::MoveCurrentSessionToLastSession() {
 
   // Move current session to last.
   absl::optional<SessionInfo> new_last_session_info;
-  if (last_file_with_valid_marker_) {
+  if (last_or_current_path_with_valid_marker_) {
     new_last_session_info =
-        SessionInfo{*last_file_with_valid_marker_, timestamp_};
-    last_file_with_valid_marker_.reset();
+        SessionInfo{*last_or_current_path_with_valid_marker_, timestamp_};
+    last_or_current_path_with_valid_marker_.reset();
   }
   last_session_info_ = new_last_session_info;
 
@@ -626,6 +632,9 @@ void CommandStorageBackend::InitIfNecessary() {
 
   inited_ = true;
   base::CreateDirectory(GetSessionDirName(type_, supplied_path_));
+
+  // Log the initial state of all session files in the directory.
+  LogSessionFiles();
 
   // TODO(sky): this is expensive. See if it can be delayed.
   last_session_info_ = FindLastSessionFile();
@@ -864,6 +873,27 @@ bool CommandStorageBackend::CanUseFileForLastSession(
   const SessionFileReader::MarkerStatus status =
       SessionFileReader::GetMarkerStatus(path, initial_decryption_key_);
   return !status.supports_marker || status.has_marker;
+}
+
+void CommandStorageBackend::LogSessionFiles() {
+  if (VLOG_IS_ON(1)) {
+    VLOG(1) << "Current session files:";
+    for (const SessionInfo& session :
+         GetSessionFilesSortedByReverseTimestamp()) {
+      int64_t file_size;
+      if (!base::GetFileSize(session.path, &file_size)) {
+        VLOG(1) << "Unable to compute file size for: " << session.path;
+        continue;
+      }
+      const SessionFileReader::MarkerStatus status =
+          SessionFileReader::GetMarkerStatus(session.path,
+                                             initial_decryption_key_);
+      VLOG(1) << "\nfile = " << session.path
+              << "\nsupports_marker = " << status.supports_marker
+              << "\nhas_marker = " << status.has_marker
+              << "\nsize_bytes = " << file_size;
+    }
+  }
 }
 
 }  // namespace sessions

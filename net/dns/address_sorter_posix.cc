@@ -278,18 +278,6 @@ class AddressSorterPosix::SortContext {
       VLOG(1) << "Could not connect to " << dest.ToStringWithoutPort()
               << " reason " << rv;
       sort_list_[info_index].failed = true;
-      MaybeFinishSort();
-      return;
-    }
-    // Filter out unusable destinations.
-    IPEndPoint src;
-    rv = sort_list_[info_index].socket->GetLocalAddress(&src);
-    if (rv != OK) {
-      LOG(WARNING) << "Could not get local address for "
-                   << dest.ToStringWithoutPort() << " reason " << rv;
-      sort_list_[info_index].failed = true;
-      MaybeFinishSort();
-      return;
     }
 
     MaybeFinishSort();
@@ -303,10 +291,21 @@ class AddressSorterPosix::SortContext {
     if (num_completed_ != num_endpoints_) {
       return;
     }
-    base::EraseIf(sort_list_, [](auto& element) { return element.failed; });
     for (auto& info : sort_list_) {
+      if (info.failed) {
+        continue;
+      }
+
       IPEndPoint src;
-      info.socket->GetLocalAddress(&src);
+      // Filter out unusable destinations.
+      int rv = info.socket->GetLocalAddress(&src);
+      if (rv != OK) {
+        LOG(WARNING) << "Could not get local address for "
+                     << info.endpoint.ToStringWithoutPort() << " reason " << rv;
+        info.failed = true;
+        continue;
+      }
+
       auto iter = sorter_->source_map_.find(src.address());
       if (iter == sorter_->source_map_.end()) {
         //  |src.address| may not be in the map if |source_info_| has not been
@@ -327,6 +326,7 @@ class AddressSorterPosix::SortContext {
                      info.src.prefix_length);
       }
     }
+    base::EraseIf(sort_list_, [](auto& element) { return element.failed; });
     std::stable_sort(sort_list_.begin(), sort_list_.end(), CompareDestinations);
 
     std::vector<IPEndPoint> sorted_result;
@@ -402,15 +402,14 @@ void AddressSorterPosix::OnIPAddressChanged() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_map_.clear();
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  const internal::AddressTrackerLinux* tracker =
-      NetworkChangeNotifier::GetAddressTracker();
-  if (!tracker)
+  // TODO(crbug.com/1431364): This always returns nullptr on ChromeOS.
+  const AddressMapOwnerLinux* address_map_owner =
+      NetworkChangeNotifier::GetAddressMapOwner();
+  if (!address_map_owner) {
     return;
-  typedef internal::AddressTrackerLinux::AddressMap AddressMap;
-  AddressMap map = tracker->GetAddressMap();
-  for (AddressMap::const_iterator it = map.begin(); it != map.end(); ++it) {
-    const IPAddress& address = it->first;
-    const struct ifaddrmsg& msg = it->second;
+  }
+  AddressMapOwnerLinux::AddressMap map = address_map_owner->GetAddressMap();
+  for (const auto& [address, msg] : map) {
     SourceAddressInfo& info = source_map_[address];
     info.native = false;  // TODO(szym): obtain this via netlink.
     info.deprecated = msg.ifa_flags & IFA_F_DEPRECATED;

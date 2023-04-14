@@ -13,9 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -23,6 +21,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppSpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.R;
 
 import java.util.concurrent.TimeoutException;
 
@@ -50,7 +49,6 @@ public class PaymentRequestShowPromiseSingleOptionShippingWithUpdateTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testFastApp() throws TimeoutException {
         mRule.addPaymentAppFactory(
@@ -66,7 +64,6 @@ public class PaymentRequestShowPromiseSingleOptionShippingWithUpdateTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testSlowApp() throws TimeoutException {
         mRule.addPaymentAppFactory("https://example.test", AppPresence.HAVE_APPS,

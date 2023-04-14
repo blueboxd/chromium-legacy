@@ -110,6 +110,7 @@ using base::ASCIIToUTF16;
 using base::Feature;
 using testing::_;
 using testing::ElementsAre;
+using testing::Field;
 using FieldPrediction = autofill::AutofillQueryResponse::FormSuggestion::
     FieldSuggestion::FieldPrediction;
 
@@ -2531,7 +2532,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(observer.Wait());
   // 3 possible passwords are going to be shown in a dropdown when the password
   // selection feature is enabled. The first one will be selected as the main
-  // password by default. All three will be in the all_possible_passwords
+  // password by default. All three will be in the |all_alternative_passwords|
   // list. The save password prompt is expected.
   BubbleObserver bubble_observer(WebContents());
   EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
@@ -2542,11 +2543,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_THAT(
       ManagePasswordsUIController::FromWebContents(WebContents())
           ->GetPendingPassword()
-          .all_possible_passwords,
-      ElementsAre(
-          ValueElementPair(u"pass1", u"chg_password_wo_username_field"),
-          ValueElementPair(u"pass2", u"chg_new_password_wo_username_1"),
-          ValueElementPair(u"pass3", u"chg_new_password_wo_username_2")));
+          .all_alternative_passwords,
+      ElementsAre(AllOf(Field("value", &AlternativeElement::value, u"pass1"),
+                        Field("name", &AlternativeElement::name,
+                              u"chg_password_wo_username_field")),
+                  AllOf(Field("value", &AlternativeElement::value, u"pass2"),
+                        Field("name", &AlternativeElement::name,
+                              u"chg_new_password_wo_username_1")),
+                  AllOf(Field("value", &AlternativeElement::value, u"pass3"),
+                        Field("name", &AlternativeElement::name,
+                              u"chg_new_password_wo_username_2"))));
   bubble_observer.AcceptSavePrompt();
   WaitForPasswordStore();
   CheckThatCredentialsStored("", "pass1");
@@ -4151,29 +4157,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWithSigninInterception,
 }
 #endif  // BUIDLFLAG(ENABLE_DICE_SUPPORT)
 
-class TestPasswordManagerClient : public ChromePasswordManagerClient {
- public:
-  static void CreateForWebContentsWithAutofillClient(
-      content::WebContents* contents,
-      autofill::AutofillClient* autofill_client) {
-    if (FromWebContents(contents))
-      return;
-    contents->SetUserData(
-        UserDataKey(),
-        std::make_unique<TestPasswordManagerClient>(contents, autofill_client));
-  }
-  TestPasswordManagerClient(content::WebContents* web_contents,
-                            autofill::AutofillClient* autofill_client)
-      : ChromePasswordManagerClient(web_contents, autofill_client) {}
-  ~TestPasswordManagerClient() override = default;
-
-  MOCK_METHOD(void, OnInputEvent, (const blink::WebInputEvent&), (override));
-};
-
-MATCHER_P(IsKeyEvent, type, std::string()) {
-  return arg.GetType() == type;
-}
-
 // This is for checking that we don't make unexpected calls to the password
 // manager driver prior to activation and to permit checking that expected calls
 // do happen after activation.
@@ -4230,7 +4213,8 @@ class MockPrerenderPasswordManagerDriver
               UserModifiedNonPasswordField,
               (autofill::FieldRendererId renderer_id,
                const std::u16string& field_name,
-               const std::u16string& value),
+               const std::u16string& value,
+               bool autocomplete_attribute_has_username),
               (override));
   MOCK_METHOD(void,
               ShowPasswordSuggestions,
@@ -4299,8 +4283,11 @@ class MockPrerenderPasswordManagerDriver
     ON_CALL(*this, UserModifiedNonPasswordField)
         .WillByDefault([this](autofill::FieldRendererId renderer_id,
                               const std::u16string& field_name,
-                              const std::u16string& value) {
-          impl_->UserModifiedNonPasswordField(renderer_id, field_name, value);
+                              const std::u16string& value,
+                              bool autocomplete_attribute_has_username) {
+          impl_->UserModifiedNonPasswordField(
+              renderer_id, field_name, value,
+              autocomplete_attribute_has_username);
         });
     ON_CALL(*this, ShowPasswordSuggestions)
         .WillByDefault([this](base::i18n::TextDirection text_direction,
@@ -4443,12 +4430,11 @@ class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
     render_frame_host->GetRenderWidgetHost()->ForwardKeyboardEvent(event);
   }
 
-  // Adds a tab with TestPasswordManagerClient which is a customized
-  // ChromePasswordManagerClient.
+  // Adds a tab with ChromePasswordManagerClient.
   // Note that it doesn't use CustomManagePasswordsUIController and it's not
   // useful to test UI. After calling this,
   // PasswordManagerBrowserTest::WebContents() is not available.
-  void GetNewTabWithTestPasswordManagerClient() {
+  void GetNewTabWithPasswordManagerClient() {
     content::WebContents* preexisting_tab =
         browser()->tab_strip_model()->GetActiveWebContents();
     std::unique_ptr<content::WebContents> owned_web_contents =
@@ -4460,7 +4446,7 @@ class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
     // logging.
     autofill::ChromeAutofillClient::CreateForWebContents(
         owned_web_contents.get());
-    TestPasswordManagerClient::CreateForWebContentsWithAutofillClient(
+    ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
         owned_web_contents.get(),
         autofill::ContentAutofillClient::FromWebContents(
             owned_web_contents.get()));
@@ -4593,53 +4579,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
   CheckThatCredentialsStored("temp", "random");
 }
 
-// Tests that RenderWidgetHost::InputEventObserver is updated with the
-// RenderFrameHost that NavigationHandle has when the RenderFrameHost is
-// activated from the prerendering.
-IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
-                       InputWorksAfterPrerenderActivation) {
-  GetNewTabWithTestPasswordManagerClient();
-
-  GURL url = embedded_test_server()->GetURL("/empty.html");
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-
-  auto prerender_url =
-      embedded_test_server()->GetURL("/password/password_form.html");
-  // Loads a page in the prerender.
-  int host_id = prerender_helper()->AddPrerender(prerender_url);
-  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
-  content::RenderFrameHost* render_frame_host =
-      prerender_helper()->GetPrerenderedMainFrameHost(host_id);
-
-  // Navigates the primary page to the URL.
-  prerender_helper()->NavigatePrimaryPage(prerender_url);
-  // Makes sure that the page is activated from the prerendering.
-  EXPECT_TRUE(host_observer.was_activated());
-
-  base::RunLoop().RunUntilIdle();
-
-  // Sets to ignore mouse events. Otherwise, OnInputEvent() could be called
-  // multiple times if the mouse cursor is over on the test window during
-  // testing.
-  web_contents()
-      ->GetPrimaryMainFrame()
-      ->GetRenderWidgetHost()
-      ->AddMouseEventCallback(base::BindRepeating(
-          [](const blink::WebMouseEvent& event) { return true; }));
-
-  EXPECT_CALL(
-      *static_cast<TestPasswordManagerClient*>(
-          ChromePasswordManagerClient::FromWebContents(web_contents())),
-      OnInputEvent(IsKeyEvent(blink::WebInputEvent::Type::kRawKeyDown)));
-  // Sends a key event.
-  SendKey(::ui::VKEY_DOWN, render_frame_host);
-}
-
 // Tests that Mojo messages in prerendering are deferred from the render to
 // the PasswordManagerDriver until activation.
 IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
                        MojoDeferringInPrerender) {
-  GetNewTabWithTestPasswordManagerClient();
+  GetNewTabWithPasswordManagerClient();
   MockPrerenderPasswordManagerDriverInjector injector(web_contents());
 
   GURL url = embedded_test_server()->GetURL("/empty.html");

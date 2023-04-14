@@ -67,6 +67,24 @@ class ASH_EXPORT AppListItemView : public views::Button,
     kRecentAppsView
   };
 
+  // Describes the app list item view drag state.
+  enum class DragState {
+    // Item is not being dragged.
+    kNone,
+
+    // Drag is initialized for the item (the owning apps grid considers the view
+    // to be the dragged view), but the item is still not being dragged.
+    // Depending on mouse/touch drag timers, UI may be in either normal, or
+    // dragging state.
+    kInitialized,
+
+    // The item drag is in progress. While in this state, the owning apps grid
+    // view will generally hide the item view, and replace it with a drag icon
+    // widget. The UI should be in dragging state (scaled up and with title
+    // hidden).
+    kStarted,
+  };
+
   // The parent apps grid (AppsGridView) or a stub. Not named "Delegate" to
   // differentiate it from AppListViewDelegate.
   class GridDelegate {
@@ -286,24 +304,8 @@ class ASH_EXPORT AppListItemView : public views::Button,
     UI_STATE_NORMAL,              // Normal UI (icon + label)
     UI_STATE_DRAGGING,            // Dragging UI (scaled icon only)
     UI_STATE_DROPPING_IN_FOLDER,  // Folder dropping preview UI
-  };
-
-  // Describes the app list item view drag state.
-  enum class DragState {
-    // Item is not being dragged.
-    kNone,
-
-    // Drag is initialized for the item (the owning apps grid considers the view
-    // to be the dragged view), but the item is still not being dragged.
-    // Depending on mouse/touch drag timers, UI may be in either normal, or
-    // dragging state.
-    kInitialized,
-
-    // The item drag is in progress. While in this state, the owning apps grid
-    // view will generally hide the item view, and replace it with a drag icon
-    // widget. The UI should be in dragging state (scaled up and with title
-    // hidden).
-    kStarted,
+    UI_STATE_TOUCH_DRAGGING,      // Dragging UI for touch drag (non-scaled icon
+                                  // only)
   };
 
   // Callback used when a menu is closed.
@@ -395,10 +397,17 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // Ensures that the layer where the icon background is painted on is created.
   void EnsureIconBackgroundLayer();
 
+  // Returns the color ID for the app list item background, if the background
+  // needs to be shown.
+  ui::ColorId GetBackgroundLayerColorId() const;
+
   void OnExtendingAnimationEnded(bool extend_icon);
 
   // Returns the layer that paints the icon background.
   ui::Layer* GetIconBackgroundLayer();
+
+  // Initialize the item drag operation if it is available at `location`.
+  bool MaybeStartTouchDrag(const gfx::Point& location);
 
   // The app list config used to layout this view. The initial values is set
   // during view construction, but can be changed by calling

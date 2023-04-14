@@ -285,10 +285,9 @@ void FakeChromeUserManager::SwitchActiveUser(const AccountId& account_id) {
 
 void FakeChromeUserManager::OnSessionStarted() {}
 
-void FakeChromeUserManager::RemoveUser(
-    const AccountId& account_id,
-    user_manager::UserRemovalReason reason,
-    user_manager::RemoveUserDelegate* delegate) {}
+void FakeChromeUserManager::RemoveUser(const AccountId& account_id,
+                                       user_manager::UserRemovalReason reason) {
+}
 
 void FakeChromeUserManager::RemoveUserFromList(const AccountId& account_id) {
   WallpaperControllerClientImpl* const wallpaper_client =
@@ -731,21 +730,6 @@ void FakeChromeUserManager::SetUserAffiliation(
 bool FakeChromeUserManager::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
   return true;
-}
-
-void FakeChromeUserManager::CacheRemovedUser(
-    const std::string& user_email,
-    user_manager::UserRemovalReason reason) {
-  removed_user_cache_.push_back(std::make_pair(user_email, reason));
-}
-
-std::vector<std::pair<std::string, user_manager::UserRemovalReason>>
-FakeChromeUserManager::GetRemovedUserCache() const {
-  return removed_user_cache_;
-}
-
-void FakeChromeUserManager::MarkReporterInitialized() {
-  removed_user_cache_.clear();
 }
 
 user_manager::User* FakeChromeUserManager::GetActiveUserInternal() const {

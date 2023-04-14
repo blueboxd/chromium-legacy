@@ -26,7 +26,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
@@ -43,6 +42,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
@@ -1207,9 +1207,11 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   };
 
   auto ShouldShowSuggestion = [&] {
-    if (client()->IsShowingFastCheckoutUI() ||
-        (form_element_was_clicked &&
-         client()->TryToShowFastCheckout(form, field, GetWeakPtr()))) {
+    if (fast_checkout_delegate_ &&
+        (fast_checkout_delegate_->IsShowingFastCheckoutUI() ||
+         (form_element_was_clicked &&
+          fast_checkout_delegate_->TryToShowFastCheckout(form, field,
+                                                         GetWeakPtr())))) {
       // The Fast Checkout surface is shown, so abort showing regular Autofill
       // UI. Now the flow is controlled by the `FastCheckoutClient` instead of
       // `external_delegate_`.
@@ -1566,7 +1568,9 @@ void BrowserAutofillManager::OnHidePopupImpl() {
 
   single_field_form_fill_router_->CancelPendingQueries(this);
   client()->HideAutofillPopup(PopupHidingReason::kRendererEvent);
-  client()->HideFastCheckout(/*allow_further_runs=*/false);
+  if (fast_checkout_delegate_) {
+    fast_checkout_delegate_->HideFastCheckout(/*allow_further_runs=*/false);
+  }
   if (touch_to_fill_delegate_) {
     touch_to_fill_delegate_->HideTouchToFill();
   }
@@ -2152,8 +2156,9 @@ AutofillProfile* BrowserAutofillManager::GetProfile(int unique_id) {
       suggestion_generator_->GetBackendIdFromFrontendId(unique_id);
 
   std::string guid = profile_id.value();
-  if (base::IsValidGUID(guid))
+  if (base::IsValidUuid(guid)) {
     return client()->GetPersonalDataManager()->GetProfileByGUID(guid);
+  }
   return nullptr;
 }
 
@@ -2303,7 +2308,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
         !features::kAutofillFillAutocompleteUnrecognized.Get()) {
       LOG_AF(buffer)
           << Tr{}
-          << "Skipped: kAutofillFillAutoccompleteUnrecognized not enabled";
+          << "Skipped: kAutofillFillAutocompleteUnrecognized not enabled";
       continue;
     }
 
@@ -3013,11 +3018,16 @@ bool BrowserAutofillManager::FillFieldWithValue(
       *autofill_field, profile_or_credit_card, forced_fill_values, field_data,
       cvc, action, failure_to_fill);
   if (filled_field) {
-    if (failure_to_fill)
+    if (failure_to_fill) {
       *failure_to_fill = "Decided to fill";
-    // Mark the cached field as autofilled, so that we can detect when a
-    // user edits an autofilled field (for metrics).
-    autofill_field->is_autofilled = true;
+    }
+    if (action == mojom::RendererFormDataAction::kFill ||
+        !base::FeatureList::IsEnabled(
+            features::kAutofillOnlyCacheIsAutofilledOnFill)) {
+      // Mark the cached field as autofilled, so that we can detect when a
+      // user edits an autofilled field (for metrics).
+      autofill_field->is_autofilled = true;
+    }
     if (const AutofillProfile** profile =
             absl::get_if<const AutofillProfile*>(&profile_or_credit_card)) {
       autofill_field->set_autofill_source_profile_guid((*profile)->guid());

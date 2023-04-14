@@ -6,13 +6,16 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "components/lens/lens_metrics.h"
+#import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/lens_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
+#import "ios/chrome/browser/shared/public/commands/open_lens_input_selection_command.h"
 #import "ios/chrome/browser/shared/public/commands/search_image_with_lens_command.h"
 #import "ios/chrome/browser/shared/public/commands/toolbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -33,6 +36,7 @@
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"
+#import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -115,7 +119,7 @@ const base::TimeDelta kCloseLensViewTimeout = base::Seconds(10);
   self.lensWebPageLoadTriggeredFromInputSelection = NO;
   self.transitionAnimator = [[LensModalAnimator alloc] init];
   _webStateListObservation->Observe(browser->GetWebStateList());
-  [self updateLensAvailibilityForExtensions];
+  [self updateLensAvailabilityForWidgets];
 }
 
 - (void)stop {
@@ -152,7 +156,7 @@ const base::TimeDelta kCloseLensViewTimeout = base::Seconds(10);
       }));
 }
 
-- (void)openInputSelectionForEntrypoint:(LensEntrypoint)entrypoint {
+- (void)openLensInputSelection:(OpenLensInputSelectionCommand*)command {
   // Cancel any omnibox editing.
   Browser* browser = self.browser;
   CommandDispatcher* dispatcher = browser->GetCommandDispatcher();
@@ -166,6 +170,7 @@ const base::TimeDelta kCloseLensViewTimeout = base::Seconds(10);
   }
 
   // Create a Lens configuration for this request.
+  const LensEntrypoint entrypoint = command.entryPoint;
   ChromeBrowserState* browserState = browser->GetBrowserState();
   const bool isIncognito = browserState->IsOffTheRecord();
   LensConfiguration* configuration = [[LensConfiguration alloc] init];
@@ -213,6 +218,8 @@ const base::TimeDelta kCloseLensViewTimeout = base::Seconds(10);
   // modal dismiss animations.
   const LensModalAnimator* transitionAnimator = self.transitionAnimator;
   DCHECK(transitionAnimator);
+  transitionAnimator.presentationStyle = command.presentationStyle;
+  transitionAnimator.presentationCompletion = command.presentationCompletion;
   [viewController setTransitioningDelegate:transitionAnimator];
 
   [viewController
@@ -386,14 +393,20 @@ const base::TimeDelta kCloseLensViewTimeout = base::Seconds(10);
 
 // Sets the visibility of the Lens replacement for the QR code scanner in the
 // home screen widget.
-- (void)updateLensAvailibilityForExtensions {
+- (void)updateLensAvailabilityForWidgets {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
   NSString* enableLensInWidgetKey =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupEnableLensInWidget);
 
+  // Determine the availability of the Lens entrypoint in the home screen
+  // widget. We don't use LensAvailability here because the seach engine status
+  // is determined elsewhere in the Extension Search Engine Data Updater.
   const bool enableLensInWidget =
       ios::provider::IsLensSupported() &&
-      base::FeatureList::IsEnabled(kEnableLensInHomeScreenWidget);
+      base::FeatureList::IsEnabled(kEnableLensInHomeScreenWidget) &&
+      GetApplicationContext()->GetLocalState()->GetBoolean(
+          prefs::kLensCameraAssistedSearchPolicyAllowed) &&
+      ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET;
   [sharedDefaults setBool:enableLensInWidget forKey:enableLensInWidgetKey];
 }
 

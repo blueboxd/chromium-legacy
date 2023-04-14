@@ -152,9 +152,17 @@ bool BluetoothDeviceFloss::IsGattConnected() const {
 }
 
 bool BluetoothDeviceFloss::IsConnectable() const {
-  // Mark all devices as connectable for now.
-  // TODO(b/211126690): Implement based on supported profiles.
-  return true;
+  // Mimic current BlueZ behavior that Non-HID is connectable
+  switch (GetDeviceType()) {
+    case device::BluetoothDeviceType::PERIPHERAL:
+    case device::BluetoothDeviceType::JOYSTICK:
+    case device::BluetoothDeviceType::KEYBOARD:
+    case device::BluetoothDeviceType::MOUSE:
+    case device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO:
+      return false;
+    default:
+      return true;
+  }
 }
 
 bool BluetoothDeviceFloss::IsConnecting() const {
@@ -398,6 +406,12 @@ void BluetoothDeviceFloss::Pair(
   Connect(pairing_delegate, std::move(callback));
 }
 
+BluetoothPairingFloss* BluetoothDeviceFloss::BeginPairing(
+    BluetoothDevice::PairingDelegate* pairing_delegate) {
+  pairing_ = std::make_unique<BluetoothPairingFloss>(pairing_delegate);
+  return pairing_.get();
+}
+
 #if BUILDFLAG(IS_CHROMEOS)
 void BluetoothDeviceFloss::OnExecuteWrite(
     base::OnceClosure callback,
@@ -540,6 +554,11 @@ void BluetoothDeviceFloss::ResetPairing() {
 
 void BluetoothDeviceFloss::CreateGattConnectionImpl(
     absl::optional<device::BluetoothUUID> service_uuid) {
+  // Generally, the first ever connection to a device should be direct and
+  // subsequent connections to known devices should be invoked with is_direct =
+  // false. Refer to |autoConnect| on BluetoothGatt.java.
+  bool is_direct = !IsBondedImpl();
+
   if (num_connecting_calls_++ == 0)
     adapter()->NotifyDeviceChanged(this);
 
@@ -550,7 +569,7 @@ void BluetoothDeviceFloss::CreateGattConnectionImpl(
   FlossDBusManager::Get()->GetGattManagerClient()->Connect(
       base::BindOnce(&BluetoothDeviceFloss::OnConnectGatt,
                      weak_ptr_factory_.GetWeakPtr()),
-      address_, FlossDBusClient::BluetoothTransport::kLe);
+      address_, FlossDBusClient::BluetoothTransport::kLe, is_direct);
 }
 
 void BluetoothDeviceFloss::OnConnectGatt(DBusResult<Void> ret) {
@@ -576,11 +595,7 @@ void BluetoothDeviceFloss::UpgradeToFullDiscovery() {
 }
 
 void BluetoothDeviceFloss::DisconnectGatt() {
-  if (IsPaired()) {
-    BLUETOOTH_LOG(ERROR) << "Leaking connection to paired device.";
-    return;
-  }
-
+  svc_resolved_ = false;
   FlossDBusManager::Get()->GetGattManagerClient()->Disconnect(base::DoNothing(),
                                                               address_);
 }
@@ -824,8 +839,10 @@ void BluetoothDeviceFloss::GattSearchComplete(
 
   svc_resolved_ = true;
 
-  // Replace the previous gatt services.
-  gatt_services_.clear();
+  // Copy the GATT services list here and clear the original so that when we
+  // send GattServiceRemoved(), GetGattServices() returns no services.
+  GattServiceMap gatt_services_swapped;
+  gatt_services_swapped.swap(gatt_services_);
 
   for (const auto& service : services) {
     BLUETOOTH_LOG(EVENT) << "Adding new remote GATT service for device: "

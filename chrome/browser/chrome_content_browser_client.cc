@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/dcheck_is_on.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -27,6 +28,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -85,7 +87,6 @@
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/navigation_predictor/anchor_element_preloader.h"
-#include "chrome/browser/net/cert_verifier_configuration.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -1541,28 +1542,35 @@ ChromeContentBrowserClient::GetPopupNavigationDelegateFactoryForTesting() {
 
 ChromeContentBrowserClient::ChromeContentBrowserClient() {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  extra_parts_.push_back(new ChromeContentBrowserClientPluginsPart);
+  extra_parts_.push_back(
+      std::make_unique<ChromeContentBrowserClientPluginsPart>());
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-  extra_parts_.push_back(new ChromeContentBrowserClientTabletModePart);
+  extra_parts_.push_back(
+      std::make_unique<ChromeContentBrowserClientTabletModePart>());
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  extra_parts_.push_back(new ChromeContentBrowserClientTabStripPart);
+  extra_parts_.push_back(
+      std::make_unique<ChromeContentBrowserClientTabStripPart>());
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extra_parts_.push_back(new ChromeContentBrowserClientExtensionsPart);
+  extra_parts_.push_back(
+      std::make_unique<ChromeContentBrowserClientExtensionsPart>());
 #endif
 
-  extra_parts_.push_back(new ChromeContentBrowserClientPerformanceManagerPart);
+  extra_parts_.push_back(
+      std::make_unique<ChromeContentBrowserClientPerformanceManagerPart>());
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
-  for (int i = static_cast<int>(extra_parts_.size()) - 1; i >= 0; --i)
-    delete extra_parts_[i];
-  extra_parts_.clear();
+  // std::vector<> does not guarantee any specific destruction order, so
+  // explicitly destroy elements in the reverse order per header comment.
+  while (!extra_parts_.empty()) {
+    extra_parts_.pop_back();
+  }
 }
 
 // static
@@ -3337,6 +3345,15 @@ bool ChromeContentBrowserClient::IsInterestGroupAPIAllowed(
   return allowed;
 }
 
+void ChromeContentBrowserClient::OnAuctionComplete(
+    content::RenderFrameHost* render_frame_host,
+    content::InterestGroupManager::InterestGroupDataKey winner_data_key) {
+  content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+      render_frame_host, winner_data_key,
+      BrowsingDataModel::StorageType::kInterestGroup,
+      /*blocked=*/false);
+}
+
 bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
     content::BrowserContext* browser_context,
     AttributionReportingOperation operation,
@@ -3525,17 +3542,6 @@ ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
       cache_path = disk_cache_dir.Append(cache_path.BaseName());
   }
   return content::GeneratedCodeCacheSettings(true, size_in_bytes, cache_path);
-}
-
-cert_verifier::mojom::CertVerifierServiceParamsPtr
-ChromeContentBrowserClient::GetCertVerifierServiceParams() {
-  PrefService* local_state;
-  if (g_browser_process) {
-    local_state = g_browser_process->local_state();
-  } else {
-    local_state = startup_data_.chrome_feature_list_creator()->local_state();
-  }
-  return GetChromeCertVerifierServiceParams(local_state);
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(
@@ -4274,8 +4280,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->disable_webauthn = true;
 #endif
 
-  for (ChromeContentBrowserClientParts* parts : extra_parts_)
+  for (auto& parts : extra_parts_) {
     parts->OverrideWebkitPrefs(web_contents, web_prefs);
+  }
 }
 
 bool ChromeContentBrowserClientParts::OverrideWebPreferencesAfterNavigation(
@@ -4313,7 +4320,7 @@ bool ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(
       require_transient_activation_for_show_file_or_directory_picker;
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-  for (ChromeContentBrowserClientParts* parts : extra_parts_) {
+  for (auto& parts : extra_parts_) {
     prefs_changed |=
         parts->OverrideWebPreferencesAfterNavigation(web_contents, web_prefs);
   }
@@ -4475,7 +4482,7 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
   additional_allowed_schemes->push_back(content::kChromeDevToolsScheme);
   additional_allowed_schemes->push_back(content::kChromeUIScheme);
   additional_allowed_schemes->push_back(content::kChromeUIUntrustedScheme);
-  for (auto*& extra_part : extra_parts_) {
+  for (auto& extra_part : extra_parts_) {
     extra_part->GetAdditionalAllowedSchemesForFileSystem(
         additional_allowed_schemes);
   }
@@ -6662,6 +6669,11 @@ const ui::NativeTheme* ChromeContentBrowserClient::GetWebTheme() const {
   return ui::NativeTheme::GetInstanceForWeb();
 }
 
+void ChromeContentBrowserClient::AddExtraPart(
+    ChromeContentBrowserClientParts* part) {
+  extra_parts_.push_back(base::WrapUnique(part));
+}
+
 scoped_refptr<safe_browsing::UrlCheckerDelegate>
 ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
     bool safe_browsing_enabled_for_profile,
@@ -7590,18 +7602,24 @@ bool ChromeContentBrowserClient::OpenExternally(
   // situation. For now, continue as usual afterwards (i.e. don't handle the
   // request here).
   if (is_lacros_only) {
+    size_t id = 0;
     if (url.SchemeIs(content::kChromeDevToolsScheme)) {
-      crash_reporter::DumpWithoutCrashing();
+      id = 1;
     } else if (url.SchemeIs(content::kChromeUIUntrustedScheme) &&
-               !base::StartsWith(url.PathForRequestPiece(), "/terminal")) {
-      crash_reporter::DumpWithoutCrashing();
+               (!url.has_host() || url.host() != "terminal")) {
+      id = 2;
     } else if (url.SchemeIs(content::kChromeUIScheme)) {
-      crash_reporter::DumpWithoutCrashing();
+      id = 3;
     } else if (url.SchemeIs(extensions::kExtensionScheme)) {
-      crash_reporter::DumpWithoutCrashing();
+      id = 4;
     } else {
+      // We know that Terminal still needs to open Ash windows, no need to dump.
       DCHECK(url.SchemeIs(content::kChromeUIUntrustedScheme));
-      DCHECK(base::StartsWith(url.PathForRequestPiece(), "/terminal"));
+      DCHECK(url.host() == "terminal");
+    }
+    if (id > 0) {
+      base::debug::DumpWithoutCrashingWithUniqueId(id);
+      LOG(WARNING) << "Allowing Ash window creation for url " << url;
     }
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

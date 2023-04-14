@@ -22,8 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIEW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIEW_H_
 
-#include <memory>
-
 #include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
@@ -42,7 +40,6 @@ namespace blink {
 
 class LayoutQuote;
 class LocalFrameView;
-class NamedPagesMapper;
 class ViewFragmentationContext;
 
 // LayoutView is the root of the layout tree and the Document's LayoutObject.
@@ -105,7 +102,6 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
   void UpdateLayout() override;
-  void UpdateLogicalWidth() override;
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
@@ -213,16 +209,7 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
   // TODO(1229581): Make non-virtual.
   virtual AtomicString NamedPageAtIndex(wtf_size_t page_index) const = 0;
 
-  // TODO(1229581): Remove this function, and the NamedPagesMapper class.
-  NamedPagesMapper* GetNamedPagesMapper() const {
-    NOT_DESTROYED();
-    NOTREACHED();
-    return nullptr;
-  }
-
   PhysicalRect DocumentRect() const;
-
-  IntervalArena* GetIntervalArena();
 
   void SetLayoutQuoteHead(LayoutQuote* head) {
     NOT_DESTROYED();
@@ -380,8 +367,6 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
 
   void UpdateFromStyle() override;
 
-  bool UpdateLogicalWidthAndColumnWidth() override;
-
   Member<LocalFrameView> frame_view_;
 
   // The page size.
@@ -396,7 +381,6 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
   LayoutState* layout_state_;
 
   Member<ViewFragmentationContext> fragmentation_context_;
-  scoped_refptr<IntervalArena> interval_arena_;
 
   Member<LayoutQuote> layout_quote_head_;
   unsigned layout_counter_count_ = 0;

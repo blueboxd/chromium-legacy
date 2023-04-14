@@ -64,7 +64,6 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
-#include "services/network/crl_set_distributor.h"
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/first_party_sets/first_party_sets_manager.h"
 #include "services/network/http_auth_cache_copier.h"
@@ -92,6 +91,10 @@
     BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #include "components/os_crypt/sync/key_storage_config_linux.h"
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+#include "services/network/network_change_notifier_passive_factory.h"
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -330,8 +333,16 @@ NetworkService::NetworkService(
 
   // |registry_| is nullptr when an in-process NetworkService is
   // created directly, like in most unit tests.
-  if (registry_)
+  if (registry_) {
     mojo::SetDefaultProcessErrorHandler(base::BindRepeating(&HandleBadMessage));
+#if BUILDFLAG(IS_LINUX)
+    if (base::FeatureList::IsEnabled(
+            features::kAddressTrackerLinuxOutOfNetworkService)) {
+      net::NetworkChangeNotifier::SetFactory(
+          new network::NetworkChangeNotifierPassiveFactory());
+    }
+#endif
+  }
 
   if (receiver.is_valid())
     Bind(std::move(receiver));
@@ -398,8 +409,6 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   host_resolver_factory_ = std::make_unique<net::HostResolver::Factory>();
 
   http_auth_cache_copier_ = std::make_unique<HttpAuthCacheCopier>();
-
-  crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   ct_log_list_distributor_ = std::make_unique<CtLogListDistributor>();
@@ -715,12 +724,6 @@ void NetworkService::GetNetworkList(
       base::BindOnce(&net::GetNetworkList, raw_networks, policy),
       base::BindOnce(&OnGetNetworkList, std::move(networks),
                      std::move(callback)));
-}
-
-void NetworkService::UpdateCRLSet(
-    base::span<const uint8_t> crl_set,
-    mojom::NetworkService::UpdateCRLSetCallback callback) {
-  crl_set_distributor_->OnNewCRLSet(crl_set, std::move(callback));
 }
 
 void NetworkService::OnCertDBChanged() {

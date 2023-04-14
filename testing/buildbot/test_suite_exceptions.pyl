@@ -2198,7 +2198,23 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.content_unittests.filter',
         ],
       },
+      'linux-rel-dev': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+        },
+      },
     },
+  },
+  'context_lost_passthrough_tests': {
+    # Not enough capacity.
+    'remove_from': [
+      'Lacros FYI Release (eve)',
+      'Lacros FYI Release (jacuzzi)',
+    ],
   },
   'context_lost_validating_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
@@ -2585,10 +2601,13 @@
     ],
   },
   'gpu_process_launch_tests': {
-    # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
-    # exception once there is enough capacity to run these tests.
     'remove_from': [
+      # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
+      # exception once there is enough capacity to run these tests.
       'Android FYI Release (Pixel 2)',
+      # Not enough capacity.
+      'Lacros FYI Release (eve)',
+      'Lacros FYI Release (jacuzzi)',
     ],
   },
   'gpu_pytype': {
@@ -2614,10 +2633,13 @@
     ],
   },
   'hardware_accelerated_feature_tests': {
-    # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
-    # exception once there is enough capacity to run these tests.
     'remove_from': [
+      # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
+      # exception once there is enough capacity to run these tests.
       'Android FYI Release (Pixel 2)',
+      # Not enough capacity.
+      'Lacros FYI Release (eve)',
+      'Lacros FYI Release (jacuzzi)',
     ],
   },
   'headless_browsertests': {
@@ -2937,13 +2959,6 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
-      'ChromeOS FYI Release Skylab (kevin)': {
-        'args': [
-          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
-          # automatically get the service account to authenticate with.
-          '--service-account=/creds/service_accounts/skylab-drone.json',
-        ],
-      },
       'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
@@ -2963,6 +2978,17 @@
         'args': {
           '--git-revision': '${got_cr_revision}',
         },
+      },
+    },
+  },
+  'maps_pixel_validating_test KEVIN_PUBLIC_LKGM': {
+    'modifications': {
+      'ChromeOS FYI Release Skylab (kevin)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
+        ],
       },
     },
   },
@@ -3430,13 +3456,6 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
-      'ChromeOS FYI Release Skylab (kevin)': {
-        'args': [
-          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
-          # automatically get the service account to authenticate with.
-          '--service-account=/creds/service_accounts/skylab-drone.json',
-        ],
-      },
       'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
@@ -3459,6 +3478,17 @@
         'args': {
           '--git-revision': '${got_cr_revision}',
         },
+      },
+    },
+  },
+  'pixel_skia_gold_validating_test KEVIN_PUBLIC_LKGM': {
+    'modifications': {
+      'ChromeOS FYI Release Skylab (kevin)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
+        ],
       },
     },
   },
@@ -3514,6 +3544,11 @@
         ],
       },
     },
+    # Not enough capacity.
+    'remove_from': [
+      'Lacros FYI Release (eve)',
+      'Lacros FYI Release (jacuzzi)',
+    ],
   },
   'screenshot_sync_validating_tests': {
     'modifications': {
@@ -3960,6 +3995,15 @@
           'shards': 2,
         },
       },
+      'linux-rel-dev': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+        },
+      },
       'mac-rel-cft': {
         'swarming': {
           'inverse_quickrun_shards': 2,
@@ -4145,11 +4189,7 @@
       # upstream test coverage without the capacity hit from WebGL 2.
       'Linux V8 FYI Release (NVIDIA)',
       'Linux V8 FYI Release - pointer compression (NVIDIA)',
-      # Not enough capacity on Mac AMD https://crbug.com/1375306.
-      'Mac FYI Retina ASAN (AMD)',
-      'Mac FYI Retina Release (AMD)',
       'Mac V8 FYI Release (Intel)',
-      'mac-angle-chromium-amd',
     ],
   },
   'webgl2_conformance_gles_passthrough_tests': {
@@ -4171,6 +4211,16 @@
         'swarming': {
           'shards': 30,
         },
+      },
+      'Lacros FYI Release (eve)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros-device.webgl2_conformance_gles_passthrough_tests.filter',
+        ],
+      },
+      'Lacros FYI Release (jacuzzi)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros-device.webgl2_conformance_gles_passthrough_tests.filter',
+        ],
       },
     },
   },
@@ -4205,23 +4255,17 @@
       'Mac FYI Retina ASAN (AMD)': {
         'args': [
           '--extra-browser-args=--disable-metal-shader-cache',
-          # This slows down tests and we are currently having AMD Mac capacity
-          # issues.
-          # '--enable-metal-debug-layers',
+          '--enable-metal-debug-layers',
         ],
       },
       'Mac FYI Retina Release (AMD)': {
         'args': [
-          # This slows down tests and we are currently having AMD Mac capacity
-          # issues.
-          # '--enable-metal-debug-layers',
+          '--enable-metal-debug-layers',
         ],
       },
       'mac-angle-chromium-amd': {
         'args': [
-          # This slows down tests and we are currently having AMD Mac capacity
-          # issues.
-          # '--enable-metal-debug-layers',
+          '--enable-metal-debug-layers',
         ],
       },
       'mac-angle-chromium-intel': {
@@ -4236,6 +4280,21 @@
       # so use the old --force_high_performance_gpu flag there
       # crbug.com/1421053, crbug.com/1424896, crbug.com/1251724
       'Mac FYI Experimental Retina Release (AMD)': {
+        'args': {
+          '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        },
+      },
+      'Mac FYI Retina ASAN (AMD)': {
+        'args': {
+          '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        },
+      },
+      'Mac FYI Retina Release (AMD)': {
+        'args': {
+          '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        },
+      },
+      'mac-angle-chromium-amd': {
         'args': {
           '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
         },
@@ -4280,7 +4339,7 @@
       },
     },
   },
-  'webgl_conformance_gl_passthrough_tests 1002:6821': {
+  'webgl_conformance_gl_passthrough_tests 1002:67ef': {
     'modifications': {
       'mac_optional_gpu_tests_rel': {
         'args': [
@@ -4318,23 +4377,17 @@
       'Mac FYI Retina ASAN (AMD)': {
         'args': [
           '--extra-browser-args=--disable-metal-shader-cache',
-          # This slows down tests and we are currently having AMD Mac capacity
-          # issues.
-          # '--enable-metal-debug-layers',
+          '--enable-metal-debug-layers',
         ],
       },
       'Mac FYI Retina Release (AMD)': {
         'args': [
-          # This slows down tests and we are currently having AMD Mac capacity
-          # issues.
-          # '--enable-metal-debug-layers',
+          '--enable-metal-debug-layers',
         ],
       },
       'mac-angle-chromium-amd': {
         'args': [
-          # This slows down tests and we are currently having AMD Mac capacity
-          # issues.
-          # '--enable-metal-debug-layers',
+          '--enable-metal-debug-layers',
         ],
       },
       'mac-angle-chromium-intel': {
@@ -4349,6 +4402,21 @@
       # so use the old --force_high_performance_gpu flag there
       # crbug.com/1421053, crbug.com/1424896, crbug.com/1251724
       'Mac FYI Experimental Retina Release (AMD)': {
+        'args': {
+          '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        },
+      },
+      'Mac FYI Retina ASAN (AMD)': {
+        'args': {
+          '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        },
+      },
+      'Mac FYI Retina Release (AMD)': {
+        'args': {
+          '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        },
+      },
+      'mac-angle-chromium-amd': {
         'args': {
           '--extra-browser-args': '--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
         },
@@ -4429,14 +4497,12 @@
     },
   },
   'webgpu_blink_web_tests_with_backend_validation': {
-    # Remove from bots where capacity is constrained.
     'remove_from': [
       # TODO(crbug.com/1363409): Enable these once they're shown to work on
       # Android.
       'Dawn Android arm DEPS Release (Pixel 4)',
       'Dawn Android arm Release (Pixel 4)',
-      'Dawn Mac x64 DEPS Release (AMD)',
-      'Dawn Mac x64 Release (AMD)',
+      # Remove from bots where capacity is constrained.
       'Dawn Win10 x64 DEPS Release (Intel)',
       'Dawn Win10 x64 Release (Intel)',
       'linux-code-coverage',
@@ -4450,9 +4516,6 @@
       # Android.
       'Dawn Android arm DEPS Release (Pixel 4)',
       'Dawn Android arm Release (Pixel 4)',
-      # GPU hang kills the bot. https://crbug.com/dawn/1511
-      'Dawn Mac x64 Release (AMD)',
-      'Dawn Mac x64 DEPS Release (AMD)',
     ],
     'modifications': {
       # These tests must run with a GPU.
@@ -4502,14 +4565,12 @@
     },
   },
   'webgpu_cts_with_validation_tests': {
-    # Remove from bots where capacity is constrained.
     'remove_from': [
       # TODO(crbug.com/1363409): Enable these once they're shown to work on
       # Android.
       'Dawn Android arm DEPS Release (Pixel 4)',
       'Dawn Android arm Release (Pixel 4)',
-      'Dawn Mac x64 DEPS Release (AMD)',
-      'Dawn Mac x64 Release (AMD)',
+      # Remove from bots where capacity is constrained.
       'Dawn Win10 x64 DEPS Release (Intel)',
       'Dawn Win10 x64 Release (Intel)',
       'Dawn Win10 x86 DEPS Release (Intel)',
@@ -4531,8 +4592,6 @@
   'webgpu_swiftshader_web_platform_cts_with_validation_tests': {
     # Remove from bots where capacity is constrained.
     'remove_from': [
-      'Dawn Mac x64 DEPS Release (AMD)',
-      'Dawn Mac x64 Release (AMD)',
       'Dawn Win10 x64 DEPS Release (Intel)',
       'Dawn Win10 x64 Release (Intel)',
       'Dawn Win10 x86 DEPS Release (Intel)',
@@ -4735,7 +4794,11 @@
         'swarming': {
           'shards': 8,
         },
-        'experiment_percentage': 100,
+      },
+      'linux-wpt-content-shell-fyi-rel': {
+        'swarming': {
+          'shards': 10,
+        },
       },
       'mac10.15-wpt-content-shell-fyi-rel': {
         'experiment_percentage': 100,
@@ -4744,12 +4807,6 @@
         'experiment_percentage': 100,
       },
       'mac12-arm64-wpt-content-shell-fyi-rel': {
-        'experiment_percentage': 100,
-      },
-      'mac13-arm64-wpt-content-shell-fyi-rel': {
-        'experiment_percentage': 100,
-      },
-      'mac13-wpt-content-shell-fyi-rel': {
         'experiment_percentage': 100,
       },
       'win10-wpt-content-shell-fyi-rel': {

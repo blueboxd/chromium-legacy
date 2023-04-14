@@ -1619,7 +1619,8 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
     mojom::blink::FetchHandlerExistence fetch_hander_existence,
     mojo::PendingReceiver<mojom::blink::ReportingObserver>
         reporting_observer_receiver,
-    mojom::blink::AncestorFrameType ancestor_frame_type) {
+    mojom::blink::AncestorFrameType ancestor_frame_type,
+    const blink::BlinkStorageKey& storage_key) {
   DCHECK(IsContextThread());
   DCHECK(!global_scope_initialized_);
 
@@ -1655,6 +1656,8 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
   global_scope_initialized_ = true;
   if (!pause_evaluation_)
     ReadyToRunWorkerScript();
+
+  storage_key_ = storage_key;
 }
 
 void ServiceWorkerGlobalScope::PauseEvaluation() {
@@ -2626,15 +2629,18 @@ ServiceWorkerGlobalScope::FetchHandlerType() {
   if (!elv) {
     return mojom::blink::ServiceWorkerFetchHandlerType::kNoHandler;
   }
-  v8::Isolate* isolate = GetIsolate();
-  v8::HandleScope handle_scope(isolate);
+
+  ScriptState* script_state = ScriptController()->GetScriptState();
+  // Do not remove this, |scope| is needed by `GetListenerObject`.
+  ScriptState::Scope scope(script_state);
+
   // TODO(crbug.com/1349613): revisit the way to implement this.
   // The following code returns kEmptyFetchHandler if all handlers are nop.
   for (RegisteredEventListener& e : *elv) {
-    EventTarget* et = EventTarget::Create(ScriptController()->GetScriptState());
+    EventTarget* et = EventTarget::Create(script_state);
     v8::Local<v8::Value> v =
-        To<JSBasedEventListener>(e.Callback())->GetEffectiveFunction(*et);
-    if (!v->IsFunction() ||
+        To<JSBasedEventListener>(e.Callback())->GetListenerObject(*et);
+    if (v.IsEmpty() || !v->IsFunction() ||
         !v.As<v8::Function>()->Experimental_IsNopFunction()) {
       return mojom::blink::ServiceWorkerFetchHandlerType::kNotSkippable;
     }

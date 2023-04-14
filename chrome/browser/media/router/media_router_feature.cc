@@ -44,6 +44,10 @@ BASE_FEATURE(kMediaRouterOTRInstance,
 BASE_FEATURE(kCafMRPDeferredDiscovery,
              "CafMRPDeferredDiscovery",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCastAnotherContentWhileCasting,
+             "CastAnotherContentWhileCasting",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #else
 BASE_FEATURE(kMediaRouter, "MediaRouter", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kCastAllowAllIPsFeature,
@@ -61,6 +65,9 @@ BASE_FEATURE(kStartCastSessionWithoutTerminating,
 BASE_FEATURE(kFallbackToAudioTabMirroring,
              "FallbackToAudioTabMirroring",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCastDialogStopButton,
+             "CastDialogStopButton",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #if BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kGlobalMediaControlsCastStartStop,
              "GlobalMediaControlsCastStartStop",

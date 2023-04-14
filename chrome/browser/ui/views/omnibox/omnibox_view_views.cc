@@ -106,7 +106,6 @@
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_class_properties.h"
-#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -619,7 +618,8 @@ void OmniboxViewViews::OnThemeChanged() {
   views::Textfield::OnThemeChanged();
 
   bool gm3_text_color_enabled =
-      features::IsChromeRefresh2023() ||
+      features::GetChromeRefresh2023Level() ==
+          features::ChromeRefresh2023Level::kLevel2 ||
       base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextColor);
 
   set_placeholder_text_color(GetColorProvider()->GetColor(
@@ -1247,8 +1247,9 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
        model()->PopupIsOpen())) {
     return true;
   }
-  if (event.key_code() == ui::VKEY_ESCAPE)
+  if (event.key_code() == ui::VKEY_ESCAPE && !event.IsShiftDown()) {
     return true;
+  }
   return Textfield::SkipDefaultKeyEventProcessing(event);
 }
 

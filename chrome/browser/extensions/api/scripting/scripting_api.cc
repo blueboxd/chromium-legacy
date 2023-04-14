@@ -99,6 +99,8 @@ api::scripting::ExecutionWorld ConvertExecutionWorldForAPI(
       return api::scripting::EXECUTION_WORLD_ISOLATED;
     case mojom::ExecutionWorld::kMain:
       return api::scripting::EXECUTION_WORLD_MAIN;
+    case mojom::ExecutionWorld::kUserScript:
+      NOTREACHED() << "UserScript worlds are not supported in this API.";
   }
 
   NOTREACHED();
@@ -467,8 +469,9 @@ std::unique_ptr<UserScript> ParseUserScript(
   result->set_host_id(
       mojom::HostID(mojom::HostID::HostType::kExtensions, extension.id()));
 
-  if (content_script.run_at != api::extension_types::RUN_AT_NONE)
+  if (content_script.run_at != api::extension_types::RunAt::kNone) {
     result->set_run_location(ConvertRunLocation(content_script.run_at));
+  }
 
   if (content_script.all_frames)
     result->set_match_all_frames(*content_script.all_frames);
@@ -1236,8 +1239,9 @@ ExtensionFunction::ResponseAction ScriptingUpdateContentScriptsFunction::Run() {
           *update_delta.match_origin_as_fallback;
     }
 
-    if (update_delta.run_at != api::extension_types::RUN_AT_NONE)
+    if (update_delta.run_at != api::extension_types::RunAt::kNone) {
       updated_script.run_at = update_delta.run_at;
+    }
 
     // Parse/Create user script.
     std::unique_ptr<UserScript> user_script =

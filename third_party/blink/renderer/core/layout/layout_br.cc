@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 
 namespace blink {
@@ -33,7 +34,7 @@ static String NewlineString() {
   return string;
 }
 
-LayoutBR::LayoutBR(Node* node) : LayoutText(node, NewlineString()) {}
+LayoutBR::LayoutBR(HTMLBRElement& node) : LayoutText(&node, NewlineString()) {}
 
 LayoutBR::~LayoutBR() = default;
 

@@ -5,13 +5,22 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_ACTIONS_OMNIBOX_PEDAL_JNI_WRAPPER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_ACTIONS_OMNIBOX_PEDAL_JNI_WRAPPER_H_
 
+#include <vector>
+
 base::android::ScopedJavaGlobalRef<jobject> BuildOmniboxPedal(
-    std::u16string hint,
+    JNIEnv* env,
+    const std::u16string& hint,
     OmniboxPedalId pedal_id);
 
 base::android::ScopedJavaGlobalRef<jobject> BuildHistoryClustersAction(
-    std::u16string hint,
-    std::string query);
+    JNIEnv* env,
+    const std::u16string& hint,
+    const std::string& query);
+
+base::android::ScopedJavaGlobalRef<jobject> BuildOmniboxActionInSuggest(
+    JNIEnv* env,
+    const std::u16string& hint,
+    const std::string& serialized_action);
 
 base::android::ScopedJavaLocalRef<jobjectArray> ToJavaOmniboxActionsList(
     JNIEnv* env,

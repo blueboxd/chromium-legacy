@@ -31,7 +31,6 @@ BASE_DECLARE_FEATURE(kIPHDownloadToolbarButtonFeature);
 BASE_DECLARE_FEATURE(kIPHExtensionsMenuFeature);
 BASE_DECLARE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature);
 BASE_DECLARE_FEATURE(kIPHGMCCastStartStopFeature);
-BASE_DECLARE_FEATURE(kIPHHighEfficiencyInfoModeFeature);
 BASE_DECLARE_FEATURE(kIPHHighEfficiencyModeFeature);
 BASE_DECLARE_FEATURE(kIPHLiveCaptionFeature);
 BASE_DECLARE_FEATURE(kIPHTabAudioMutingFeature);
@@ -191,6 +190,7 @@ BASE_DECLARE_FEATURE(kIPHTabPinnedFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoWhatsNewFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPostRestoreFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoCredentialProviderExtensionFeature);
+BASE_DECLARE_FEATURE(kIPHiOSPromoDefaultBrowserFeature);
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \

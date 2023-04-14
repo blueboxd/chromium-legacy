@@ -26,32 +26,20 @@ void ExtensionApiUnittest::SetUp() {
   extension_ = ExtensionBuilder("Test").Build();
 }
 
-std::unique_ptr<base::Value> ExtensionApiUnittest::RunFunctionAndReturnValue(
-    ExtensionFunction* function,
-    const std::string& args) {
-  auto result = RunFunctionAndReturnSingleValue(function, args);
-  if (!result) {
-    return nullptr;
-  }
-
-  return base::Value::ToUniquePtrValue(std::move(result).value());
-}
-
-absl::optional<base::Value>
-ExtensionApiUnittest::RunFunctionAndReturnSingleValue(
-    ExtensionFunction* function,
+absl::optional<base::Value> ExtensionApiUnittest::RunFunctionAndReturnValue(
+    scoped_refptr<ExtensionFunction> function,
     const std::string& args) {
   function->set_extension(extension());
-  return utils::RunFunctionAndReturnSingleResult(function, args,
+  return utils::RunFunctionAndReturnSingleResult(std::move(function), args,
                                                  browser()->profile());
 }
 
 absl::optional<base::Value::Dict>
 ExtensionApiUnittest::RunFunctionAndReturnDictionary(
-    ExtensionFunction* function,
+    scoped_refptr<ExtensionFunction> function,
     const std::string& args) {
   absl::optional<base::Value> value =
-      RunFunctionAndReturnSingleValue(function, args);
+      RunFunctionAndReturnValue(std::move(function), args);
   // We expect to either have successfully retrieved a dictionary from the
   // value or the value to have been nullopt.
   EXPECT_TRUE(!value || value->is_dict());
@@ -63,10 +51,11 @@ ExtensionApiUnittest::RunFunctionAndReturnDictionary(
 }
 
 absl::optional<base::Value::List>
-ExtensionApiUnittest::RunFunctionAndReturnList(ExtensionFunction* function,
-                                               const std::string& args) {
+ExtensionApiUnittest::RunFunctionAndReturnList(
+    scoped_refptr<ExtensionFunction> function,
+    const std::string& args) {
   absl::optional<base::Value> value =
-      RunFunctionAndReturnSingleValue(function, args);
+      RunFunctionAndReturnValue(std::move(function), args);
 
   // We expect to have successfully retrieved a list from the value.
   EXPECT_TRUE(!value || value->is_list());
@@ -79,15 +68,17 @@ ExtensionApiUnittest::RunFunctionAndReturnList(ExtensionFunction* function,
 }
 
 std::string ExtensionApiUnittest::RunFunctionAndReturnError(
-    ExtensionFunction* function,
+    scoped_refptr<ExtensionFunction> function,
     const std::string& args) {
   function->set_extension(extension());
-  return utils::RunFunctionAndReturnError(function, args, browser()->profile());
+  return utils::RunFunctionAndReturnError(std::move(function), args,
+                                          browser()->profile());
 }
 
-void ExtensionApiUnittest::RunFunction(ExtensionFunction* function,
-                                       const std::string& args) {
-  RunFunctionAndReturnValue(function, args);
+void ExtensionApiUnittest::RunFunction(
+    scoped_refptr<ExtensionFunction> function,
+    const std::string& args) {
+  RunFunctionAndReturnValue(std::move(function), args);
 }
 
 }  // namespace extensions

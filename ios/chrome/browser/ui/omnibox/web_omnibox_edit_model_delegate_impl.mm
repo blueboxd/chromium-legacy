@@ -17,9 +17,7 @@
 WebOmniboxEditModelDelegateImpl::WebOmniboxEditModelDelegateImpl(
     id<OmniboxControllerDelegate> delegate,
     id<OmniboxFocusDelegate> focus_delegate)
-    : delegate_(delegate), focus_delegate_(focus_delegate) {
-  // TODO(crbug.com/818645): add security icon and its a11y labels
-}
+    : delegate_(delegate), focus_delegate_(focus_delegate) {}
 
 WebOmniboxEditModelDelegateImpl::~WebOmniboxEditModelDelegateImpl() {}
 
@@ -28,12 +26,10 @@ web::WebState* WebOmniboxEditModelDelegateImpl::GetWebState() {
 }
 
 void WebOmniboxEditModelDelegateImpl::OnKillFocus() {
-  // TODO(crbug.com/818648): disable fullscreen in LocationBarMediator.
   [focus_delegate_ omniboxDidResignFirstResponder];
 }
 
 void WebOmniboxEditModelDelegateImpl::OnSetFocus() {
-  // TODO(crbug.com/818648): reenable fullscreen in LocationBarMediator.
   [focus_delegate_ omniboxDidBecomeFirstResponder];
 }
 
@@ -64,7 +60,6 @@ void WebOmniboxEditModelDelegateImpl::OnAutocompleteAccept(
 void WebOmniboxEditModelDelegateImpl::OnChanged() {
   // Called when anything is changed. Since the Mediator already observes the
   // WebState for security status changes, no need to do anything.
-  // TODO(crbug.com/818645): update the security icon in LocationBarMediator.
 }
 
 LocationBarModel* WebOmniboxEditModelDelegateImpl::GetLocationBarModel() {

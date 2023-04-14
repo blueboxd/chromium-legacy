@@ -20,7 +20,7 @@
 namespace blink {
 
 LayoutNGTableCell::LayoutNGTableCell(Element* element)
-    : LayoutNGBlockFlowMixin<LayoutBlockFlow>(element) {
+    : LayoutNGBlockFlow(element) {
   UpdateColAndRowSpanFlags();
 }
 
@@ -55,7 +55,7 @@ LayoutRectOutsets LayoutNGTableCell::BorderBoxOutsets() const {
   // DCHECK_GE(PhysicalFragmentCount(), 0u);
   if (PhysicalFragmentCount() > 0)
     return GetPhysicalFragment(0)->Borders().ToLayoutRectOutsets();
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderBoxOutsets();
+  return LayoutNGBlockFlow::BorderBoxOutsets();
 }
 
 LayoutUnit LayoutNGTableCell::BorderTop() const {
@@ -68,7 +68,7 @@ LayoutUnit LayoutNGTableCell::BorderTop() const {
   if (Table()->ShouldCollapseBorders() && PhysicalFragmentCount() > 0) {
     return GetPhysicalFragment(0)->Borders().top;
   }
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderTop();
+  return LayoutNGBlockFlow::BorderTop();
 }
 
 LayoutUnit LayoutNGTableCell::BorderBottom() const {
@@ -77,7 +77,7 @@ LayoutUnit LayoutNGTableCell::BorderBottom() const {
   if (Table()->ShouldCollapseBorders() && PhysicalFragmentCount() > 0) {
     return GetPhysicalFragment(0)->Borders().bottom;
   }
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderBottom();
+  return LayoutNGBlockFlow::BorderBottom();
 }
 
 LayoutUnit LayoutNGTableCell::BorderLeft() const {
@@ -86,7 +86,7 @@ LayoutUnit LayoutNGTableCell::BorderLeft() const {
   if (Table()->ShouldCollapseBorders() && PhysicalFragmentCount() > 0) {
     return GetPhysicalFragment(0)->Borders().left;
   }
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderLeft();
+  return LayoutNGBlockFlow::BorderLeft();
 }
 
 LayoutUnit LayoutNGTableCell::BorderRight() const {
@@ -95,7 +95,7 @@ LayoutUnit LayoutNGTableCell::BorderRight() const {
   if (Table()->ShouldCollapseBorders() && PhysicalFragmentCount() > 0) {
     return GetPhysicalFragment(0)->Borders().right;
   }
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderRight();
+  return LayoutNGBlockFlow::BorderRight();
 }
 
 LayoutNGTableCell* LayoutNGTableCell::NextCell() const {
@@ -148,14 +148,14 @@ void LayoutNGTableCell::StyleDidChange(StyleDifference diff,
       table->GridBordersChanged();
     }
   }
-  LayoutNGBlockFlowMixin<LayoutBlockFlow>::StyleDidChange(diff, old_style);
+  LayoutNGBlockFlow::StyleDidChange(diff, old_style);
 }
 
 void LayoutNGTableCell::WillBeRemovedFromTree() {
   NOT_DESTROYED();
   if (LayoutNGTable* table = Table())
     table->TableGridStructureChanged();
-  LayoutNGMixin<LayoutBlockFlow>::WillBeRemovedFromTree();
+  LayoutNGBlockFlow::WillBeRemovedFromTree();
 }
 
 void LayoutNGTableCell::ColSpanOrRowSpanChanged() {
@@ -193,8 +193,7 @@ bool LayoutNGTableCell::BackgroundIsKnownToBeOpaqueInRect(
   // layer.
   if (HasLayer() && Table()->ShouldCollapseBorders())
     return false;
-  return LayoutNGBlockFlowMixin<
-      LayoutBlockFlow>::BackgroundIsKnownToBeOpaqueInRect(local_rect);
+  return LayoutNGBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
 }
 
 // TODO(crbug.com/1079133): Used by AXLayoutObject::RowIndex,
@@ -254,31 +253,6 @@ void LayoutNGTableCell::UpdateColAndRowSpanFlags() {
   // Colspan or rowspan are rare, so we keep the values in DOM.
   has_col_span_ = ParseColSpanFromDOM() != kDefaultColSpan;
   has_rowspan_ = ParseRowSpanFromDOM() != kDefaultRowSpan;
-}
-
-LayoutNGTableInterface* LayoutNGTableCell::TableInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableInterface>(Table());
-}
-
-LayoutNGTableCellInterface* LayoutNGTableCell::NextCellInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableCellInterface>(NextCell());
-}
-
-LayoutNGTableCellInterface* LayoutNGTableCell::PreviousCellInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableCellInterface>(PreviousCell());
-}
-
-LayoutNGTableRowInterface* LayoutNGTableCell::RowInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableRowInterface>(Row());
-}
-
-LayoutNGTableSectionInterface* LayoutNGTableCell::SectionInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableSectionInterface>(Section());
 }
 
 }  // namespace blink

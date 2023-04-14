@@ -23,7 +23,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
-import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -61,7 +60,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegateProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
@@ -262,7 +261,6 @@ public class StartSurfaceCoordinator implements StartSurface {
      * @param tabCreatorManager Manages {@link Tab} creation.
      * @param menuOrKeyboardActionController allows access to menu or keyboard actions.
      * @param multiWindowModeStateDispatcher Gives access to the multi window mode state.
-     * @param jankTracker Measures jank while feed or tab switcher are visible.
      * @param toolbarSupplier Supplies the {@link Toolbar}.
      * @param backPressManager {@link BackPressManager} to handle back press.
      * @param incognitoReauthControllerSupplier {@link OneshotSupplier<IncognitoReauthController>}
@@ -288,8 +286,7 @@ public class StartSurfaceCoordinator implements StartSurface {
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
             @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
-            @NonNull JankTracker jankTracker, @NonNull Supplier<Toolbar> toolbarSupplier,
-            BackPressManager backPressManager,
+            @NonNull Supplier<Toolbar> toolbarSupplier, BackPressManager backPressManager,
             @NonNull OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @NonNull OnClickListener tabSwitcherClickHandler) {
         mConstructedTimeNs = SystemClock.elapsedRealtimeNanos();
@@ -327,7 +324,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         ViewGroup feedPlaceholderParentView = null;
         if (!mIsStartSurfaceEnabled && !mIsStartSurfaceRefactorEnabled) {
             // Create Tab switcher directly to save one layer in the view hierarchy.
-            mGridTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
+            mGridTabSwitcher = TabManagementDelegateProvider.getDelegate().createGridTabSwitcher(
                     activity, activityLifecycleDispatcher, tabModelSelector, tabContentManager,
                     browserControlsManager, tabCreatorManager, menuOrKeyboardActionController,
                     containerView, multiWindowModeStateDispatcher, scrimCoordinator,
@@ -361,7 +358,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mTasksSurface != null ? this::initializeSecondaryTasksSurface : null,
                 mIsStartSurfaceEnabled, mActivity, mBrowserControlsManager,
                 this::isActivityFinishingOrDestroyed, excludeQueryTiles,
-                startSurfaceOneshotSupplier, hadWarmStart, jankTracker, initializeMVTilesRunnable,
+                startSurfaceOneshotSupplier, hadWarmStart, initializeMVTilesRunnable,
                 mParentTabSupplier, logoContainerView,
                 mGridTabSwitcher == null ? backPressManager : null, feedPlaceholderParentView,
                 mActivityLifecycleDispatcher, tabSwitcherClickHandler);
@@ -400,8 +397,8 @@ public class StartSurfaceCoordinator implements StartSurface {
     @Override
     public void onHide() {
         if (mIsInitializedWithNative) {
+            mStartSurfaceMediator.mayRecordHomepageSessionEnd();
             if (mTasksSurface != null) {
-                mStartSurfaceMediator.mayRecordHomepageSessionEnd();
                 mTasksSurface.onHide();
             }
             if (mSecondaryTasksSurface != null) {
@@ -876,7 +873,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mWindowAndroid);
         if (tabSwitcherType == TabSwitcherType.CAROUSEL) {
             mTabSwitcherModule =
-                    TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(mActivity,
+                    TabManagementDelegateProvider.getDelegate().createCarouselTabSwitcher(mActivity,
                             mActivityLifecycleDispatcher, mTabModelSelector, mTabContentManager,
                             mBrowserControlsManager, mTabCreatorManager,
                             mMenuOrKeyboardActionController,

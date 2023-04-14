@@ -1368,6 +1368,8 @@ class HangingCertVerifier : public CertVerifier {
   }
 
   void SetConfig(const Config& config) override {}
+  void AddObserver(Observer* observer) override {}
+  void RemoveObserver(Observer* observer) override {}
 
  private:
   class HangingRequest : public Request {
@@ -4793,9 +4795,9 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTParallelReadConfirm) {
 TEST_P(SSLClientSocketReadTest, IdleAfterRead) {
   // Set up a TCP server.
   TCPServerSocket server_listener(nullptr, NetLogSource());
-  ASSERT_THAT(
-      server_listener.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0), 1),
-      IsOk());
+  ASSERT_THAT(server_listener.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0),
+                                     1, /*ipv6_only=*/absl::nullopt),
+              IsOk());
   IPEndPoint server_address;
   ASSERT_THAT(server_listener.GetLocalAddress(&server_address), IsOk());
 
@@ -4887,9 +4889,9 @@ TEST_F(SSLClientSocketTest, SSLOverSSLBadCertificate) {
 
   // Set up a TCP server.
   TCPServerSocket server_listener(nullptr, NetLogSource());
-  ASSERT_THAT(
-      server_listener.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0), 1),
-      IsOk());
+  ASSERT_THAT(server_listener.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0),
+                                     1, /*ipv6_only=*/absl::nullopt),
+              IsOk());
   IPEndPoint server_address;
   ASSERT_THAT(server_listener.GetLocalAddress(&server_address), IsOk());
 

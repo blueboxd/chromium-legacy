@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 
 namespace base {
 class UnguessableToken;
@@ -244,6 +245,10 @@ class PLATFORM_EXPORT ResourceLoader final
       const ResourceRequest::RedirectInfo redirect_info,
       CnameAliasMetricInfo* out_metric_info);
 
+  // Increments the right UseCounter for the given PNA preflight result, if any.
+  void CountPrivateNetworkAccessPreflightResult(
+      network::mojom::PrivateNetworkAccessPreflightResult result);
+
   std::unique_ptr<URLLoader> loader_;
   ResourceLoadScheduler::ClientId scheduler_client_id_;
   Member<ResourceFetcher> fetcher_;
@@ -265,6 +270,7 @@ class PLATFORM_EXPORT ResourceLoader final
 
   bool should_use_isolated_code_cache_ = false;
   bool is_downloading_to_blob_ = false;
+  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
   mojo::AssociatedReceiver<mojom::blink::ProgressClient> progress_receiver_{
       this};
   bool blob_finished_ = false;

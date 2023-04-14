@@ -548,7 +548,7 @@ NavigationResult* NavigationApi::traverseTo(ScriptState* script_state,
   if (window_->GetFrame()->IsMainFrame()) {
     SoftNavigationHeuristics* heuristics =
         SoftNavigationHeuristics::From(*window_);
-    heuristics->SawURLChange(script_state, /*url=*/String(""));
+    heuristics->SameDocumentNavigationStarted(script_state);
   }
   auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
   absl::optional<scheduler::TaskAttributionId> task_id;
@@ -711,9 +711,9 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
           destination_state);
   if (params->frame_load_type == WebFrameLoadType::kBackForward) {
     auto iter = keys_to_indices_.find(key);
-    int index = iter == keys_to_indices_.end() ? 0 : iter->value;
-    destination->SetTraverseProperties(
-        key, params->destination_item->GetNavigationApiId(), index);
+    if (iter != keys_to_indices_.end()) {
+      destination->SetDestinationEntry(entries_[iter->value]);
+    }
   }
   init->setDestination(destination);
 
@@ -756,6 +756,8 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
     // as potential soft navigation tasks.
     soft_navigation_scope = std::make_unique<SoftNavigationEventScope>(
         soft_navigation_heuristics, script_state);
+
+    soft_navigation_heuristics->SameDocumentNavigationStarted(script_state);
   }
   auto* navigate_event =
       NavigateEvent::Create(window_, event_type_names::kNavigate, init);
@@ -780,7 +782,7 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   if (navigate_event->HasNavigationActions()) {
     transition_ = MakeGarbageCollected<NavigationTransition>(
         window_, navigation_type, currentEntry());
-    navigate_event->DoCommit();
+    navigate_event->MaybeCommitImmediately(script_state);
   }
 
   if (navigate_event->HasNavigationActions() ||

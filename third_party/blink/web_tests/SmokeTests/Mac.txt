@@ -924,7 +924,6 @@ http/tests/devtools/elements/accessibility/edit-aria-attributes.js
 http/tests/devtools/elements/node-xpath.js
 http/tests/devtools/indexeddb/live-update-indexeddb-list.js
 http/tests/devtools/service-workers/sw-navigate-useragent.js
-http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js
 http/tests/devtools/tracing/frame-model-instrumentation.js
 http/tests/devtools/tracing/timeline-js/timeline-gc-event.js
 http/tests/devtools/tracing/timeline-js/timeline-microtasks.js
@@ -1047,7 +1046,6 @@ paint/invalidation/line-flow-with-floats-9.html
 paint/invalidation/overflow/vertical-overflow-child.html
 paint/invalidation/overflow/vertical-overflow-parent.html
 paint/invalidation/overflow/vertical-overflow-same.html
-paint/invalidation/position/layout-state-only-positioned.html
 paint/invalidation/repaint-across-writing-mode-boundary.html
 paint/invalidation/repaint-overlay/layers-overlay.html
 paint/invalidation/resize-iframe-text.html

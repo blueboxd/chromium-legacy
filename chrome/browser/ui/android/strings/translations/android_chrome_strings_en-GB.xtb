@@ -65,7 +65,6 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="1298077576058087471">Save up to 60% data, read today's news</translation>
 <translation id="1303339473099049190">Can’t find that password. Check your spelling and try again.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Sent from <ph name="DEVICE_NAME" /></translation>
-<translation id="1310482092992808703">Group tabs</translation>
 <translation id="1311657260431405215">This QR code is not a URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1316212908214730110">chrome_stylised_highlight_</translation>
 <translation id="1320912611264252795">Bookmark save flow folders opened at full height</translation>
@@ -108,6 +107,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="1493287004536771723">You’re following <ph name="SITE_NAME" /></translation>
 <translation id="1502010315804028179">To manage your passwords, update Google Play services</translation>
 <translation id="1506061864768559482">Search engine</translation>
+<translation id="1508960385613684700">Privacy Guide <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
 <translation id="1513814250881909472">Sync to get your tabs from your other devices</translation>
 <translation id="1513858653616922153">Delete password</translation>
@@ -162,6 +162,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="1910950723001426294">List of sharing options is closed.</translation>
 <translation id="1919130412786645364">Allow Chrome sign-in</translation>
 <translation id="1922362554271624559">Suggested languages</translation>
+<translation id="1924255092154549435">Tab is expanded</translation>
 <translation id="1925021887439448749">Enter custom web address</translation>
 <translation id="1928696683969751773">Updates</translation>
 <translation id="19288952978244135">Reopen Chrome.</translation>
@@ -385,7 +386,6 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="3083194063661536258">Signed out. Button. Opens dialogue to sign in and turn on sync.</translation>
 <translation id="3091010850649238832">Show clipboard contents</translation>
 <translation id="3098745985164956033">Some images are sent to Google to improve descriptions for you</translation>
-<translation id="3104179992611025423">Your browser is managed by your parents</translation>
 <translation id="3114507951000454849">Read today's news <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">linked with</translation>
 <translation id="3123734510202723619">Announcements</translation>
@@ -456,6 +456,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about suggested content</translation>
 <translation id="3495219333887281978">Sign-in bottom sheet opened at half height.</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
+<translation id="350276055892098337">Sort by oldest</translation>
 <translation id="3507132249039706973">Standard protection is on</translation>
 <translation id="3509330069915219067">Offline. Chrome can’t check for updates.</translation>
 <translation id="3513704683820682405">Augmented Reality</translation>
@@ -542,6 +543,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="3999683152997576765">You can see and remove topics of interest that sites use to show you ads. Chrome estimates your interests based on your recent browsing history.</translation>
 <translation id="4000212216660919741">Offline Home</translation>
 <translation id="4016425174436051808">Can’t follow. Something went wrong.</translation>
+<translation id="4024768890073681126">Your browser is managed by your parent</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# hr}other{# hrs}}</translation>
 <translation id="4035877632587724847">Don't allow</translation>
 <translation id="4036177530563778041">Easily continue where you left off</translation>
@@ -576,6 +578,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="4177222230309051052">Get all your bookmarks</translation>
 <translation id="4177501066905053472">Ad topics</translation>
 <translation id="4181841719683918333">Languages</translation>
+<translation id="4188221736490993796">Sort by Z to A</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4196597275619698563">Create card</translation>
 <translation id="4198423547019359126">No available download locations</translation>
@@ -625,7 +628,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="4504667196171871375">On Wi-Fi and mobile data</translation>
 <translation id="4508528996305412043">Feed card menu is opened</translation>
 <translation id="4508642716788467538">Pick your language</translation>
-<translation id="4509501256689523862">As you browse, whether an ad that you see is personalised depends on this setting, <ph name="BEGIN_LINK_1" />Ad topics<ph name="END_LINK_1" />, your <ph name="BEGIN_LINK_2" />cookie settings<ph name="END_LINK_2" />, and if the site that you’re viewing personalises ads</translation>
+<translation id="4509501256689523862">As you browse, whether an ad that you see is personalised depends on this setting, <ph name="BEGIN_LINK_1" />ad topics<ph name="END_LINK_1" />, your <ph name="BEGIN_LINK_2" />cookie settings<ph name="END_LINK_2" /> and if the site that you’re viewing personalises ads</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# day ago}other{# days ago}}</translation>
 <translation id="451872707440238414">Search your bookmarks</translation>
 <translation id="4521489764227272523">The selected data has been removed from Chrome and your synced devices.
@@ -641,6 +644,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4565377596337484307">Hide password</translation>
 <translation id="4572422548854449519">Sign in to managed account</translation>
 <translation id="4576892426230499203">Try another verification option</translation>
+<translation id="4577115723294378384">Sort by A to Z</translation>
 <translation id="4578289292431526768">Let’s go</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minute ago}other{# minutes ago}}</translation>
 <translation id="4587589328781138893">Sites</translation>
@@ -664,6 +668,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4689792375321623175">Search image with Google <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
 <translation id="4699172675775169585">Cached images and files</translation>
+<translation id="4710167854527459075">Sort by newest</translation>
 <translation id="4719927025381752090">Offer to translate</translation>
 <translation id="4720023427747327413">Open in <ph name="PRODUCT_NAME" /></translation>
 <translation id="47217992755561375">See your top sites</translation>
@@ -737,6 +742,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5001388021414335527">Follow this site here</translation>
 <translation id="5004416275253351869">Google activity controls</translation>
 <translation id="5005498671520578047">Copy password</translation>
+<translation id="5010886807652684893">Visual view</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> wants to connect</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017529052065664584">Last 15 minutes</translation>
@@ -765,6 +771,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5161254044473106830">Title required</translation>
 <translation id="5170568018924773124">Show in folder</translation>
 <translation id="5171045022955879922">Search or type URL</translation>
+<translation id="5174700554036517242">Tab is back to initial height</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
 <translation id="5191251636205085390">Learn about and control new technologies that aim to replace third-party cookies</translation>
 <translation id="5193988420012215838">Copied to your clipboard</translation>
@@ -832,6 +839,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5561162485081632007">Detects and warns you about dangerous events when they happen</translation>
 <translation id="5561549206367097665">Waiting for network…</translation>
 <translation id="5568069709869097550">Can't sign in</translation>
+<translation id="557018954714092179">Create new folder</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
 <translation id="5581519193887989363">You can always choose what to sync in <ph name="BEGIN_LINK1" />settings<ph name="END_LINK1" />.</translation>
 <translation id="5590372121997663538">Remember this computer</translation>
@@ -936,6 +944,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6138832295072039549">Change your site settings here</translation>
 <translation id="6140709049082532940">Enhanced protection:</translation>
 <translation id="6140912465461743537">Country/Region</translation>
+<translation id="6148266338772765473">Exclude link</translation>
 <translation id="6150320133806434356">Bookmark saved</translation>
 <translation id="6154478581116148741">Turn on screen lock in Settings to export your passwords from this device</translation>
 <translation id="6159729262978459665">Clears history from all synced devices.</translation>
@@ -1027,6 +1036,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6590680911007613645">Make sure that the password you are saving matches your password for <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Desktop site</translation>
 <translation id="6594121454516132231">See how Chrome plans to safeguard you from cross-site tracking while preserving the open web</translation>
+<translation id="6594347733515723558">Sort and view options</translation>
 <translation id="6595046016124923392">Images are sent to Google to improve descriptions for you.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="661266467055912436">Improves security for you and everyone on the web.</translation>
@@ -1192,6 +1202,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7454641608352164238">Not enough space</translation>
 <translation id="7455988709578031708">Based on your browsing history. This setting is on.</translation>
 <translation id="7456774706094330779">Extended preloading</translation>
+<translation id="7466431077154602932">Compact view</translation>
 <translation id="7474822150871987353">Learn about topics on websites without leaving the page. Select one or more words on the page to search for them.</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD card not found. Some of your files may be missing.</translation>
@@ -1243,6 +1254,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7686086654630106285">More about site-suggested ads</translation>
 <translation id="768618399695552958">Some of the pages that you visit are preloaded. Pages may be preloaded through Google servers when linked from a Google site.</translation>
 <translation id="7691043218961417207">Explore content to follow</translation>
+<translation id="7697383401610880082">Drag handle</translation>
 <translation id="7698359219371678927">Create email in <ph name="APP_NAME" /></translation>
 <translation id="7707922173985738739">Use mobile data</translation>
 <translation id="7709094866268987903">Interests that you removed will appear here</translation>
@@ -1271,7 +1283,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7851858861565204677">Other devices</translation>
 <translation id="7853202427316060426">Activity</translation>
 <translation id="7859988229622350291">Never translate</translation>
-<translation id="7864208933699511058">As you browse, whether an ad that you see is personalised depends on this setting, <ph name="BEGIN_LINK_1" />site-suggested ads<ph name="END_LINK_1" />, your <ph name="BEGIN_LINK_2" />cookie settings<ph name="END_LINK_2" />, and if the site that you're viewing personalises ads.</translation>
+<translation id="7864208933699511058">As you browse, whether an ad that you see is personalised depends on this setting, <ph name="BEGIN_LINK_1" />site-suggested ads<ph name="END_LINK_1" />, your <ph name="BEGIN_LINK_2" />cookie settings<ph name="END_LINK_2" /> and if the site that you're viewing personalises ads.</translation>
 <translation id="7866213166286285359">Translate pages here</translation>
 <translation id="78707286264420418"><ph name="PRODUCT_NAME" /> needs Nearby devices permission in order to connect to your device</translation>
 <translation id="7875915731392087153">Create email</translation>

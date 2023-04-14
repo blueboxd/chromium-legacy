@@ -186,17 +186,11 @@ bool HasBlockingEventHandlerHelper(const LayoutObject& object,
       return true;
   }
 
-  auto* node = object.GetNode();
-  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(object);
-  if (!node && layout_block_flow &&
-      layout_block_flow->IsAnonymousBlockContinuation()) {
-    // An anonymous continuation does not have handlers so we need to check the
-    // DOM ancestor for handlers using |NodeForHitTest|.
-    node = object.NodeForHitTest();
+  if (auto* node = object.GetNode()) {
+    return HasBlockingEventHandlerHelper(*object.GetFrame(), *node, event_type);
   }
-  if (!node)
-    return false;
-  return HasBlockingEventHandlerHelper(*object.GetFrame(), *node, event_type);
+
+  return false;
 }
 
 bool HasBlockingTouchEventHandler(const LayoutObject& object) {
@@ -368,16 +362,6 @@ FragmentData* PrePaintTreeWalk::GetOrCreateFragmentData(
   bool needs_paint_properties = fragment_data->PaintProperties();
 
   wtf_size_t fragment_id = pre_paint_info.fragmentainer_idx;
-  // TODO(mstensho): For now we need to treat unfragmented as ID 0. It doesn't
-  // really matter for LayoutNG, but legacy
-  // PaintPropertyTreeBuilder::ContextForFragment() may take a walk up the tree
-  // and end up querying this (LayoutNG) object, and
-  // FragmentData::LogicalTopInFlowThread() will DCHECK that the value is 0
-  // unless it has been explicitly set by legacy code (which won't happen, since
-  // it's an NG object).
-  if (fragment_id == WTF::kNotFound)
-    fragment_id = 0;
-
   if (pre_paint_info.is_first_for_node) {
     if (allow_update) {
       if (fragment_data->FragmentID() < fragment_id) {
@@ -471,10 +455,19 @@ void PrePaintTreeWalk::UpdateContextForOOFContainer(
   // If we're in a fragmentation context, the parent fragment of OOFs is the
   // fragmentainer, unless the object is monolithic, in which case nothing
   // contained by the object participates in the current block fragmentation
-  // context. If we're not participating in block fragmentation, the containing
-  // fragment of an OOF fragment is always simply the parent.
+  // context. The monolithic-check here is somewhat special, to match the
+  // behavior in OOF layout. We need to check that we're monolithic AND the
+  // first fragment of the node in order to act as an OOF container. A non-first
+  // fragment may be set as monolithic if overflow is clipped and we've reached
+  // the end right there. But that doesn't affect how OOF layout behaves. In
+  // such cases, where there's more than one fragment involved, an OOF fragment
+  // will become a direct child of a fragmentainer, just as if there were no
+  // monolithicness involved at all.
+  //
+  // If we're not participating in block fragmentation, the containing fragment
+  // of an OOF fragment is always simply the parent.
   if (!context.current_container.IsInFragmentationContext() ||
-      (fragment && fragment->IsMonolithic())) {
+      (fragment && fragment->IsMonolithic() && fragment->IsFirstForNode())) {
     // Anonymous blocks are not allowed to be containing blocks, so we should
     // skip over any such elements.
     if (!fragment || !fragment->IsAnonymousBlock()) {
@@ -1002,9 +995,7 @@ void PrePaintTreeWalk::WalkChildren(
           // monolithic content. We may re-enter
           // LayoutNGBoxFragment-accompanied traversal if we get to a
           // descendant that supports that.
-          DCHECK(
-              !box->FlowThreadContainingBlock() ||
-              (box->GetNGPaginationBreakability() == LayoutBox::kForbidBreaks));
+          DCHECK(!box->FlowThreadContainingBlock() || box->IsMonolithic());
 
           traversable_fragment = nullptr;
         }

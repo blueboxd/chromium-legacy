@@ -318,6 +318,8 @@ void V4GetHashProtocolManager::GetFullHashes(
                            &prefixes_to_request, &cached_full_hash_infos,
                            mechanism_experiment_cache_selection);
 
+  base::UmaHistogramBoolean("SafeBrowsing.V4GetHash.CacheFullyHit",
+                            prefixes_to_request.empty());
   if (prefixes_to_request.empty()) {
     // 100% cache hits (positive or negative) so we can call the callback right
     // away.
@@ -919,6 +921,18 @@ void V4GetHashProtocolManager::OnURLLoaderCompleteInternal(
 
   std::vector<FullHashInfo> full_hash_infos;
   Time negative_cache_expire;
+
+  if (net_error == net::ERR_INTERNET_DISCONNECTED) {
+    base::UmaHistogramSparse(
+        "SafeBrowsing.V4GetHash.Network.HttpResponseCode.InternetDisconnected",
+        response_code);
+  }
+  if (net_error == net::ERR_NETWORK_CHANGED) {
+    base::UmaHistogramSparse(
+        "SafeBrowsing.V4GetHash.Network.HttpResponseCode.NetworkChanged",
+        response_code);
+  }
+
   if (net_error == net::OK && response_code == net::HTTP_OK) {
     RecordGetHashResult(V4OperationResult::STATUS_200);
     if (gethash_error_count_)

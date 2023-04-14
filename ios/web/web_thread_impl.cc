@@ -8,14 +8,12 @@
 #include <utility>
 
 #include "base/atomicops.h"
-#include "base/compiler_specific.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/lazy_instance.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/task/task_executor.h"
 #include "base/time/time.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread_delegate.h"
@@ -131,20 +129,10 @@ class WebThreadTaskRunner : public base::SingleThreadTaskRunner {
   WebThread::ID id_;
 };
 
-class WebThreadTaskExecutor : public base::TaskExecutor {
+class WebThreadTaskExecutor {
  public:
   WebThreadTaskExecutor() {}
-  ~WebThreadTaskExecutor() override {}
-
-  // base::TaskExecutor implementation.
-  bool PostDelayedTask(const base::Location& from_here,
-                       const base::TaskTraits& traits,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override {
-    return PostTaskHelper(
-        GetWebThreadIdentifier(traits), from_here, std::move(task), delay,
-        traits.GetExtension<WebTaskTraitsExtension>().nestable());
-  }
+  ~WebThreadTaskExecutor() {}
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       WebThread::ID identifier,
@@ -179,41 +167,15 @@ class WebThreadTaskExecutor : public base::TaskExecutor {
   static void CreateInstance() {
     DCHECK(!g_instance);
     g_instance = new WebThreadTaskExecutor();
-    base::RegisterTaskExecutor(WebTaskTraitsExtension::kExtensionId,
-                               g_instance);
   }
 
   static void ResetInstanceForTesting() {
     DCHECK(g_instance);
-    base::UnregisterTaskExecutorForTesting(
-        WebTaskTraitsExtension::kExtensionId);
     delete g_instance;
     g_instance = nullptr;
   }
 
  private:
-  WebThread::ID GetWebThreadIdentifier(const base::TaskTraits& traits) {
-    DCHECK_EQ(traits.extension_id(), WebTaskTraitsExtension::kExtensionId);
-    const WebThread::ID id =
-        traits.GetExtension<WebTaskTraitsExtension>().web_thread();
-    DCHECK_LT(id, WebThread::ID_COUNT);
-
-    // TODO(crbug.com/872372): Support shutdown behavior on UI/IO threads.
-    if (traits.shutdown_behavior_set_explicitly()) {
-      if (id == WebThread::UI) {
-        DCHECK_EQ(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-                  traits.shutdown_behavior())
-            << "Only SKIP_ON_SHUTDOWN is supported on UI thread.";
-      } else if (id == WebThread::IO) {
-        DCHECK_EQ(base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-                  traits.shutdown_behavior())
-            << "Only BLOCK_SHUTDOWN is supported on IO thread.";
-      }
-    }
-
-    return id;
-  }
-
   static WebThreadTaskExecutor* g_instance;
 
   scoped_refptr<WebThreadTaskRunner> ui_thread_task_runner_ =

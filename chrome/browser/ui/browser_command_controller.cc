@@ -1019,6 +1019,13 @@ void BrowserCommandController::OnSigninAllowedPrefChange() {
 
 // BrowserCommandController, TabStripModelObserver implementation:
 
+void BrowserCommandController::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  UpdateCommandsForTabStripStateChanged();
+}
+
 void BrowserCommandController::TabBlockedStateChanged(
     content::WebContents* contents,
     int index) {
@@ -1147,6 +1154,7 @@ void BrowserCommandController::InitCommandState() {
       IDC_SHOW_HISTORY,
       (!profile()->IsGuestSession() && !profile()->IsSystemProfile()));
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
+  command_updater_.UpdateCommandEnabled(IDC_FIND_AND_EDIT_MENU, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_MENU, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_KEYBOARD, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
@@ -1394,10 +1402,8 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   bool is_isolated_app = current_web_contents->GetPrimaryMainFrame()
                              ->GetWebExposedIsolationLevel() >=
                          WebExposedIsolationLevel::kMaybeIsolatedApplication;
-  bool is_pinned_home_tab =
-      web_app::AppBrowserController::IsWebApp(browser_) &&
-      web_app::IsPinnedHomeTab(browser_->tab_strip_model(),
-                               browser_->tab_strip_model()->active_index());
+  bool is_pinned_home_tab = web_app::IsPinnedHomeTab(
+      browser_->tab_strip_model(), browser_->tab_strip_model()->active_index());
   command_updater_.UpdateCommandEnabled(
       IDC_OPEN_IN_CHROME,
       IsWebAppOrCustomTab() && !is_isolated_app && !is_pinned_home_tab);
@@ -1743,6 +1749,12 @@ void BrowserCommandController::UpdateCommandsForWebContentsFocus() {
   command_updater_.UpdateCommandEnabled(IDC_CARET_BROWSING_TOGGLE,
                                         CanToggleCaretBrowsing(browser_));
 #endif  // BUILDFLAG(IS_MAC)
+}
+
+void BrowserCommandController::UpdateCommandsForTabStripStateChanged() {
+  command_updater_.UpdateCommandEnabled(
+      IDC_CLOSE_TAB, browser_->tab_strip_model()->IsTabClosable(
+                         browser_->tab_strip_model()->active_index()));
 }
 
 BrowserWindow* BrowserCommandController::window() {

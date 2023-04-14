@@ -19,11 +19,9 @@ class Widget;
 class GURL;
 class ProfilePickerView;
 
-class ProfilePickerTestBase : public InProcessBrowserTest {
+// Mixin adding getters and helper methods to interact with `ProfilePickerView`.
+class WithProfilePickerTestHelpers {
  public:
-  ProfilePickerTestBase();
-  ~ProfilePickerTestBase() override;
-
   // Returns the ProfilePickerView that is currently displayed.
   ProfilePickerView* view();
 
@@ -50,6 +48,13 @@ class ProfilePickerTestBase : public InProcessBrowserTest {
 
   // Gets the picker's web contents.
   content::WebContents* web_contents();
+
+  // Gets signin_chrome_sync_dice with appropriate parameters appended:
+  // if in dark mode, "color_scheme=dark", and always "flow=promo".
+  GURL GetSigninChromeSyncDiceUrl();
 };
+
+class ProfilePickerTestBase : public InProcessBrowserTest,
+                              public WithProfilePickerTestHelpers {};
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_TEST_BASE_H_

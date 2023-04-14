@@ -20,7 +20,6 @@ import android.util.FloatProperty;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -36,6 +35,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
@@ -95,8 +95,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     // Behavior Constants
     private static final float EPSILON = 0.001f;
     private static final int MAX_TABS_TO_STACK = 4;
-    private static final float TAN_OF_REORDER_ANGLE_START_THRESHOLD =
-            (float) Math.tan(Math.PI / 4.0f);
     private static final float REORDER_OVERLAP_SWITCH_PERCENTAGE = 0.53f;
     private static final float DROP_INTO_GROUP_MAX_OFFSET = 36.f;
 
@@ -128,9 +126,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private static final float TAB_STACK_WIDTH_DP = 4.f;
     private static final float TAB_OVERLAP_WIDTH_DP = 24.f;
     private static final float TAB_OVERLAP_WIDTH_LARGE_DP = 28.f;
-    private static final float TAB_WIDTH_SMALL = 108.f;
     private static final float TAB_WIDTH_MEDIUM = 156.f;
-    private static final float REORDER_MOVE_START_THRESHOLD_DP = 50.f;
     private static final float REORDER_EDGE_SCROLL_MAX_SPEED_DP = 1000.f;
     private static final float REORDER_EDGE_SCROLL_START_MIN_DP = 87.4f;
     private static final float REORDER_EDGE_SCROLL_START_MAX_DP = 18.4f;
@@ -158,6 +154,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     static final float BACKGROUND_TAB_BRIGHTNESS_DIMMED = 0.65f;
     static final float FADE_FULL_OPACITY_THRESHOLD_DP = 24.f;
     private static final float TAB_STRIP_TAB_WIDTH = 108.f;
+    private static final float NEW_TAB_BUTTON_WITH_MODEL_SELECTOR_BUTTON_PADDING = 8.f;
 
     private static final int MESSAGE_RESIZE = 1;
     private static final int MESSAGE_UPDATE_SPINNER = 2;
@@ -170,6 +167,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     // External influences
     private final LayoutUpdateHost mUpdateHost;
     private final LayoutRenderHost mRenderHost;
+    private final LayoutManagerHost mManagerHost;
     private TabModel mModel;
     private TabGroupModelFilter mTabGroupModelFilter;
     private TabCreator mTabCreator;
@@ -191,7 +189,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private final float mNewTabButtonWidth;
     private final float mMinTabWidth;
     private final float mMaxTabWidth;
-    private final float mReorderMoveStartThreshold;
     private final ListPopupWindow mTabMenu;
 
     // Strip State
@@ -228,6 +225,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
     // New tab button with tab strip end padding
     private float mNewTabButtonWithTabStripEndPadding;
+    // 3-dots menu button with tab strip end padding
+    private float mMenuButtonPadding;
 
     private final boolean mIncognito;
     private boolean mIsFirstLayoutPass;
@@ -248,14 +247,16 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     /**
      * Creates an instance of the {@link StripLayoutHelper}.
      * @param context         The current Android {@link Context}.
+     * @param managerHost      The parent {@link LayoutManagerHost}.
      * @param updateHost      The parent {@link LayoutUpdateHost}.
      * @param renderHost      The {@link LayoutRenderHost}.
      * @param incognito       Whether or not this tab strip is incognito.
      * @param modelSelectorButton The {@link CompositorButton} used to toggle between regular and
      *         incognito models.
      */
-    public StripLayoutHelper(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, boolean incognito, CompositorButton modelSelectorButton) {
+    public StripLayoutHelper(Context context, LayoutManagerHost managerHost,
+            LayoutUpdateHost updateHost, LayoutRenderHost renderHost, boolean incognito,
+            CompositorButton modelSelectorButton) {
         mTabOverlapWidth = ChromeFeatureList.sTabStripRedesign.isEnabled()
                 ? TAB_OVERLAP_WIDTH_LARGE_DP
                 : TAB_OVERLAP_WIDTH_DP;
@@ -271,8 +272,12 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         mModelSelectorButton = modelSelectorButton;
 
         if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            // Use toolbar menu button padding to align NTB with menu button.
+            mMenuButtonPadding = context.getResources().getDimension(R.dimen.button_end_padding)
+                    / context.getResources().getDisplayMetrics().density;
             mNewTabButtonWithTabStripEndPadding =
-                    (BUTTON_DESIRED_TOUCH_TARGET_SIZE - mNewTabButtonWidth) / 2;
+                    (BUTTON_DESIRED_TOUCH_TARGET_SIZE - mNewTabButtonWidth - mMenuButtonPadding) / 2
+                    + mMenuButtonPadding;
         } else {
             mNewTabButtonWithTabStripEndPadding = NEW_TAB_BUTTON_PADDING_DP;
         }
@@ -287,7 +292,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         mMinTabWidth = TAB_STRIP_TAB_WIDTH;
 
         mMaxTabWidth = TabUiThemeUtil.getMaxTabStripTabWidthDp();
-        mReorderMoveStartThreshold = REORDER_MOVE_START_THRESHOLD_DP;
+        mManagerHost = managerHost;
         mUpdateHost = updateHost;
         mRenderHost = renderHost;
         CompositorOnClickHandler newTabClickHandler = new CompositorOnClickHandler() {
@@ -539,11 +544,17 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     /**
      * @param margin The distance between the last tab and the edge of the screen.
      */
-    public void setEndMargin(float margin) {
+    public void setEndMargin(float margin, boolean isMsbVisible) {
+        // When MSB is not visible we add strip end padding here. When MSB is visible strip end
+        // padding will be included in MSB margin, so just add padding between NTB and MSB here.
         if (LocalizationUtils.isLayoutRtl()) {
-            mLeftMargin = margin + mNewTabButtonWithTabStripEndPadding + mNewTabButtonWidth;
+            mLeftMargin = margin + mNewTabButtonWidth;
+            mLeftMargin += isMsbVisible ? NEW_TAB_BUTTON_WITH_MODEL_SELECTOR_BUTTON_PADDING
+                                        : mNewTabButtonWithTabStripEndPadding;
         } else {
-            mRightMargin = margin + mNewTabButtonWithTabStripEndPadding + mNewTabButtonWidth;
+            mRightMargin = margin + mNewTabButtonWidth;
+            mRightMargin += isMsbVisible ? NEW_TAB_BUTTON_WITH_MODEL_SELECTOR_BUTTON_PADDING
+                                         : mNewTabButtonWithTabStripEndPadding;
         }
 
         computeAndUpdateTabWidth(false, false);
@@ -1670,11 +1681,19 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         mNewTabButton.setVisible(!isEmpty);
         if (mInReorderMode || isEmpty) return null;
 
-        if (!ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+        if (!ChromeFeatureList.sTabStripRedesign.isEnabled()
+                || TabUiFeatureUtilities.isTabStripNtbAnchorDisabled()) {
             // 2. Get offset from strip stacker.
             float offset = mStripStacker.computeNewTabButtonOffset(mStripTabs, mTabOverlapWidth,
                     mLeftMargin, mRightMargin, mWidth, mNewTabButtonWidth,
                     Math.abs(getNewTabButtonTouchTargetOffset()), mCachedTabWidth, animate);
+
+            // For TSI, NTB touch target offset is skewed towards the end of strip and then visually
+            // placed correctly in the cc layer. Since we do not skew NTB touch target offset for
+            // TSR here, so revert.
+            if (TabUiFeatureUtilities.isTabStripNtbAnchorDisabled()) {
+                offset += getNewTabButtonTouchTargetOffset();
+            }
 
             // 3. Hide the new tab button if it's not visible on the screen.
             boolean isRtl = LocalizationUtils.isLayoutRtl();
@@ -2641,19 +2660,16 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         // 2. Anchor the popupMenu to the view associated with the tab
         View tabView = TabModelUtils.getCurrentTab(mModel).getView();
         mTabMenu.setAnchorView(tabView);
-
         // 3. Set the vertical offset to align the tab menu with bottom of the tab strip
+        int tabHeight = mManagerHost.getHeight();
         int verticalOffset =
-                -(tabView.getHeight()
-                        - (int) mContext.getResources().getDimension(R.dimen.tab_strip_height))
-                - ((MarginLayoutParams) tabView.getLayoutParams()).topMargin;
+                -(tabHeight - (int) mContext.getResources().getDimension(R.dimen.tab_strip_height));
         mTabMenu.setVerticalOffset(verticalOffset);
 
         // 4. Set the horizontal offset to align the tab menu with the right side of the tab
         int horizontalOffset = Math.round((anchorTab.getDrawX() + anchorTab.getWidth())
                                        * mContext.getResources().getDisplayMetrics().density)
-                - mTabMenu.getWidth()
-                - ((MarginLayoutParams) tabView.getLayoutParams()).leftMargin;
+                - mTabMenu.getWidth();
         // Cap the horizontal offset so that the tab menu doesn't get drawn off screen.
         horizontalOffset = Math.max(horizontalOffset, 0);
         mTabMenu.setHorizontalOffset(horizontalOffset);

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.toolbar.optional_button;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static junit.framework.Assert.assertFalse;
 
 import static org.junit.Assert.assertEquals;
@@ -53,11 +55,11 @@ import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
+import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.optional_button.OptionalButtonConstants.TransitionType;
 
@@ -654,7 +656,7 @@ public class OptionalButtonViewTest {
         mOptionalButtonView.onTransitionEnd(null);
 
         // Button shouldn't be wider than the established maximum.
-        Assert.assertThat(mOptionalButtonView.getLayoutParams().width,
+        assertThat(mOptionalButtonView.getLayoutParams().width,
                 Matchers.lessThanOrEqualTo(maxActionChipWidth));
     }
 

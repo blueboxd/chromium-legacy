@@ -215,7 +215,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing(),
         GpuPreferences().gr_context_type);
-    context_state_->InitializeGrContext(GpuPreferences(), workarounds, nullptr);
+    context_state_->InitializeSkia(GpuPreferences(), workarounds);
     context_state_->InitializeGL(GpuPreferences(), feature_info);
 
     decoder_ = CreateDecoder();
@@ -300,8 +300,8 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
         viz::SharedImageFormat::SinglePlane(resource_format);
     shared_image_factory_->CreateSharedImage(
         mailbox, si_format, size, color_space, kTopLeft_GrSurfaceOrigin,
-        kPremul_SkAlphaType, gpu::kNullSurfaceHandle,
-        SHARED_IMAGE_USAGE_RASTER);
+        kPremul_SkAlphaType, gpu::kNullSurfaceHandle, SHARED_IMAGE_USAGE_RASTER,
+        "TestLabel");
 
     if (cleared) {
       SharedImageRepresentationFactory repr_factory(shared_image_manager(),

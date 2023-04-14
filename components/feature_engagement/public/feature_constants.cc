@@ -44,9 +44,6 @@ BASE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature,
 BASE_FEATURE(kIPHGMCCastStartStopFeature,
              "IPH_GMCCastStartStop",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHHighEfficiencyInfoModeFeature,
-             "IPH_HighEfficiencyInfoMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHHighEfficiencyModeFeature,
              "IPH_HighEfficiencyMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -468,6 +465,9 @@ BASE_FEATURE(kIPHiOSPromoPostRestoreFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHiOSPromoCredentialProviderExtensionFeature,
              "IPH_iOSPromoCredentialProviderExtension",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHiOSPromoDefaultBrowserFeature,
+             "IPH_iOSPromoDefaultBrowser",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
 

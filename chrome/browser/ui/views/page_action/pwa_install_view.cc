@@ -23,6 +23,7 @@
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/user_education/common/feature_promo_controller.h"
@@ -178,7 +179,9 @@ views::BubbleDialogDelegate* PwaInstallView::GetBubble() const {
 }
 
 const gfx::VectorIcon& PwaInstallView::GetVectorIcon() const {
-  return omnibox::kInstallDesktopIcon;
+  return OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
+             ? omnibox::kInstallDesktopChromeRefreshIcon
+             : omnibox::kInstallDesktopIcon;
 }
 
 bool PwaInstallView::ShouldShowIph(content::WebContents* web_contents,

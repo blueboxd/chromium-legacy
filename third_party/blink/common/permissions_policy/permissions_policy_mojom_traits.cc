@@ -4,15 +4,14 @@
 
 #include "third_party/blink/common/permissions_policy/permissions_policy_mojom_traits.h"
 
-#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/origin.h"
 
 namespace mojo {
 
-bool StructTraits<network::mojom::CSPSourceDataView,
+bool StructTraits<blink::mojom::OriginWithPossibleWildcardsDataView,
                   blink::OriginWithPossibleWildcards>::
-    Read(network::mojom::CSPSourceDataView in,
+    Read(blink::mojom::OriginWithPossibleWildcardsDataView in,
          blink::OriginWithPossibleWildcards* out) {
   out->csp_source.is_host_wildcard = in.is_host_wildcard();
   out->csp_source.port = in.port();
@@ -20,8 +19,8 @@ bool StructTraits<network::mojom::CSPSourceDataView,
       !in.ReadHost(&out->csp_source.host)) {
     return false;
   }
-  return (out->csp_source.scheme.length() != 0) &&
-         (out->csp_source.host.length() != 0);
+  // For local files the host might be empty, but the scheme cannot be.
+  return out->csp_source.scheme.length() != 0;
 }
 
 bool StructTraits<blink::mojom::ParsedPermissionsPolicyDeclarationDataView,

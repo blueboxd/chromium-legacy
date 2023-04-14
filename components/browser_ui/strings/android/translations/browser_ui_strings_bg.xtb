@@ -83,6 +83,7 @@
 <translation id="2434158240863470628">Изтеглянето завърши <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Функциите в някои сайтове може да не работят в режим „инкогнито“</translation>
 <translation id="2442870161001914531">Винаги да се заявява настолният сайт</translation>
+<translation id="2479148705183875116">Към настройките</translation>
 <translation id="2482878487686419369">Известия</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
 <translation id="2490684707762498678">Управляват се от <ph name="APP_NAME" /></translation>
@@ -103,6 +104,7 @@
 <translation id="2717722538473713889">Имейл адреси</translation>
 <translation id="2750481671343847896">Сайтовете могат да показват подкани за вход от услуги за идентифициране.</translation>
 <translation id="2822354292072154809">Наистина ли искате да зададете повторно всички разрешения за сайта за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Заявяване на изглед за мобилни устройства</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Предишен запис</translation>
 <translation id="2891975107962658722">Блокиране на даден сайт, така че да не запазва данни на устройството ви</translation>

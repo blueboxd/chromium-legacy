@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -93,7 +95,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
@@ -135,6 +136,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
@@ -492,7 +494,7 @@ public class CustomTabActivityTest {
         TestThreadUtils.runOnUiThreadBlocking((Runnable) actionButton::performClick);
 
         onFinished.waitForCallback("Pending Intent was not sent.");
-        Assert.assertThat(onFinished.getCallbackIntent().getDataString(), equalTo(mTestPage));
+        assertThat(onFinished.getCallbackIntent().getDataString(), equalTo(mTestPage));
     }
 
     /**
@@ -524,7 +526,7 @@ public class CustomTabActivityTest {
         final PendingIntent pi2 =
                 PendingIntent.getBroadcast(InstrumentationRegistry.getTargetContext(), 1,
                         new Intent(), IntentUtils.getPendingIntentMutabilityFlag(true));
-        Assert.assertThat(pi2, not(equalTo(pi1)));
+        assertThat(pi2, not(equalTo(pi1)));
         final OnFinishedForTest onFinished2 = new OnFinishedForTest(pi2);
         toolbarItems.add(CustomTabsIntentTestUtils.makeToolbarItemBundle(
                 expectedIcon2, "Even gooder test", pi2, sIdToIncrement++));
@@ -562,7 +564,7 @@ public class CustomTabActivityTest {
         TestThreadUtils.runOnUiThreadBlocking((Runnable) actionButton::performClick);
 
         onFinished1.waitForCallback("Pending Intent was not sent.");
-        Assert.assertThat(onFinished1.getCallbackIntent().getDataString(), equalTo(mTestPage));
+        assertThat(onFinished1.getCallbackIntent().getDataString(), equalTo(mTestPage));
         assertNull(onFinished2.getCallbackIntent());
 
         CustomTabsConnection connection = CustomTabsConnection.getInstance();
@@ -601,7 +603,7 @@ public class CustomTabActivityTest {
         assertNull("Action button should not be shown", actionButton);
 
         BrowserServicesIntentDataProvider dataProvider = getActivity().getIntentDataProvider();
-        Assert.assertThat(dataProvider.getCustomButtonsOnToolbar(), is(empty()));
+        assertThat(dataProvider.getCustomButtonsOnToolbar(), is(empty()));
     }
 
     @Test

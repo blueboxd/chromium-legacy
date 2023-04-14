@@ -19,9 +19,7 @@ constexpr SkColor kScrollShadowColor = SkColorSetARGB(0x24, 0x0, 0x0, 0x0);
 
 // TODO(crbug.com/1309551): Get the colors from AshColorProvider once
 // notification supports dark/light mode.
-constexpr SkColor kCountLabelColor = gfx::kGoogleGrey900;
 constexpr SkColor kSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
-constexpr SkColor kNotificationBackgroundColor = SK_ColorWHITE;
 constexpr SkColor kUnifiedMenuButtonColorActive =
     SkColorSetRGB(0x25, 0x81, 0xDF);
 constexpr SkColor kInkRippleColor = SK_ColorBLACK;
@@ -34,16 +32,7 @@ constexpr int kScrollShadowOffsetY = 2;
 constexpr int kScrollShadowBlur = 2;
 
 // Layout parameters for swipe control of notifications in message center.
-constexpr int kSwipeControlButtonImageSize = 20;
-constexpr int kSwipeControlButtonSize = 36;
-constexpr int kSwipeControlButtonVerticalMargin = 24;
 constexpr int kSwipeControlButtonHorizontalMargin = 8;
-constexpr SkColor kSwipeControlBackgroundColor =
-    SkColorSetRGB(0xee, 0xee, 0xee);
-
-// The ratio to multiply with the swipe control width to get the width to
-// display at full opacity when swiping.
-constexpr float kSwipeControlFullOpacityRatio = 1.5f;
 
 constexpr int kMaxGroupedNotificationsInCollapsedState = 3;
 constexpr auto kGroupedCollapsedCountViewInsets =

@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/crl_set.h"
 #include "services/cert_verifier/cert_net_url_loader/cert_net_fetcher_url_loader.h"
 #include "services/cert_verifier/cert_verifier_service_factory.h"
 #include "services/network/public/mojom/cert_verifier_service.mojom.h"
@@ -82,15 +83,18 @@ void ReconnectURLLoaderFactory(
 CertVerifierServiceImpl::CertVerifierServiceImpl(
     std::unique_ptr<net::CertVerifierWithUpdatableProc> verifier,
     mojo::PendingReceiver<mojom::CertVerifierService> receiver,
+    mojo::PendingRemote<mojom::CertVerifierServiceClient> client,
     scoped_refptr<CertNetFetcherURLLoader> cert_net_fetcher)
     : verifier_(std::move(verifier)),
       receiver_(this, std::move(receiver)),
+      client_(std::move(client)),
       cert_net_fetcher_(std::move(cert_net_fetcher)) {
   // base::Unretained is safe because |this| owns |receiver_|, so deleting
   // |this| will prevent |receiver_| from calling this callback.
   receiver_.set_disconnect_handler(
       base::BindRepeating(&CertVerifierServiceImpl::OnDisconnectFromService,
                           base::Unretained(this)));
+  verifier_->AddObserver(this);
 }
 
 // Note: this object owns the underlying CertVerifier, which owns all of the
@@ -98,6 +102,7 @@ CertVerifierServiceImpl::CertVerifierServiceImpl(
 // mojo::Remote<CertVerifierRequest> objects, so destroying this object cancels
 // the verifications and all the callbacks.
 CertVerifierServiceImpl::~CertVerifierServiceImpl() {
+  verifier_->RemoveObserver(this);
   if (cert_net_fetcher_)
     cert_net_fetcher_->Shutdown();
 }
@@ -127,9 +132,9 @@ void CertVerifierServiceImpl::SetCertVerifierServiceFactory(
   service_factory_impl_ = std::move(service_factory_impl);
 }
 
-void CertVerifierServiceImpl::UpdateChromeRootStoreData(
-    const net::ChromeRootStoreData* root_store_data) {
-  verifier_->UpdateChromeRootStoreData(cert_net_fetcher_, root_store_data);
+void CertVerifierServiceImpl::UpdateVerifierData(
+    const net::CertVerifyProcFactory::ImplParams& impl_params) {
+  verifier_->UpdateVerifyProcData(cert_net_fetcher_, impl_params);
 }
 
 void CertVerifierServiceImpl::Verify(
@@ -185,6 +190,10 @@ void CertVerifierServiceImpl::Verify(
         std::move(cert_verifier_request));
     remote->Complete(*result, net_err);
   }
+}
+
+void CertVerifierServiceImpl::OnCertVerifierChanged() {
+  client_->OnCertVerifierChanged();
 }
 
 void CertVerifierServiceImpl::OnDisconnectFromService() {

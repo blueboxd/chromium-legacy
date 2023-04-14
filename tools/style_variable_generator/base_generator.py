@@ -50,9 +50,10 @@ class BaseGenerator:
         self.generator_options = {}
 
 
-    # If true, resolves all blend() colors to the RGBA values at
-    # compile time.
-    def ShouldResolveBlendedColors(self):
+    # If true, will attempt to resolve all blend() colors to the RGBA values at
+    # compile time. Note that json5 files can specify "preblend" to override
+    # this setting for specific files.
+    def DefaultPreblend(self):
         return True
 
     def GetInputFiles(self):
@@ -68,8 +69,7 @@ class BaseGenerator:
             except ValueError as err:
                 raise ValueError(f'Could not add {path}') from err
 
-        self.model.PostProcess(
-            resolve_blended_colors=self.ShouldResolveBlendedColors())
+        self.model.PostProcess(default_preblend=self.DefaultPreblend())
 
     def AddJSONToModel(self, json_string, in_file=None):
         '''Adds a |json_string| with variable definitions to the model.
@@ -93,6 +93,9 @@ class BaseGenerator:
 
         for name, value in data.get('opacities', {}).items():
             self.model.Add(VariableType.OPACITY, name, value, context)
+
+        for name, value in data.get('legacy_mappings', {}).items():
+            self.model.Add(VariableType.LEGACY_MAPPING, name, value, context)
 
         typography = data.get('typography')
         if typography:

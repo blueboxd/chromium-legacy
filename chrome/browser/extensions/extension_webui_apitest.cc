@@ -242,40 +242,33 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUIEmbeddedOptionsTest,
                          "});",
                          storage_key)));
 
-  std::string set_result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      guest_rfh,
-      content::JsReplace(
-          "try {"
-          "  chrome.storage.local.set({$1: $2}, () => {"
-          "    domAutomationController.send("
-          "        chrome.runtime.lastError ?"
-          "            chrome.runtime.lastError.message : 'success');"
-          "  });"
-          "} catch (e) {"
-          "  domAutomationController.send(e.name + ': ' + e.message);"
-          "}",
-          storage_key, storage_value),
-      &set_result));
-  ASSERT_EQ("success", set_result);
+  ASSERT_EQ(
+      "success",
+      content::EvalJs(
+          guest_rfh,
+          content::JsReplace(
+              "try {"
+              "  new Promise(resolve => {"
+              "    chrome.storage.local.set({$1: $2}, () => {"
+              "      resolve("
+              "          chrome.runtime.lastError ?"
+              "              chrome.runtime.lastError.message : 'success');"
+              "    });"
+              "  });"
+              "} catch (e) {"
+              "  e.name + ': ' + e.message;"
+              "}",
+              storage_key, storage_value)));
 
-  int actual_value = 0;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      guest_rfh,
-      content::JsReplace("chrome.storage.local.get((storage) => {"
-                         "  domAutomationController.send(storage[$1]);"
-                         "});",
-                         storage_key),
-      &actual_value));
-  EXPECT_EQ(storage_value, actual_value);
+  EXPECT_EQ(
+      storage_value,
+      content::EvalJs(guest_rfh, content::JsReplace(
+                                     "new Promise(resolve =>"
+                                     "  chrome.storage.local.get((storage) => "
+                                     "    resolve(storage[$1])));",
+                                     storage_key)));
 
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      guest_rfh,
-      "onChangedPromise.then((newValue) => {"
-      "  domAutomationController.send(newValue);"
-      "});",
-      &actual_value));
-  EXPECT_EQ(storage_value, actual_value);
+  EXPECT_EQ(storage_value, content::EvalJs(guest_rfh, "onChangedPromise;"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebUIEmbeddedOptionsTest,

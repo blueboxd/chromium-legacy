@@ -64,6 +64,7 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/offline_pages/task/closure_task.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 
 namespace feed {
 namespace {
@@ -171,7 +172,9 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
   articles_list_visible_.Init(prefs::kArticlesListVisible, profile_prefs,
                               preference_change_callback);
   has_stored_data_.Init(feed::prefs::kHasStoredData, profile_prefs);
-
+  signin_allowed_.Init(
+      ::prefs::kSigninAllowed, profile_prefs,
+      base::BindRepeating(&FeedStream::ClearAll, GetWeakPtr()));
   web_feed_subscription_coordinator_ =
       std::make_unique<WebFeedSubscriptionCoordinator>(delegate, this);
 
@@ -439,7 +442,8 @@ void FeedStream::UpdateExperiments(Experiments experiments) {
 
 void FeedStream::AttachSurface(FeedStreamSurface* surface) {
   metrics_reporter_->SurfaceOpened(surface->GetStreamType(),
-                                   surface->GetSurfaceId());
+                                   surface->GetSurfaceId(),
+                                   surface->GetSingleWebFeedEntryPoint());
   Stream& stream = GetStream(surface->GetStreamType());
   // Skip normal processing when overriding stream data from the internals page.
   if (forced_stream_update_for_debugging_.updated_slices_size() > 0) {
@@ -980,6 +984,9 @@ feedwire::ChromeSignInStatus::SignInStatus FeedStream::GetSignInStatus() const {
   }
   if (IsSignedIn()) {
     return feedwire::ChromeSignInStatus::SIGNED_IN_WITHOUT_SYNC;
+  }
+  if (!IsSigninAllowed()) {
+    return feedwire::ChromeSignInStatus::SIGNIN_DISALLOWED_BY_CONFIG;
   }
   return feedwire::ChromeSignInStatus::NOT_SIGNED_IN;
 }

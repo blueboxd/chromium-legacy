@@ -37,7 +37,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/render_frame_host.h"
@@ -47,7 +47,9 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -59,6 +61,7 @@ using content::DevToolsAgentHost;
 const char ChromeDevToolsManagerDelegate::kTypeApp[] = "app";
 const char ChromeDevToolsManagerDelegate::kTypeBackgroundPage[] =
     "background_page";
+const char ChromeDevToolsManagerDelegate::kTypePage[] = "page";
 
 namespace {
 
@@ -85,6 +88,14 @@ bool GetExtensionInfo(content::WebContents* wc,
       extension->is_platform_app()) {
     *name = extension->name();
     *type = ChromeDevToolsManagerDelegate::kTypeApp;
+    return true;
+  }
+  if (extensions::GetViewType(wc) ==
+      extensions::mojom::ViewType::kExtensionPopup) {
+    // Note that we are intentionally not setting name here, so that we can
+    // construct a name based on the URL or page title in
+    // RenderFrameDevToolsAgentHost::GetTitle()
+    *type = ChromeDevToolsManagerDelegate::kTypePage;
     return true;
   }
   return false;
@@ -257,8 +268,7 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
     case Availability::kAllowed:
       return true;
     case Availability::kDisallowedForForceInstalledExtensions:
-      return !web_app || (!web_app->IsPolicyInstalledApp() &&
-                          !web_app->IsKioskInstalledApp());
+      return !web_app || !web_app->IsKioskInstalledApp();
     default:
       NOTREACHED() << "Unknown developer tools policy";
       return true;

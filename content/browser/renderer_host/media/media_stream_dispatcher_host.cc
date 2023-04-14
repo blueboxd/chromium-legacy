@@ -30,6 +30,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "url/origin.h"
@@ -50,8 +51,9 @@ void BindMediaStreamDeviceObserverReceiver(
 
   RenderFrameHost* render_frame_host =
       RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (render_frame_host && render_frame_host->IsRenderFrameLive())
+  if (render_frame_host && render_frame_host->IsRenderFrameLive()) {
     render_frame_host->GetRemoteInterfaces()->GetInterface(std::move(receiver));
+  }
 }
 
 std::unique_ptr<MediaStreamWebContentsObserver, BrowserThread::DeleteOnUIThread>
@@ -344,8 +346,9 @@ bool MediaStreamDispatcherHost::CheckRequestAllScreensAllowed(
 
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host)
+  if (!render_frame_host) {
     return false;
+  }
   ContentBrowserClient* browser_client = GetContentClient()->browser();
   return browser_client->IsGetDisplayMediaSetSelectAllScreensAllowed(
       render_frame_host->GetBrowserContext(),
@@ -376,8 +379,9 @@ const mojo::Remote<blink::mojom::MediaStreamDeviceObserver>&
 MediaStreamDispatcherHost::GetMediaStreamDeviceObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (media_stream_device_observer_)
+  if (media_stream_device_observer_) {
     return media_stream_device_observer_;
+  }
 
   auto dispatcher_receiver =
       media_stream_device_observer_.BindNewPipeAndPassReceiver();
@@ -432,8 +436,9 @@ void MediaStreamDispatcherHost::GenerateStreams(
           blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET &&
       (!base::FeatureList::IsEnabled(features::kGetDisplayMediaSet) ||
        !base::FeatureList::IsEnabled(
-           features::kGetDisplayMediaSetAutoSelectAllScreens))) {
-    mojo::ReportBadMessage("The GetDisplayMediaSet API has not been enabled");
+           features::kGetDisplayMediaSetAutoSelectAllScreens)) &&
+      (!base::FeatureList::IsEnabled(blink::features::kGetAllScreensMedia))) {
+    mojo::ReportBadMessage("This API has not been enabled");
     return;
   }
 

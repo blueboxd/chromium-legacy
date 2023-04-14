@@ -166,6 +166,7 @@ const char kChromeUIPrivacySandboxDialogURL[] =
     "chrome://privacy-sandbox-dialog";
 const char kChromeUIPrivacySandboxDialogCombinedPath[] = "combined";
 const char kChromeUIPrivacySandboxDialogNoticePath[] = "notice";
+const char kChromeUIPrivacySandboxDialogNoticeRestrictedPath[] = "restricted";
 const char kChromeUIPrivacySandboxFledgeURL[] =
     "chrome://settings/adPrivacy/sites";
 const char kChromeUIPrivacySandboxTopicsURL[] =
@@ -716,6 +717,9 @@ const char* const kChromeHostURLs[] = {
     kChromeUIQuotaInternalsHost,
     kChromeUISignInInternalsHost,
     kChromeUISiteEngagementHost,
+#if !BUILDFLAG(IS_ANDROID)
+    kChromeUISuggestInternalsHost,
+#endif
     kChromeUINTPTilesInternalsHost,
     safe_browsing::kChromeUISafeBrowsingHost,
     kChromeUISyncInternalsHost,

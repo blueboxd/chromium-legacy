@@ -73,9 +73,19 @@ class CONTENT_EXPORT AuctionMetricsRecorder {
   // the number of BidderWorklets created in the context of a given auction.
   void ReportBidderWorkletKey(AuctionWorkletManager::WorkletKey& worklet_key);
 
+  // Records InterestGroups that are loaded, but don't reach GenerateBid.
+  // Some of these functions increment by a number of bids at once, while
+  // others increment one at a time, depending on how they're used.
+  void RecordBidsAbortedByBuyerCumulativeTimeout(int64_t num_bids);
+  void RecordBidAbortedByBidderWorkletFatalError();
+  void RecordBidFilteredDuringInterestGroupLoad();
+  void RecordBidFilteredDuringReprioritization();
+  void RecordBidsFilteredByPerBuyerLimits(int64_t num_bids);
+
+  // Records the k-anonymity mode used for this auction.
   void SetKAnonymityBidMode(auction_worklet::mojom::KAnonymityBidMode bid_mode);
 
-  // Counts outcomes on the boundary between GenerateBid and ScoreAd.
+  // Records outcomes on the boundary between GenerateBid and ScoreAd.
   // Each of these is called once for each InterestGroup for which we called
   // GenerateBid.
   void RecordInterestGroupWithNoBids();
@@ -83,10 +93,48 @@ class CONTENT_EXPORT AuctionMetricsRecorder {
   void RecordInterestGroupWithSameBidForKAnonAndNonKAnon();
   void RecordInterestGroupWithSeparateBidsForKAnonAndNonKAnon();
 
+  // Records the latency of each component for a multi-seller auction.
+  void RecordComponentAuctionLatency(base::TimeDelta latency);
+
+  // Latency of the entire GenerateBid flow, including signals requests, for
+  // a given BidState.
+  void RecordBidForOneInterestGroupLatency(base::TimeDelta latency);
+  // Latency of just the call to GenerateSingleBid.
+  void RecordGenerateSingleBidLatency(base::TimeDelta latency);
+
  private:
+  using UkmEntry = ukm::builders::AdsInterestGroup_AuctionLatency;
+  using EntrySetFunction = UkmEntry& (UkmEntry::*)(int64_t value);
+
+  // Helper class for aggregating latencies for events that occur many times
+  // during the auction, for which we want to produce aggregate measurements
+  // to record using separate metrics.
+  class LatencyAggregator {
+   public:
+    LatencyAggregator() = default;
+    LatencyAggregator(const LatencyAggregator&) = delete;
+    LatencyAggregator& operator=(const LatencyAggregator&) = delete;
+
+    void RecordLatency(base::TimeDelta latency);
+    int32_t GetNumRecords();
+    base::TimeDelta GetMeanLatency();
+    base::TimeDelta GetMaxLatency();
+
+   private:
+    int32_t num_records_ = 0;
+    base::TimeDelta sum_latency_;
+    base::TimeDelta max_latency_;
+  };
+
+  // Helper function to set a pair of Mean and Max metrics only if the number of
+  // records is non-zero.
+  void MaybeSetMeanAndMaxLatency(LatencyAggregator& aggregator,
+                                 EntrySetFunction set_mean_function,
+                                 EntrySetFunction set_max_function);
+
   // The data structure we'll eventually record via the UkmRecorder.
   // We incrementally build this in all of the methods of this class.
-  ukm::builders::AdsInterestGroup_AuctionLatency builder_;
+  UkmEntry builder_;
 
   // Time at which AuctionRunner::StartAuction() is called; used as the
   // starting point for several of the latency metrics.
@@ -101,12 +149,25 @@ class CONTENT_EXPORT AuctionMetricsRecorder {
   // hash of the AuctionWorkletManager::WorkletKey instead of the key itself.
   std::set<size_t> bidder_worklet_keys_;
 
+  // Counts of InterestGroups that were loaded, but didn't reach GenerateBid for
+  // one of a number of reasons, some intentional for performance.
+  int64_t num_bids_aborted_by_buyer_cumulative_timeout_ = 0;
+  int64_t num_bids_aborted_by_bidder_worklet_fatal_error_ = 0;
+  int64_t num_bids_filtered_during_interest_group_load_ = 0;
+  int64_t num_bids_filtered_during_reprioritization_ = 0;
+  int64_t num_bids_filtered_by_per_buyer_limits_ = 0;
+
   // Counts for outcomes on the boundary between GenerateBid and ScoreAd.
   // Incremented for each InterestGroup, and recorded OnAuctionEnd.
   int64_t num_interest_groups_with_no_bids_ = 0;
   int64_t num_interest_groups_with_only_non_k_anon_bid_ = 0;
   int64_t num_interest_groups_with_separate_bids_for_k_anon_and_non_k_anon_ = 0;
   int64_t num_interest_groups_with_same_bid_for_k_anon_and_non_k_anon_ = 0;
+
+  // Various latency measurements.
+  LatencyAggregator component_auction_latency_aggregator_;
+  LatencyAggregator bid_for_one_interest_group_latency_aggregator_;
+  LatencyAggregator generate_single_bid_latency_aggregator_;
 };
 
 }  // namespace content

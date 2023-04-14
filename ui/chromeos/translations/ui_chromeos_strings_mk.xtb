@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Одбиена локална автентикација на сертификат</translation>
 <translation id="1775381402323441512">Информации за видеото</translation>
 <translation id="180035236176489073">Мора да сте поврзани на интернет за да пристапите до датотеките.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Екстензија со ID-бројот}one{Екстензии со ID-броевите}other{Екстензии со ID-броевите}}</translation>
 <translation id="1807938677607439181">Сите датотеки</translation>
 <translation id="1810764548349082891">Не е достапен преглед</translation>
 <translation id="1812302367230252929">транслитерација на амхарски</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Неважечки запис за совпаѓање на алтернативното име на субјектот</translation>
 <translation id="1838709767668011582">Сајт на Google</translation>
 <translation id="1853795129690976061">Папкава е споделена со Linux</translation>
-<translation id="1859422890169495746">Овој Chromebook</translation>
 <translation id="1864756863218646478">Не може да се најде датотеката.</translation>
 <translation id="1884013283844450420">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, поврзи</translation>
 <translation id="1920670151694390848">транслитерација на малајалски</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Планета</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> е отстранет.</translation>
 <translation id="2307462900900812319">Конфигурирај мрежа</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Не може да се лоцира екстензија со ID-бројот <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Контактирајте со администраторот.}one{Не може да се лоцираат екстензии со ID-броевите <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Контактирајте со администраторот.}other{Не може да се лоцираат екстензии со ID-броевите <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Контактирајте со администраторот.}}</translation>
 <translation id="2325650632570794183">Овој тип датотека не е поддржан. Посетете ја веб-продавницата на Chrome за да најдете апликација што може да го отвори овој тип датотека.</translation>
 <translation id="2326539130272988168">бугарски</translation>
 <translation id="2337715497728194187">Споделете со Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Незаштитена</translation>
 <translation id="3291218047831493686">Поврзете се на мрежава за да ја промените поставката за заклучување на SIM-картичката</translation>
 <translation id="3293023191599135697">WEP-мрежите не се поддржани</translation>
+<translation id="3295006446256079333">Овој диск</translation>
 <translation id="3295357220137379386">Уредот е зафатен</translation>
 <translation id="3296763833017966289">грузиски</translation>
 <translation id="3307875152560779385">украински</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Уреди Chromebase</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="485316830061041779">германски</translation>
+<translation id="4862885579661885411">Поставки за „Датотеки“</translation>
 <translation id="4867079195717347957">Кликнете за подредување на колоната по опаѓачки редослед.</translation>
 <translation id="4867297348137739678">Изминатата седмица</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> бајти</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347">Се копираат <ph name="NUMBER_OF_ITEMS" /> ставки…</translation>
 <translation id="7375951387215729722">Списокот со датотеки е подреден според <ph name="COLUMN_NAME" /> по опаѓачки редослед.</translation>
 <translation id="7377161162143020057">Администраторското правило го блокира копирањето на датотекава</translation>
-<translation id="7392500733467492920">Не може да се лоцира(ат). Контактирајте со администраторот.</translation>
 <translation id="7402503521691663770">Уреди со ChromeOS Flex</translation>
 <translation id="7408870451288633753">чешки</translation>
 <translation id="7417453074306512035">етиопска тастатура</translation>

@@ -26,6 +26,11 @@ const char kAppStoreRatingDescription[] =
     "When enabled, App Store Rating promo will be presented to eligible "
     "users.";
 
+const char kAutofillAccountProfilesStorageName[] =
+    "Enable profile saving in Google Account";
+const char kAutofillAccountProfilesStorageDescription[] =
+    "When enabled, the profiles would be saved to the Google Account";
+
 const char kAutofillAccountProfilesUnionViewName[] =
     "Enable compatibility with GAS";
 const char kAutofillAccountProfilesUnionViewDescription[] =
@@ -134,6 +139,12 @@ const char kAutofillUpstreamAuthenticatePreflightCallDescription[] =
     "Google Payments, in order to provide a better experience for users with "
     "server-side features disabled but not client-side features.";
 
+const char kAutofillUpstreamUseAlternateSecureDataTypeName[] =
+    "Use alternate secure data type for credit card upload save";
+const char kAutofillUpstreamUseAlternateSecureDataTypeDescription[] =
+    "When enabled, the secure data type for cards sent during credit card "
+    "upload save is updated to match newer server requirements.";
+
 const char kAutofillUseMobileLabelDisambiguationName[] =
     "Autofill Uses Mobile Label Disambiguation";
 const char kAutofillUseMobileLabelDisambiguationDescription[] =
@@ -145,6 +156,10 @@ const char kAutofillUseRendererIDsName[] =
 const char kAutofillUseRendererIDsDescription[] =
     "When enabled, Autofill logic uses unique numeric renderer IDs instead "
     "of string form and field identifiers in form filling logic.";
+
+const char kBottomOmniboxSteadyStateName[] = "Bottom Omnibox (Steady)";
+const char kBottomOmniboxSteadyStateDescription[] =
+    "Move the omnibox to the bottom in steady state";
 
 const char kBreakpadNoDelayInitialUploadName[] =
     "Remove delay on initial crash upload";
@@ -161,11 +176,6 @@ const char kBringYourOwnTabsIOSDescription[] =
     "a half-sheet modal by default, or a bottom sticker if specified in the "
     "dropdown option.";
 
-extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
-extern const char kCalendarExperienceKitDescription[] =
-    "When enabled, long pressing on dates will trigger Experience Kit Calendar "
-    "event handling.";
-
 extern const char kAppleCalendarExperienceKitName[] =
     "Experience Kit Apple Calendar";
 extern const char kAppleCalendarExperienceKitDescription[] =
@@ -181,6 +191,11 @@ extern const char kEmailName[] = "Email experience enable";
 extern const char kEmailDescription[] =
     "When enabled, one tapping or long pressing on an email address will "
     "trigger the email experience.";
+
+extern const char kPDFSnapshotName[] =
+    "Fix PDF snapshot by using a different API";
+extern const char kPDFSnapshotDescription[] =
+    "When enabled, the tab showing PDF should have the correct thumbnail.";
 
 extern const char kPhoneNumberName[] = "Phone number experience enable";
 extern const char kPhoneNumberDescription[] =
@@ -201,6 +216,11 @@ const char kEnablePopoutOmniboxIpadName[] = "Popout omnibox (iPad)";
 const char kEnablePopoutOmniboxIpadDescription[] =
     "Make omnibox popup appear in a detached rounded rectangle below the "
     "omnibox.";
+
+extern const char kMagicStackName[] = "Enable Magic Stack";
+extern const char kMagicStackDescription[] =
+    "When enabled, a Magic Stack will be shown in the Home surface displaying "
+    "a variety of modules.";
 
 extern const char kMapsExperienceKitName[] = "Experience Kit Maps";
 extern const char kMapsExperienceKitDescription[] =
@@ -289,6 +309,10 @@ const char kEnableBookmarksAccountStorageName[] =
 const char kEnableBookmarksAccountStorageDescription[] =
     "Enable bookmarks account storage and related UI features.";
 
+const char kEnableBrowserLockdownModeName[] = "Enable Browser Lockdown Mode";
+const char kEnableBrowserLockdownModeDescription[] =
+    "Enable browser lockdown mode.";
+
 const char kEnableCBDSignOutName[] = "Enable Clear Browsing Data Sign-out";
 const char kEnableCBDSignOutDescription[] =
     "Offer signed-in user to sign-out from Clear Browsing Data settings.";
@@ -349,6 +373,11 @@ const char kEnableFeedSyntheticCapabilitiesDescription[] =
 const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
+
+const char kEnableFollowIPHExpParamsName[] =
+    "Enable Follow IPH Experiment Parameters";
+const char kEnableFollowIPHExpParamsDescription[] =
+    "Enable follow IPH experiment parameters.";
 
 const char kEnableFollowManagementInstantReloadName[] =
     "Enable Follow Management Instant Reload";
@@ -644,6 +673,18 @@ const char kOmniboxFuzzyUrlSuggestionsName[] = "Omnibox Fuzzy URL Suggestions";
 const char kOmniboxFuzzyUrlSuggestionsDescription[] =
     "Enables URL suggestions for inputs that may contain typos.";
 
+const char kOmniboxGroupingFrameworkForZPSName[] =
+    "Omnibox Grouping Framework for ZPS";
+const char kOmniboxGroupingFrameworkForZPSDescription[] =
+    "Enables an alternative grouping implementation for omnibox "
+    "autocompletion.";
+
+const char kOmniboxGroupingFrameworkForTypedSuggestionsName[] =
+    "Omnibox Grouping Framework for Typed Suggestions";
+const char kOmniboxGroupingFrameworkForTypedSuggestionsDescription[] =
+    "Enables an alternative grouping implementation for omnibox "
+    "autocompletion.";
+
 const char kOmniboxHttpsUpgradesName[] = "Omnibox HTTPS upgrades";
 const char kOmniboxHttpsUpgradesDescription[] =
     "Enables HTTPS upgrades for omnibox navigations typed without a scheme";
@@ -742,6 +783,11 @@ const char kOmniboxReportSearchboxStatsDescription[] =
     "Enables reporting the serialized Searchbox Stats proto param in search "
     "destination URLs originated from the Omnibox.";
 
+const char kOmniboxTailSuggestName[] = "Omnibox Tail suggestions";
+const char kOmniboxTailSuggestDescription[] =
+    "Enables tail search suggestions. Search suggestions only matching the end "
+    "of users input text.";
+
 const char kOmniboxZeroSuggestInMemoryCachingName[] =
     "Omnibox Zero Prefix Suggestion in-memory caching";
 const char kOmniboxZeroSuggestInMemoryCachingDescription[] =
@@ -764,6 +810,11 @@ const char kOmniboxZeroSuggestPrefetchingOnWebName[] =
 const char kOmniboxZeroSuggestPrefetchingOnWebDescription[] =
     "Enables prefetching of the zero prefix suggestions for eligible users "
     "on the Web (i.e. non-NTP and non-SRP URLs).";
+
+const char kOnlyAccessClipboardAsyncName[] =
+    "Only access the clipboard asynchronously";
+const char kOnlyAccessClipboardAsyncDescription[] =
+    "Only accesses the clipboard asnchronously.";
 
 const char kOptimizationGuideDebugLogsName[] =
     "Enable optimization guide debug logs";
@@ -902,6 +953,11 @@ const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
 
+const char kSyncSegmentsDataName[] = "Use synced segments data";
+const char kSyncSegmentsDataDescription[] =
+    "Enables history's segments to include foreign visits from syncing "
+    "devices.";
+
 const char kSynthesizedRestoreSessionName[] =
     "Use a synthesized native WKWebView sesion restoration (iOS15 only).";
 const char kSynthesizedRestoreSessionDescription[] =
@@ -992,6 +1048,13 @@ const char kEnableLensInOmniboxCopiedImageDescription[] =
     "When enabled, use Lens to search images from your device clipboard "
     "when Google is the selected search engine, accessible from the omnibox or "
     "popup menu.";
+
+const char kEnableSessionSerializationOptimizationsName[] =
+    "Session Serialization Optimization";
+const char kEnableSessionSerializationOptimizationsDescription[] =
+    "Enables the use of multiple separate files to save the session state "
+    "and the ability to load only the minimum amount of data when restoring "
+    "the session from disk.";
 
 const char kSFSymbolsFollowUpName[] = "SF Symbol follow up";
 const char kSFSymbolsFollowUpDescription[] = "Change the + button.";

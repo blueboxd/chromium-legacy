@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Autentiseringscertifikatet godkändes inte lokalt</translation>
 <translation id="1775381402323441512">Videoinformation</translation>
 <translation id="180035236176489073">Du måste vara online för att kunna öppna filerna.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Ett tillägg med id:t}other{Tillägg med id:na}}</translation>
 <translation id="1807938677607439181">Alla filer</translation>
 <translation id="1810764548349082891">Ingen förhandsgranskning</translation>
 <translation id="1812302367230252929">amhariska, translitterering</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Ogiltig inmatning för matchning av ämnets andra namn</translation>
 <translation id="1838709767668011582">Google-webbplats</translation>
 <translation id="1853795129690976061">Den här mappen delas med Linux</translation>
-<translation id="1859422890169495746">Denna Chromebook</translation>
 <translation id="1864756863218646478">Filen hittades inte.</translation>
 <translation id="1884013283844450420">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, anslut</translation>
 <translation id="1920670151694390848">malayalam, translitterering</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planet</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> har tagits bort.</translation>
 <translation id="2307462900900812319">Konfigurera nätverk</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Inget tillägg med id <ph name="BEGIN_LIST" /><ph name="END_LIST" /> kunde hittas. Kontakta administratören.}other{Inga tillägg med följande id:n: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> kunde hittas. Kontakta administratören.}}</translation>
 <translation id="2325650632570794183">Filtypen stöds inte. Besök Chrome Web Store om du vill hitta en app som kan öppna den här filtypen.</translation>
 <translation id="2326539130272988168">bulgariska</translation>
 <translation id="2337715497728194187">Dela med Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Inte skyddat</translation>
 <translation id="3291218047831493686">Anslut till det här nätverket för att ändra låsinställning för SIM-kortet</translation>
 <translation id="3293023191599135697">WEP-nätverk stöds inte</translation>
+<translation id="3295006446256079333">Den här volymen</translation>
 <translation id="3295357220137379386">Enheten är upptagen</translation>
 <translation id="3296763833017966289">georgiska</translation>
 <translation id="3307875152560779385">ukrainska</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase-modeller</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="485316830061041779">tyska</translation>
+<translation id="4862885579661885411">Inställningar för Filer</translation>
 <translation id="4867079195717347957">Klicka här om kolumnen ska sorteras i fallande ordning.</translation>
 <translation id="4867297348137739678">Förra veckan</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> objekt kopieras ...</translation>
 <translation id="7375951387215729722">Fillistan har sorterats efter <ph name="COLUMN_NAME" /> i fallande ordning.</translation>
 <translation id="7377161162143020057">Möjligheten att kopiera den här filen blockeras av administratörspolicyn</translation>
-<translation id="7392500733467492920">kan inte hittas. Kontakta administratören.</translation>
 <translation id="7402503521691663770">ChromeOS Flex-enheter</translation>
 <translation id="7408870451288633753">tjeckiska</translation>
 <translation id="7417453074306512035">Tangentbord för etiopiska</translation>

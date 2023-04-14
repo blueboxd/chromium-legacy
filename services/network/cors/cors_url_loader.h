@@ -33,6 +33,8 @@ namespace network {
 
 class URLLoaderFactory;
 class NetworkContext;
+class SharedDictionaryStorage;
+class SharedDictionaryDataPipeWriter;
 
 namespace cors {
 
@@ -72,6 +74,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
       const mojom::ClientSecurityState* factory_client_security_state,
       const CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      scoped_refptr<SharedDictionaryStorage> shared_dictionary_storage,
       NetworkContext* context);
 
   CorsURLLoader(const CorsURLLoader&) = delete;
@@ -147,9 +150,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
                                  bool is_warning = false);
 
   // Handles OnComplete() callback.
-  void HandleComplete(const URLLoaderCompletionStatus& status);
+  void HandleComplete(URLLoaderCompletionStatus status);
 
   void OnMojoDisconnect();
+
+  void OnNetworkClientMojoDisconnect();
 
   void SetCorsFlagIfNeeded();
 
@@ -192,9 +197,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   PrivateNetworkAccessPreflightBehavior
   GetPrivateNetworkAccessPreflightBehavior() const;
 
+  // Returns `pna_preflight_result_`'s value, then resets it.
+  mojom::PrivateNetworkAccessPreflightResult
+  TakePrivateNetworkAccessPreflightResult();
+
   static absl::optional<std::string> GetHeaderString(
       const mojom::URLResponseHead& response,
       const std::string& header_name);
+
+  void OnSharedDictionaryWritten(bool success);
 
   mojo::Receiver<mojom::URLLoader> receiver_;
 
@@ -307,6 +318,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // `ShouldIgnorePrivateNetworkAccessErrors()`.
   bool sending_pna_only_warning_preflight_ = false;
 
+  // The result of sending a PNA preflight, if any.
+  // Set when a PNA preflight completes. Reset and passed to
+  // `forwarding_client_` via `URLResponseHead` in `OnReceiveRedirect()` and
+  // `OnReceiveResponse()`.
+  mojom::PrivateNetworkAccessPreflightResult pna_preflight_result_ =
+      mojom::PrivateNetworkAccessPreflightResult::kNone;
+
   mojo::Remote<mojom::DevToolsObserver> devtools_observer_;
   base::WeakPtrFactory<mojo::Remote<mojom::DevToolsObserver>>
       weak_devtools_observer_factory_;
@@ -314,6 +332,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   net::NetLogWithSource net_log_;
 
   const raw_ptr<NetworkContext> context_;
+
+  scoped_refptr<SharedDictionaryStorage> shared_dictionary_storage_;
+  std::unique_ptr<SharedDictionaryDataPipeWriter>
+      shared_dictionary_data_pipe_writer_;
+  absl::optional<URLLoaderCompletionStatus> deferred_completion_status_;
 
   // Used to provide weak pointers of this class for synchronously calling
   // URLLoaderClient methods. This should be reset any time

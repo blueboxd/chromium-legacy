@@ -13,7 +13,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/color_util.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -33,36 +32,6 @@ DarkLightModeControllerImpl* g_instance = nullptr;
 constexpr OobeDialogState kStatesSupportingDarkTheme[] = {
     OobeDialogState::MARKETING_OPT_IN, OobeDialogState::THEME_SELECTION};
 
-// Refresh colors of the system on the current color mode. Not only the SysUI,
-// but also all the other components like WebUI. And since
-// DarkLightModeController is kind of NativeTheme of ChromeOS. This will trigger
-// View::OnThemeChanged to live update the colors. The colors live update can
-// happen when color mode changes or wallpaper changes. It is needed when
-// wallpaper changes as the background color is calculated from current
-// wallpaper.
-void RefreshColorsOnColorMode(bool is_dark_mode_enabled) {
-  const SkColor default_color =
-      is_dark_mode_enabled ? gfx::kGoogleGrey900 : SK_ColorWHITE;
-  const SkColor themed_color =
-      ColorUtil::GetBackgroundThemedColor(default_color, is_dark_mode_enabled);
-  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  native_theme->set_use_dark_colors(is_dark_mode_enabled);
-  native_theme->set_user_color(themed_color);
-  native_theme->NotifyOnNativeThemeUpdated();
-
-  auto* native_theme_web = ui::NativeTheme::GetInstanceForWeb();
-  if (!native_theme_web->IsForcedDarkMode()) {
-    // If we're in forced dark mode, leave the value alone to allow the tests to
-    // work.
-    native_theme_web->set_use_dark_colors(is_dark_mode_enabled);
-    native_theme_web->set_preferred_color_scheme(
-        is_dark_mode_enabled ? ui::NativeTheme::PreferredColorScheme::kDark
-                             : ui::NativeTheme::PreferredColorScheme::kLight);
-  }
-  native_theme_web->set_user_color(themed_color);
-  native_theme_web->NotifyOnNativeThemeUpdated();
-}
-
 }  // namespace
 
 DarkLightModeControllerImpl::DarkLightModeControllerImpl()
@@ -77,7 +46,6 @@ DarkLightModeControllerImpl::DarkLightModeControllerImpl()
   if (Shell::HasInstance()) {
     auto* shell = Shell::Get();
     shell->login_screen_controller()->data_dispatcher()->AddObserver(this);
-    shell->wallpaper_controller()->AddObserver(this);
   }
 }
 
@@ -94,8 +62,6 @@ DarkLightModeControllerImpl::~DarkLightModeControllerImpl() {
                                 : nullptr;
     if (data_dispatcher)
       data_dispatcher->RemoveObserver(this);
-
-    shell->wallpaper_controller()->RemoveObserver(this);
   }
 
   cros_styles::SetDebugColorsEnabled(false);
@@ -158,6 +124,12 @@ bool DarkLightModeControllerImpl::IsDarkModeEnabled() const {
     return false;
   }
 
+  // Disable dark mode for Shimless RMA.
+  if (features::IsShimlessRMADarkModeDisabled() &&
+      session_state == session_manager::SessionState::RMA) {
+    return false;
+  }
+
   if (is_dark_mode_enabled_in_oobe_for_testing_.has_value()) {
     return is_dark_mode_enabled_in_oobe_for_testing_.value();
   }
@@ -187,8 +159,7 @@ bool DarkLightModeControllerImpl::IsDarkModeEnabled() const {
     return is_dark_mode_enabled_for_focused_pod_.value();
   }
 
-  // Keep the color mode as DARK in login screen or when dark/light mode feature
-  // is not enabled.
+  // Keep the color mode as DARK in login screen.
   if (!active_user_pref_service_) {
     return true;
   }
@@ -226,10 +197,6 @@ void DarkLightModeControllerImpl::OnFocusPod(const AccountId& account_id) {
           .FindBoolPath(account_id, prefs::kDarkModeEnabled);
 }
 
-void DarkLightModeControllerImpl::OnWallpaperColorsChanged() {
-  RefreshColorsOnColorMode(IsDarkModeEnabled());
-}
-
 void DarkLightModeControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
   active_user_pref_service_ = prefs;
@@ -249,19 +216,11 @@ void DarkLightModeControllerImpl::OnActiveUserPrefServiceChanged(
 
 void DarkLightModeControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
+  auto closure = GetNotifyOnDarkModeChangeClosure();
   if (state != session_manager::SessionState::OOBE &&
       state != session_manager::SessionState::LOGIN_PRIMARY) {
     oobe_state_ = OobeDialogState::HIDDEN;
   }
-
-  // Disable dark mode for Shimless RMA
-  if (features::IsShimlessRMADarkModeDisabled() &&
-      state == session_manager::SessionState::RMA) {
-    RefreshColorsOnColorMode(/*is_dark_mode_enabled=*/false);
-    return;
-  }
-
-  RefreshColorsOnColorMode(IsDarkModeEnabled());
 }
 
 void DarkLightModeControllerImpl::RefreshFeatureState() {}
@@ -281,8 +240,6 @@ void DarkLightModeControllerImpl::NotifyColorModeChanges() {
   for (auto& observer : observers_) {
     observer.OnColorModeChanged(is_enabled);
   }
-
-  RefreshColorsOnColorMode(IsDarkModeEnabled());
 }
 
 base::ScopedClosureRunner
@@ -297,8 +254,11 @@ DarkLightModeControllerImpl::GetNotifyOnDarkModeChangeClosure() {
 
 void DarkLightModeControllerImpl::NotifyIfDarkModeChanged(
     bool old_is_dark_mode_enabled) {
-  if (old_is_dark_mode_enabled == IsDarkModeEnabled())
+  // If this is the first check, always notify.
+  if (last_value_.has_value() &&
+      old_is_dark_mode_enabled == IsDarkModeEnabled()) {
     return;
+  }
   NotifyColorModeChanges();
 }
 

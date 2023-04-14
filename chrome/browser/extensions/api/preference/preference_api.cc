@@ -70,6 +70,8 @@ constexpr char kPermissionErrorMessage[] =
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 constexpr char kPrimaryProfileOnlyErrorMessage[] =
     "You may only access the preference '*' in the primary profile.";
+constexpr char kAshDoesNotSupportPreference[] =
+    "The browser preference is not supported.";
 #endif
 constexpr char kIncognitoKey[] = "incognito";
 constexpr char kScopeKey[] = "scope";
@@ -662,7 +664,7 @@ ExtensionFunction::ResponseAction GetPreferenceFunction::Run() {
   ProduceGetResult(&result, pref->GetValue(), level_of_control, browser_pref,
                    incognito);
 
-  return RespondNow(OneArgument(base::Value(std::move(result))));
+  return RespondNow(WithArguments(std::move(result)));
 }
 
 void GetPreferenceFunction::ProduceGetResult(
@@ -701,6 +703,11 @@ void GetPreferenceFunction::OnLacrosGetSuccess(
     return;
   }
 
+  if (!opt_value) {
+    Respond(Error(kAshDoesNotSupportPreference));
+    return;
+  }
+
   // Get read/write permissions and pref name again.
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
@@ -725,7 +732,7 @@ void GetPreferenceFunction::OnLacrosGetSuccess(
   ProduceGetResult(&result, pref_value, level_of_control, cached_browser_pref_,
                    incognito);
 
-  Respond(OneArgument(base::Value(std::move(result))));
+  Respond(WithArguments(std::move(result)));
 }
 #endif
 

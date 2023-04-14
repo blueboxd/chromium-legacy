@@ -19,7 +19,6 @@
 #include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/task/task_executor.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -1528,67 +1527,6 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
-class PrioritizeCompositingAndLoadingInUseCaseLoadingTest
-    : public MainThreadSchedulerImplTest {
- public:
-  PrioritizeCompositingAndLoadingInUseCaseLoadingTest()
-      : MainThreadSchedulerImplTest(
-            {kPrioritizeCompositingAndLoadingDuringEarlyLoading},
-            {}) {}
-};
-
-TEST_F(PrioritizeCompositingAndLoadingInUseCaseLoadingTest, LoadingUseCase) {
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
-
-  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
-      .WillByDefault(Return(true));
-  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
-      .WillByDefault(Return(true));
-  scheduler_->DidStartProvisionalLoad(true);
-  EnableIdleTasks();
-  base::RunLoop().RunUntilIdle();
-
-  // In early loading policy, loading and composting tasks are prioritized over
-  // other tasks.
-  String early_loading_policy_expected[] = {"C1", "L1", "C2", "L2", "D1",
-                                            "T1", "D2", "T2", "I1"};
-  EXPECT_THAT(run_order,
-              testing::ElementsAreArray(early_loading_policy_expected));
-  EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
-
-  // After OnMainFrameFirstContentfulPaint we should transition to
-  // UseCase::kLoading.
-  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
-      .WillByDefault(Return(false));
-  scheduler_->OnMainFramePaint();
-
-  run_order.clear();
-  PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
-  EnableIdleTasks();
-  base::RunLoop().RunUntilIdle();
-
-  String default_order_expected[] = {"D1", "C1", "T1", "L1", "D2",
-                                     "C2", "T2", "L2", "I1"};
-  EXPECT_THAT(run_order, testing::ElementsAreArray(default_order_expected));
-  EXPECT_EQ(UseCase::kLoading, CurrentUseCase());
-
-  // Advance 15s and try again, the loading policy should have ended and the
-  // task order should return to the NONE use case where loading tasks are no
-  // longer prioritized.
-  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
-      .WillByDefault(Return(false));
-  scheduler_->OnMainFramePaint();
-  test_task_runner_->AdvanceMockTickClock(base::Milliseconds(150000));
-  run_order.clear();
-  PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
-  EnableIdleTasks();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(run_order, testing::ElementsAreArray(default_order_expected));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-}
-
 TEST_F(MainThreadSchedulerImplTest,
        EventConsumedOnCompositorThread_IgnoresMouseMove_WhenMouseUp) {
   DoMainFrame();
@@ -2278,22 +2216,6 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_FALSE(HaveSeenABlockingGesture());
   ForceBlockingInputToBeExpectedSoon();
   EXPECT_FALSE(BlockingInputExpectedSoon());
-}
-
-TEST_F(MainThreadSchedulerImplTest,
-       GetTaskExecutorForCurrentThreadInPostedTask) {
-  base::TaskExecutor* task_executor = base::GetTaskExecutorForCurrentThread();
-  EXPECT_THAT(task_executor, NotNull());
-
-  base::RunLoop run_loop;
-
-  default_task_runner_->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(base::GetTaskExecutorForCurrentThread(), task_executor);
-        run_loop.Quit();
-      }));
-
-  run_loop.Run();
 }
 
 TEST_F(MainThreadSchedulerImplTest, TestBeginMainFrameNotExpectedUntil) {
@@ -3411,15 +3333,7 @@ TEST_F(MainThreadSchedulerImplWithInitalVirtualTimeTest, VirtualTimeOverride) {
   EXPECT_EQ(base::Time::Now(), base::Time::FromJsTime(1000000.0));
 }
 
-class MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest
-    : public MainThreadSchedulerImplTest {
- public:
-  MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest()
-      : MainThreadSchedulerImplTest({kPrioritizeCompositingAfterInput}, {}) {}
-};
-
-TEST_F(MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest,
-       CompositingAfterInput) {
+TEST_F(MainThreadSchedulerImplTest, CompositingAfterInput) {
   Vector<String> run_order;
 
   // Input tasks don't cause compositor tasks to be prioritized unless an input
@@ -3445,7 +3359,7 @@ TEST_F(MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest,
   run_order.clear();
 }
 
-TEST_F(MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest,
+TEST_F(MainThreadSchedulerImplTest,
        CompositorNotPrioritizedAfterContinuousInput) {
   Vector<String> run_order;
 

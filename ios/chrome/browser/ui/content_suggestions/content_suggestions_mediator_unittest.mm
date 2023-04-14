@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/url_loading/fake_url_loading_browser_agent.h"
@@ -110,6 +111,13 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     mediator_.consumer = consumer_;
     mediator_.webStateList = browser_.get()->GetWebStateList();
     mediator_.webState = fake_web_state_.get();
+    NTPMetrics_ = [[NTPHomeMetrics alloc]
+        initWithBrowserState:browser_->GetBrowserState()];
+    mediator_.NTPMetrics = NTPMetrics_;
+    mediator_.NTPMetrics.webState = fake_web_state_.get();
+
+    metrics_recorder_ = [[ContentSuggestionsMetricsRecorder alloc] init];
+    mediator_.contentSuggestionsMetricsRecorder = metrics_recorder_;
 
     promos_manager_ = std::make_unique<MockPromosManager>();
     mediator_.promosManager = promos_manager_.get();
@@ -146,8 +154,10 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
   std::unique_ptr<favicon::LargeIconServiceImpl> large_icon_service_;
   std::unique_ptr<MockPromosManager> promos_manager_;
   ContentSuggestionsMediator* mediator_;
+  NTPHomeMetrics* NTPMetrics_;
   FakeUrlLoadingBrowserAgent* url_loader_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
+  ContentSuggestionsMetricsRecorder* metrics_recorder_;
 };
 
 // Tests that the command is sent to the dispatcher when opening the Reading
@@ -209,6 +219,7 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenMostRecentTab) {
                                   WebStateOpener());
   web::WebState* ntp_web_state = web_state_list_->GetActiveWebState();
   mediator_.webState = ntp_web_state;
+  mediator_.NTPMetrics.webState = ntp_web_state;
   NewTabPageTabHelper::FromWebState(ntp_web_state)->SetShowStartSurface(true);
 
   OCMExpect([consumer_ showReturnToRecentTabTileWithConfig:[OCMArg any]]);

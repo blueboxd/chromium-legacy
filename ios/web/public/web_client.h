@@ -189,6 +189,7 @@ class WebClient {
   virtual void CleanupNativeRestoreURLs(web::WebState* web_state) const;
 
   // Notify the embedder that `web_state` will display a prompt for the user.
+  // Note that the implementation of this method may destroy `web state`.
   virtual void WillDisplayMediaCapturePermissionPrompt(
       web::WebState* web_state) const;
 
@@ -210,6 +211,10 @@ class WebClient {
   // possible.
   virtual bool IsMixedContentAutoupgradeEnabled(
       web::BrowserState* browser_state) const;
+
+  // Returns true if browser lockdown mode is enabled. Default return value is
+  // false.
+  virtual bool IsBrowserLockdownModeEnabled(web::BrowserState* browser_state);
 };
 
 }  // namespace web

@@ -54,8 +54,8 @@
 #include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_client.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
-#include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
@@ -243,34 +243,40 @@ bool ValidateOpenArguments(const AtomicString& method,
 
 class XMLHttpRequest::BlobLoader final
     : public GarbageCollected<XMLHttpRequest::BlobLoader>,
-      public FileReaderLoaderClient {
+      public FileReaderClient {
  public:
   BlobLoader(XMLHttpRequest* xhr, scoped_refptr<BlobDataHandle> handle)
       : xhr_(xhr),
-        loader_(std::make_unique<FileReaderLoader>(
-            FileReaderLoader::kReadByClient,
+        loader_(MakeGarbageCollected<FileReaderLoader>(
             this,
             xhr->GetExecutionContext()->GetTaskRunner(
                 TaskType::kFileReading))) {
     loader_->Start(std::move(handle));
   }
 
-  // FileReaderLoaderClient functions.
-  void DidStartLoading() override {}
-  void DidReceiveDataForClient(const char* data, unsigned length) override {
+  // FileReaderClient functions.
+  FileErrorCode DidStartLoading(uint64_t, uint64_t) override {
+    return FileErrorCode::kOK;
+  }
+  FileErrorCode DidReceiveData(const char* data, unsigned length) override {
     DCHECK_LE(length, static_cast<unsigned>(INT_MAX));
     xhr_->DidReceiveData(data, length);
+    return FileErrorCode::kOK;
   }
   void DidFinishLoading() override { xhr_->DidFinishLoadingFromBlob(); }
   void DidFail(FileErrorCode error) override { xhr_->DidFailLoadingFromBlob(); }
 
   void Cancel() { loader_->Cancel(); }
 
-  void Trace(Visitor* visitor) const { visitor->Trace(xhr_); }
+  void Trace(Visitor* visitor) const override {
+    FileReaderClient::Trace(visitor);
+    visitor->Trace(xhr_);
+    visitor->Trace(loader_);
+  }
 
  private:
   Member<XMLHttpRequest> xhr_;
-  std::unique_ptr<FileReaderLoader> loader_;
+  Member<FileReaderLoader> loader_;
 };
 
 XMLHttpRequest* XMLHttpRequest::Create(ScriptState* script_state) {
@@ -289,7 +295,8 @@ XMLHttpRequest* XMLHttpRequest::Create(ExecutionContext* context) {
 XMLHttpRequest::XMLHttpRequest(ExecutionContext* context,
                                v8::Isolate* isolate,
                                scoped_refptr<const DOMWrapperWorld> world)
-    : ExecutionContextLifecycleObserver(context),
+    : ActiveScriptWrappable<XMLHttpRequest>({}),
+      ExecutionContextLifecycleObserver(context),
       progress_event_throttle_(
           MakeGarbageCollected<XMLHttpRequestProgressEventThrottle>(this)),
       isolate_(isolate),

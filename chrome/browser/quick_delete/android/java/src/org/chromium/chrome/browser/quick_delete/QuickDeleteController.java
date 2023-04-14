@@ -5,6 +5,9 @@
 package org.chromium.chrome.browser.quick_delete;
 
 import android.content.Context;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 import androidx.annotation.NonNull;
 
@@ -12,6 +15,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -38,16 +42,19 @@ public class QuickDeleteController {
      * @param modalDialogManager A {@link ModalDialogManager} to show the quick delete modal dialog.
      * @param snackbarManager A {@link SnackbarManager} to show the quick delete snackbar.
      * @param layoutManager {@link LayoutManager} to use for showing the regular overview mode.
+     * @param tabModelSelector {@link TabModelSelector} to use for opening the links in search
+     *         history disambiguation notice.
      */
     public QuickDeleteController(@NonNull Context context, @NonNull QuickDeleteDelegate delegate,
             @NonNull ModalDialogManager modalDialogManager,
-            @NonNull SnackbarManager snackbarManager, @NonNull LayoutManager layoutManager) {
+            @NonNull SnackbarManager snackbarManager, @NonNull LayoutManager layoutManager,
+            @NonNull TabModelSelector tabModelSelector) {
         mContext = context;
         mDelegate = delegate;
         mSnackbarManager = snackbarManager;
         mLayoutManager = layoutManager;
-        mDialogDelegate =
-                new QuickDeleteDialogDelegate(context, modalDialogManager, this::onDialogDismissed);
+        mDialogDelegate = new QuickDeleteDialogDelegate(
+                context, modalDialogManager, this::onDialogDismissed, tabModelSelector);
     }
 
     /**
@@ -89,6 +96,7 @@ public class QuickDeleteController {
 
     private void onQuickDeleteFinished() {
         navigateToTabSwitcher();
+        triggerHapticFeedback();
         // TODO(crbug.com/1412087): Show post-delete animation.
         showSnackbar();
     }
@@ -99,6 +107,17 @@ public class QuickDeleteController {
     private void navigateToTabSwitcher() {
         if (mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER)) return;
         mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, /*animate=*/true);
+    }
+
+    private void triggerHapticFeedback() {
+        Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        final long duration = 50;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            // Deprecated in API 26.
+            v.vibrate(duration);
+        }
     }
 
     /**

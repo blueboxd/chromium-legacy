@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "chrome/browser/companion/core/features.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
@@ -25,7 +27,10 @@
 class SidePanelToolbarContainerTest : public TestWithBrowserView {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kSidePanelCompanion);
+    scoped_feature_list_.InitWithFeatures(
+        {companion::features::kSidePanelCompanion,
+         features::kSidePanelCompanionDefaultPinned},
+        {});
     TestWithBrowserView::SetUp();
     AddTab(browser_view()->browser(), GURL("http://foo1.com"));
     browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
@@ -97,11 +102,12 @@ TEST_F(SidePanelToolbarContainerTest, CompanionPinnedByDefault) {
 
 TEST_F(SidePanelToolbarContainerTest, ClickingPinnedEntryOpensSidePanel) {
   auto* search_companion_button = GetPinnedEntryButtons()[0];
+  auto* side_panel_button = browser_view()->toolbar()->GetSidePanelButton();
   ClickButton(search_companion_button);
   ASSERT_TRUE(browser_view()->unified_side_panel()->GetVisible());
   ASSERT_EQ(browser_view()->side_panel_coordinator()->GetCurrentEntryId(),
             SidePanelEntry::Id::kSearchCompanion);
-  ASSERT_TRUE(views::InkDrop::Get(search_companion_button)->GetHighlighted());
+  ASSERT_TRUE(views::InkDrop::Get(side_panel_button)->GetHighlighted());
 }
 
 TEST_F(SidePanelToolbarContainerTest,
@@ -154,4 +160,25 @@ TEST_F(SidePanelToolbarContainerTest, PinStateUpdatesOnPrefChange) {
 #else
   ASSERT_FALSE(pinned_buttons[0]->GetVisible());
 #endif
+}
+
+TEST_F(SidePanelToolbarContainerTest, CompanionButtonRemovedOnDSPChange) {
+  // Verify the pinned companion button exists.
+  auto pinned_buttons = GetPinnedEntryButtons();
+  ASSERT_EQ(pinned_buttons.size(), 1u);
+
+  // Update the default search provider.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLData data;
+  data.SetShortName(u"foo.com");
+  data.SetURL("http://foo.com/url?bar={searchTerms}");
+  data.new_tab_url = "https://foo.com/newtab";
+  TemplateURL* template_url =
+      template_url_service->Add(std::make_unique<TemplateURL>(data));
+  template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
+
+  // Verify the button no longer exists.
+  pinned_buttons = GetPinnedEntryButtons();
+  ASSERT_EQ(pinned_buttons.size(), 0u);
 }

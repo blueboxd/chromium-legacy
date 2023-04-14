@@ -120,7 +120,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1257286744552378071">Você informou sua senha em um site que não é gerenciado pela sua organização. Para proteger sua conta, não reutilize sua senha em outros apps e sites.</translation>
 <translation id="1257553931232494454">níveis de zoom</translation>
 <translation id="1262388120645841613"><ph name="MANAGE_CHROME_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Pressione Tab e depois Enter para gerenciar as configurações do Chrome</translation>
-<translation id="1263231323834454256">Lista de leitura</translation>
 <translation id="1264309058268477500">Alternativa</translation>
 <translation id="1264974993859112054">Esportes</translation>
 <translation id="1266469291454105242">Desbloqueio do dispositivo</translation>
@@ -181,7 +180,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1374468813861204354">sugestões</translation>
 <translation id="1375198122581997741">Sobre a versão</translation>
 <translation id="1376836354785490390">Mostrar menos</translation>
-<translation id="1377321085342047638">Número do cartão</translation>
 <translation id="1380591466760231819">Dobra carteira</translation>
 <translation id="138218114945450791">Azul-claro</translation>
 <translation id="1382194467192730611">Dispositivo USB permitido pelo administrador</translation>
@@ -228,7 +226,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1476595624592550506">Mude sua senha</translation>
 <translation id="1482879811280872320">De bicicleta</translation>
 <translation id="1483493594462132177">Enviar</translation>
-<translation id="1484290072879560759">Escolher endereço de entrega</translation>
 <translation id="1492194039220927094">Push de políticas:</translation>
 <translation id="149293076951187737">Ao fechar todas as guias anônimas do Chrome, suas atividades nelas vão ser apagadas deste dispositivo:
           <ph name="BEGIN_LIST" />
@@ -253,10 +250,8 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1529789484829130889">Bandeja 8</translation>
 <translation id="1530707389502320859">O site que você tentou acessar parece falso. Os invasores às vezes imitam sites fazendo pequenas alterações quase imperceptíveis no URL.</translation>
 <translation id="1532118530259321453">Essa página diz</translation>
-<translation id="153384715582417236">Isso é tudo por enquanto</translation>
 <translation id="1536390784834419204">Traduzir página</translation>
 <translation id="1539840569003678498">Relatório enviado:</translation>
-<translation id="154408704832528245">Escolher endereço de entrega</translation>
 <translation id="1549470594296187301">O JavaScript deve ser ativado para usar este recurso.</translation>
 <translation id="1551884710160394169">Software sem custos financeiros e shareware</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
@@ -351,7 +346,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1745880797583122200">Seu navegador é gerenciado</translation>
 <translation id="1746113442205726301">Mudança Y na imagem</translation>
 <translation id="1746531169546376413">0 grau</translation>
-<translation id="17513872634828108">Guias abertas</translation>
 <translation id="1752021286346845558">Caixa de e-mails 8</translation>
 <translation id="1753068535428855445">Namoro e assuntos pessoais</translation>
 <translation id="1753706481035618306">Numero da página</translation>
@@ -363,15 +357,14 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Tente executar o Diagnóstico de Rede do Windows<ph name="END_LINK" />.</translation>
 <translation id="1774592222195216949"><ph name="BEGIN_LINK" />Saiba mais sobre a navegação anônima no Chromium<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
-<translation id="1787142507584202372">Suas guias abertas são exibidas aqui</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1791820510173628507"><ph name="MANAGE_GOOGLE_ACCOUNT_FOCUSED_FRIENDLY_MATCH_TEXT" />. Pressione Tab e depois Enter para gerenciar suas informações, sua privacidade e sua segurança na Conta do Google</translation>
 <translation id="1798447301915465742"><ph name="MULTIPLE_ACTIONS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Várias ações disponíveis. Pressione "Tab" para alternar entre elas</translation>
 <translation id="1800473098294731951">B9</translation>
 <translation id="1801812870656502108">Detalhes do cartão virtual</translation>
 <translation id="1803020234906945288">Alimentação saudável</translation>
-<translation id="1803264062614276815">Nome do titular do cartão</translation>
 <translation id="1803351196216024260">Pode pedir para usar o microfone</translation>
+<translation id="1806174020048213474">Este app quer ter permissão para instalar credenciais de Wi-Fi. Após a configuração, seu <ph name="DEVICE_TYPE" /> se conecta automaticamente às redes Wi-Fi participantes. Para remover essas credenciais, desinstale o app.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1807528111851433570">Página inicial</translation>
 <translation id="180991881384371158">O CVC é um código composto pelos últimos três dígitos que ficam no canto superior direito do verso do cartão.</translation>
@@ -619,7 +612,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2450021089947420533">Jornadas</translation>
 <translation id="2456755709261364512">O nível da bateria precisa estar acima de <ph name="REQUIRED_BATTERY_PRECENT" />%</translation>
 <translation id="2463739503403862330">Preencher</translation>
-<translation id="2465655957518002998">Escolher método de entrega</translation>
 <translation id="2465688316154986572">Grampear</translation>
 <translation id="2465914000209955735">Gerencie os arquivos transferidos por download no Chrome</translation>
 <translation id="2466004615675155314">Mostrar informações da Web</translation>
@@ -675,7 +667,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2576880857912732701">Botão "Gerenciar configurações de segurança". Pressione Enter para gerenciar o Navegação segura e muito mais nas configurações do Chrome</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
-<translation id="2587730715158995865">De <ph name="ARTICLE_PUBLISHER" />. Leia essa matéria e <ph name="OTHER_ARTICLE_COUNT" /> outras.</translation>
 <translation id="2587841377698384444">Código da API do diretório:</translation>
 <translation id="2594318783181750337">Exibição rápida da Web:</translation>
 <translation id="2595719060046994702">Este dispositivo e conta não são gerenciados por uma empresa ou outra organização.</translation>
@@ -735,13 +726,13 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2718207025093645426">O dispositivo ou usuário gerenciado não tem nenhuma política carregada.</translation>
 <translation id="2721148159707890343">Solicitação bem-sucedida</translation>
 <translation id="2723669454293168317">Executar uma confirmação de segurança nas configurações do Chrome</translation>
+<translation id="2725492561136085792">Pressione Enter para ativar essa ação.</translation>
 <translation id="2726001110728089263">Bandeja lateral</translation>
 <translation id="2728127805433021124">O certificado do servidor é assinado com um algoritmo de assinatura fraco.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Executar o Diagnóstico de Conectividade<ph name="END_LINK" /></translation>
 <translation id="2730600605555029057">Música clássica</translation>
 <translation id="2731382536835015353">44 x 68 pol.</translation>
 <translation id="2734319753272419592">Permita que o Google use seus carrinhos para pesquisar descontos personalizados. Quando disponíveis, os descontos vão aparecer automaticamente nos carrinhos.</translation>
-<translation id="2738330467931008676">Escolher endereço de retirada</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2742511345840685325">Tênis de mesa</translation>
 <translation id="2742870351467570537">Remover itens selecionados</translation>
@@ -823,7 +814,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2983666748527428214">Abrir guia anônima</translation>
 <translation id="2985306909656435243">Se esta opção for ativada, o Chromium armazenará uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="2985398929374701810">Informe um endereço válido</translation>
-<translation id="2986368408720340940">Esse método de retirada não está disponível. Tente um método diferente.</translation>
 <translation id="2987034854559945715">Nenhum recurso correspondente</translation>
 <translation id="2989742184762224133">Dois grampos na parte superior</translation>
 <translation id="2991174974383378012">Compartilhar com websites</translation>
@@ -833,6 +823,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="299990983510665749">Carros hatch</translation>
 <translation id="3002501248619246229">Verificar mídia de bandeja de entrada</translation>
 <translation id="3005723025932146533">Mostrar cópia salva</translation>
+<translation id="3009036448238594149"><ph name="ACTION_IN_SUGGEST_FOCUSED_FRIENDLY_MATCH_TEXT" />. Pressione Tab para procurar as ações disponíveis e Enter para executar a selecionada.</translation>
 <translation id="3013291976881901233">Dispositivos MIDI</translation>
 <translation id="301521992641321250">Bloqueada automaticamente</translation>
 <translation id="3016780570757425217">Saber sua localização</translation>
@@ -855,7 +846,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3086579638707268289">Sua atividade na Web está sendo monitorada</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3095940652251934233">Meia carta</translation>
-<translation id="3096100844101284527">Adicionar endereço de retirada</translation>
 <translation id="3096195745018397576">Roupas infantis</translation>
 <translation id="3098513225387949945">Ignorado. A lista "disable" contém um padrão igual a "*", que é equivalente a desativar a política.</translation>
 <translation id="3105172416063519923">Código do recurso:</translation>
@@ -1080,7 +1070,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3631244953324577188">Biometria</translation>
 <translation id="3632503704576938756">O compartilhamento de tela foi retomado</translation>
 <translation id="3632892046558972264">O compartilhamento de tela foi pausado</translation>
-<translation id="3633035844150606508">Salvar endereço na sua Conta do Google, <ph name="ACCOUNT" /></translation>
 <translation id="3633738897356909127">Botão "Atualizar o Chrome". Pressione "Enter" para atualizar o Chrome pelas configurações dele</translation>
 <translation id="3634530185120165534">Bandeja 5</translation>
 <translation id="3634567936866541746">Você acabou de digitar sua senha em um site suspeito. Para proteger suas contas, o Chrome recomenda conferir as senhas salvas.</translation>
@@ -1347,7 +1336,9 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4270541775497538019">Empilhador 6</translation>
 <translation id="4274173425554582601">Computadores e aparelhos eletrônicos</translation>
 <translation id="4275830172053184480">Reiniciar seu dispositivo</translation>
+<translation id="4276974990916607331">Agora não</translation>
 <translation id="4277028893293644418">Redefinir senha</translation>
+<translation id="4277937682389409325">Endereço local</translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="4281998142035485137">{0,plural, =1{Abrir arquivo confidencial?}one{Abrir arquivo confidencial?}other{Abrir arquivos confidenciais?}}</translation>
 <translation id="4282346679996504092">Os alertas para este produto foram desativados e o favorito foi removido</translation>
@@ -1382,7 +1373,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4333561522337981382">Gerenciar janelas em todas as telas</translation>
 <translation id="4340575312453649552">O anúncio usava muitos recursos do seu dispositivo, por isso, ele foi removido pelo Chrome.</translation>
 <translation id="4340982228985273705">Este computador não foi detectado como gerenciado por empresa, portanto, a política só pode instalar automaticamente as extensões hospedadas na Chrome Web Store. O URL de atualização da Chrome Web Store é o seguinte: <ph name="CWS_UPDATE_URL" />.</translation>
-<translation id="4346197816712207223">Cartões de crédito aceitos</translation>
 <translation id="4348834659292907206">A conexão com <ph name="SITE" /> não é segura</translation>
 <translation id="4349365535725594680">Não é possível compartilhar conteúdo confidencial</translation>
 <translation id="4349810866125026513">Continuar</translation>
@@ -1586,7 +1576,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4852429274334674023">Sistemas operacionais</translation>
 <translation id="4853901935952445031">Este site não poderá usar a API U2F depois de fevereiro de 2022. Se o site for seu, faça mudanças para que ele use a API Web Authentication.</translation>
-<translation id="4854362297993841467">Esse método de entrega não está disponível. Tente um método diferente.</translation>
 <translation id="4854853140771946034">Criar rapidamente uma nova nota no Google Keep</translation>
 <translation id="4858792381671956233">Você perguntou aos seus responsáveis se pode visitar este site</translation>
 <translation id="485902285759009870">Confirmando código...</translation>
@@ -1671,7 +1660,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5045550434625856497">Senha incorreta</translation>
 <translation id="5051305769747448211">Shows de comédia ao vivo</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{Para enviar este arquivo usando o Compartilhar por proximidade, libere espaço (<ph name="DISK_SPACE_SIZE" />) no seu dispositivo}one{Para enviar este arquivo usando o Compartilhar por proximidade, libere espaço (<ph name="DISK_SPACE_SIZE" />) no seu dispositivo}other{Para enviar estes arquivos usando o Compartilhar por proximidade, libere espaço (<ph name="DISK_SPACE_SIZE" />) no seu dispositivo}}</translation>
-<translation id="5056549851600133418">Artigos para você</translation>
 <translation id="5060483733937416656">Você escolheu fazer a verificação com o Windows Hello em sites que usam o provedor <ph name="PROVIDER_ORIGIN" />. Esse provedor pode ter armazenado informações sobre sua forma de pagamento, mas você pode <ph name="LINK_TEXT" />.</translation>
 <translation id="5061227663725596739">Você quis dizer "<ph name="LOOKALIKE_DOMAIN" />"?</translation>
 <translation id="5066056036849835175">Histórico de impressão</translation>
@@ -1709,6 +1697,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5129534298163637277">Caixa de diálogo de confirmação</translation>
 <translation id="5135404736266831032">Gerenciar endereços…</translation>
 <translation id="5136841603454277753">Insira o código correto</translation>
+<translation id="5137761395480718572">Este app quer ter permissão para instalar credenciais de Wi-Fi. Após a configuração, seu <ph name="DEVICE_TYPE" /> se conecta automaticamente às redes Wi-Fi participantes. Para remover essas credenciais, desinstale o app. <ph name="LEARN_MORE" /></translation>
 <translation id="5138014172396933048">O cartão virtual não está disponível no momento. Entre em contato com seu banco</translation>
 <translation id="5138227688689900538">Mostrar menos</translation>
 <translation id="5145883236150621069">Código de erro presente na resposta da política</translation>
@@ -1749,6 +1738,8 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5234764350956374838">Dispensar</translation>
 <translation id="5239623327352565343">Acesso à localização permitido</translation>
 <translation id="5242889659037569123">Acessórios de viagem e bagagem</translation>
+<translation id="5244732203286792411">Carregando…
+    Isso pode levar um minuto.</translation>
 <translation id="5250209940322997802">"Conectar à rede"</translation>
 <translation id="52517543715119994">Saiba mais sobre os recursos do Chrome</translation>
 <translation id="5251803541071282808">Nuvem</translation>
@@ -1763,6 +1754,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5273881944177595304">Aplicativos da Web e ferramentas on-line</translation>
 <translation id="5274025349362408263">Livros e literatura</translation>
 <translation id="5279286380302340275">Gerenciar downloads</translation>
+<translation id="5279453600310613955">Agora não</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">Propriedades do documento</translation>
 <translation id="528468243742722775">Fim</translation>
@@ -1788,7 +1780,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5316812925700871227">Girar no sentido anti-horário</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
-<translation id="5324080437450482387">Escolher informações de contato</translation>
 <translation id="5329858041417644019">Seu navegador não é gerenciado</translation>
 <translation id="5332219387342487447">Forma de envio</translation>
 <translation id="5332769172018416402">Pedir por mensagem</translation>
@@ -1802,6 +1793,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5344579389779391559">Esta página pode tentar cobrar pagamento em dinheiro</translation>
 <translation id="5347645913823149105">Botão "Personalizar fontes no Chrome". Pressione Enter para personalizar tamanhos e fontes no Chrome</translation>
 <translation id="5355557959165512791">Não é possível acessar <ph name="SITE" /> neste momento, porque o certificado dele foi revogado. Como os ataques e erros de rede são geralmente temporários, esta página provavelmente funcionará mais tarde.</translation>
+<translation id="5356345925629253198">Os endereços salvos podem ser usados em vários produtos do Google. Esse endereço será salvo na sua Conta do Google <ph name="ACCOUNT" />.</translation>
 <translation id="5357848622083956825">Artes visuais e design</translation>
 <translation id="536296301121032821">Falha ao armazenar as configurações da política</translation>
 <translation id="5363309033720083897">Porta serial permitida pelo administrador</translation>
@@ -1867,7 +1859,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5541086400771735334">Caixa de e-mails 7</translation>
 <translation id="5541546772353173584">Adicione um E-mail</translation>
 <translation id="5543722831081909240">180 graus</translation>
-<translation id="5545756402275714221">Artigos para você</translation>
 <translation id="5551890439174915351">100 x 200 mm</translation>
 <translation id="5552137475244467770">O Chrome verifica periodicamente se suas senhas estão em listas que foram publicadas on-line. Quando isso é feito, as senhas e os nomes de usuário são criptografados para que não possam ser lidos por ninguém, nem o Google.</translation>
 <translation id="5556459405103347317">Recarregar</translation>
@@ -1891,7 +1882,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5593349413089863479">A conexão não é totalmente segura</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
 <translation id="5596939519753369075">2 x 3,5 pol.</translation>
-<translation id="5598944008576757369">Escolher forma de pagamento</translation>
 <translation id="560412284261940334">Gerenciamento não suportado</translation>
 <translation id="5605670050355397069">Tabloide</translation>
 <translation id="5606444889871204172"><ph name="BEGIN_BOLD" />Como gerenciar seus dados<ph name="END_BOLD" />: o Chrome exclui automaticamente sites acessados há mais de quatro semanas. Se um site for acessado de novo, ele poderá reaparecer na lista. Você também pode bloquear um site para que ele não sugira anúncios e desativar as sugestões quando quiser nas configurações do Chrome.</translation>
@@ -1923,7 +1913,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="568292603005599551">Posição X da imagem</translation>
 <translation id="5684277895745049190">Lista</translation>
 <translation id="5684874026226664614">Não foi possível traduzir esta página.</translation>
-<translation id="5685654322157854305">Adicionar endereço de entrega</translation>
 <translation id="5689199277474810259">Exportar para JSON</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="569000877158168851">O valor da DnsOverHttpsTemplates não é relevante e não será usado, a menos que a política DnsOverHttpsMode esteja configurada como <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ou <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -1997,6 +1986,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5872692522325383488">IBAN salvo</translation>
 <translation id="5873013647450402046">O banco precisa confirmar sua identidade.</translation>
 <translation id="5877831137320480913">Beleza e fitness</translation>
+<translation id="5879989559903563723">Não permitido no modo convidado</translation>
 <translation id="5884465125445718607">Envelope chinês 6</translation>
 <translation id="5887400589839399685">Cartão salvo</translation>
 <translation id="5887687176710214216">Última visita: ontem</translation>
@@ -2150,14 +2140,12 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6266934640124581640">Verde-água</translation>
 <translation id="6272088941196661550">Retomar a jornada para ver as atividades relevantes no seu histórico do Chrome</translation>
 <translation id="6272383483618007430">Google Update</translation>
-<translation id="6276112860590028508">As páginas da sua lista de leitura são exibidas aqui</translation>
 <translation id="627746635834430766">Para agilizar o pagamento na próxima vez, salve o cartão e o endereço de faturamento na sua Conta do Google.</translation>
 <translation id="6279183038361895380">Pressione |<ph name="ACCELERATOR" />| para exibir seu cursor</translation>
 <translation id="6280223929691119688">Não é possível entregar nesse endereço. Selecione um endereço diferente.</translation>
 <translation id="6284292079994426700">26 x 38 pol.</translation>
 <translation id="6285507000506177184">Botão "Gerenciar downloads no Chrome". Pressione Enter para gerenciar os arquivos transferidos por download no Chrome</translation>
 <translation id="6289939620939689042">Cor da página</translation>
-<translation id="6290238015253830360">Os artigos sugeridos aparecerão aqui</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6295618774959045776">CVC:</translation>
 <translation id="6295855836753816081">Salvando...</translation>
@@ -2260,6 +2248,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6529173248185917884">Sétimo rolo</translation>
 <translation id="6529602333819889595">&amp;Refazer excluir</translation>
 <translation id="6535751101619004418">Moedas e câmbio</translation>
+<translation id="6536221421038631327">A remoção de uma assinatura do Passpoint do <ph name="DEVICE_TYPE" /> também remove as redes associadas. Entre em contato com "<ph name="FRIENDLY_NAME" />" para fazer mudanças no seu plano de assinatura. <ph name="LEARN_MORE" /></translation>
 <translation id="6540534463546766581">Fundos mútuos</translation>
 <translation id="6545864417968258051">Verificação de Bluetooth</translation>
 <translation id="6547208576736763147">Perfuração dupla no lado esquerdo</translation>
@@ -2350,7 +2339,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="678982761784843853">IDs de conteúdo protegido</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="679355240208270552">Ignorado porque a pesquisa padrão não foi ativada pela política.</translation>
-<translation id="6794049111359324414">Permitir que o app <ph name="APP_NAME" /> configure redes Wi-Fi?</translation>
 <translation id="6794951432696553238">Confirme seus cartões mais rapidamente usando o Windows Hello de agora em diante</translation>
 <translation id="6798460514924505775">Envelope Chou 3</translation>
 <translation id="6805030849054648206">Envelope B6/C4</translation>
@@ -2758,7 +2746,6 @@ Mais detalhes:
 <translation id="7696089921647603491">Rock clássico e antigo</translation>
 <translation id="769721561045429135">No momento, você tem cartões que só podem ser usados neste dispositivo. Clique em "Continuar" para analisá-los.</translation>
 <translation id="7698864304447945242">Atualizar o Google Play Services para RA?</translation>
-<translation id="7699293099605015246">Os artigos não estão disponíveis no momento</translation>
 <translation id="7701040980221191251">Nenhuma</translation>
 <translation id="7701544340847569275">Atualização concluída com erros</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Ir para <ph name="SITE" /> (não seguro)<ph name="END_LINK" /></translation>
@@ -2789,7 +2776,6 @@ Mais detalhes:
 <translation id="776110834126722255">Uso suspenso</translation>
 <translation id="7761159795823346334">Permitir acesso à câmera?</translation>
 <translation id="7761701407923456692">O certificado do servidor não é compatível com o URL.</translation>
-<translation id="7763386264682878361">Analisador de manifesto de pagamento</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7766518757692125295">Skirt</translation>
 <translation id="7773005668374414287">Mesma ordem virada para cima</translation>
@@ -2893,7 +2879,6 @@ Mais detalhes:
 <translation id="8038817883578389970">Corrida de automóveis</translation>
 <translation id="8041089156583427627">Enviar comentários</translation>
 <translation id="8041940743680923270">Usar padrão global (Perguntar)</translation>
-<translation id="8042918947222776840">Escolher método de retirada</translation>
 <translation id="8052898407431791827">Copiado para a área de transferência</translation>
 <translation id="8055534648776115597">Ensino técnico e complementar</translation>
 <translation id="8057711352706143257">O software "<ph name="SOFTWARE_NAME" />" não foi configurado corretamente. A desinstalação do "<ph name="SOFTWARE_NAME" />" costuma resolver o problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -3241,6 +3226,7 @@ Mais detalhes:
 <translation id="8949493680961858543">A1x4</translation>
 <translation id="8951415078585015151">Leis e governo</translation>
 <translation id="8957210676456822347">Autorização de portal cativo</translation>
+<translation id="8959282183248574156"><ph name="NICKNAME_COUNT" />/<ph name="NICKNAME_MAX" /></translation>
 <translation id="8963117664422609631">Acessar configurações do site</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Sugestões:<ph name="MARKUP_2" />certifique-se de que você tenha uma conexão de dados<ph name="MARKUP_3" />atualize esta página da Web mais tarde<ph name="MARKUP_4" />verifique o endereço que digitou<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Salvar cartão</translation>
@@ -3268,7 +3254,6 @@ Mais detalhes:
 <translation id="9008201768610948239">Ignorar</translation>
 <translation id="9018120810758822233">Digite o código de segurança do cartão <ph name="CREDIT_CARD" /></translation>
 <translation id="901834265349196618">e-mail</translation>
-<translation id="9020200922353704812">O endereço de cobrança do cartão é obrigatório</translation>
 <translation id="9020542370529661692">Esta página foi traduzida para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9020742383383852663">A8</translation>
 <translation id="9021429684248523859"><ph name="SHARE_THIS_PAGE_FOCUSED_FRIENDLY_MATCH_TEXT" />. Pressione Tab e depois Enter para compartilhar esta guia com um link, um código QR, uma transmissão, entre outras opções</translation>
@@ -3306,7 +3291,6 @@ Mais detalhes:
 <translation id="9103537084693478942">Software de vídeo</translation>
 <translation id="9103872766612412690">O site <ph name="SITE" /> geralmente usa criptografia para proteger suas informações. Quando o Chromium tentou se conectar a <ph name="SITE" /> dessa vez, o website retornou credenciais
 incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser <ph name="SITE" /> ou quando uma tela de login por Wi-Fi interrompeu a conexão. Suas informações ainda estão protegidas, porque o Chromium interrompeu a conexão antes que os dados fossem trocados.</translation>
-<translation id="9106062320799175032">Adicione um Endereço de Faturamento</translation>
 <translation id="9107467864910557787">Seu navegador é gerenciado por <ph name="MANAGER" /></translation>
 <translation id="91108059142052966">A política do administrador desativará o compartilhamento de tela com <ph name="APPLICATION_TITLE" /> quando houver conteúdo confidencial visível</translation>
 <translation id="9114524666733003316">Confirmando cartão…</translation>
@@ -3327,7 +3311,6 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9141013498910525015">Gerenciar endereços</translation>
 <translation id="9144951720726881238">Data de expiração:</translation>
-<translation id="9148088599418889305">Escolher método de envio</translation>
 <translation id="9148507642005240123">&amp;Desfazer editar</translation>
 <translation id="9150045010208374699">Usar câmera</translation>
 <translation id="9150685862434908345">O administrador pode mudar as configurações do navegador remotamente. A atividade deste dispositivo também pode ser gerenciada fora do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -3363,6 +3346,7 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="922152298093051471">Personalizar o Chrome</translation>
 <translation id="933712198907837967">Diners Club</translation>
+<translation id="934634059306213385">Permitir que o app <ph name="APP_NAME" /> configure redes Wi-Fi?</translation>
 <translation id="936602727769022409">Você pode perder o acesso à sua Conta do Google. O Chromium recomenda que sua senha seja alterada agora. Solicitaremos que você faça login.</translation>
 <translation id="937457230470581909">Zoológicos, aquários e reservas</translation>
 <translation id="937804173274050966"><ph name="BEGIN_BOLD" />Quais dados são usados<ph name="END_BOLD" />: seus temas de anúncios se baseiam no histórico de navegação recente, uma lista de sites que você visitou usando o Chrome neste dispositivo.</translation>
@@ -3378,7 +3362,6 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="964050462028070434">Gerenciar senhas e chaves de acesso…</translation>
 <translation id="96680173638229310">Automóveis e veículos</translation>
 <translation id="969892804517981540">Versão oficial</translation>
-<translation id="973773823069644502">Adicionar endereço de entrega</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Nenhum}=1{1 item}one{# item}other{# itens}}</translation>
 <translation id="976522784004777030">5 x 8 pol.</translation>
 <translation id="977502174772294970">Casamentos</translation>
@@ -3400,7 +3383,6 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
     &lt;li&gt;Tente desinstalar ou desativar o "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Tente conectar-se a outra rede&lt;/li&gt;
     &lt;/ul&gt;</translation>
-<translation id="993612073656736454">Esse app quer ter permissão para configurar novas redes Wi-Fi. Após a configuração, seu <ph name="DEVICE_TYPE" /> se conecta automaticamente às redes Wi-Fi participantes. <ph name="LEARN_MORE" /></translation>
 <translation id="994346157028146140">JIS B1</translation>
 <translation id="997986563973421916">Do Google Pay</translation>
 </translationbundle>

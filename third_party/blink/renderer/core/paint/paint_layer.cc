@@ -124,11 +124,11 @@ struct SameSizeAsPaintLayer : GarbageCollected<PaintLayer>, DisplayItemClient {
 #if DCHECK_IS_ON()
   bool is_destroyed;
 #endif
-  Member<void*> members1[6];
+  Member<void*> members[9];
   PhysicalOffset offset;
   LayoutSize size;
   LayoutUnit layout_units[2];
-  Member<void*> members2[3];
+  std::unique_ptr<void*> pointer;
 };
 
 ASSERT_SIZE(PaintLayer, SameSizeAsPaintLayer);
@@ -165,16 +165,6 @@ PaintLayer* SlowContainingLayer(const PaintLayer* ancestor,
 }
 
 }  // namespace
-
-PaintLayerRareData::PaintLayerRareData()
-    : enclosing_pagination_layer(nullptr) {}
-
-PaintLayerRareData::~PaintLayerRareData() = default;
-
-void PaintLayerRareData::Trace(Visitor* visitor) const {
-  visitor->Trace(enclosing_pagination_layer);
-  visitor->Trace(resource_info);
-}
 
 PaintLayer::PaintLayer(LayoutBoxModelObject* layout_object)
     : is_root_layer_(IsA<LayoutView>(layout_object)),
@@ -234,14 +224,14 @@ void PaintLayer::Destroy() {
 #if DCHECK_IS_ON()
   DCHECK(!is_destroyed_);
 #endif
-  if (rare_data_ && rare_data_->resource_info) {
+  if (resource_info_) {
     const ComputedStyle& style = GetLayoutObject().StyleRef();
     if (style.HasFilter())
-      style.Filter().RemoveClient(*rare_data_->resource_info);
+      style.Filter().RemoveClient(*resource_info_);
     if (auto* reference_clip =
             DynamicTo<ReferenceClipPathOperation>(style.ClipPath()))
-      reference_clip->RemoveClient(*rare_data_->resource_info);
-    rare_data_->resource_info->ClearLayer();
+      reference_clip->RemoveClient(*resource_info_);
+    resource_info_->ClearLayer();
   }
 
   // Reset this flag before disposing scrollable_area_ to prevent
@@ -303,7 +293,6 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
       RuntimeCallStats::CounterId::kUpdateLayerPositionsAfterLayout);
 
   UpdateLayerPositionRecursive();
-  UpdatePaginationRecursive(EnclosingPaginationLayer());
 }
 
 void PaintLayer::UpdateLayerPositionRecursive() {
@@ -356,9 +345,9 @@ void PaintLayer::UpdateTransformAfterStyleChange(
 
   if (has_transform != had_transform) {
     if (has_transform)
-      EnsureRareData().transform = std::make_unique<gfx::Transform>();
+      transform_ = std::make_unique<gfx::Transform>();
     else
-      rare_data_->transform.reset();
+      transform_.reset();
   }
 
   UpdateTransform();
@@ -374,72 +363,6 @@ gfx::Transform PaintLayer::CurrentTransform() const {
   if (gfx::Transform* transform = Transform())
     return *transform;
   return gfx::Transform();
-}
-
-void PaintLayer::ConvertFromFlowThreadToVisualBoundingBoxInAncestor(
-    const PaintLayer* ancestor_layer,
-    PhysicalRect& rect) const {
-  PaintLayer* pagination_layer = EnclosingPaginationLayer();
-  DCHECK(pagination_layer);
-  auto& flow_thread = To<LayoutFlowThread>(pagination_layer->GetLayoutObject());
-
-  // First make the flow thread rectangle relative to the flow thread, not to
-  // |layer|.
-  PhysicalOffset offset_within_pagination_layer;
-  ConvertToLayerCoords(pagination_layer, offset_within_pagination_layer);
-  rect.Move(offset_within_pagination_layer);
-
-  // Then make the rectangle visual, relative to the fragmentation context.
-  // Split our box up into the actual fragment boxes that layout in the
-  // columns/pages and unite those together to get our true bounding box.
-  rect = PhysicalRectToBeNoop(
-      flow_thread.FragmentsBoundingBox(rect.ToLayoutRect()));
-
-  // Finally, make the visual rectangle relative to |ancestorLayer|.
-  if (ancestor_layer->EnclosingPaginationLayer() != pagination_layer) {
-    rect.Move(pagination_layer->VisualOffsetFromAncestor(ancestor_layer));
-    return;
-  }
-  // The ancestor layer is inside the same pagination layer as |layer|, so we
-  // need to subtract the visual distance from the ancestor layer to the
-  // pagination layer.
-  rect.Move(-ancestor_layer->VisualOffsetFromAncestor(pagination_layer));
-}
-
-void PaintLayer::UpdatePaginationRecursive(bool needs_pagination_update) {
-  if (rare_data_)
-    rare_data_->enclosing_pagination_layer = nullptr;
-
-  if (GetLayoutObject().IsLayoutFlowThread())
-    needs_pagination_update = true;
-
-  if (needs_pagination_update) {
-    // Each paginated layer has to paint on its own. There is no recurring into
-    // child layers. Each layer has to be checked individually and genuinely
-    // know if it is going to have to split itself up when painting only its
-    // contents (and not any other descendant layers). We track an
-    // enclosingPaginationLayer instead of using a simple bit, since we want to
-    // be able to get back to that layer easily.
-    if (LayoutFlowThread* containing_flow_thread =
-            GetLayoutObject().FlowThreadContainingBlock())
-      EnsureRareData().enclosing_pagination_layer =
-          containing_flow_thread->Layer();
-  }
-
-  // If this element prevents child painting, then we can skip updating
-  // pagination info, since it won't be used anyway.
-  if (GetLayoutObject().ChildPaintBlockedByDisplayLock())
-    return;
-
-  for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
-    child->UpdatePaginationRecursive(needs_pagination_update);
-}
-
-void PaintLayer::ClearPaginationRecursive() {
-  if (rare_data_)
-    rare_data_->enclosing_pagination_layer = nullptr;
-  for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
-    child->ClearPaginationRecursive();
 }
 
 void PaintLayer::DirtyVisibleContentStatus() {
@@ -660,28 +583,6 @@ void PaintLayer::UpdateLayerPosition() {
     }
   }
 
-  if (PaintLayer* containing_layer = ContainingLayer()) {
-    auto& container = containing_layer->GetLayoutObject();
-    if (GetLayoutObject().IsOutOfFlowPositioned() &&
-        container.IsLayoutInline() &&
-        container.CanContainOutOfFlowPositionedElement(
-            GetLayoutObject().StyleRef().GetPosition())) {
-      // Adjust offset for absolute under in-flow positioned inline.
-      PhysicalOffset offset =
-          To<LayoutInline>(container).OffsetForInFlowPositionedInline(
-              To<LayoutBox>(GetLayoutObject()));
-      local_point += offset;
-    }
-  }
-
-  if (GetLayoutObject().IsInFlowPositioned() &&
-      GetLayoutObject().IsRelPositioned()) {
-    auto new_offset = GetLayoutObject().OffsetForInFlowPosition();
-    if (rare_data_ || !new_offset.IsZero())
-      EnsureRareData().offset_for_in_flow_rel_position = new_offset;
-  } else if (rare_data_) {
-    rare_data_->offset_for_in_flow_rel_position = PhysicalOffset();
-  }
   location_without_position_offset_ = local_point;
 
 #if DCHECK_IS_ON()
@@ -929,9 +830,6 @@ void PaintLayer::RemoveChild(PaintLayer* old_child) {
   if (old_child->has_visible_content_ ||
       old_child->has_visible_self_painting_descendant_)
     MarkAncestorChainForFlagsUpdate();
-
-  if (old_child->EnclosingPaginationLayer())
-    old_child->ClearPaginationRecursive();
 }
 
 void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
@@ -1038,10 +936,8 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
     return nullptr;
 
   location += layer->LocationWithoutPositionOffset();
-  if (layer->GetLayoutObject().IsRelPositioned()) {
-    location += layer->OffsetForInFlowRelPosition();
-  } else if (layer->GetLayoutObject().IsInFlowPositioned()) {
-    location += layer->GetLayoutObject().OffsetForInFlowPosition();
+  if (layer->GetLayoutObject().IsStickyPositioned()) {
+    location += layer->GetLayoutObject().StickyPositionOffset();
   } else if (layer->GetLayoutObject().IsBox() &&
              layer->GetLayoutBox()->HasAnchorScrollTranslation()) {
     location += layer->GetLayoutBox()->AnchorScrollTranslationOffset();
@@ -1061,44 +957,6 @@ void PaintLayer::ConvertToLayerCoords(const PaintLayer* ancestor_layer,
   while (curr_layer && curr_layer != ancestor_layer)
     curr_layer =
         AccumulateOffsetTowardsAncestor(curr_layer, ancestor_layer, location);
-}
-
-void PaintLayer::ConvertToLayerCoords(const PaintLayer* ancestor_layer,
-                                      PhysicalRect& rect) const {
-  PhysicalOffset delta;
-  ConvertToLayerCoords(ancestor_layer, delta);
-  rect.Move(delta);
-}
-
-PhysicalOffset PaintLayer::VisualOffsetFromAncestor(
-    const PaintLayer* ancestor_layer,
-    PhysicalOffset offset) const {
-  if (ancestor_layer == this)
-    return offset;
-  PaintLayer* pagination_layer = EnclosingPaginationLayer();
-  if (pagination_layer == this)
-    pagination_layer = Parent()->EnclosingPaginationLayer();
-  if (!pagination_layer) {
-    ConvertToLayerCoords(ancestor_layer, offset);
-    return offset;
-  }
-
-  auto& flow_thread = To<LayoutFlowThread>(pagination_layer->GetLayoutObject());
-  ConvertToLayerCoords(pagination_layer, offset);
-  offset = PhysicalOffsetToBeNoop(
-      flow_thread.FlowThreadPointToVisualPoint(offset.ToLayoutPoint()));
-  if (ancestor_layer == pagination_layer)
-    return offset;
-
-  if (ancestor_layer->EnclosingPaginationLayer() != pagination_layer) {
-    offset += pagination_layer->VisualOffsetFromAncestor(ancestor_layer);
-  } else {
-    // The ancestor layer is also inside the pagination layer, so we need to
-    // subtract the visual distance from the ancestor layer to the pagination
-    // layer.
-    offset -= ancestor_layer->VisualOffsetFromAncestor(pagination_layer);
-  }
-  return offset;
 }
 
 void PaintLayer::DidUpdateScrollsOverflow() {
@@ -1187,10 +1045,9 @@ void PaintLayer::AppendSingleFragmentForHitTesting(
   ClipRectsContext clip_rects_context(this, fragment.fragment_data,
                                       kExcludeOverlayScrollbarSizeForHitTesting,
                                       respect_overflow_clip);
-  Clipper(GeometryMapperOption::kUseGeometryMapper)
-      .CalculateRects(clip_rects_context, fragment.fragment_data,
-                      fragment.layer_offset, fragment.background_rect,
-                      fragment.foreground_rect);
+  Clipper().CalculateRects(clip_rects_context, fragment.fragment_data,
+                           fragment.layer_offset, fragment.background_rect,
+                           fragment.foreground_rect);
 
   fragments.push_back(fragment);
 }
@@ -1257,10 +1114,9 @@ void PaintLayer::CollectFragments(
         kExcludeOverlayScrollbarSizeForHitTesting, respect_overflow_clip,
         PhysicalOffset());
 
-    Clipper(GeometryMapperOption::kUseGeometryMapper)
-        .CalculateRects(clip_rects_context, fragment_data,
-                        fragment.layer_offset, fragment.background_rect,
-                        fragment.foreground_rect);
+    Clipper().CalculateRects(clip_rects_context, fragment_data,
+                             fragment.layer_offset, fragment.background_rect,
+                             fragment.foreground_rect);
 
     fragment.fragment_data = fragment_data;
 
@@ -1520,6 +1376,14 @@ PaintLayer* PaintLayer::HitTestLayer(
     // Skip if we need layout. This should never happen. See crbug.com/1244130
     NOTREACHED();
     return nullptr;
+  }
+
+  if (const auto* box = GetLayoutBox()) {
+    // A child layer of a <frameset> might have no physical fragments. We can
+    // skip such layer. See ClearNeedsLayoutOnHiddenFrames().
+    if (box->PhysicalFragmentCount() == 0) {
+      return nullptr;
+    }
   }
 
   if (!IsSelfPaintingLayer() && !HasSelfPaintingLayerDescendant())
@@ -2141,13 +2005,15 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   DCHECK(GetLayoutObject().HasClipPath());
   DCHECK(IsSelfPaintingLayer());
 
-  PhysicalRect origin;
-  if (EnclosingPaginationLayer())
-    ConvertFromFlowThreadToVisualBoundingBoxInAncestor(&root_layer, origin);
-  else
+  PhysicalOffset origin;
+  if (RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled()) {
+    origin = GetLayoutObject().LocalToAncestorPoint(
+        origin, &root_layer.GetLayoutObject());
+  } else {
     ConvertToLayerCoords(&root_layer, origin);
+  }
 
-  gfx::PointF point(hit_test_location.Point() - origin.offset);
+  gfx::PointF point(hit_test_location.Point() - origin);
   gfx::RectF reference_box =
       ClipPathClipper::LocalReferenceBox(GetLayoutObject());
 
@@ -2188,20 +2054,6 @@ PhysicalRect PaintLayer::LocalBoundingBox() const {
         PhysicalRect(rect.offset, GetLayoutObject().View()->ViewRect().size));
   }
   return rect;
-}
-
-PhysicalRect PaintLayer::PhysicalBoundingBox(
-    const PaintLayer* ancestor_layer) const {
-  PhysicalOffset offset_from_root;
-  ConvertToLayerCoords(ancestor_layer, offset_from_root);
-  return PhysicalBoundingBox(offset_from_root);
-}
-
-PhysicalRect PaintLayer::PhysicalBoundingBox(
-    const PhysicalOffset& offset_from_root) const {
-  PhysicalRect result = LocalBoundingBox();
-  result.Move(offset_from_root);
-  return result;
 }
 
 void PaintLayer::ExpandRectForSelfPaintingDescendants(
@@ -2275,9 +2127,6 @@ bool PaintLayer::KnownToClipSubtreeToPaddingBox() const {
 }
 
 bool PaintLayer::SupportsSubsequenceCaching() const {
-  if (EnclosingPaginationLayer())
-    return false;
-
   if (const LayoutBox* box = GetLayoutBox()) {
     // TODO(crbug.com/1253797): Revisit this when implementing correct paint
     // order of fragmented stacking contexts.
@@ -2496,10 +2345,8 @@ gfx::Vector2d PaintLayer::PixelSnappedScrolledContentOffset() const {
   return gfx::Vector2d();
 }
 
-PaintLayerClipper PaintLayer::Clipper(
-    GeometryMapperOption geometry_mapper_option) const {
-  return PaintLayerClipper(
-      this, geometry_mapper_option == GeometryMapperOption::kUseGeometryMapper);
+PaintLayerClipper PaintLayer::Clipper() const {
+  return PaintLayerClipper(this);
 }
 
 bool PaintLayer::ScrollsOverflow() const {
@@ -2585,12 +2432,10 @@ void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
 }
 
 PaintLayerResourceInfo& PaintLayer::EnsureResourceInfo() {
-  PaintLayerRareData& rare_data = EnsureRareData();
-  if (!rare_data.resource_info) {
-    rare_data.resource_info =
-        MakeGarbageCollected<PaintLayerResourceInfo>(this);
+  if (!resource_info_) {
+    resource_info_ = MakeGarbageCollected<PaintLayerResourceInfo>(this);
   }
-  return *rare_data.resource_info;
+  return *resource_info_;
 }
 
 void PaintLayer::SetNeedsReorderOverlayOverflowControls(bool b) {
@@ -2736,7 +2581,7 @@ void PaintLayer::Trace(Visitor* visitor) const {
   visitor->Trace(last_);
   visitor->Trace(scrollable_area_);
   visitor->Trace(stacking_node_);
-  visitor->Trace(rare_data_);
+  visitor->Trace(resource_info_);
   DisplayItemClient::Trace(visitor);
 }
 

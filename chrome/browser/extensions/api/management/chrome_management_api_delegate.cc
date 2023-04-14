@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -307,9 +308,9 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     info.name = registrar.GetAppShortName(app_id);
     info.enabled = registrar.IsLocallyInstalled(app_id);
     info.install_type =
-        extensions::api::management::EXTENSION_INSTALL_TYPE_OTHER;
+        extensions::api::management::ExtensionInstallType::kOther;
     info.is_app = true;
-    info.type = extensions::api::management::EXTENSION_TYPE_HOSTED_APP;
+    info.type = extensions::api::management::ExtensionType::kHostedApp;
     info.app_launch_url = registrar.GetAppStartUrl(app_id).spec();
 
     info.icons.emplace();
@@ -327,23 +328,23 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     switch (registrar.GetAppDisplayMode(app_id)) {
       case web_app::DisplayMode::kBrowser:
         info.launch_type =
-            extensions::api::management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB;
+            extensions::api::management::LaunchType::kOpenAsRegularTab;
         break;
       case web_app::DisplayMode::kMinimalUi:
       case web_app::DisplayMode::kStandalone:
         info.launch_type =
-            extensions::api::management::LAUNCH_TYPE_OPEN_AS_WINDOW;
+            extensions::api::management::LaunchType::kOpenAsWindow;
         break;
       case web_app::DisplayMode::kFullscreen:
         info.launch_type =
-            extensions::api::management::LAUNCH_TYPE_OPEN_FULL_SCREEN;
+            extensions::api::management::LaunchType::kOpenFullScreen;
         break;
       // These modes are not supported by the extension app backend.
       case web_app::DisplayMode::kWindowControlsOverlay:
       case web_app::DisplayMode::kTabbed:
       case web_app::DisplayMode::kBorderless:
       case web_app::DisplayMode::kUndefined:
-        info.launch_type = extensions::api::management::LAUNCH_TYPE_NONE;
+        info.launch_type = extensions::api::management::LaunchType::kNone;
         break;
     }
 
@@ -432,7 +433,7 @@ ChromeManagementAPIDelegate::ChromeManagementAPIDelegate() = default;
 
 ChromeManagementAPIDelegate::~ChromeManagementAPIDelegate() = default;
 
-void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
+bool ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
     const extensions::Extension* extension,
     content::BrowserContext* context) const {
   // Look at prefs to find the right launch container.
@@ -443,6 +444,13 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   apps::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
   Profile* profile = Profile::FromBrowserContext(context);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
+  if (extensions::IsExtensionUnsupportedDeprecatedApp(profile,
+                                                      extension->id())) {
+    return false;
+  }
+#endif
   if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
     // If the profile doesn't have an App Service Proxy available, that means
     // this extension has been explicitly permitted to run in an incognito
@@ -462,6 +470,7 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
 
   extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_EXTENSION_API,
                                   extension->GetType());
+  return true;
 }
 
 GURL ChromeManagementAPIDelegate::GetFullLaunchURL(

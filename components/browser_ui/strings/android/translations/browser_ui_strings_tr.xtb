@@ -83,6 +83,7 @@
 <translation id="2434158240863470628">İndirme işlemi tamamlandı <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Bazı sitelerdeki özellikler Gizli modda çalışmayabilir</translation>
 <translation id="2442870161001914531">Her zaman masaüstü sitesini iste</translation>
+<translation id="2479148705183875116">Ayarlar'a git</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
 <translation id="2485422356828889247">Kaldır</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> tarafından yönetiliyor</translation>
@@ -103,6 +104,7 @@
 <translation id="2717722538473713889">E-posta adresleri</translation>
 <translation id="2750481671343847896">Siteler, kimlik hizmetlerinden gelen oturum açma istemlerini gösterebilir.</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> için tüm site izinlerini sıfırlamak istediğinizden emin misiniz?</translation>
+<translation id="2850913818900871965">Mobil cihaz görünümü isteyin</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Önceki parça</translation>
 <translation id="2891975107962658722">Bir sitenin cihazınıza veri kaydetmesini engelleyin</translation>
@@ -172,7 +174,7 @@
 <translation id="4008040567710660924">Belirli bir site için çerezlere izin verin.</translation>
 <translation id="4046123991198612571">Sonraki parça</translation>
 <translation id="4149994727733219643">Web sayfalarının basitleştirilmiş görünümü</translation>
-<translation id="4151930093518524179">Varsayılan zum</translation>
+<translation id="4151930093518524179">Varsayılan yakınlaştırma</translation>
 <translation id="4165986682804962316">Site ayarları</translation>
 <translation id="4169549551965910670">USB cihaza bağlandı</translation>
 <translation id="4194328954146351878">NFC cihazlarda sitelere bilgileri görme ve değiştirme izni vermeden önce sor (önerilir)</translation>
@@ -252,7 +254,7 @@
 <translation id="5556459405103347317">Yeniden Yükle</translation>
 <translation id="5596627076506792578">Diğer seçenekler</translation>
 <translation id="5649053991847567735">Otomatik indirmeler</translation>
-<translation id="5668404140385795438">Web sitesinin yakınlaştırmayı önleme isteğini geçersiz kıl</translation>
+<translation id="5668404140385795438">Web sitesinin yakınlaştırmayı önleme isteğini geçersiz kılın</translation>
 <translation id="5677928146339483299">Engelleniyor</translation>
 <translation id="5689516760719285838">Konum</translation>
 <translation id="5690795753582697420">Kamera, Android ayarlarında kapatıldı</translation>
@@ -423,7 +425,7 @@
 <translation id="8676374126336081632">Girişi temizle</translation>
 <translation id="8681886425883659911">Araya giren veya yanıltıcı reklamlar gösterdiği bilinen sitelerdeki reklamlar engellenir</translation>
 <translation id="868929229000858085">Kişilerinizde arama yapın</translation>
-<translation id="8712637175834984815">Anlaşıldı</translation>
+<translation id="8712637175834984815">Anladım</translation>
 <translation id="8719283222052720129"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında <ph name="APP_NAME" /> için izni açın.</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8730621377337864115">Bitti</translation>

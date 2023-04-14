@@ -142,19 +142,6 @@ class LockContentsViewUnitTest : public LoginTestBase {
   LockContentsViewUnitTest& operator=(LockContentsViewUnitTest&) = delete;
   ~LockContentsViewUnitTest() override = default;
 
-  // Returns true if the easy unlock icon is displayed for |view|.
-  bool IsEasyUnlockIconShowing(LoginBigUserView* view) {
-    if (!view->auth_user()) {
-      return false;
-    }
-
-    views::View* icon =
-        LoginPasswordView::TestApi(
-            LoginAuthUserView::TestApi(view->auth_user()).password_view())
-            .easy_unlock_icon();
-    return icon->GetVisible();
-  }
-
   // Change the active LoginBigUserView by sending a mouse click event.
   void MakeAuthViewActive(LoginBigUserView* view) {
     ui::test::EventGenerator* generator = GetEventGenerator();
@@ -3162,7 +3149,6 @@ TEST_F(LockContentsViewUnitTest, UpdatingSmartLockStateSetsAuthMethod) {
       {SmartLockState::kPhoneFoundLockedAndProximate, true},
       {SmartLockState::kPhoneFoundUnlockedAndDistant, true},
       {SmartLockState::kPhoneAuthenticated, true},
-      {SmartLockState::kPasswordReentryRequired, true},
       {SmartLockState::kPrimaryUserAbsent, true}};
 
   for (const auto& it : state_and_is_auth_method_expected) {
@@ -3204,12 +3190,6 @@ TEST_F(LockContentsViewUnitTest, SmartLockStateHidesPasswordView) {
   DataDispatcher()->SetSmartLockState(account_id,
                                       SmartLockState::kPhoneAuthenticated);
   EXPECT_FALSE(auth_user_view->password_view()->GetVisible());
-
-  // Check that password view becomes visible when auth
-  // factor is in kErrorPermanent state.
-  DataDispatcher()->SetSmartLockState(account_id,
-                                      SmartLockState::kPasswordReentryRequired);
-  EXPECT_TRUE(auth_user_view->password_view()->GetVisible());
 }
 
 TEST_F(LockContentsViewUnitTest, SmartLockStateHidesAuthErrorMessage) {

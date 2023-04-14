@@ -400,7 +400,8 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
   void SendTokenRequest(const GURL& token_url,
                         const std::string& account,
                         const std::string& url_encoded_post_data,
-                        TokenRequestCallback callback) override {
+                        TokenRequestCallback callback,
+                        ContinueOnCallback on_continue) override {
     ++num_fetched_[FetchedEndpoint::TOKEN];
 
     std::string delivered_token =
@@ -461,13 +462,15 @@ class IdpNetworkRequestManagerParamChecker
   void SendTokenRequest(const GURL& token_url,
                         const std::string& account,
                         const std::string& url_encoded_post_data,
-                        TokenRequestCallback callback) override {
+                        TokenRequestCallback callback,
+                        ContinueOnCallback on_continue) override {
     if (expected_selected_account_id_)
       EXPECT_EQ(expected_selected_account_id_, account);
     if (expected_url_encoded_post_data_)
       EXPECT_EQ(expected_url_encoded_post_data_, url_encoded_post_data);
     TestIdpNetworkRequestManager::SendTokenRequest(
-        token_url, account, url_encoded_post_data, std::move(callback));
+        token_url, account, url_encoded_post_data, std::move(callback),
+        std::move(on_continue));
   }
 
  private:
@@ -729,9 +732,11 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
               identity_provider.login_hint.id,
               identity_provider.login_hint.is_required);
       blink::mojom::IdentityProviderConfigPtr config =
-          blink::mojom::IdentityProviderConfig::New(
-              GURL(identity_provider.provider), identity_provider.client_id,
-              identity_provider.nonce, std::move(login_hint_ptr));
+          blink::mojom::IdentityProviderConfig::New();
+      config->config_url = GURL(identity_provider.provider);
+      config->client_id = identity_provider.client_id;
+      config->nonce = identity_provider.nonce;
+      config->login_hint = std::move(login_hint_ptr);
       blink::mojom::IdentityProviderPtr idp_ptr =
           blink::mojom::IdentityProvider::NewFederated(std::move(config));
       idp_ptrs.push_back(std::move(idp_ptr));
@@ -2500,8 +2505,12 @@ TEST_F(FederatedAuthRequestImplTest, ReorderMultipleAccounts) {
       blink::mojom::IdentityProviderLoginHint::New(/*email=*/"", /*id=*/"",
                                                    /*login_hint=*/false);
   blink::mojom::IdentityProviderConfigPtr identity_provider =
-      blink::mojom::IdentityProviderConfig::New(
-          GURL(kProviderUrlFull), kClientId, kNonce, std::move(login_hint_ptr));
+      blink::mojom::IdentityProviderConfig::New();
+  identity_provider->config_url = GURL(kProviderUrlFull);
+  identity_provider->client_id = kClientId;
+  identity_provider->nonce = kNonce;
+  identity_provider->login_hint = std::move(login_hint_ptr);
+
   ComputeLoginStateAndReorderAccounts(identity_provider, multiple_accounts);
 
   // Check the account order using the account ids.

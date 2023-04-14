@@ -646,3 +646,7 @@ NSMenu* AppShimController::GetApplicationDockMenu() {
 
   return dockMenu;
 }
+
+void AppShimController::ApplicationWillTerminate() {
+  host_->ApplicationWillTerminate();
+}

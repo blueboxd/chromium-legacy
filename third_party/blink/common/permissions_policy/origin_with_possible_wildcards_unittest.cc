@@ -6,9 +6,9 @@
 
 #include "base/test/gtest_util.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
-#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/common/permissions_policy/permissions_policy_mojom_traits.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -241,7 +241,44 @@ TEST(OriginWithPossibleWildcardsTest, Serialize) {
   }
 }
 
-TEST(OriginWithPossibleWildcardsTest, Constructors) {
+TEST(OriginWithPossibleWildcardsTest, Mojom) {
+  // Tuple of {origin, wildcard, description}.
+  const auto& values = {
+      std::make_tuple("https://foo.com", false,
+                      "Origin without subdomain wildcard"),
+      std::make_tuple("https://foo.com", true,
+                      "Origin with subdomain wildcard"),
+      std::make_tuple("https://192.168.0.1", false,
+                      "IPv4 without subdomain wildcard"),
+      std::make_tuple("https://192.168.0.1", true,
+                      "IPv4 with subdomain wildcard"),
+      std::make_tuple("https://[2001:db8::1]", false,
+                      "IPv6 without subdomain wildcard"),
+      std::make_tuple("https://[2001:db8::1]", true,
+                      "IPv6 with subdomain wildcard"),
+      std::make_tuple("file://example.com/test", false,
+                      "File host without subdomain wildcard"),
+      std::make_tuple("file://example.com/test", true,
+                      "File host with subdomain wildcard"),
+      std::make_tuple("file:///test", false,
+                      "File path without subdomain wildcard"),
+      std::make_tuple("file:///test", true,
+                      "File path with subdomain wildcard"),
+  };
+  for (const auto& value : values) {
+    SCOPED_TRACE(std::get<2>(value));
+    const auto& original = OriginWithPossibleWildcards(
+        url::Origin::Create(GURL(std::get<0>(value))), std::get<1>(value));
+    OriginWithPossibleWildcards copy;
+    EXPECT_NE(original, copy);
+    EXPECT_TRUE(
+        mojo::test::SerializeAndDeserialize<mojom::OriginWithPossibleWildcards>(
+            original, copy));
+    EXPECT_EQ(original, copy);
+  }
+}
+
+TEST(OriginWithPossibleWildcardsTest, DefaultPorts) {
   OriginWithPossibleWildcards a(url::Origin::Create(GURL("https://google.com")),
                                 false);
   OriginWithPossibleWildcards b(
@@ -250,11 +287,12 @@ TEST(OriginWithPossibleWildcardsTest, Constructors) {
                                 true);
   OriginWithPossibleWildcards d = c;
   EXPECT_EQ(a, b);
-  EXPECT_NE(b, c);
+  EXPECT_NE(a, c);
   EXPECT_EQ(c, d);
   EXPECT_TRUE(
-      mojo::test::SerializeAndDeserialize<network::mojom::CSPSource>(a, b));
-  EXPECT_EQ(a, b);
+      mojo::test::SerializeAndDeserialize<mojom::OriginWithPossibleWildcards>(
+          a, c));
+  EXPECT_EQ(a, c);
 }
 
 TEST(OriginWithPossibleWildcardsTest, Opaque) {
@@ -262,8 +300,9 @@ TEST(OriginWithPossibleWildcardsTest, Opaque) {
   EXPECT_DCHECK_DEATH(OriginWithPossibleWildcards(url::Origin(), false));
   OriginWithPossibleWildcards original;
   OriginWithPossibleWildcards copy;
-  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<network::mojom::CSPSource>(
-      original, copy));
+  EXPECT_FALSE(
+      mojo::test::SerializeAndDeserialize<mojom::OriginWithPossibleWildcards>(
+          original, copy));
 }
 
 }  // namespace blink

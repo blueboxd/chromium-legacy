@@ -284,8 +284,9 @@ void VideoRecordingWatcher::ShutDown() {
   dimmers_.clear();
   ReleaseLayer();
 
-  if (features::IsProjectorEnabled())
+  if (features::IsProjectorEnabled()) {
     ProjectorControllerImpl::Get()->OnRecordingEnded(is_in_projector_mode_);
+  }
 
   window_being_recorded_->RemovePreTargetHandler(this);
   TabletModeController::Get()->RemoveObserver(this);
@@ -297,6 +298,7 @@ void VideoRecordingWatcher::ShutDown() {
         ->cursor_window_controller()
         ->RemoveObserver(this);
   }
+
   // Move the `non_root_window_capture_request_` so that the
   // `window_being_recorded_` is not capturable.
   auto to_be_removed_request = std::move(non_root_window_capture_request_);
@@ -447,8 +449,9 @@ void VideoRecordingWatcher::OnWindowRemovingFromRootWindow(
       std::make_unique<RecordedWindowRootObserver>(current_root_, this);
   controller_->OnRecordedWindowChangingRoot(window_being_recorded_, new_root);
 
-  if (is_in_projector_mode_)
+  if (is_in_projector_mode_) {
     ProjectorControllerImpl::Get()->OnRecordedWindowChangingRoot(new_root);
+  }
 }
 
 void VideoRecordingWatcher::OnPaintLayer(const ui::PaintContext& context) {
@@ -819,7 +822,7 @@ void VideoRecordingWatcher::UpdateCursorOverlayNow(
   DCHECK_NE(cursor.type(), ui::mojom::CursorType::kNull);
 
   absl::optional<ui::CursorData> cursor_data =
-      aura::client::GetCursorShapeClient()->GetCursorData(cursor);
+      aura::client::GetCursorShapeClient().GetCursorData(cursor);
   if (!cursor_data)
     return;
 
@@ -832,7 +835,7 @@ void VideoRecordingWatcher::UpdateCursorOverlayNow(
 
   const gfx::RectF cursor_overlay_bounds = GetCursorOverlayBounds(
       window_being_recorded_, location, cursor_data->hotspot,
-      cursor.image_scale_factor(), cursor_image);
+      cursor_data->scale_factor, cursor_image);
 
   if (cursor != last_cursor_) {
     last_cursor_ = cursor;

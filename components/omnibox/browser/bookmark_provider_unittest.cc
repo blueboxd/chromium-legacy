@@ -10,12 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "base/guid.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/uuid.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -453,7 +453,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
                             TestSchemeClassifier());
     const std::u16string fixed_up_input(
         provider_->FixupUserInput(input).second);
-    BookmarkNode node(/*id=*/0, base::GUID::GenerateRandomV4(),
+    BookmarkNode node(/*id=*/0, base::Uuid::GenerateRandomV4(),
                       GURL(query_data[i].url));
     node.SetTitle(base::ASCIIToUTF16(query_data[i].url));
     TitledUrlMatch bookmark_match;
@@ -547,8 +547,8 @@ TEST_F(BookmarkProviderTest, ShortBookmarks) {
   // be allowed to prefix match. These tests are trying to match the mock
   // bookmark "testing short bookmarks".
 
-  auto short_feature = OmniboxTriggeredFeatureService::Feature::
-      kShortBookmarkSuggestionsByTotalInputLength;
+  auto short_feature = metrics::
+      OmniboxEventProto_Feature_SHORT_BOOKMARK_SUGGESTIONS_BY_TOTAL_INPUT_LENGTH;
 
   {
     SCOPED_TRACE("Default.");
@@ -725,55 +725,12 @@ TEST_F(BookmarkProviderTest, GetMatchesWithBookmarkPaths) {
   base::test::ScopedFeatureList enable_short_bookmarks(
       omnibox::kShortBookmarkSuggestionsByTotalInputLength);
 
-  auto short_feature = OmniboxTriggeredFeatureService::Feature::
-      kShortBookmarkSuggestionsByTotalInputLength;
-  auto paths_feature = OmniboxTriggeredFeatureService::Feature::kBookmarkPaths;
+  auto short_feature = metrics::
+      OmniboxEventProto_Feature_SHORT_BOOKMARK_SUGGESTIONS_BY_TOTAL_INPUT_LENGTH;
 
-  {
-    // When the feature is off, should not return path matched bookmarks nor
-    // trigger counterfactual logging.
-    SCOPED_TRACE("feature disabled");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(omnibox::kBookmarkPaths);
-    TestNumMatchesAndTriggeredFeature("carefully other", 0, {short_feature});
-  }
-
-  {
-    // When enabled without counterfactual logging, should return path matched
-    // bookmark but not trigger counterfactual logging even it path matched.
-    SCOPED_TRACE("feature enabled without counterfactual");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(omnibox::kBookmarkPaths);
-    TestNumMatchesAndTriggeredFeature("carefully other", 1, {short_feature});
-  }
-
-  {
-    // When enabled with "control" counterfactual logging, should not return
-    // path matched bookmarks but trigger counterfactual logging if it path
-    // matched.
-    SCOPED_TRACE("feature enabled with control counterfactual");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kBookmarkPaths,
-        {{OmniboxFieldTrial::kBookmarkPathsCounterfactual.name, "control"}});
-    TestNumMatchesAndTriggeredFeature("carefully", 1, {short_feature});
-    TestNumMatchesAndTriggeredFeature("carefully other", 0,
-                                      {short_feature, paths_feature});
-  }
-
-  {
-    // When enabled with "enabled" counterfactual logging, should return path
-    // matched bookmarks and trigger counterfactual logging if it path
-    // matched.
-    SCOPED_TRACE("feature enabled with enabled counterfactual");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kBookmarkPaths,
-        {{OmniboxFieldTrial::kBookmarkPathsCounterfactual.name, "enabled"}});
-    TestNumMatchesAndTriggeredFeature("carefully", 1, {short_feature});
-    TestNumMatchesAndTriggeredFeature("carefully other", 1,
-                                      {short_feature, paths_feature});
-  }
+  // Should return path matched bookmark.
+  SCOPED_TRACE("feature enabled without counterfactual");
+  TestNumMatchesAndTriggeredFeature("carefully other", 1, {short_feature});
 }
 
 // Make sure that user input is trimmed correctly for starter pack keyword mode.

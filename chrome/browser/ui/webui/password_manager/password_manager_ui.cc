@@ -6,6 +6,7 @@
 
 #include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,6 +42,7 @@
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #endif
 
@@ -76,14 +78,15 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_ACCESSIBLE_NAME},
     {"addPasswordTitle", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD},
     {"addShortcut", IDS_PASSWORD_MANAGER_UI_ADD_SHORTCUT_TITLE},
-    {"addShortcutDescription",
-     IDS_PASSWORD_MANAGER_UI_ADD_SHORTCUT_DESCRIPTION},
     {"alreadyChangedPasswordLink",
      IDS_PASSWORD_MANAGER_UI_ALREADY_CHANGED_PASSWORD},
     {"appsLabel", IDS_PASSWORD_MANAGER_UI_APPS_LABEL},
     {"authTimedOut", IDS_PASSWORD_MANAGER_UI_AUTH_TIMED_OUT},
     {"autosigninDescription", IDS_PASSWORD_MANAGER_UI_AUTOSIGNIN_TOGGLE_DESC},
     {"autosigninLabel", IDS_PASSWORD_MANAGER_UI_AUTOSIGNIN_TOGGLE_LABEL},
+    {"backToCheckup", IDS_PASSWORD_MANAGER_UI_BACK_TO_CHECKUP_ARIA_DESCRIPTION},
+    {"backToPasswords",
+     IDS_PASSWORD_MANAGER_UI_BACK_TO_PASSWORDS_ARIA_DESCRIPTION},
     {"blockedSitesDescription",
      IDS_PASSWORD_MANAGER_UI_BLOCKED_SITES_DESCRIPTION},
     {"blockedSitesEmptyDescription",
@@ -91,6 +94,8 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"blockedSitesTitle", IDS_PASSWORD_MANAGER_UI_BLOCKED_SITES_TITLE},
     {"cancel", IDS_CANCEL},
     {"changePassword", IDS_PASSWORD_MANAGER_UI_CHANGE_PASSWORD_BUTTON},
+    {"changePasswordAriaDescription",
+     IDS_PASSWORD_MANAGER_UI_CHANGE_PASSWORD_BUTTON_ARIA_DESCRIPTION},
     {"changePasswordInApp", IDS_PASSWORD_MANAGER_UI_CHANGE_PASSWORD_IN_APP},
     {"checkup", IDS_PASSWORD_MANAGER_UI_CHECKUP},
     {"checkupCanceled", IDS_PASSWORD_MANAGER_UI_CHECKUP_CANCELED},
@@ -156,16 +161,25 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"help", IDS_PASSWORD_MANAGER_UI_HELP},
     {"hidePassword", IDS_PASSWORD_MANAGER_UI_HIDE_PASSWORD},
     {"importPasswords", IDS_PASSWORD_MANAGER_UI_IMPORT_BANNER_TITLE},
-    {"importPasswordsDescription",
-     IDS_PASSWORD_MANAGER_UI_IMPORT_BANNER_DESCRIPTION},
+    {"importPasswordsDescriptionAccount",
+     IDS_PASSWORD_MANAGER_UI_IMPORT_DESCRIPTION_SYNCING_USERS},
     {"justNow", IDS_PASSWORD_MANAGER_UI_JUST_NOW},
     {"leakedPassword", IDS_PASSWORD_MANAGER_UI_PASSWORD_LEAKED},
     {"localPasswordManager",
      IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE},
     {"manage", IDS_SETTINGS_MANAGE},
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+    {"managePasskeysLabel", IDS_PASSWORD_MANAGER_UI_MANAGE_PASSKEYS_LABEL},
+#endif
     {"menu", IDS_MENU},
     {"missingTLD", IDS_PASSWORD_MANAGER_UI_MISSING_TLD},
     {"moreActions", IDS_PASSWORD_MANAGER_UI_MORE_ACTIONS},
+    {"moreActionsAriaDescription",
+     IDS_PASSWORD_MANAGER_UI_MORE_ACTIONS_ARIA_DESCRIPTION},
+    {"movePasswordsButton", IDS_PASSWORD_MANAGER_UI_MOVE_PASSWORDS_BUTTON},
+    {"movePasswordsDescription",
+     IDS_PASSWORD_MANAGER_UI_MOVE_PASSWORDS_DESCRIPTION},
+    {"movePasswordsTitle", IDS_PASSWORD_MANAGER_UI_MOVE_PASSWORDS_TITLE},
     {"muteCompromisedPassword", IDS_PASSWORD_MANAGER_UI_MUTE_ISSUE},
     {"mutedCompromisedCredentials",
      IDS_PASSWORD_MANAGER_UI_MUTED_COMPROMISED_PASSWORDS},
@@ -188,6 +202,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"phishedPassword", IDS_PASSWORD_MANAGER_UI_PASSWORD_PHISHED},
     {"removeBlockedAriaDescription",
      IDS_PASSWORD_MANAGER_UI_REMOVE_BLOCKED_SITE_ARIA_DESCRIPTION},
+    {"reload", IDS_RELOAD},
     {"reusedPasswordsDescription",
      IDS_PASSWORD_MANAGER_UI_REUSED_PASSWORDS_DESCRIPTION},
     {"reusedPasswordsEmpty", IDS_PASSWORD_MANAGER_UI_NO_REUSED_PASSWORDS},
@@ -197,6 +212,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"save", IDS_SAVE},
     {"savePasswordsLabel", IDS_PASSWORD_MANAGER_UI_SAVE_PASSWORDS_TOGGLE_LABEL},
     {"searchPrompt", IDS_PASSWORD_MANAGER_UI_SEARCH_PROMPT},
+    {"selectFile", IDS_PASSWORD_MANAGER_UI_SELECT_FILE},
     {"settings", IDS_PASSWORD_MANAGER_UI_SETTINGS},
     {"showMore", IDS_PASSWORD_MANAGER_UI_SHOW_MORE},
     {"showPassword", IDS_PASSWORD_MANAGER_UI_SHOW_PASSWORD},
@@ -249,11 +265,6 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
           IDS_PASSWORD_MANAGER_UI_PASSWORDS_DESCRIPTION,
           base::ASCIIToUTF16(chrome::kPasswordManagerLearnMoreURL)));
 
-  source->AddBoolean("isPasswordManagerShortcutInstalled",
-                     web_app::FindInstalledAppWithUrlInScope(
-                         profile, web_ui->GetWebContents()->GetURL())
-                         .has_value());
-
   source->AddString(
       "checkupUrl",
       base::UTF8ToUTF16(
@@ -301,6 +312,26 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
   source->AddString("trustedVaultOptInUrl", chrome::kSyncTrustedVaultOptInURL);
   source->AddString("trustedVaultLearnMoreUrl",
                     chrome::kSyncTrustedVaultLearnMoreURL);
+
+  source->AddString(
+      "addShortcutDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_PASSWORD_MANAGER_UI_ADD_SHORTCUT_DESCRIPTION,
+          l10n_util::GetStringUTF16(
+              IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE)));
+
+  source->AddString(
+      "importPasswordsGenericDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_PASSWORD_MANAGER_UI_IMPORT_DESCRIPTION_ACCOUNT_STORE_USERS,
+          l10n_util::GetStringUTF16(
+              IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE)));
+  source->AddString(
+      "importPasswordsDescriptionDevice",
+      l10n_util::GetStringFUTF16(
+          IDS_PASSWORD_MANAGER_UI_IMPORT_DESCRIPTION_SIGNEDOUT_USERS,
+          l10n_util::GetStringUTF16(
+              IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE)));
 
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
@@ -353,6 +384,9 @@ PasswordManagerUI::PasswordManagerUI(content::WebUI* web_ui)
           profile,
           password_manager::PromoCardInterface::GetAllPromoCardsForProfile(
               profile)));
+#endif
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  web_ui->AddMessageHandler(std::make_unique<settings::PasskeysHandler>());
 #endif
   auto* source = CreateAndAddPasswordsUIHTMLSource(profile, web_ui);
   AddPluralStrings(web_ui);

@@ -450,6 +450,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_BOOKMARK_GROUP_DELETE" desc="Button to delete a folder. [Length: 30em.] [iOS only]">
         Delete Folder
       </message>
+      <message name="IDS_IOS_BOOKMARK_IN_YOUR_GOOGLE_ACCOUNT" desc="The header of the section of the bookmark list that contains bookmarks saved in the google account">
+        In Your Google Account
+      </message>
       <message name="IDS_IOS_BOOKMARK_NAME_FIELD_HEADER" desc="Title shown above bookmark name field on Edit Bookmark screen. [Length: 20em]" meaning="Name of an inanimate object">
         Name
       </message>
@@ -513,6 +516,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_BOOKMARK_NEW_UNDO_BUTTON_TITLE" desc="Text shown for the undo button. [Length: 30em.] [iOS only]">
         Undo
       </message>
+      <message name="IDS_IOS_BOOKMARKS_ACCOUNT_SECTION_TITLE" desc="This string appears on a page of saved bookmarks. It is the heading for a category. The categories indicate where a bookmark is saved: in this string, the bookmarks are saved in the user's Google Account. This is a shortened version of the noun phrase: 'Bookmarks in your Google Account'. If your language permits it, you can omit 'Bookmarks' because it is already at the top of the page. [Length: 40em.] [iOS only]" meaning="Bookmarks in your Google Account">
+        In Your Google Account
+      </message>
+      <message name="IDS_IOS_BOOKMARKS_PROFILE_SECTION_TITLE" desc="This string appears on a page of saved bookmarks. It is the heading for a category. The categories indicate where a bookmark is saved: in this string, the bookmarks are saved locally on the user's device. This is a shortened version of the noun phrase: 'Bookmarks that are only on your device'. If your language permits it, you can omit 'Bookmarks' because it is already at the top of the page. [Length: 40em.] [iOS only]" meaning="Bookmarks that are only on your device">
+        Only on This Device
+      </message>
       <message name="IDS_IOS_BOOKMARKS_FOLDER_NAME_WITH_CLOUD_SLASH_ICON_LABEL" desc="Accessibility label of the cloud.slash icon in the bookmark views on Folder. For voice over only, not in UI. [iOS only]">
         <ph name="FOLDER_NAME">$1<ex>new folder</ex></ph>. Only on this device.
       </message>
@@ -522,15 +531,18 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_BOOKMARK_NEW_ZERO_ITEM_LABEL" desc="Text that indicates that a user has selected zero bookmarks for editing. [Length: 30em.]">
         0 selected
       </message>
-      <message name="IDS_IOS_BOOKMARK_PAGE_SAVED" desc="Presented in a snackbar when bookmarks are created. [Length: 30em.]">
+      <message name="IDS_IOS_BOOKMARK_ONLY_ON_THIS_DEVICE" desc="The header of the section of the bookmark list that contains bookmarks that are on this device and not shared with Google">
+        Only on this device
+      </message>
+      <message name="IDS_IOS_BOOKMARK_PAGE_SAVED" desc="Presented in an infobar when bookmarks are created. [Length: 30em.]">
         {count, plural,
         =1 {Bookmarked}
         other {Bookmarked}}
       </message>
       <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_FOLDER" desc="Presented in a snackbar when  bookmark are created. Specifies in which folder the bookmark was added. [Length: 30em.]">
           {count, plural,
-          =1 {Bookmarked to {title}}
-          other {Bookmarked to {title}}}
+          =1 {Bookmarked to "{title}"}
+          other {Bookmarked to "{title}"}}
       </message>
       <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_INTO_ACCOUNT" desc="Presented in a snackbar when bookmarks are created in an account. Specifies in which folder the bookmark was added. ">
           {count, plural,
@@ -539,8 +551,8 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_INTO_ACCOUNT_FOLDER" desc="Presented in a snackbar when bookmarks are created in the folder named `TITLE` in an account with `EMAIL`.">
          {count, plural,
-         =1 {Bookmark saved to {title} in your account, {email}}
-         other {Bookmarks saved to {title} in your account, {email}}}
+         =1 {Bookmark saved to "{title}" in your account, {email}}
+         other {Bookmarks saved to "{title}" in your account, {email}}}
       </message>
       <message name="IDS_IOS_BOOKMARK_URL_FIELD_HEADER" desc="Title shown above URL field on Edit Bookmark screen. [Length: 20em]">
         URL
@@ -1251,14 +1263,11 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_IDENTITY_DISC_SIGNED_OUT" desc="The content description for a toolbar button displaying the signed-out avatar. Tapping on this button navigates to 'Turn on Sync' page in settings [iOS only].">
         Signed out. Opens dialog to sign in and turn on sync.
       </message>
-      <message name="IDS_IOS_INACTIVE_TABS_BUTTON_TITLE" desc="Title of the button in the Tab Grid that opens the grid of Inactive Tabs.">
-        Inactive Tabs
-      </message>
-      <message name="IDS_IOS_INACTIVE_TABS_TITLE" desc="Title of the grid of Inactive Tabs.">
-        Inactive Tabs
-      </message>
       <message name="IDS_IOS_INACTIVE_TABS_BUTTON_SUBTITLE" desc="Subtitle of the button in the Tab Grid that opens the grid of Inactive Tabs.">
         Tabs not used for <ph name="THRESHOLD">$1<ex>14</ex></ph> days
+      </message>
+      <message name="IDS_IOS_INACTIVE_TABS_BUTTON_TITLE" desc="Title of the button in the Tab Grid that opens the grid of Inactive Tabs.">
+        Inactive Tabs
       </message>
       <message name="IDS_IOS_INACTIVE_TABS_CLOSE_ALL_BUTTON" desc="Title of the Close All Inactive button in the grid of Inactive Tabs.">
         Close All Inactive
@@ -1276,6 +1285,29 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_INACTIVE_TABS_CLOSE_ALL_CONFIRMATION_OPTION" desc="Title of the action that will close all tabs in the grid of Inactive Tabs.">
         Close All
+      </message>
+      <message name="IDS_IOS_INACTIVE_TABS_PREAMBLE" desc="Text displayed at the top of the Inactive Tabs grid, to inform the user about the feature, and link to its settings.">
+        Tabs not used for <ph name="THRESHOLD">$1<ex>14</ex></ph> days or more are moved here. You can change this anytime in <ph name="BEGIN_LINK">BEGIN_LINK</ph>settings<ph name="END_LINK">END_LINK</ph>.
+      </message>
+      <message name="IDS_IOS_INACTIVE_TABS_SETTINGS_HEADER" desc="Header for the inactive tabs settings.">
+        Choose when tabs that haven’t recently been used get moved to the inactive tab section.
+      </message>
+      <message name="IDS_IOS_INACTIVE_TABS_TITLE" desc="Title of the grid of Inactive Tabs.">
+        Inactive Tabs
+      </message>
+      <message name="IDS_IOS_INACTIVE_TABS_USER_EDU_TITLE" desc="Title of the user education panel explaining Inactive Tabs. Title case.">
+        Inactive Tabs Help You Stay Focused
+      </message>
+      <message name="IDS_IOS_INACTIVE_TABS_USER_EDU_SUBTITLE" desc="Subtitle of the user education panel explaining Inactive Tabs.">
+        {COUNT, plural,
+          =1 {Open tabs not used for one day or more get moved to Inactive Tabs so you can easily focus on the tabs you use the most. You can change this anytime in settings.}
+          other {Open tabs not used for {COUNT} days or more get moved to Inactive Tabs so you can easily focus on the tabs you use the most. You can change this anytime in settings.}}
+      </message>
+      <message name="IDS_IOS_INACTIVE_TABS_USER_EDU_DONE" desc="Title of the button dismissing the user education panel explaining Inactive Tabs. Title case.">
+        Done
+      </message>
+      <message name="IDS_IOS_INACTIVE_TABS_USER_EDU_GO_TO_SETTINGS" desc="Title of the button to go to the app's setting from the user education panel explaining Inactive Tabs. Title case.">
+        Go to Settings
       </message>
       <message name="IDS_IOS_INCOGNITO_INTERSTITIAL_LEARN_MORE_HINT" desc="Accessibility hint for the 'Learn more' button in the incognito NTP [iOS only]">
         Learn more about Incognito mode
@@ -1740,7 +1772,6 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_VIEW_CHROME_HISTORY" desc="Subtitle for the View Your Chrome History acceleration pedal in the omnibox that should correspond to the path to History">
        Menu → History
       </message>
-
       <message name="IDS_IOS_OPEN_TABS_LAST_USED" desc="Last used timestamp label [Length: 20em] [iOS only]">
         Last synced: <ph name="LAST_USED_TIME">$1<ex>3 mins ago</ex></ph>
       </message>
@@ -1811,6 +1842,17 @@ Handoff must also be enabled in the General section of Settings, and your device
       </message>
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_SEPARATE_TITLE" desc="The title of the Keep Data Separate option on the Import Data settings screen. [60em]">
         Keep my data separate
+      </message>
+      <message name="IDS_IOS_OPTIONS_INACTIVE_TABS_DISABLED" desc="Option description to disable inactive tabs. (Title case)">
+        Never Move
+      </message>
+      <message name="IDS_IOS_OPTIONS_INACTIVE_TABS_THRESHOLD" desc="Current chosen threshold for the inactive tabs option. (Title case)">
+        {COUNT, plural,
+          =1 {After 1 Day}
+          other {After {COUNT} Days}}
+      </message>
+      <message name="IDS_IOS_OPTIONS_MOVE_INACTIVE_TABS" desc="Title for opening the setting for when tabs should be considered inactive. (Title case)">
+        Move Inactive Tabs
       </message>
       <message name="IDS_IOS_OPTIONS_PRELOAD_WEBPAGES" desc="Title for opening the setting for if/when to preload webpages. [Length: 20em] [iOS only]">
         Preload Webpages
@@ -1888,6 +1930,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS" desc="The action button to dismiss the password bottom sheet and revert to using the keyboard to fill in username and password information on the webpage.">
         No Thanks
+      </message>
+      <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_PASSWORD_MANAGER" desc="The password bottom sheet's long press menu item to open the password manager.">
+        Password Manager
+      </message>
+      <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_SHOW_DETAILS" desc="The password bottom sheet's long press menu item to open the password details page, which displays more information, like username, password and associated website.">
+        Show Details
       </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_CHIP" desc="Acessibility label to describe the UI which displays a product's price in the Price Tracking Item UI.">
           Price
@@ -2155,6 +2203,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_TABLE_VIEW_INFO_BUTTON_ITEM_ACCESSIBILITY_TAP" desc="Accessibility hint for info button items that have a tap functionality.">
         Button
       </message>
+      <message name="IDS_IOS_TABS_MANAGEMENT_SETTINGS" desc="Title for the tabs management panel in settings [Length: 30em] [iOS only]">
+        Tabs
+      </message>
       <message name="IDS_IOS_TAILORED_SECURITY_CONSENTED_ENABLE_MESSAGE_TITLE" desc="Title shown in the iOS message when the account tailored security setting is enabled for a consented primary account">
         Enhanced Protection is On
       </message>
@@ -2261,10 +2312,10 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Chrome is Signed Out
       </message>
       <message name="IDS_IOS_POST_RESTORE_SIGN_IN_ALERT_PROMO_MESSAGE_IPHONE" desc="The message text of the alert post restore sign-in promo. [iOS only]">
-        You were signed out of your account <ph name="USER_NAME">$1<ex>example@gmail.com</ex></ph> as part of your iPhone reset. Tap continue below to sign in.
+        You were signed out of your account, <ph name="USER_NAME">$1<ex>example@gmail.com</ex></ph>, as part of your iPhone reset. To sign back in, tap "Continue" below.
       </message>
       <message name="IDS_IOS_POST_RESTORE_SIGN_IN_ALERT_PROMO_MESSAGE_IPAD" desc="The message text of the alert post restore sign-in promo. [iOS only]">
-        You were signed out of your account <ph name="USER_NAME">$1<ex>example@gmail.com</ex></ph> as part of your iPad reset. Tap continue below to sign in.
+        You were signed out of your account, <ph name="USER_NAME">$1<ex>example@gmail.com</ex></ph>, as part of your iPad reset. To sign back in, tap "Continue" below.
       </message>
       <message name="IDS_IOS_POST_RESTORE_SIGN_IN_ALERT_PROMO_CANCEL_ACTION" desc="The cancel action text of the alert post restore sign-in promo. [iOS only]">
         Ignore
@@ -2640,6 +2691,39 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SETTINGS_ADD_PASSWORD_FOOTER_NON_SYNCING" desc="Disclaimer telling non-syncing users what will happen to their passwords">
         Your password will be saved to your device.
       </message>
+      <message name="IDS_IOS_SET_UP_LIST_ALL_SET_DESCRIPTION" desc="Description for the Set Up List item that tells the user they have completed all tasks.">
+        You'll now get the most out of Chrome on your device.
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_ALL_SET_TITLE" desc="Title for the Set Up List item that tells the user they have completed all tasks.">
+        You're All Set
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_AUTOFILL_DESCRIPTION" desc="Description for the Set Up List item that encourages the user to set up Chrome's autofill settings.">
+        Access your Chrome passwords and more across other apps on this device.
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_AUTOFILL_TITLE" desc="Title for the Set Up List item that encourages the user to set up Chrome's autofill settings.">
+        Use Chrome for Autofill
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_DESCRIPTION" desc="Description for the Set Up List item that encourages the user to set Chrome as their default browser.">
+        Use Chrome anytime you tap links in messages, documents, and other apps.
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE" desc="Title for the Set Up List item that encourages the user to set Chrome as their default browser.">
+        Use Chrome by Default
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_SETTINGS_TURN_OFF" desc="Title for the item to turn off the Set Up List, in the Set Up List Settings action sheet.">
+        Turn off
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_SETTINGS_CANCEL" desc="Title for the item to cancel opening the Set Up List Settings action sheet.">
+        Cancel
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_DESCRIPTION" desc="Description for the Set Up List item that encourages the user to sign in and set up syncing.">
+        Sign in with your Google Account to sync your passwords, history, and more.
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_TITLE" desc="Title for the Set Up List item that encourages the user to sign in and set up syncing.">
+        Sign in and Sync
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_TITLE" desc="Title for the Set Up List - a list of tasks the user might want to complete when first using Chrome.">
+        Get the most out of Chrome
+      </message>
       <message name="IDS_IOS_LEAK_CHECK_SWITCH" desc="Title for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
         Warn You if Passwords Are Exposed in a Data Breach
       </message>
@@ -2725,6 +2809,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT" desc="Footer text of an account address profile when it is viewed in settings. [iOS only]">
           You can use saved addresses across Google products. This address is saved in your Google Account, <ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>.
       </message>
+      <message name="IDS_IOS_AUTOFILL_ADDRESS_MIGRATE_IN_ACCOUNT_FOOTER" desc="Footer text shown in the address migration prompt to account. [iOS only]">
+          This address is saved only to Chrome. To use it across Google products, save it in your Google Account, <ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>.
+      </message>
       <message name="IDS_IOS_SETTINGS_EDIT_AUTOFILL_ADDRESS_REQUIREMENT_ERROR" desc="Error shown when the address is edited in settings and one of the required fields is empty. [iOS only]">
           {count, plural,
           =1 {A required field is empty. Fill it before saving.}
@@ -2789,8 +2876,11 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_CHECKUP" desc="Title for the item in Settings for Password Checkup feature." meaning="Label tells the user about status of Password Checkup [CHAR_LIMIT=25] [iOS only]">
         Password Checkup
       </message>
-      <message name="IDS_IOS_PASSWORD_CHECKUP_ONGOING" desc="Title for the item in Settings for Password Checkup feature while the checks are running." meaning="Label tells the user that their passwords are being checked [CHAR_LIMIT=25] [iOS only]">
-        Checking Passwords...
+      <message name="IDS_IOS_PASSWORD_CHECKUP_ONGOING" desc="In Title Case: Title for the item in Settings for Password Checkup feature while the checks are running. [CHAR_LIMIT=25] [iOS only]" meaning="In Title Case.">
+        Checking Passwords…
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_PASSWORD_CHECKUP_ONGOING" desc="In sentence case: Subtitle for the password check item in Safety Check indicating that the checks are running. Sentence case. [CHAR_LIMIT=25] [iOS only]" meaning="In sentence case.">
+        Checking passwords…
       </message>
       <message name="IDS_IOS_CHECK_PASSWORDS_DESCRIPTION" desc="Description for the Password Check item in Settings." meaning="Label is shown to explain purpose of Password Check feature. This string is shown only if user didn't run Password Check before or check finished due to error without any results.  [iOS only]">
         Keep your passwords safe from security issues
@@ -2809,18 +2899,19 @@ While in Incognito, sites can't use cookies to see your browsing activity across
           =1 {{COUNT} Compromised password}
           other {{COUNT} Compromised passwords}}
       </message>
-      <message name="IDS_IOS_PASSWORD_CHECKUP_COMPROMISED_COUNT" desc="Displays the number of compromised passwords present in the database.">
+      <message name="IDS_IOS_PASSWORD_CHECKUP_COMPROMISED_COUNT" desc="In sentence case: Displays the number of compromised passwords present in the database." meaning="[In sentence case]">
         {COUNT, plural,
-          =1 {{COUNT} Compromised Password}
-          other {{COUNT} Compromised Passwords}}
+          =0 {No compromised passwords}
+          =1 {{COUNT} compromised password}
+          other {{COUNT} compromised passwords}}
       </message>
       <message name="IDS_IOS_PASSWORD_CHECKUP_REUSED_COUNT" desc="Displays the number of reused passwords present in the database. User can only have 2 or more reused passwords, so this string will always be plural.">
-        <ph name="COUNT">$1<ex>2</ex></ph> Reused Passwords
+        <ph name="COUNT">$1<ex>2</ex></ph> reused passwords
       </message>
       <message name="IDS_IOS_PASSWORD_CHECKUP_WEAK_COUNT" desc="Displays the number of weak passwords present in the database.">
         {COUNT, plural,
-          =1 {{COUNT} Weak Password}
-          other {{COUNT} Weak Passwords}}
+          =1 {{COUNT} weak password}
+          other {{COUNT} weak passwords}}
       </message>
       <message name="IDS_IOS_PASSWORD_CHECKUP_DISMISSED_COUNT" desc="Displays the number of compromised password warnings that have been dismissed.">
         {COUNT, plural,
@@ -2873,6 +2964,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_COMPROMISED_PASSWORD_ISSUES_PHISHED_AND_LEAKED_DESCRIPTION" desc="Text explaining the user one of their credentials was phished and leaked. Displayed on the password manager screen showing credentials that have been leaked or phished. [iOS only]">
         Entered on a deceptive site and found in a data breach
+      </message>
+      <message name="IDS_IOS_COMPROMISED_PASSWORD_ISSUES_DISMISSED_WARNINGS_BUTTON_TITLE" desc="Text of the button presenting the password manager screen displaying compromised credential issues dismissed by the user. [iOS only]">
+        Dismissed Warnings (<ph name="COUNT">$1<ex>2</ex></ph>)
       </message>
       <message name="IDS_IOS_CHANGE_COMPROMISED_PASSWORD" desc="Button which is shown on Password Details Screen when password is compromised. [iOS only]" meaning="Telling user to change password on a website since it is compromised.">
         Change Password on Website
@@ -2933,8 +3027,11 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_PASSWORD_CHECKUP_LAST_COMPLETED_CHECK" desc="Subtitle for Password Checkup cell which shows the timestamp of the last check." meaning="Time when passwords were checked last time.">
         Checked <ph name="TIME">$1<ex>10 minutes ago</ex></ph>
       </message>
-      <message name="IDS_IOS_CHECK_FINISHED_JUST_NOW" desc="Used instead of timestamp when Password Check finished less than 1 minute ago." meaning="Check finished just now.">
+      <message name="IDS_IOS_CHECK_FINISHED_JUST_NOW" desc="Used instead of timestamp when Password Check finished less than 1 minute ago." meaning="[In sentence case] Check finished just now.">
         just now
+      </message>
+      <message name="IDS_IOS_CHECK_FINISHED_JUST_NOW_TITLE_CASE" desc="Used instead of timestamp when Password Check finished less than 1 minute ago." meaning="[In Title Case] Check finished just now.">
+        Just Now
       </message>
       <message name="IDS_IOS_CHECK_NEVER_RUN" desc="Used instead of timestamp when Password Check never ran" meaning="Check never run.">
         Check never run.
@@ -3038,7 +3135,7 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SETTINGS_PRIVACY_TITLE" desc="Title for the Privacy and Security preferences.">
         Privacy and Security
       </message>
-      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_PASSWORDS_TITLE" desc="Title for the passwords element of safety check" meaning="Row title to access the passowrd check subpage if a probelm is found with user's saved passwords [CHAR_LIMIT=20]">
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_PASSWORDS_TITLE" desc="Title for the passwords element of safety check" meaning="Row title to access the password check subpage if a probelm is found with user's saved passwords [CHAR_LIMIT=20]">
         Passwords
       </message>
       <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_PASSWORDS_DESCRIPTION" desc="Description text on the password element describing what the password check does.">
@@ -4149,6 +4246,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_VOICE_SEARCH_SETTING_TTS" desc="The label for setting switch enabling text-to-speech response after voice search [Length: 29em] [iOS only]">
         Speak Answers Back
       </message>
+      <message name="IDS_IOS_SIGNIN_PROMO_READING_LIST" desc="Text to inform the user that they can sign in and sync to get the reading list shared between devices.">
+        Sign in to open and save your reading list in your Google Account.
+      </message>
       <message name="IDS_IOS_SIGNIN_PROMO_BOOKMARKS_WITH_UNITY" desc="Text to inform the user that they can sign in and sync to get bookmarks shared between devices. [iOS only]">
         To get your bookmarks on all your devices, turn on sync.
       </message>
@@ -4324,7 +4424,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_ACCOUNT_TABLE_ENTER_PASSPHRASE_MESSAGE" desc="The error message to show in the account table when there is a passphrase error. [iOS only]">
         Sync is not working. To start sync enter your passphrase.
       </message>
-      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_COMPROMISED_PASSWORDS_TITLE" desc="Title for the compromised passwords item in the Password Checkup Homepage. [Length: 16em] [iOS only]">
+      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_COMPROMISED_PASSWORDS_TITLE" desc="In Title Case: Title for the compromised passwords item in the Password Checkup Homepage. [Length: 16em] [iOS only]" meaning="[In Title Case]">
         {count, plural,
           =0 {No Compromised Passwords}
           =1 {{count} Compromised Password}
@@ -4344,7 +4444,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_NO_REUSED_PASSWORDS_TITLE" desc="Title for the reused passwords item in the Password Checkup Homepage when there are no reused passwords. [Length: 16em] [iOS only]">
         Your Passwords are Unique
       </message>
-      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_REUSED_PASSWORDS_TITLE" desc="Title for the reused passwords item in the Password Checkup Homepage when there are reused passwords. User can only have 2 or more reused passwords, so this string will always be plural. [Length: 16em] [iOS only]">
+      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_REUSED_PASSWORDS_TITLE" desc="In Title Case: Title for the reused passwords item in the Password Checkup Homepage when there are reused passwords. User can only have 2 or more reused passwords, so this string will always be plural. [Length: 16em] [iOS only]" meaning="[In Title Case]">
         <ph name="COUNT">$1<ex>2</ex></ph> Reused Passwords
       </message>
       <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_NO_REUSED_PASSWORDS_SUBTITLE" desc="Subitle for the reused passwords item in the Password Checkup Homepage when there are no reused passwords. [iOS only]">
@@ -4356,7 +4456,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_NO_WEAK_PASSWORDS_TITLE" desc="Title for the weak passwords item in the Password Checkup Homepage when there are no weak passwords. [Length: 16em] [iOS only]">
         Your Passwords look Strong
       </message>
-      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_WEAK_PASSWORDS_TITLE" desc="Title for the weak passwords item in the Password Checkup Homepage when there are weak passwords. [Length: 16em] [iOS only]">
+      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_WEAK_PASSWORDS_TITLE" desc="In Title Case: Title for the weak passwords item in the Password Checkup Homepage when there are weak passwords. [Length: 16em] [iOS only]" meaning="[In Title Case]">
         {count, plural,
           =1 {{count} Weak Password}
           other {{count} Weak Passwords}}
@@ -4367,8 +4467,14 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_WEAK_PASSWORDS_SUBTITLE" desc="Subitle for the weak passwords item in the Password Checkup Homepage when there are weak passwords. [iOS only]">
         Create strong passwords
       </message>
-      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_CHECK_AGAIN_BUTTON" desc="Label of a button which starts a new password Check [Length: 22em] [iOS only]">
+      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_CHECK_AGAIN_BUTTON" desc="Label of a button which starts a new password checkup [Length: 22em] [iOS only]">
         Check Again
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_ERROR_DIALOG_TITLE" desc="Title of the error dialog presented to the user when a password checkup failed. [iOS only]">
+        Something went wrong
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_FOOTER" desc="Footer message for the Password Checkup Homepage explaining the purpose of Password Checkup. [iOS only]">
+        Password Checkup reviews your saved passwords and warns you of any online breaches. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more.<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_ITEM_ACCOUNT_ERROR_BADGE_ACCESSIBILITY_HINT" desc="Accessibility hint to let the user know that there is an error badge associated with the listed item. The hint is appended to the a11y message that describes the item. For example, the 'settings' message will become 'settings, account error' when there is an account error badge on the item. [iOS only]">
         Account error

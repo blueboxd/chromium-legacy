@@ -45,12 +45,10 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
-#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -245,11 +243,6 @@ void LayoutView::ComputeLogicalHeight(
   computed_values.extent_ = LayoutUnit(ViewLogicalHeightForBoxSizing());
 }
 
-void LayoutView::UpdateLogicalWidth() {
-  NOT_DESTROYED();
-  SetLogicalWidth(LayoutUnit(ViewLogicalWidthForBoxSizing()));
-}
-
 bool LayoutView::IsChildAllowed(LayoutObject* child,
                                 const ComputedStyle&) const {
   NOT_DESTROYED();
@@ -339,6 +332,9 @@ void LayoutView::UpdateBlockLayout(bool relayout_children) {
     return;
 
   LayoutBlockFlow::UpdateBlockLayout(relayout_children);
+
+  // TODO(1229581): Remove this logic.
+  NOTREACHED_NORETURN();
 }
 
 void LayoutView::UpdateLayout() {
@@ -352,11 +348,9 @@ void LayoutView::UpdateLayout() {
     if (!fragmentation_context_) {
       fragmentation_context_ =
           MakeGarbageCollected<ViewFragmentationContext>(*this);
-      pagination_state_changed_ = true;
     }
   } else if (fragmentation_context_) {
     fragmentation_context_.Clear();
-    pagination_state_changed_ = true;
   }
 
   DCHECK(!layout_state_);
@@ -458,13 +452,13 @@ TrackedDescendantsMap& LayoutView::SvgTextDescendantsMap() {
 
 void LayoutView::Paint(const PaintInfo& paint_info) const {
   NOT_DESTROYED();
-  ViewPainter(*this).Paint(paint_info);
+  NOTREACHED_NORETURN();
 }
 
 void LayoutView::PaintBoxDecorationBackground(const PaintInfo& paint_info,
                                               const PhysicalOffset&) const {
   NOT_DESTROYED();
-  ViewPainter(*this).PaintBoxDecorationBackground(paint_info);
+  NOTREACHED_NORETURN();
 }
 
 void LayoutView::InvalidatePaintForViewAndDescendants() {
@@ -878,16 +872,11 @@ void LayoutView::UpdateHitTestResult(HitTestResult& result,
     PhysicalOffset adjusted_point = point;
     if (const auto* layout_box = node->GetLayoutBox())
       adjusted_point -= layout_box->PhysicalLocation();
-    OffsetForContents(adjusted_point);
+    if (IsScrollContainer()) {
+      adjusted_point += PhysicalOffset(PixelSnappedScrolledContentOffset());
+    }
     result.SetNodeAndPosition(node, adjusted_point);
   }
-}
-
-IntervalArena* LayoutView::GetIntervalArena() {
-  NOT_DESTROYED();
-  if (!interval_arena_)
-    interval_arena_ = IntervalArena::Create();
-  return interval_arena_.get();
 }
 
 bool LayoutView::BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const {
@@ -979,14 +968,6 @@ PhysicalRect LayoutView::DebugRect() const {
                                 ViewHeight(kIncludeScrollbars)));
 }
 
-bool LayoutView::UpdateLogicalWidthAndColumnWidth() {
-  NOT_DESTROYED();
-  bool relayout_children = LayoutBlockFlow::UpdateLogicalWidthAndColumnWidth();
-  // When we're printing, the size of LayoutView is changed outside of layout,
-  // so we'll fail to detect any changes here. Just return true.
-  return relayout_children || ShouldUsePrintingLayout();
-}
-
 CompositingReasons LayoutView::AdditionalCompositingReasons() const {
   NOT_DESTROYED();
   // TODO(lfg): Audit for portals
@@ -1025,10 +1006,7 @@ void LayoutView::UpdateMarkersAndCountersAfterStyleChange(
 
   for (LayoutObject* layout_object = start; layout_object;
        layout_object = layout_object->NextInPreOrder(stay_within)) {
-    if (auto* list_item = DynamicTo<LayoutListItem>(layout_object)) {
-      list_item->UpdateCounterStyle();
-    } else if (auto* ng_list_item =
-                   DynamicTo<LayoutNGListItem>(layout_object)) {
+    if (auto* ng_list_item = DynamicTo<LayoutNGListItem>(layout_object)) {
       ng_list_item->UpdateCounterStyle();
     } else if (auto* counter = DynamicTo<LayoutCounter>(layout_object)) {
       counter->UpdateCounter();

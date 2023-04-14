@@ -45,7 +45,6 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
-#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/shared_image_stub.h"
 #include "media/base/limits.h"
 #include "media/base/mac/color_space_util_mac.h"
@@ -70,6 +69,11 @@
 namespace media {
 
 namespace {
+
+// Controls whether InitializeVideoToolboxInternal() does preload or not.
+BASE_FEATURE(kSkipVideoToolboxPreload,
+             "SkipVideoToolboxPreload",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Parameter sets vector contain all PPSs/SPSs(/VPSs)
 using ParameterSets = std::vector<base::span<const uint8_t>>;
@@ -360,6 +364,16 @@ bool InitializeVideoToolboxInternal() {
   if(!__builtin_available(macOS 10.10,*)) {
     return false;
   }
+
+  if (base::FeatureList::IsEnabled(kSkipVideoToolboxPreload)) {
+    // When skipping preload we still need to register vp9, otherwise it won't
+    // work at all.
+    if (__builtin_available(macOS 11.0, *)) {
+      VTRegisterSupplementalVideoDecoderIfAvailable(kCMVideoCodecType_VP9);
+    }
+    return true;
+  }
+
   VTDecompressionOutputCallbackRecord callback = {0};
   base::ScopedCFTypeRef<VTDecompressionSessionRef> session;
   gfx::Size configured_size;
@@ -535,13 +549,13 @@ void OutputThunk(void* decompression_output_refcon,
 
 gfx::BufferFormat ToBufferFormat(viz::SharedImageFormat format) {
   DCHECK(format.is_multi_plane());
-  if (format == viz::MultiPlaneFormat::kYVU_420) {
+  if (format == viz::MultiPlaneFormat::kYV12) {
     return gfx::BufferFormat::YVU_420;
   }
-  if (format == viz::MultiPlaneFormat::kYUV_420_BIPLANAR) {
+  if (format == viz::MultiPlaneFormat::kNV12) {
     return gfx::BufferFormat::YUV_420_BIPLANAR;
   }
-  if (format == viz::MultiPlaneFormat::kYUVA_420_TRIPLANAR) {
+  if (format == viz::MultiPlaneFormat::kNV12A) {
     return gfx::BufferFormat::YUVA_420_TRIPLANAR;
   }
   if (format == viz::MultiPlaneFormat::kP010) {
@@ -549,11 +563,6 @@ gfx::BufferFormat ToBufferFormat(viz::SharedImageFormat format) {
   }
   NOTREACHED();
   return gfx::BufferFormat::RGBA_8888;
-}
-
-bool MultiPlaneFormatForHardwareVideoEnabled() {
-  return base::FeatureList::IsEnabled(features::kPassthroughYuvRgbConversion) &&
-         base::FeatureList::IsEnabled(kUseMultiPlaneFormatForHardwareVideo);
 }
 
 }  // namespace
@@ -2208,7 +2217,7 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
     picture_size_ = frame.image_size;
 
     if (has_alpha_) {
-      si_format_ = viz::MultiPlaneFormat::kYUVA_420_TRIPLANAR;
+      si_format_ = viz::MultiPlaneFormat::kNV12A;
       picture_format_ = PIXEL_FORMAT_NV12A;
     } else if (config_.profile == VP9PROFILE_PROFILE2 ||
                config_.profile == HEVCPROFILE_MAIN10 ||
@@ -2216,7 +2225,7 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
       si_format_ = viz::MultiPlaneFormat::kP010;
       picture_format_ = PIXEL_FORMAT_P016LE;
     } else {
-      si_format_ = viz::MultiPlaneFormat::kYUV_420_BIPLANAR;
+      si_format_ = viz::MultiPlaneFormat::kNV12;
       picture_format_ = PIXEL_FORMAT_NV12;
     }
 
@@ -2247,7 +2256,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
   const gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
   std::vector<gfx::BufferPlane> planes;
-  if (MultiPlaneFormatForHardwareVideoEnabled()) {
+  if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
     planes.push_back(gfx::BufferPlane::DEFAULT);
   } else {
     switch (picture_format_) {
@@ -2294,7 +2303,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
       gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
       bool success;
-      if (MultiPlaneFormatForHardwareVideoEnabled()) {
+      if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
         success = shared_image_stub->CreateSharedImage(
             mailbox, std::move(handle), si_format_, frame_size, color_space,
             kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType, shared_image_usage);
@@ -2374,7 +2383,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   picture.set_read_lock_fences_enabled(true);
   if (frame.hdr_metadata)
     picture.set_hdr_metadata(frame.hdr_metadata);
-  if (MultiPlaneFormatForHardwareVideoEnabled()) {
+  if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
     picture.set_shared_image_format_type(
         SharedImageFormatType::kSharedImageFormat);
   }

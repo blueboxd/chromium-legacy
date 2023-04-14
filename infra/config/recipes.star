@@ -120,6 +120,10 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:build_perf_siso",
+)
+
+build_recipe(
     name = "recipe:celab",
 )
 
@@ -203,6 +207,10 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_upload_clang",
+)
+
+build_recipe(
+    name = "recipe:chromium_upload_rust",
 )
 
 build_recipe(

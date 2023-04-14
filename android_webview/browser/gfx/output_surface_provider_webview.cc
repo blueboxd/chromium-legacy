@@ -57,6 +57,14 @@ GLSurfaceContextPair GetRealContextForVulkan() {
   // not having any real EGL context in that case instead of crashing.
   if (surface) {
     gl::GLContextAttribs attribs;
+
+    // This context is used on the GPU thread. We must avoid it being put in a
+    // virtualization group with contexts that Chrome creates and uses on other
+    // threads to avoid EGL_BAD_ACCESS errors when ANGLE tries to make the
+    // underlying native context current on multiple threads simultaneously.
+    attribs.angle_context_virtualization_group_number =
+        gl::AngleContextVirtualizationGroup::kWebViewRenderThread;
+
     context = gl::init::CreateGLContext(nullptr, surface.get(), attribs);
   }
   DCHECK(context);
@@ -154,8 +162,10 @@ void OutputSurfaceProviderWebView::InitializeContext() {
     auto share_group = base::MakeRefCounted<gl::GLShareGroup>();
     gl::GLContextAttribs attribs;
     // For ANGLE EGL, we need to create ANGLE context from the current native
-    // EGL context.
+    // EGL context and restore state of the native EGL context when releasing
+    // the ANGLE context.
     attribs.angle_create_from_external_context = is_angle;
+    attribs.angle_restore_external_context_state = is_angle;
 
     if (is_angle && display->ext->b_EGL_ANGLE_create_context_client_arrays) {
       // By default client arrays are disabled as they are not supported by
@@ -192,9 +202,8 @@ void OutputSurfaceProviderWebView::InitializeContext() {
         std::move(feature_info));
   }
 
-  shared_context_state_->InitializeGrContext(
-      GpuServiceWebView::GetInstance()->gpu_preferences(), workarounds,
-      nullptr /* gr_shader_cache */);
+  shared_context_state_->InitializeSkia(
+      GpuServiceWebView::GetInstance()->gpu_preferences(), workarounds);
 }
 
 std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>

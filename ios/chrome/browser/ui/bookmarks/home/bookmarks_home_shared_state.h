@@ -22,13 +22,29 @@ class BookmarkNode;
 }  // namespace bookmarks
 
 typedef NS_ENUM(NSInteger, BookmarksHomeSectionIdentifier) {
+  // Section to invite the user to sign in and sync.
   BookmarksHomeSectionIdentifierPromo = kSectionIdentifierEnumZero,
+  // Section to display either:
+  // * The bookmarks of current search result or
+  // * the bookmarks of the currently displayed folder, assuming it’s not root.
   BookmarksHomeSectionIdentifierBookmarks,
+  // Section to display the root folders of the profile. See go/b4b-ios.
+  BookmarksHomeSectionIdentifierRootProfile,
+  // Section to display the root folders of the account. See go/b4b-ios.
+  BookmarksHomeSectionIdentifierRootAccount,
+  // Section to display a message, such as "no result" for a search.
   BookmarksHomeSectionIdentifierMessages,
 };
 
+// Whether this section contains bookmarks nodes.
+// This function return true even on a section that is empty, as soon as it
+// could possibly contains bookmark node.
+bool IsABookmarkNodeSectionIdentifier(
+    BookmarksHomeSectionIdentifier sectionIdentifier);
+
 typedef NS_ENUM(NSInteger, BookmarksHomeItemType) {
-  BookmarksHomeItemTypePromo = kItemTypeEnumZero,
+  BookmarksHomeItemTypeHeader = kItemTypeEnumZero,
+  BookmarksHomeItemTypePromo,
   BookmarksHomeItemTypeBookmark,
   BookmarksHomeItemTypeMessage,
 };
@@ -49,8 +65,11 @@ typedef NS_ENUM(NSInteger, BookmarksHomeItemType) {
 @property(nonatomic, strong) TableViewModel* tableViewModel;
 
 // The model holding profile bookmark data.
-@property(nonatomic, readonly, assign)
+@property(nonatomic, assign, readonly)
     bookmarks::BookmarkModel* profileBookmarkModel;
+// The model holding account bookmark data.
+@property(nonatomic, assign, readonly)
+    bookmarks::BookmarkModel* accountBookmarkModel;
 
 // Views.
 
@@ -110,10 +129,16 @@ typedef NS_ENUM(NSInteger, BookmarksHomeItemType) {
 // Max number of favicon download requests in the lifespan of this tableView.
 + (NSUInteger)maxDownloadFaviconCount;
 
-- (instancetype)initWithProfileBookmarkModel:
-                    (bookmarks::BookmarkModel*)profileBookmarkModel
-                           displayedRootNode:
-                               (const bookmarks::BookmarkNode*)displayedRootNode
+// Initializes BookmarksHomeSharedState.
+// `profileBookmarkModel` cannot be nullptr.
+// `accountBookmarkModel` if kEnableBookmarksAccountStorage is enabled,
+// the model cannot be nullptr,. Otherwise, it has to be nullptr.
+// `displayedRootNode` is the displayed folder. cannot be nullptr.
+- (instancetype)
+    initWithProfileBookmarkModel:(bookmarks::BookmarkModel*)profileBookmarkModel
+            accountBookmarkModel:(bookmarks::BookmarkModel*)accountBookmarkModel
+               displayedRootNode:
+                   (const bookmarks::BookmarkNode*)displayedRootNode
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

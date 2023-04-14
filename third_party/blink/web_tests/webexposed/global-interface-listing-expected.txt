@@ -2961,7 +2961,6 @@ interface GPUDevice : EventTarget
     method createShaderModule
     method createTexture
     method destroy
-    method experimentalImportTexture
     method importExternalTexture
     method popErrorScope
     method pushErrorScope
@@ -3163,6 +3162,7 @@ interface Gamepad
     getter index
     getter mapping
     getter timestamp
+    getter touchEvents
     getter vibrationActuator
     method constructor
 interface GamepadAxisEvent : GamepadEvent
@@ -3192,6 +3192,13 @@ interface GamepadHapticActuator
     method constructor
     method playEffect
     method reset
+interface GamepadTouch
+    attribute @@toStringTag
+    getter position
+    getter surfaceDimensions
+    getter surfaceId
+    getter touchId
+    method constructor
 interface Geolocation
     attribute @@toStringTag
     method clearWatch
@@ -5515,6 +5522,7 @@ interface MLGraphBuilder
     method constant
     method constructor
     method conv2d
+    method convTranspose2d
     method div
     method gemm
     method hardSwish
@@ -5525,6 +5533,7 @@ interface MLGraphBuilder
     method min
     method mul
     method pad
+    method prelu
     method relu
     method resample2d
     method reshape
@@ -5786,6 +5795,7 @@ interface MediaDevices : EventTarget
     getter ondevicechange
     method constructor
     method enumerateDevices
+    method getAllScreensMedia
     method getDisplayMedia
     method getDisplayMediaSet
     method getSupportedConstraints
@@ -6234,6 +6244,7 @@ interface NavigateEvent : Event
     getter navigationType
     getter signal
     getter userInitiated
+    method commit
     method constructor
     method intercept
     method scroll
@@ -6868,6 +6879,7 @@ interface PerformanceEventTiming : PerformanceEntry
     method toJSON
 interface PerformanceLongAnimationFrameTiming : PerformanceEntry
     attribute @@toStringTag
+    getter blockingDuration
     getter desiredRenderStart
     getter firstUIEventTimestamp
     getter renderStart
@@ -7180,6 +7192,7 @@ interface PublicKeyCredential : Credential
     getter response
     method constructor
     method getClientExtensionResults
+    method toJSON
 interface PushManager
     static getter supportedContentEncodings
     attribute @@toStringTag
@@ -9161,6 +9174,7 @@ interface StorageBucket
     getter caches
     getter indexedDB
     getter locks
+    getter name
     method constructor
     method durability
     method estimate
@@ -9410,11 +9424,11 @@ interface TextTrackList : EventTarget
     setter onremovetrack
 interface TextUpdateEvent : Event
     attribute @@toStringTag
-    getter newSelectionEnd
-    getter newSelectionStart
+    getter selectionEnd
+    getter selectionStart
+    getter text
     getter updateRangeEnd
     getter updateRangeStart
-    getter updateText
     method constructor
 interface TimeRanges
     attribute @@toStringTag

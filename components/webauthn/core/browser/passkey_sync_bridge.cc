@@ -11,6 +11,7 @@
 
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/flat_tree.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
@@ -48,10 +49,6 @@ std::unique_ptr<syncer::EntityData> CreateEntityData(
       base::HexEncode(base::as_bytes(base::make_span(specifics.sync_id())));
   *entity_data->specifics.mutable_webauthn_credential() = specifics;
   return entity_data;
-}
-
-std::string RandomSyncId() {
-  return base::RandBytesAsString(kSyncIdLength);
 }
 
 bool WebauthnCredentialSpecificsValid(
@@ -183,13 +180,8 @@ std::string PasskeySyncBridge::GetStorageKey(
   return entity_data.specifics.webauthn_credential().sync_id();
 }
 
-void PasskeySyncBridge::ApplyStopSyncChanges(
+void PasskeySyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  // If |delete_metadata_change_list| is null, it indicates that sync metadata
-  // shouldn't be deleted, for example chrome is shutting down.
-  if (!delete_metadata_change_list) {
-    return;
-  }
   CHECK(store_);
   store_->DeleteAllDataAndMetadata(base::DoNothing());
   data_.clear();
@@ -200,19 +192,27 @@ PasskeySyncBridge::GetModelTypeControllerDelegate() {
   return change_processor()->GetControllerDelegate();
 }
 
-base::flat_set<std::string> PasskeySyncBridge::GetAllSyncIds() {
+base::flat_set<std::string> PasskeySyncBridge::GetAllSyncIds() const {
   std::vector<std::string> sync_ids;
   std::transform(data_.begin(), data_.end(), std::back_inserter(sync_ids),
                  [](const auto& pair) { return pair.first; });
-  return base::flat_set<std::string>(std::move(sync_ids));
+  return base::flat_set<std::string>(base::sorted_unique, std::move(sync_ids));
+}
+
+std::vector<sync_pb::WebauthnCredentialSpecifics>
+PasskeySyncBridge::GetAllPasskeys() const {
+  std::vector<sync_pb::WebauthnCredentialSpecifics> passkeys;
+  std::transform(data_.begin(), data_.end(), std::back_inserter(passkeys),
+                 [](const auto& pair) { return pair.second; });
+  return passkeys;
 }
 
 std::string PasskeySyncBridge::AddNewPasskeyForTesting(
     sync_pb::WebauthnCredentialSpecifics specifics) {
-  DCHECK(!specifics.has_sync_id());
-  std::string sync_id = RandomSyncId();
-  DCHECK(!base::Contains(data_, sync_id));
-  specifics.set_sync_id(sync_id);
+  CHECK(WebauthnCredentialSpecificsValid(specifics));
+
+  const std::string& sync_id = specifics.sync_id();
+  CHECK(!base::Contains(data_, sync_id));
 
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();

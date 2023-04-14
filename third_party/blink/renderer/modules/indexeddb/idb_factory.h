@@ -34,7 +34,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_open_db_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -55,7 +55,7 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  IDBFactory();
+  explicit IDBFactory(ContextLifecycleNotifier* notifier);
   ~IDBFactory() override;
 
   void SetFactory(mojo::PendingRemote<mojom::blink::IDBFactory>,
@@ -81,22 +81,19 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
                                                       ExceptionState&);
 
   ScriptPromise GetDatabaseInfo(ScriptState*, ExceptionState&);
-  void GetDatabaseInfoImpl(ExecutionContext* context,
-                           ScriptPromiseResolver* resolver);
 
   // This method is exposed specifically for DevTools.
-  void GetDatabaseInfo(ScriptState*,
-                       std::unique_ptr<mojom::blink::IDBCallbacks> callbacks);
+  void GetDatabaseInfoForDevTools(
+      ScriptState*,
+      mojom::blink::IDBFactory::GetDatabaseInfoCallback callback);
 
-  void GetDatabaseInfoImplHelper(
-      ExecutionContext* context,
-      std::unique_ptr<mojom::blink::IDBCallbacks> callbacks);
+  void SetFactoryForTesting(HeapMojoRemote<mojom::blink::IDBFactory> factory);
 
-  void SetFactoryForTesting(mojo::Remote<mojom::blink::IDBFactory> factory);
+  void Trace(Visitor*) const override;
 
  private:
   // Lazy initialize the mojo pipe to the back end.
-  mojo::Remote<mojom::blink::IDBFactory>& GetFactory(
+  HeapMojoRemote<mojom::blink::IDBFactory>& GetFactory(
       ExecutionContext* execution_context);
 
   IDBOpenDBRequest* OpenInternal(ScriptState*,
@@ -109,7 +106,7 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
           callbacks_remote,
       mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
           transaction_receiver,
-      mojo::Remote<mojom::blink::IDBFactory>& factory,
+      HeapMojoRemote<mojom::blink::IDBFactory>& factory,
       const String& name,
       int64_t version,
       int64_t transaction_id);
@@ -120,9 +117,20 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
                                            bool);
   void DeleteDatabaseInternalImpl(
       IDBOpenDBRequest* request,
-      mojo::Remote<mojom::blink::IDBFactory>& factory,
+      HeapMojoRemote<mojom::blink::IDBFactory>& factory,
       const String& name,
       bool force_close);
+
+  void GetDatabaseInfoImpl(ExecutionContext* context,
+                           ScriptPromiseResolver* resolver);
+  void DidGetDatabaseInfo(
+      ScriptPromiseResolver* resolver,
+      Vector<mojom::blink::IDBNameAndVersionPtr> names_and_versions,
+      mojom::blink::IDBErrorPtr error);
+
+  void GetDatabaseInfoForDevToolsHelper(
+      ExecutionContext* context,
+      mojom::blink::IDBFactory::GetDatabaseInfoCallback callback);
 
   void AllowIndexedDB(ExecutionContext* context,
                       base::OnceCallback<void()> callback);
@@ -135,10 +143,8 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
       std::unique_ptr<WebIDBCallbacks> callbacks);
   mojo::PendingRemote<mojom::blink::ObservedFeature> GetObservedFeature();
 
-  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
-  mojo::Remote<mojom::blink::IDBFactory> factory_;
-  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
-  mojo::Remote<mojom::blink::FeatureObserver> feature_observer_;
+  HeapMojoRemote<mojom::blink::IDBFactory> factory_;
+  HeapMojoRemote<mojom::blink::FeatureObserver> feature_observer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

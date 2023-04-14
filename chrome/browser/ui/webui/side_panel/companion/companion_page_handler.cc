@@ -5,15 +5,17 @@
 #include "chrome/browser/ui/webui/side_panel/companion/companion_page_handler.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/companion/core/companion_permission_utils.h"
+#include "chrome/browser/companion/core/companion_url_builder.h"
+#include "chrome/browser/companion/core/promo_handler.h"
+#include "chrome/browser/companion/core/signin_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/side_panel/companion/companion_side_panel_controller_utils.h"
+#include "chrome/browser/ui/side_panel/companion/companion_tab_helper.h"
 #include "chrome/browser/ui/webui/side_panel/companion/companion_side_panel_untrusted_ui.h"
-#include "chrome/browser/ui/webui/side_panel/companion/companion_url_builder.h"
-#include "chrome/browser/ui/webui/side_panel/companion/msbb_delegate.h"
-#include "chrome/browser/ui/webui/side_panel/companion/promo_handler.h"
-#include "chrome/browser/ui/webui/side_panel/companion/signin_delegate.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/lens/buildflags.h"
@@ -30,44 +32,73 @@ namespace companion {
 CompanionPageHandler::CompanionPageHandler(
     mojo::PendingReceiver<side_panel::mojom::CompanionPageHandler> receiver,
     mojo::PendingRemote<side_panel::mojom::CompanionPage> page,
-    Browser* browser,
-    CompanionSidePanelUntrustedUI* companion_untrusted_ui)
-    : content::WebContentsObserver(
-          browser->tab_strip_model()->GetActiveWebContents()),
-      receiver_(this, std::move(receiver)),
+    raw_ptr<CompanionSidePanelUntrustedUI> companion_untrusted_ui)
+    : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
-      browser_(browser),
       companion_untrusted_ui_(companion_untrusted_ui),
-      signin_delegate_(SigninDelegate::Create(browser->profile())),
+      signin_delegate_(SigninDelegate::Create(GetProfile())),
       url_builder_(
-          std::make_unique<CompanionUrlBuilder>(browser->profile()->GetPrefs(),
-                                                signin_delegate_.get(),
-                                                this)) {
-  DCHECK(browser);
-  promo_handler_ = std::make_unique<PromoHandler>(
-      browser->profile()->GetPrefs(), signin_delegate_.get(), this);
-  NotifyURLChanged();
-}
+          std::make_unique<CompanionUrlBuilder>(GetProfile()->GetPrefs(),
+                                                signin_delegate_.get())),
+      promo_handler_(std::make_unique<PromoHandler>(GetProfile()->GetPrefs(),
+                                                    signin_delegate_.get(),
+                                                    this)) {}
 
 CompanionPageHandler::~CompanionPageHandler() = default;
 
 void CompanionPageHandler::PrimaryPageChanged(content::Page& page) {
-  if (!IsMsbbEnabled()) {
+  // Only notify the companion UI the page changed if we can share
+  // information about the page by user consent.
+  if (!IsUserPermittedToSharePageInfoWithCompanion(GetProfile()->GetPrefs())) {
     return;
   }
-  NotifyURLChanged();
+  NotifyURLChanged(/*is_full_reload=*/false);
 }
 
 void CompanionPageHandler::ShowUI() {
   if (auto embedder = companion_untrusted_ui_->embedder()) {
     embedder->ShowUI();
+
+    // Calls to the browser need to happen after the ShowUI() call above since
+    // it is only added to browser hierarchy after the side panel has loaded the
+    // page.
+    auto* active_web_contents =
+        GetBrowser()->tab_strip_model()->GetActiveWebContents();
+    Observe(active_web_contents);
+    auto* helper =
+        companion::CompanionTabHelper::FromWebContents(active_web_contents);
+    helper->SetCompanionPageHandler(weak_ptr_factory_.GetWeakPtr());
+    std::string initial_text_query = helper->GetTextQuery();
+    if (initial_text_query.empty()) {
+      NotifyURLChanged(/*is_full_reload=*/true);
+    } else {
+      OnSearchTextQuery(initial_text_query);
+    }
   }
 }
 
-void CompanionPageHandler::NotifyURLChanged() {
-  GURL companion_url =
-      url_builder_->BuildCompanionURL(web_contents()->GetVisibleURL());
-  page_->OnURLChanged(companion_url.spec());
+void CompanionPageHandler::OnSearchTextQuery(const std::string& query) {
+  // Only notify the companion UI the page changed if we can share
+  // information about the page by user consent.
+  GURL page_url;
+  if (IsUserPermittedToSharePageInfoWithCompanion(GetProfile()->GetPrefs())) {
+    page_url = web_contents()->GetVisibleURL();
+  }
+
+  GURL companion_url = url_builder_->BuildCompanionURL(page_url, query);
+  page_->LoadCompanionPage(companion_url);
+}
+
+void CompanionPageHandler::NotifyURLChanged(bool is_full_reload) {
+  if (is_full_reload) {
+    GURL companion_url =
+        url_builder_->BuildCompanionURL(web_contents()->GetVisibleURL());
+    page_->LoadCompanionPage(companion_url);
+  } else {
+    auto companion_update_proto = url_builder_->BuildCompanionUrlParamProto(
+        web_contents()->GetVisibleURL());
+    page_->UpdateCompanionPage(companion_update_proto);
+  }
 }
 
 void CompanionPageHandler::OnPromoAction(
@@ -82,7 +113,7 @@ void CompanionPageHandler::OnRegionSearchClicked() {
   // TODO(shaktisahu): Pass a UI entry point for accurate metrics.
   if (!lens_region_search_controller_) {
     lens_region_search_controller_ =
-        std::make_unique<lens::LensRegionSearchController>(browser_);
+        std::make_unique<lens::LensRegionSearchController>(GetBrowser());
   }
   auto* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
@@ -94,20 +125,26 @@ void CompanionPageHandler::OnRegionSearchClicked() {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
+void CompanionPageHandler::OnExpsOptInStatusAvailable(bool is_exps_opted_in) {
+  auto* pref_service = GetProfile()->GetPrefs();
+  pref_service->SetBoolean(kExpsOptInStatusGrantedPref, is_exps_opted_in);
+}
+
 void CompanionPageHandler::EnableMsbb(bool enable_msbb) {
-  auto* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  auto* consent_service = UnifiedConsentServiceFactory::GetForProfile(profile);
+  auto* consent_service =
+      UnifiedConsentServiceFactory::GetForProfile(GetProfile());
   consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(enable_msbb);
 }
 
-bool CompanionPageHandler::IsMsbbEnabled() {
-  auto* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper> helper =
-      unified_consent::UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(profile->GetPrefs());
-  return helper->IsEnabled();
+Browser* CompanionPageHandler::GetBrowser() {
+  auto* webui_contents = companion_untrusted_ui_->web_ui()->GetWebContents();
+  auto* browser = companion::GetBrowserForWebContents(webui_contents);
+  return browser;
+}
+
+Profile* CompanionPageHandler::GetProfile() {
+  CHECK(companion_untrusted_ui_);
+  return Profile::FromWebUI(companion_untrusted_ui_->web_ui());
 }
 
 }  // namespace companion

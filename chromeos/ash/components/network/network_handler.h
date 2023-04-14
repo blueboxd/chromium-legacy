@@ -26,6 +26,7 @@ class CellularNetworkMetricsLogger;
 class CellularPolicyHandler;
 class ClientCertResolver;
 class ConnectionInfoMetricsLogger;
+class EnterpriseManagedMetadataStore;
 class ESimPolicyLoginMetricsLogger;
 class GeolocationHandler;
 class HiddenNetworkHandler;
@@ -33,8 +34,10 @@ class HotspotAllowedFlagHandler;
 class HotspotCapabilitiesProvider;
 class HotspotConfigurationHandler;
 class HotspotController;
+class HotspotFeatureUsageMetrics;
 class HotspotMetricsHelper;
 class HotspotStateHandler;
+class HotspotEnabledStateNotifier;
 class ManagedCellularPrefHandler;
 class ManagedNetworkConfigurationHandler;
 class ManagedNetworkConfigurationHandlerImpl;
@@ -117,6 +120,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   HotspotController* hotspot_controller();
   HotspotConfigurationHandler* hotspot_configuration_handler();
   HotspotStateHandler* hotspot_state_handler();
+  HotspotEnabledStateNotifier* hotspot_enabled_state_notifier();
   NetworkStateHandler* network_state_handler();
   NetworkDeviceHandler* network_device_handler();
   NetworkProfileHandler* network_profile_handler();
@@ -163,11 +167,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   std::unique_ptr<CellularMetricsLogger> cellular_metrics_logger_;
   std::unique_ptr<ConnectionInfoMetricsLogger> connection_info_metrics_logger_;
   std::unique_ptr<HiddenNetworkHandler> hidden_network_handler_;
+  std::unique_ptr<EnterpriseManagedMetadataStore>
+      enterprise_managed_metadata_store_;
   std::unique_ptr<HotspotAllowedFlagHandler> hotspot_allowed_flag_handler_;
   std::unique_ptr<HotspotCapabilitiesProvider> hotspot_capabilities_provider_;
+  std::unique_ptr<HotspotFeatureUsageMetrics> hotspot_feature_usage_metrics_;
   std::unique_ptr<HotspotStateHandler> hotspot_state_handler_;
   std::unique_ptr<HotspotController> hotspot_controller_;
   std::unique_ptr<HotspotConfigurationHandler> hotspot_configuration_handler_;
+  std::unique_ptr<HotspotEnabledStateNotifier> hotspot_enabled_state_notifier_;
   std::unique_ptr<HotspotMetricsHelper> hotspot_metrics_helper_;
   std::unique_ptr<ESimPolicyLoginMetricsLogger>
       esim_policy_login_metrics_logger_;

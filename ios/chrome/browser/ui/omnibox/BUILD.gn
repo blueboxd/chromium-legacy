@@ -59,8 +59,8 @@ source_set("omnibox_suggestion_icon_util") {
     "resources:pedal_settings",
     "resources:search",
     "//base",
-    "//ios/chrome/browser/ui/icons:buildflags",
-    "//ios/chrome/browser/ui/icons:symbols",
+    "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/shared/ui/symbols:buildflags",
   ]
 }
 
@@ -70,6 +70,8 @@ source_set("omnibox_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   sources = [
+    "omnibox_metrics_helper.h",
+    "omnibox_metrics_helper.mm",
     "omnibox_text_change_delegate.h",
     "omnibox_text_field_delegate.h",
     "omnibox_util.h",
@@ -81,7 +83,8 @@ source_set("omnibox_util") {
     "//components/omnibox/browser",
     "//components/security_state/core",
     "//ios/chrome/browser/shared/public/features",
-    "//ios/chrome/browser/ui/icons:symbols",
+    "//ios/chrome/browser/shared/ui/symbols",
+    "//third_party/omnibox_proto",
   ]
   public_deps = [
     ":omnibox_icon_type_constants",
@@ -99,7 +102,7 @@ source_set("omnibox_icon_type_constants") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/icons:symbols",
+    "//ios/chrome/browser/shared/ui/symbols",
   ]
 }
 
@@ -167,6 +170,9 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/search_engines:search_engines_util",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
+    "//ios/chrome/browser/shared/coordinator/layout_guide",
+    "//ios/chrome/browser/shared/coordinator/scene:scene_state_browser_agent",
+    "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/util",
@@ -176,8 +182,6 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/lens:lens_entrypoint",
     "//ios/chrome/browser/ui/location_bar:constants",
     "//ios/chrome/browser/ui/main:default_browser_scene_agent",
-    "//ios/chrome/browser/ui/main:layout_guide_util",
-    "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/omnibox/popup:popup_ui_protocols",
     "//ios/chrome/browser/ui/orchestrator:orchestrator",

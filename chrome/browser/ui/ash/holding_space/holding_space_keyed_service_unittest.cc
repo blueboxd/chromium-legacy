@@ -1889,16 +1889,16 @@ TEST_P(HoldingSpaceKeyedServiceWithExperimentalFeatureTest,
       holding_space_service->model_for_testing();
 
   const base::FilePath file_path_1 = test_mount_1->CreateArbitraryFile();
-  holding_space_service->AddScreenCapture(HoldingSpaceItem::Type::kScreenshot,
-                                          file_path_1);
+  holding_space_service->AddItemOfType(HoldingSpaceItem::Type::kScreenshot,
+                                       file_path_1);
 
   const base::FilePath file_path_2 = test_mount_2->CreateArbitraryFile();
-  holding_space_service->AddDownload(HoldingSpaceItem::Type::kDownload,
-                                     file_path_2);
+  holding_space_service->AddItemOfType(HoldingSpaceItem::Type::kDownload,
+                                       file_path_2);
 
   const base::FilePath file_path_3 = test_mount_1->CreateArbitraryFile();
-  holding_space_service->AddDownload(HoldingSpaceItem::Type::kDownload,
-                                     file_path_3);
+  holding_space_service->AddItemOfType(HoldingSpaceItem::Type::kDownload,
+                                       file_path_3);
 
   EXPECT_EQ(3u, GetProfile()
                     ->GetPrefs()
@@ -2383,7 +2383,7 @@ TEST_P(HoldingSpaceKeyedServiceWithExperimentalFeatureTest, RemoveAll) {
       /*relative_path=*/base::FilePath("foo"), /*content=*/"foo");
 
   // Add them both to holding space, one in pinned files the other in downloads.
-  service->AddDownload(HoldingSpaceItem::Type::kDownload, download_path);
+  service->AddItemOfType(HoldingSpaceItem::Type::kDownload, download_path);
   service->AddPinnedFiles(
       {file_manager::util::GetFileManagerFileSystemContext(profile)
            ->CrackURLInFirstPartyContext(
@@ -2590,26 +2590,23 @@ class HoldingSpaceKeyedServiceAddAndRemoveItemTest
       case HoldingSpaceItem::Type::kArcDownload:
       case HoldingSpaceItem::Type::kDownload:
       case HoldingSpaceItem::Type::kLacrosDownload:
-        EXPECT_EQ(holding_space_model->ContainsItem(type, file_path),
-                  holding_space_service->AddDownload(type, file_path).empty());
+        EXPECT_EQ(
+            holding_space_model->ContainsItem(type, file_path),
+            holding_space_service->AddItemOfType(type, file_path).empty());
         break;
       case HoldingSpaceItem::Type::kCameraAppPhoto:
       case HoldingSpaceItem::Type::kCameraAppScanJpg:
       case HoldingSpaceItem::Type::kCameraAppScanPdf:
       case HoldingSpaceItem::Type::kCameraAppVideoGif:
       case HoldingSpaceItem::Type::kCameraAppVideoMp4:
-        holding_space_service->AddItemOfType(type, file_path);
-        break;
       case HoldingSpaceItem::Type::kDiagnosticsLog:
-        holding_space_service->AddDiagnosticsLog(file_path);
+      case HoldingSpaceItem::Type::kNearbyShare:
+        holding_space_service->AddItemOfType(type, file_path);
         break;
       case HoldingSpaceItem::Type::kDriveSuggestion:
       case HoldingSpaceItem::Type::kLocalSuggestion:
         holding_space_service->SetSuggestions(
             /*suggestions=*/{{type, file_path}});
-        break;
-      case HoldingSpaceItem::Type::kNearbyShare:
-        holding_space_service->AddNearbyShare(file_path);
         break;
       case HoldingSpaceItem::Type::kPinnedFile:
         holding_space_service->AddPinnedFiles(
@@ -2630,12 +2627,10 @@ class HoldingSpaceKeyedServiceAddAndRemoveItemTest
                                              /*from_incognito_profile=*/false);
         break;
       case HoldingSpaceItem::Type::kScan:
-        holding_space_service->AddScan(file_path);
-        break;
       case HoldingSpaceItem::Type::kScreenRecording:
       case HoldingSpaceItem::Type::kScreenRecordingGif:
       case HoldingSpaceItem::Type::kScreenshot:
-        holding_space_service->AddScreenCapture(type, file_path);
+        holding_space_service->AddItemOfType(type, file_path);
         break;
     }
 
@@ -2834,7 +2829,8 @@ TEST_F(HoldingSpaceKeyedServiceNearbySharingTest, AddNearbyShareItem) {
       downloads_mount->CreateFile(item_1_virtual_path, "red");
   ASSERT_FALSE(item_1_full_path.empty());
 
-  holding_space_service->AddNearbyShare(item_1_full_path);
+  holding_space_service->AddItemOfType(HoldingSpaceItem::Type::kNearbyShare,
+                                       item_1_full_path);
 
   const base::FilePath item_2_virtual_path = base::FilePath("Alt/File 2.png");
   // Create a fake nearby shared file on the local file system - later parts of
@@ -2843,7 +2839,8 @@ TEST_F(HoldingSpaceKeyedServiceNearbySharingTest, AddNearbyShareItem) {
   const base::FilePath item_2_full_path =
       downloads_mount->CreateFile(item_2_virtual_path, "blue");
   ASSERT_FALSE(item_2_full_path.empty());
-  holding_space_service->AddNearbyShare(item_2_full_path);
+  holding_space_service->AddItemOfType(HoldingSpaceItem::Type::kNearbyShare,
+                                       item_2_full_path);
 
   EXPECT_EQ(initial_model, HoldingSpaceController::Get()->model());
   EXPECT_EQ(HoldingSpaceController::Get()->model(),

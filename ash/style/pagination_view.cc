@@ -28,8 +28,8 @@ namespace ash {
 
 namespace {
 
-// The default number of pages defined in the PaginationModel.
-constexpr int kDefaultTotalPages = -1;
+// The minimum number of pages to show the pagination view.
+constexpr int kMinNumPages = 2;
 
 // Attributes of arrow buttons.
 constexpr int kArrowButtonIconSize = 20;
@@ -43,6 +43,17 @@ constexpr int kIndicatorStrokeWidth = 1;
 constexpr int kIndicatorSpacing = 2;
 constexpr ui::ColorId kIndicatorColorId = cros_tokens::kCrosSysPrimary;
 constexpr int kMaxNumVisibleIndicators = 5;
+
+// Get the width of the indicator container.
+int GetIndicatorContainerWidth(int total_pages) {
+  if (total_pages < kMinNumPages) {
+    return 0;
+  }
+
+  const int visible_num = std::min(total_pages, kMaxNumVisibleIndicators);
+  return visible_num * kIndicatorButtonSize +
+         (visible_num - 1) * kIndicatorSpacing;
+}
 
 // A structure holds the info needed by interpolation.
 template <typename T>
@@ -314,11 +325,11 @@ PaginationView::PaginationView(PaginationModel* model, Orientation orientation)
   indicator_scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kDisabled);
 
-  if (model_->total_pages() != kDefaultTotalPages) {
-    TotalPagesChanged(kDefaultTotalPages, model_->total_pages());
+  if (model_->total_pages() >= kMinNumPages) {
+    TotalPagesChanged(0, model_->total_pages());
   }
 
-  if (model_->is_valid_page(model_->selected_page())) {
+  if (ShouldShowSelectorDot()) {
     CreateSelectorDot();
   }
 }
@@ -327,11 +338,13 @@ PaginationView::~PaginationView() = default;
 
 gfx::Size PaginationView::CalculatePreferredSize() const {
   const int total_pages = model_->total_pages();
-  const int visible_num = std::min(total_pages, kMaxNumVisibleIndicators);
+  if (total_pages < kMinNumPages) {
+    return gfx::Size();
+  }
+
   // Initialize container size with indicator container size.
-  int container_size = visible_num * kIndicatorButtonSize +
-                       (visible_num - 1) * kIndicatorSpacing;
-  if (total_pages > visible_num) {
+  int container_size = GetIndicatorContainerWidth(total_pages);
+  if (total_pages > kMaxNumVisibleIndicators) {
     // If the number of total pages exceeds visible maximum, add arrow buttons.
     container_size += 2 * (kArrowButtonIconSize + kArrowIndicatorSpacing);
   }
@@ -363,10 +376,8 @@ void PaginationView::Layout() {
 
   // Set the indicator container.
   indicator_container_->SizeToPreferredSize();
-  const int visible_num =
-      std::min(model_->total_pages(), kMaxNumVisibleIndicators);
-  const int scroll_view_size = visible_num * kIndicatorButtonSize +
-                               (visible_num - 1) * kIndicatorSpacing;
+  const int scroll_view_size =
+      GetIndicatorContainerWidth(model_->total_pages());
   if (horizontal) {
     indicator_scroll_view_->SetBounds(offset, 0, scroll_view_size,
                                       kIndicatorButtonSize);
@@ -450,6 +461,11 @@ void PaginationView::MaybeSetUpScroll() {
   if (!IsIndicatorVisible(target_page)) {
     indicator_container_->StartScroll(current_page, target_page);
   }
+}
+
+bool PaginationView::ShouldShowSelectorDot() const {
+  return model_->total_pages() >= kMinNumPages &&
+         model_->is_valid_page(model_->selected_page());
 }
 
 void PaginationView::CreateSelectorDot() {
@@ -541,7 +557,7 @@ bool PaginationView::IsIndicatorVisible(int page) const {
 
 void PaginationView::SelectedPageChanged(int old_selected, int new_selected) {
   // Update selector dot position and arrow buttons visibility.
-  if (model_->is_valid_page(new_selected)) {
+  if (ShouldShowSelectorDot()) {
     if (!selector_dot_) {
       CreateSelectorDot();
     } else {
@@ -561,34 +577,46 @@ void PaginationView::SelectedPageChanged(int old_selected, int new_selected) {
 
 void PaginationView::TotalPagesChanged(int previous_page_count,
                                        int new_page_count) {
-  DCHECK_NE(previous_page_count, new_page_count);
-  if (previous_page_count < new_page_count) {
+  const int current_indicator_num = indicator_container_->children().size();
+  new_page_count = new_page_count < kMinNumPages ? 0 : new_page_count;
+  if (current_indicator_num == new_page_count) {
+    return;
+  }
+
+  if (current_indicator_num < new_page_count) {
     // Add more indicators at the end of container.
-    for (int i = previous_page_count; i < new_page_count; i++) {
+    for (int i = current_indicator_num; i < new_page_count; i++) {
       indicator_container_->PushIndicator(model_.get());
     }
 
     // Add arrow buttons if the number of total pages exceeds the visible
     // maximum.
-    if (previous_page_count <= kMaxNumVisibleIndicators &&
+    if (current_indicator_num <= kMaxNumVisibleIndicators &&
         new_page_count > kMaxNumVisibleIndicators) {
       CreateArrowButtons();
     }
+
+    // Create selector dot if the number of total pages exceeds the minimum
+    // number of pages.
+    if (new_page_count >= kMinNumPages && !selector_dot_) {
+      CreateSelectorDot();
+    }
   } else {
     // Remove indicators from the end of the container.
-    for (int i = previous_page_count; i > new_page_count; i--) {
+    for (int i = current_indicator_num; i > new_page_count; i--) {
       indicator_container_->PopIndicator();
     }
 
     // Remove arrow buttons if the number of total pages does not exceed the
     // visible maximum.
-    if (previous_page_count > kMaxNumVisibleIndicators &&
+    if (current_indicator_num > kMaxNumVisibleIndicators &&
         new_page_count <= kMaxNumVisibleIndicators) {
       RemoveArrowButtons();
     }
 
-    // Remove the selector dot if there is no pages.
-    if (new_page_count == 0) {
+    // Remove the selector dot if the number of pages is less than the minimum
+    // number of pages.
+    if (new_page_count < kMinNumPages && selector_dot_) {
       RemoveSelectorDot();
     }
   }

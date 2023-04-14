@@ -13,11 +13,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/trace_constants.h"
+#include "net/base/tracing.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/http/http_network_session.h"
@@ -509,9 +509,19 @@ void SpdySessionPool::OnIPAddressChanged() {
   }
 }
 
-void SpdySessionPool::OnSSLConfigChanged(bool is_cert_database_change) {
-  CloseCurrentSessions(is_cert_database_change ? ERR_CERT_DATABASE_CHANGED
-                                               : ERR_NETWORK_CHANGED);
+void SpdySessionPool::OnSSLConfigChanged(
+    SSLClientContext::SSLConfigChangeType change_type) {
+  switch (change_type) {
+    case SSLClientContext::SSLConfigChangeType::kSSLConfigChanged:
+      CloseCurrentSessions(ERR_NETWORK_CHANGED);
+      break;
+    case SSLClientContext::SSLConfigChangeType::kCertDatabaseChanged:
+      CloseCurrentSessions(ERR_CERT_DATABASE_CHANGED);
+      break;
+    case SSLClientContext::SSLConfigChangeType::kCertVerifierChanged:
+      CloseCurrentSessions(ERR_CERT_VERIFIER_CHANGED);
+      break;
+  };
 }
 
 void SpdySessionPool::OnSSLConfigForServerChanged(const HostPortPair& server) {

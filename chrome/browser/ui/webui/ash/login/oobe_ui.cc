@@ -25,6 +25,7 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/ash/boot_times_recorder_tab_helper.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
@@ -46,7 +47,6 @@
 #include "chrome/browser/ui/webui/ash/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/arc_vm_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/auto_enrollment_check_screen_handler.h"
@@ -407,8 +407,6 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<SyncConsentScreenHandler>());
 
-  AddScreenHandler(std::make_unique<ArcTermsOfServiceScreenHandler>());
-
   if (base::FeatureList::IsEnabled(arc::kEnableArcVmDataMigration)) {
     AddScreenHandler(std::make_unique<ArcVmDataMigrationScreenHandler>());
   }
@@ -513,9 +511,12 @@ void OobeUI::ConfigureOobeDisplay() {
   // Set up the chrome://userimage/ source.
   content::URLDataSource::Add(profile, std::make_unique<UserImageSource>());
 
-  // TabHelper is required for OOBE webui to make webview working on it.
   content::WebContents* contents = web_ui()->GetWebContents();
+
+  // TabHelper is required for OOBE webui to make webview working on it.
   extensions::TabHelper::CreateForWebContents(contents);
+
+  BootTimesRecorderTabHelper::MaybeCreateForWebContents(contents);
 
   if (ShouldUpScaleOobe())
     UpScaleOobe();

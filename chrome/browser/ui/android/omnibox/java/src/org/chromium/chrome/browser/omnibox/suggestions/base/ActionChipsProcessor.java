@@ -9,15 +9,14 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.collection.ArraySet;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.omnibox.R;
-import org.chromium.chrome.browser.omnibox.action.OmniboxActionType;
 import org.chromium.chrome.browser.omnibox.suggestions.ActionChipsDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionsMetrics;
 import org.chromium.components.browser_ui.widget.chips.ChipProperties;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.action.OmniboxAction;
+import org.chromium.components.omnibox.action.OmniboxActionType;
 import org.chromium.components.omnibox.action.OmniboxPedal;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -78,7 +77,6 @@ public class ActionChipsProcessor {
         modelList.add(new ListItem(ActionChipsProperties.ViewType.HEADER, new PropertyModel()));
 
         for (OmniboxAction chip : actionChipList) {
-            final var chipIcon = chip.getIcon();
             final var chipModel =
                     new PropertyModel.Builder(ChipProperties.ALL_KEYS)
                             .with(ChipProperties.TEXT, chip.hint)
@@ -87,8 +85,8 @@ public class ActionChipsProcessor {
                                             R.string.accessibility_omnibox_pedal, chip.hint))
                             .with(ChipProperties.ENABLED, true)
                             .with(ChipProperties.CLICK_HANDLER, m -> executeAction(chip, position))
-                            .with(ChipProperties.ICON, chipIcon.iconRes)
-                            .with(ChipProperties.APPLY_ICON_TINT, chipIcon.tintWithTextColor)
+                            .with(ChipProperties.ICON, chip.icon.iconRes)
+                            .with(ChipProperties.APPLY_ICON_TINT, chip.icon.tintWithTextColor)
                             .build();
 
             modelList.add(new ListItem(ActionChipsProperties.ViewType.CHIP, chipModel));
@@ -109,8 +107,7 @@ public class ActionChipsProcessor {
 
     private void executeAction(@NonNull OmniboxAction action, int position) {
         if (action.actionId == OmniboxActionType.HISTORY_CLUSTERS) {
-            RecordHistogram.recordEnumeratedHistogram("Omnibox.SuggestionUsed.ResumeJourney",
-                    position, SuggestionsMetrics.MAX_AUTOCOMPLETE_POSITION);
+            SuggestionsMetrics.recordResumeJourneyClick(position);
         }
         mSuggestionHost.finishInteraction();
         mActionChipsDelegate.execute(action);
@@ -123,10 +120,7 @@ public class ActionChipsProcessor {
         for (Integer pedal : mLastVisiblePedals) {
             SuggestionsMetrics.recordPedalShown(pedal);
         }
-        if (mJourneysActionShownPosition != -1) {
-            RecordHistogram.recordExactLinearHistogram("Omnibox.ResumeJourneyShown",
-                    mJourneysActionShownPosition, SuggestionsMetrics.MAX_AUTOCOMPLETE_POSITION);
-        }
+        SuggestionsMetrics.recordResumeJourneyShown(mJourneysActionShownPosition);
 
         mJourneysActionShownPosition = -1;
         mLastVisiblePedals.clear();

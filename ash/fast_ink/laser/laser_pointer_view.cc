@@ -177,7 +177,7 @@ views::UniqueWidgetPtr LaserPointerView::Create(
     base::TimeDelta presentation_delay,
     base::TimeDelta stationary_point_delay,
     aura::Window* container) {
-  return fast_ink::FastInkView::CreateWidgetWithContents(
+  return FastInkView::CreateWidgetWithContents(
       base::WrapUnique(new LaserPointerView(life_duration, presentation_delay,
                                             stationary_point_delay)),
       container);
@@ -243,8 +243,8 @@ void LaserPointerView::UpdateBuffer() {
     TRACE_EVENT1("ui", "LaserPointerView::UpdateBuffer::Paint", "damage",
                  damage_rect.ToString());
 
-    ScopedPaint paint(this, damage_rect);
-    Draw(paint.canvas());
+    auto paint = GetScopedPaint(damage_rect);
+    Draw(paint->canvas());
   }
 
   UpdateSurface(laser_content_rect_, damage_rect, /*auto_refresh=*/true);

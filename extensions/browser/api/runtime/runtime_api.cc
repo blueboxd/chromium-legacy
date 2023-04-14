@@ -809,7 +809,7 @@ ExtensionFunction::ResponseAction RuntimeGetContextsFunction::Run() {
   // match the filter.
   if (!filter.context_types ||
       base::Contains(*filter.context_types,
-                     api::runtime::CONTEXT_TYPE_BACKGROUND)) {
+                     api::runtime::ContextType::kBackground)) {
     if (absl::optional<api::runtime::ExtensionContext> worker =
             GetWorkerContext()) {
       result.push_back(std::move(*worker));
@@ -846,9 +846,11 @@ RuntimeGetContextsFunction::GetWorkerContext() {
   }
 
   api::runtime::ExtensionContext context;
-  context.context_type = api::runtime::CONTEXT_TYPE_BACKGROUND;
-  // TODO(crbug/1426192): Add a real context id.
-  context.context_id = "";
+  context.context_type = api::runtime::ContextType::kBackground;
+  base::Uuid context_id =
+      process_manager->GetContextIdForWorker(active_workers[0]);
+  CHECK(context_id.is_valid());
+  context.context_id = context_id.AsLowercaseString();
   context.tab_id = extension_misc::kUnknownTabId;
   context.window_id = extension_misc::kUnknownWindowId;
   // TODO(devlin): Add extension_misc::kUnknownFrameId and use it here?
@@ -878,11 +880,11 @@ RuntimeGetContextsFunction::GetFrameContexts() {
         break;
 
       case mojom::ViewType::kExtensionPopup:
-        return api::runtime::CONTEXT_TYPE_POPUP;
+        return api::runtime::ContextType::kPopup;
       case mojom::ViewType::kTabContents:
-        return api::runtime::CONTEXT_TYPE_TAB;
+        return api::runtime::ContextType::kTab;
       case mojom::ViewType::kOffscreenDocument:
-        return api::runtime::CONTEXT_TYPE_OFFSCREEN_DOCUMENT;
+        return api::runtime::ContextType::kOffscreenDocument;
 
       case mojom::ViewType::kExtensionSidePanel:
       case mojom::ViewType::kExtensionGuest:
@@ -890,7 +892,7 @@ RuntimeGetContextsFunction::GetFrameContexts() {
         break;
     }
 
-    return api::runtime::CONTEXT_TYPE_NONE;
+    return api::runtime::ContextType::kNone;
   };
 
   ProcessManager::FrameSet frames =
@@ -903,15 +905,15 @@ RuntimeGetContextsFunction::GetFrameContexts() {
     CHECK(web_contents);
 
     auto context_type = get_context_type(web_contents);
-    if (context_type == api::runtime::CONTEXT_TYPE_NONE) {
+    if (context_type == api::runtime::ContextType::kNone) {
       // Skip unsupported contexts.
       continue;
     }
 
     api::runtime::ExtensionContext context;
     context.context_type = context_type;
-    // TODO(crbug/1426192): Add a real context id.
-    context.context_id = "";
+    context.context_id =
+        ExtensionApiFrameIdMap::GetContextId(host).AsLowercaseString();
     context.tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
     context.window_id =
         sessions::SessionTabHelper::IdForWindowContainingTab(web_contents).id();

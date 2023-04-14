@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.ui.fast_checkout;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -41,8 +42,10 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.DetailItemType;
 import org.chromium.chrome.browser.ui.fast_checkout.data.FastCheckoutAutofillProfile;
@@ -51,6 +54,7 @@ import org.chromium.chrome.browser.ui.fast_checkout.detail_screen.AutofillProfil
 import org.chromium.chrome.browser.ui.fast_checkout.detail_screen.CreditCardItemProperties;
 import org.chromium.chrome.browser.ui.fast_checkout.detail_screen.DetailScreenCoordinator;
 import org.chromium.chrome.browser.ui.fast_checkout.detail_screen.FooterItemProperties;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -62,6 +66,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@DisableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES})
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
 public class FastCheckoutDetailScreenViewTest {
@@ -106,6 +111,11 @@ public class FastCheckoutDetailScreenViewTest {
 
     @Before
     public void setUp() {
+        FeatureList.TestValues featureTestValues = new FeatureList.TestValues();
+        featureTestValues.addFeatureFlagOverride(
+                ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES, false);
+        FeatureList.setTestValues(featureTestValues);
+
         mActivityScenarioRule.getScenario().onActivity(activity -> {
             mModel = FastCheckoutProperties.createDefaultModel();
             mModel.set(DETAIL_SCREEN_SETTINGS_CLICK_HANDLER, mSettingsClickHandler);

@@ -74,7 +74,8 @@ struct CORE_EXPORT GridItemData {
       GridTrackSizingDirection track_direction) const {
     // TODO(ethavar): Baseline alignment for subgrids is dependent on
     // accumulating the baseline in `ComputeSubgridContributionSize`.
-    if (has_subgridded_columns || has_subgridded_rows) {
+    if (has_subgridded_columns || has_subgridded_rows ||
+        is_subgridded_to_parent_grid) {
       return false;
     }
     return (track_direction == kForColumns)
@@ -150,6 +151,10 @@ struct CORE_EXPORT GridItemData {
 
   bool IsSubgrid() const {
     return has_subgridded_columns || has_subgridded_rows;
+  }
+
+  bool HasStandaloneAndSubgriddedAxis() const {
+    return has_subgridded_columns != has_subgridded_rows;
   }
 
   bool IsConsideredForSizing(GridTrackSizingDirection track_direction) const {

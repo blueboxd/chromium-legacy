@@ -42,6 +42,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
+#include "media/base/win/mf_feature_checks.h"
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -313,6 +314,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 #if BUILDFLAG(IS_WIN)
     if (IsMediaFoundationClearKey(key_system)) {
       RegisterMediaFoundationClearKeyCdm(enabled_features);
+      enabled_features.push_back(
+          {media::kHardwareSecureDecryptionExperiment, {}});
       // TODO(crbug.com/1412485): Remove this line so that real hardware
       // capabilities can be checked.
       command_line->AppendSwitchASCII(
@@ -849,17 +852,12 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MessageTypeTest) {
   TestPlaybackCase(media::kExternalClearKeyMessageTypeTestKeySystem,
                    kNoSessionToLoad, media::kEndedTitle);
-
-  int num_received_message_types = 0;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send("
-      "document.querySelector('video').receivedMessageTypes.size);",
-      &num_received_message_types));
-
   // Expects 3 message types: 'license-request', 'license-renewal' and
   // 'individualization-request'.
-  EXPECT_EQ(3, num_received_message_types);
+  EXPECT_EQ(3,
+            content::EvalJs(
+                browser()->tab_strip_model()->GetActiveWebContents(),
+                "document.querySelector('video').receivedMessageTypes.size;"));
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadPersistentLicense) {
@@ -1024,20 +1022,54 @@ class MediaFoundationEncryptedMediaTest : public EncryptedMediaTestBase {
     SetUpCommandLineForKeySystem(media::kMediaFoundationClearKeyKeySystem,
                                  command_line);
   }
+
+  bool IsMediaFoundationEncryptedPlaybackSupported() {
+    static bool is_mediafoundation_encrypted_playback_supported =
+        media::SupportMediaFoundationEncryptedPlayback();
+    DLOG(INFO) << "is_mediafoundation_encrypted_playback_supported="
+               << is_mediafoundation_encrypted_playback_supported;
+
+    // Run test only if the test machine supports MediaFoundation playback.
+    // Otherwise, NotSupportedError is expected.
+    if (!is_mediafoundation_encrypted_playback_supported) {
+      // if (!is_mediafoundation_encrypted_playback_supported) {
+      auto os_version = static_cast<int>(base::win::GetVersion());
+      DLOG(WARNING)
+          << "Test method "
+          << ::testing::UnitTest::GetInstance()->current_test_info()->name()
+          << " is inconclusive since MediaFoundation "
+             "playback is not supported. "
+          << "os_version=" << os_version;
+    }
+
+    return is_mediafoundation_encrypted_playback_supported;
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        Playback_ClearLeadEncryptedCencVideo_Success) {
+  if (!IsMediaFoundationEncryptedPlaybackSupported()) {
+    GTEST_SKIP();
+  }
+
   TestLicenseExchange("bear-640x360-v_frag-cenc.mp4");  // H.264
 }
 
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        Playback_ClearLeadEncryptedCbcsVideo_Success) {
+  if (!IsMediaFoundationEncryptedPlaybackSupported()) {
+    GTEST_SKIP();
+  }
+
   TestLicenseExchange("bear-640x360-v_frag-cbcs.mp4");  // H.264
 }
 
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        Playback_EncryptedAudioCbcs_MediaTypeUnsupported) {
+  if (!IsMediaFoundationEncryptedPlaybackSupported()) {
+    GTEST_SKIP();
+  }
+
   // MediaFoundation Clear Key Key System supports only H.264 videos
   // (codecs=avc1.64001E). See AddMediaFoundationClearKey() in
   // components/cdm/renderer/key_system_support_update.cc

@@ -54,7 +54,6 @@
 #include "chrome/browser/ash/login/screens/active_directory_login_screen.h"
 #include "chrome/browser/ash/login/screens/active_directory_password_change_screen.h"
 #include "chrome/browser/ash/login/screens/app_downloading_screen.h"
-#include "chrome/browser/ash/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/arc_vm_data_migration_screen.h"
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
@@ -134,7 +133,6 @@
 #include "chrome/browser/ui/webui/ash/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/arc_vm_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/auto_enrollment_check_screen_handler.h"
@@ -260,7 +258,6 @@ const StaticOobeScreenId kResumablePostLoginScreens[] = {
     HWDataCollectionView::kScreenId,
     FingerprintSetupScreenView::kScreenId,
     GestureNavigationScreenView::kScreenId,
-    ArcTermsOfServiceScreenView::kScreenId,
     RecommendAppsScreenView::kScreenId,
     PinSetupScreenView::kScreenId,
     MarketingOptInScreenView::kScreenId,
@@ -306,7 +303,6 @@ struct Entry {
 // Some screens had multiple different names in the past (they have since been
 // unified). We need to always use the same name for UMA stats, though.
 constexpr const Entry kLegacyUmaOobeScreenNames[] = {
-    {ArcTermsOfServiceScreenView::kScreenId, "arc_tos"},
     {EnrollmentScreenView::kScreenId, "enroll"},
     {WelcomeView::kScreenId, "network"},
     {TermsOfServiceScreenView::kScreenId, "tos"}};
@@ -407,8 +403,6 @@ WizardController::WizardController(WizardContext* wizard_context)
       wizard_context_(wizard_context) {
   wizard_context_->skip_post_login_screens_for_tests =
       switches::ShouldSkipOobePostLogin();
-  wizard_context_->is_add_person_flow =
-      StartupUtils::IsOobeCompleted() && StartupUtils::IsDeviceOwned();
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   if (accessibility_manager) {
     // accessibility_manager could be null in Tests.
@@ -449,6 +443,9 @@ void WizardController::Init(OobeScreenId first_screen) {
     UpdateOobeConfiguration();
     is_out_of_box_ = true;
   }
+
+  wizard_context_->is_add_person_flow =
+      oobe_complete && StartupUtils::IsDeviceOwned();
 
   // This is a hacky way to check for local state corruption, because
   // it depends on the fact that the local state is loaded
@@ -669,10 +666,6 @@ WizardController::CreateScreens() {
   append(std::make_unique<SyncConsentScreen>(
       oobe_ui->GetView<SyncConsentScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnSyncConsentScreenExit,
-                          weak_factory_.GetWeakPtr())));
-  append(std::make_unique<ArcTermsOfServiceScreen>(
-      oobe_ui->GetView<ArcTermsOfServiceScreenHandler>()->AsWeakPtr(),
-      base::BindRepeating(&WizardController::OnArcTermsOfServiceScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<RecommendAppsScreen>(
       oobe_ui->GetView<RecommendAppsScreenHandler>()->AsWeakPtr(),
@@ -1030,10 +1023,6 @@ void WizardController::ShowThemeSelectionScreen() {
 
 void WizardController::ShowMarketingOptInScreen() {
   SetCurrentScreen(GetScreen(MarketingOptInScreenView::kScreenId));
-}
-
-void WizardController::ShowArcTermsOfServiceScreen() {
-  SetCurrentScreen(GetScreen(ArcTermsOfServiceScreenView::kScreenId));
 }
 
 void WizardController::ShowRecommendAppsScreen() {
@@ -1914,35 +1903,7 @@ void WizardController::OnPinSetupScreenExit(PinSetupScreen::Result result) {
   OnScreenExit(PinSetupScreenView::kScreenId,
                PinSetupScreen::GetResultString(result));
 
-  ShowArcTermsOfServiceScreen();
-}
-
-void WizardController::OnArcTermsOfServiceScreenExit(
-    ArcTermsOfServiceScreen::Result result) {
-  OnScreenExit(ArcTermsOfServiceScreenView::kScreenId,
-               ArcTermsOfServiceScreen::GetResultString(result));
-
-  switch (result) {
-    case ArcTermsOfServiceScreen::Result::ACCEPTED:
-    case ArcTermsOfServiceScreen::Result::
-        NOT_APPLICABLE_CONSOLIDATED_CONSENT_ARC_ENABLED:
-      DCHECK(!demo_setup_controller_);
-      ShowRecommendAppsScreen();
-      break;
-    case ArcTermsOfServiceScreen::Result::NOT_APPLICABLE:
-      ShowAssistantOptInFlowScreen();
-      break;
-    case ArcTermsOfServiceScreen::Result::ACCEPTED_DEMO_ONLINE:
-    case ArcTermsOfServiceScreen::Result::NOT_APPLICABLE_DEMO_ONLINE:
-      DCHECK(demo_setup_controller_);
-      InitiateOOBEUpdate();
-      break;
-    case ArcTermsOfServiceScreen::Result::BACK:
-      DCHECK(demo_setup_controller_);
-      DCHECK(StartupUtils::IsEulaAccepted());
-      ShowDemoModePreferencesScreen();
-      break;
-  }
+  ShowRecommendAppsScreen();
 }
 
 void WizardController::OnRecommendAppsScreenExit(
@@ -2175,6 +2136,7 @@ void WizardController::StartTimezoneResolve() {
 
   auto& testing_factory = GetSharedURLLoaderFactoryForTesting();
   geolocation_provider_ = std::make_unique<SimpleGeolocationProvider>(
+      g_browser_process->platform_part()->GetTimezoneResolverManager(),
       testing_factory ? testing_factory
                       : g_browser_process->shared_url_loader_factory(),
       SimpleGeolocationProvider::DefaultGeolocationProviderURL());
@@ -2377,8 +2339,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowDemoModePreferencesScreen();
   } else if (screen_id == TermsOfServiceScreenView::kScreenId) {
     ShowTermsOfServiceScreen();
-  } else if (screen_id == ArcTermsOfServiceScreenView::kScreenId) {
-    ShowArcTermsOfServiceScreen();
   } else if (screen_id == SyncConsentScreenView::kScreenId) {
     ShowSyncConsentScreen();
   } else if (screen_id == RecommendAppsScreenView::kScreenId) {

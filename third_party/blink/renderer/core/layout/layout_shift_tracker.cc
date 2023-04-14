@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -621,7 +622,7 @@ void LayoutShiftTracker::ReportShift(double score_delta,
   TRACE_EVENT_INSTANT2(
       "loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD, "data",
       PerFrameTraceData(score_delta, weighted_score_delta, had_recent_input),
-      "frame", ToTraceValue(&frame));
+      "frame", GetFrameIdForTracing(&frame));
 
   if (ShouldLog(frame)) {
     VLOG(1) << "in " << (frame.IsOutermostMainFrame() ? "" : "subframe ")

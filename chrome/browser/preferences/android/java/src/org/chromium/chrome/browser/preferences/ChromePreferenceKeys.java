@@ -279,12 +279,10 @@ public final class ChromePreferenceKeys {
             "Chrome.NTPExploreOfflineCard.HasExploreOfflineContent";
 
     /**
-     * Indicates whether First run field trial was enabled during FRE. This experiment is configured
-     * by client side code in {@link
+     * Indicates which variation of the First run field trial was enabled during FRE. This
+     * experiment is configured by client side code in {@link
      * org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial}.
      */
-    public static final String FIRST_RUN_FIELD_TRIAL_GROUP = "Chrome.FirstRun.FieldTrialEnabled";
-
     public static final String FIRST_RUN_VARIATIONS_FIELD_TRIAL_GROUP =
             "Chrome.FirstRun.VariationFieldTrialGroup";
 
@@ -597,15 +595,8 @@ public final class ChromePreferenceKeys {
     public static final KeyPrefix OPTIMIZATION_GUIDE_PUSH_NOTIFICATION_CACHE =
             new KeyPrefix("Chrome.OptimizationGuide.PushNotificationCache.*");
 
-    /** The gaia email address Password Protection should protect. */
-    public static final String PASSWORD_PROTECTION_ACCOUNT = "Chrome.PasswordProtection.Account";
-
-    /** The hashed password associated with PASSWORD_PROTECTION_ACCOUNT. */
-    public static final String PASSWORD_PROTECTION_HASHED_PASSWORD =
-            "Chrome.PasswordProtection.HashedPassword";
-
-    /** The salt used to create PASSWORD_PROTECTION_HASHED_PASSWORD. */
-    public static final String PASSWORD_PROTECTION_SALT = "Chrome.PasswordProtection.Salt";
+    /** The accounts Password Protection should protect. */
+    public static final String PASSWORD_PROTECTION_ACCOUNTS = "Chrome.PasswordProtection.Accounts";
 
     /** The shared preference for the 'save card to device' checkbox status. */
     public static final String PAYMENTS_CHECK_SAVE_CARD_TO_DEVICE = "check_save_card_to_device";
@@ -1036,7 +1027,6 @@ public final class ChromePreferenceKeys {
                 DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 FEED_ARTICLES_LIST_VISIBLE,
-                FIRST_RUN_FIELD_TRIAL_GROUP,
                 FIRST_RUN_VARIATIONS_FIELD_TRIAL_GROUP,
                 FIRST_RUN_SKIPPED_BY_POLICY,
                 FLAGS_CACHED.pattern(),
@@ -1088,9 +1078,7 @@ public final class ChromePreferenceKeys {
                 OFFLINE_MEASUREMENTS_USER_AGENT_STRING,
                 OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO,
                 OPTIMIZATION_GUIDE_PUSH_NOTIFICATION_CACHE.pattern(),
-                PASSWORD_PROTECTION_ACCOUNT,
-                PASSWORD_PROTECTION_HASHED_PASSWORD,
-                PASSWORD_PROTECTION_SALT,
+                PASSWORD_PROTECTION_ACCOUNTS,
                 PERSISTENT_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 PRICE_TRACKING_ANNOTATIONS_ENABLED_METRICS_TIMESTAMP,
                 PRICE_TRACKING_CHROME_MANAGED_NOTIFICATIONS_TIMESTAMPS,

@@ -49,8 +49,7 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
       IdentityProvider* identity_provider,
       PrefService* pref_service,
       network::mojom::URLLoaderFactory* url_loader_factory,
-      const std::string& project_id,
-      bool migrate_prefs);
+      const std::string& project_id);
   PerUserTopicSubscriptionManager(
       const PerUserTopicSubscriptionManager& other) = delete;
   PerUserTopicSubscriptionManager& operator=(
@@ -62,8 +61,7 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
       IdentityProvider* identity_provider,
       PrefService* pref_service,
       network::mojom::URLLoaderFactory* url_loader_factory,
-      const std::string& project_id,
-      bool migrate_prefs);
+      const std::string& project_id);
 
   // RegisterProfilePrefs and RegisterPrefs register the same prefs, because on
   // device level (sign in screen, device local account) we spin up separate
@@ -144,8 +142,6 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
   const raw_ptr<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   const std::string project_id_;
-
-  const bool migrate_prefs_;
 
   // Subscription or unsubscription requests that are either scheduled or
   // started, but not finished yet.

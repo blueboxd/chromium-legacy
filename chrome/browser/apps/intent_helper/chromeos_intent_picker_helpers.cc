@@ -54,10 +54,10 @@ bool ShouldAutoDisplayUi(
 
   const GURL& url = navigation_info.url;
 
-  // Disable Auto-display in the new Intent Picker UI unless it is specifically
-  // re-enabled.
-  if (!features::IntentPickerAutoDisplayEnabled())
+  // Disable Auto-display in the new Intent Picker UI.
+  if (features::LinkCapturingUiUpdateEnabled()) {
     return false;
+  }
 
   if (apps_for_picker.empty())
     return false;
@@ -197,7 +197,7 @@ void OnIntentPickerClosedChromeOs(
   }
 
   IntentHandlingMetrics::RecordIntentPickerMetrics(entry_type, close_reason,
-                                                   should_persist, show_state);
+                                                   should_persist);
 }
 
 void LaunchAppFromIntentPickerChromeOs(content::WebContents* web_contents,

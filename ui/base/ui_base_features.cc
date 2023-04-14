@@ -460,9 +460,32 @@ bool IsChromeRefresh2023() {
   return base::FeatureList::IsEnabled(kChromeRefresh2023);
 }
 
+constexpr base::FeatureParam<ChromeRefresh2023Level>::Option
+    kChromeRefresh2023LevelOption[] = {{ChromeRefresh2023Level::kLevel1, "1"},
+                                       {ChromeRefresh2023Level::kLevel2, "2"}};
+
+const base::FeatureParam<ChromeRefresh2023Level> kChromeRefresh2023Level(
+    &kChromeRefresh2023,
+    "level",
+    ChromeRefresh2023Level::kLevel2,
+    &kChromeRefresh2023LevelOption);
+
+ChromeRefresh2023Level GetChromeRefresh2023Level() {
+  return IsChromeRefresh2023() ? kChromeRefresh2023Level.Get()
+                               : ChromeRefresh2023Level::kDisabled;
+}
+
 BASE_FEATURE(kWebUiSystemFont,
              "WebUiSystemFont",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_APPLE)
+// Font Smoothing was enabled by default prior to introducing this feature.
+// We want to experiment with disabling it to align with CR2023 designs.
+BASE_FEATURE(kCr2023MacFontSmoothing,
+             "Cr2023MacFontSmoothing",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kUseNanosecondsForMotionEvent,
              "UseNanosecondsForMotionEvent",

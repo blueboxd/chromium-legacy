@@ -577,6 +577,64 @@ TEST_F(AttributionDataHostManagerImplTest,
       "Conversions.SourceRegistration.NavigationType.Background", 2, 2);
 }
 
+TEST_F(AttributionDataHostManagerImplTest,
+       SourceDataHostDisconnectedBeforeBinding_NavigationSourceRegistered) {
+  base::HistogramTester histograms;
+
+  const auto page_origin = *SuitableOrigin::Deserialize("https://page.example");
+  const auto reporting_origin =
+      *SuitableOrigin::Deserialize("https://reporter.example");
+
+  EXPECT_CALL(mock_manager_,
+              HandleSource(AllOf(SourceTypeIs(SourceType::kNavigation),
+                                 ImpressionOriginIs(page_origin),
+                                 ReportingOriginIs(reporting_origin)),
+                           kFrameId))
+      .Times(2);
+
+  const blink::AttributionSrcToken attribution_src_token;
+
+  mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
+  data_host_manager_.RegisterNavigationDataHost(
+      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token,
+      AttributionInputEvent());
+
+  SourceRegistration source_data(*DestinationSet::Create(
+      {net::SchemefulSite::Deserialize("https://trigger.example")}));
+  source_data.source_event_id = 10;
+  source_data.priority = 20;
+  source_data.debug_key = 789;
+  source_data.aggregation_keys =
+      *attribution_reporting::AggregationKeys::FromKeys(
+          {{"key", absl::MakeUint128(/*high=*/5, /*low=*/345)}});
+  source_data.debug_reporting = true;
+  data_host_remote->SourceDataAvailable(reporting_origin, source_data);
+
+  // This should succeed even though the destination site doesn't match the
+  // final navigation site.
+  source_data.destination_set = *DestinationSet::Create(
+      {net::SchemefulSite::Deserialize("https://trigger2.example")});
+  data_host_remote->SourceDataAvailable(reporting_origin,
+                                        std::move(source_data));
+
+  data_host_remote.reset();
+
+  task_environment_.FastForwardBy(base::Milliseconds(1));
+
+  data_host_manager_.NotifyNavigationStartedForDataHost(
+      attribution_src_token, page_origin,
+      AttributionNavigationType::kContextMenu,
+      /*is_within_fenced_frame=*/false, kFrameId);
+  task_environment_.RunUntilIdle();
+
+  histograms.ExpectTimeBucketCount("Conversions.SourceEligibleDataHostLifeTime",
+                                   base::Milliseconds(1), 1);
+
+  // kRegistered = 0, kProcessed = 3.
+  histograms.ExpectBucketCount(kNavigationDataHostStatusHistogram, 0, 1);
+  histograms.ExpectBucketCount(kNavigationDataHostStatusHistogram, 3, 1);
+}
+
 // Ensures correct behavior in
 // `AttributionDataHostManagerImpl::OnDataHostDisconnected()` when a data host
 // is registered but disconnects before registering a source or trigger.
@@ -822,6 +880,61 @@ TEST_F(AttributionDataHostManagerImplTest,
   task_environment_.FastForwardBy(base::TimeDelta());
 }
 
+TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectOsSource_InOrder) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      blink::features::kAttributionReportingCrossAppWeb);
+
+  AttributionOsLevelManagerAndroid::ScopedOsSupportForTesting
+      scoped_os_support_setting(
+          attribution_reporting::mojom::OsSupport::kEnabled);
+
+  auto reporter = *SuitableOrigin::Deserialize("https://report.test");
+  auto source_site = *SuitableOrigin::Deserialize("https://source.test");
+
+  {
+    InSequence seq;
+
+    EXPECT_CALL(mock_manager_,
+                HandleOsRegistration(
+                    OsRegistration(GURL("https://b.test/"), *source_site,
+                                   AttributionInputEvent()),
+                    kFrameId));
+    EXPECT_CALL(mock_manager_,
+                HandleOsRegistration(
+                    OsRegistration(GURL("https://a.test/"), *source_site,
+                                   AttributionInputEvent()),
+                    kFrameId));
+  }
+
+  const blink::AttributionSrcToken attribution_src_token;
+
+  {
+    auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    headers->SetHeader(kAttributionReportingRegisterOsSourceHeader,
+                       R"("https://b.test/")");
+
+    data_host_manager_.NotifyNavigationRedirectRegistration(
+        attribution_src_token, headers.get(), reporter, source_site,
+        AttributionInputEvent(), AttributionNavigationType::kAnchor,
+        /*is_within_fenced_frame=*/false, kFrameId);
+  }
+
+  {
+    auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    headers->SetHeader(kAttributionReportingRegisterOsSourceHeader,
+                       R"("https://a.test/")");
+
+    data_host_manager_.NotifyNavigationRedirectRegistration(
+        attribution_src_token, headers.get(), reporter, source_site,
+        AttributionInputEvent(), AttributionNavigationType::kAnchor,
+        /*is_within_fenced_frame=*/false, kFrameId);
+  }
+
+  // Wait for parsing to finish.
+  task_environment_.FastForwardBy(base::TimeDelta());
+}
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -870,6 +983,55 @@ TEST_F(AttributionDataHostManagerImplTest,
       AttributionInputEvent(), AttributionNavigationType::kAnchor,
       /*is_within_fenced_frame=*/false, kFrameId);
   data_host_manager_.NotifyNavigationFinished(attribution_src_token);
+
+  // Wait for parsing to finish.
+  task_environment_.FastForwardBy(base::TimeDelta());
+}
+
+TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectSource_InOrder) {
+  {
+    InSequence seq;
+
+    EXPECT_CALL(mock_manager_,
+                HandleSource(SourceRegistrationIs(SourceRegistrationMatches(
+                                 SourceRegistrationMatcherConfig(
+                                     /*source_event_id=*/2))),
+                             kFrameId));
+    EXPECT_CALL(mock_manager_,
+                HandleSource(SourceRegistrationIs(SourceRegistrationMatches(
+                                 SourceRegistrationMatcherConfig(
+                                     /*source_event_id=*/1))),
+                             kFrameId));
+  }
+
+  auto reporter = *SuitableOrigin::Deserialize("https://report.test");
+  auto source_site = *SuitableOrigin::Deserialize("https://source.test");
+
+  const blink::AttributionSrcToken attribution_src_token;
+
+  {
+    auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    headers->SetHeader(
+        kAttributionReportingRegisterSourceHeader,
+        R"json({"source_event_id":"2","destination":"https://dest.test"})json");
+
+    data_host_manager_.NotifyNavigationRedirectRegistration(
+        attribution_src_token, headers.get(), reporter, source_site,
+        AttributionInputEvent(), AttributionNavigationType::kAnchor,
+        /*is_within_fenced_frame=*/false, kFrameId);
+  }
+
+  {
+    auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    headers->SetHeader(
+        kAttributionReportingRegisterSourceHeader,
+        R"json({"source_event_id":"1","destination":"https://dest.test"})json");
+
+    data_host_manager_.NotifyNavigationRedirectRegistration(
+        attribution_src_token, headers.get(), reporter, source_site,
+        AttributionInputEvent(), AttributionNavigationType::kAnchor,
+        /*is_within_fenced_frame=*/false, kFrameId);
+  }
 
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());

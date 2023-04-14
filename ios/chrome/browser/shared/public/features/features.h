@@ -110,9 +110,6 @@ BASE_DECLARE_FEATURE(kUseSFSymbolsInOmnibox);
 // Feature flag for the follow up of the SF Symbols.
 BASE_DECLARE_FEATURE(kSFSymbolsFollowUp);
 
-// Feature flag to enable Calendar event in experience kit.
-BASE_DECLARE_FEATURE(kCalendarExperienceKit);
-
 // Feature flag to enable Apple Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
 
@@ -172,5 +169,12 @@ BASE_DECLARE_FEATURE(kIndicateSyncErrorInOverflowMenu);
 
 // Returns true if the `kIndicateSyncErrorInOverflowMenu` feature is enabled.
 bool IsIndicateSyncErrorInOverflowMenuEnabled();
+
+// Feature flag to move the steady-state (unfocused) omnibox to the bottom.
+BASE_DECLARE_FEATURE(kBottomOmniboxSteadyState);
+
+// Feature flag to put all clipboard access onto a background thread. Any
+// synchronous clipboard access will always return nil/false.
+BASE_DECLARE_FEATURE(kOnlyAccessClipboardAsync);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

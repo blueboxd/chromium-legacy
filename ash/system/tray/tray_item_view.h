@@ -52,12 +52,23 @@ class IconizedLabel : public views::Label {
 class ASH_EXPORT TrayItemView : public views::View,
                                 public views::AnimationDelegateViews {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when this tray item's visibility is going to change but has not
+    // yet changed. `target_visibility` is the visibility the tray item is going
+    // to have.
+    virtual void OnTrayItemVisibilityAboutToChange(bool target_visibility) = 0;
+  };
+
   explicit TrayItemView(Shelf* shelf);
 
   TrayItemView(const TrayItemView&) = delete;
   TrayItemView& operator=(const TrayItemView&) = delete;
 
   ~TrayItemView() override;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Convenience function for creating a child Label or ImageView.
   // Only one of the two should be called.
@@ -85,8 +96,17 @@ class ASH_EXPORT TrayItemView : public views::View,
   // otherwise.
   bool IsAnimating();
 
+  // Updates this `TrayItemView`'s visibility according to `target_visible_`
+  // without animating.
+  void ImmediatelyUpdateVisibility();
+
   // Returns the target visibility. For testing only.
   bool target_visible_for_testing() const { return target_visible_; }
+
+  // Returns this `TrayItemView`'s animation. For testing only.
+  gfx::SlideAnimation* animation_for_testing() const {
+    return animation_.get();
+  }
 
   IconizedLabel* label() const { return label_; }
   views::ImageView* image_view() const { return image_view_; }
@@ -145,14 +165,16 @@ class ASH_EXPORT TrayItemView : public views::View,
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // The target visibility for the item when all the animation is done.
-  bool target_visible_ = false;
+  // Initialized to true because View visibility defaults to true during
+  // construction.
+  bool target_visible_ = true;
 
   // Use scale in animating in the item to the tray.
   bool use_scale_in_animation_ = true;
 
   // Only one of |label_| and |image_view_| should be non-null.
-  IconizedLabel* label_;
-  views::ImageView* image_view_;
+  IconizedLabel* label_ = nullptr;
+  views::ImageView* image_view_ = nullptr;
 
   // Measure animation smoothness metrics for `animation_`.
   absl::optional<ui::ThroughputTracker> throughput_tracker_;
@@ -163,6 +185,8 @@ class ASH_EXPORT TrayItemView : public views::View,
   // A closure called when the visibility animation finishes. Used for tests
   // only.
   base::OnceClosure animation_idle_closure_;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<TrayItemView> weak_factory_{this};
 };

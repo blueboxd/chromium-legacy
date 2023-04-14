@@ -23,6 +23,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
@@ -65,6 +66,7 @@
 #include "content/browser/process_lock.h"
 #include "content/browser/reduce_accept_language/reduce_accept_language_utils.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
+#include "content/browser/renderer_host/concurrent_navigations_commit_deferring_condition.h"
 #include "content/browser/renderer_host/cookie_utils.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -226,7 +228,7 @@ const char kIsolatedAppCSP[] =
     "base-uri 'none';"
     "default-src 'self';"
     "object-src 'none';"
-    "frame-src 'self' https:;"
+    "frame-src 'self' https: blob: data:;"
     "connect-src 'self' https:;"
     "script-src 'self' 'wasm-unsafe-eval';"
     "img-src 'self' https: blob: data:;"
@@ -1227,15 +1229,18 @@ std::unique_ptr<NavigationRequest> NavigationRequest::Create(
   base::WeakPtr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache =
       nullptr;
   if (entry) {
-    BackForwardCacheImpl::Entry* restored_entry =
-        frame_tree_node->navigator()
-            .controller()
-            .GetBackForwardCache()
-            .GetEntry(entry->GetUniqueID());
-    if (restored_entry) {
+    auto restored_entry = frame_tree_node->navigator()
+                              .controller()
+                              .GetBackForwardCache()
+                              .GetOrEvictEntry(entry->GetUniqueID());
+    // TODO(crbug.com/1430653): Check the
+    // `BackForwardCacheImpl::GetEntryFailureCase` in the return value and
+    // cancel the NavigationRequest to avoid use-after-free if we know that it
+    // will be restarted.
+    if (restored_entry.has_value()) {
       if (frame_tree_node->IsMainFrame()) {
         rfh_restored_from_back_forward_cache =
-            restored_entry->render_frame_host()->GetWeakPtr();
+            restored_entry.value()->render_frame_host()->GetWeakPtr();
       } else {
         // We have a matching BFCache entry for a subframe navigation. This
         // shouldn't happen as we should've triggered deletion of BFCache
@@ -1666,6 +1671,8 @@ NavigationRequest::NavigationRequest(
               ? absl::make_optional(FencedFrameProperties())
               : absl::nullopt),
       embedder_shared_storage_context_(embedder_shared_storage_context) {
+  CHECK(!common_params_->initiator_base_url ||
+        !common_params_->initiator_base_url->is_empty());
   DCHECK(!blink::IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
   DCHECK_EQ(common_params_->url, commit_params_->original_url);
@@ -2075,20 +2082,25 @@ NavigationRequest::~NavigationRequest() {
   TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "NavigationRequest",
                                   navigation_id_);
 
-  // In theory, this only needs to run when deleting a NavigationRequest with an
-  // associated RenderFrameHost that is:
-  //
-  // - the speculative RenderFrameHost
-  // - and that speculative RenderFrameHost was previously in the pending commit
-  //   state.
-  //
-  // In practice, it is safer to just always run this; trying to resume a
-  // NavigationRequest's attempt to commit "too soon" will just re-queue the
-  // request, whereas accidentally forgetting to resume it sometimes will lead
-  // to a navigation just silently not working.
-  if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
-      frame_tree_node_->navigation_request()) {
-    frame_tree_node_->navigation_request()->ResumeCommitIfNeeded();
+  // IMPORTANT NOTE: DO NOT return early from the destructor before this line.
+  // Otherwise, a queued navigation might get stuck in a queueing state forever.
+  // This navigation has finished. See if there is another NavigationRequest
+  // that lives in the associated FrameTreeNode that satisfies these conditions:
+  // - Is currently queued to wait for a pending commit navigation to finish
+  // - Is not the NavigationRequest that is currently being destructed itself
+  // - Is not a failed Back/Forward Cache restore that is waiting to be
+  // restarted as a new navigation (as that navigation is basically inactive).
+  if (NavigationRequest* request = frame_tree_node_->navigation_request()) {
+    if (request->IsQueued() && request != this &&
+        !request->restarting_back_forward_cached_navigation_) {
+      // It might be possible for the pending commit RFH to still exist, e.g. if
+      // the navigation being destructed is an unrelated navigation
+      // (same-document navigation etc). In that case, don't continue the queued
+      // navigation just yet.
+      if (!request->ShouldQueueDueToExistingPendingCommitRFH()) {
+        request->PostResumeCommitTask();
+      }
+    }
   }
 
   if (loading_mem_tracker_)
@@ -2158,22 +2170,25 @@ NavigationRequest::~NavigationRequest() {
     }
 
     if (IsServedFromBackForwardCache()) {
-      BackForwardCacheImpl::Entry* bfcache_entry =
-          GetNavigationController()->GetBackForwardCache().GetEntry(
+      auto bfcache_entry =
+          GetNavigationController()->GetBackForwardCache().GetOrEvictEntry(
               nav_entry_id());
-      if (!bfcache_entry)
-        return;
-
-      RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
-          bfcache_entry->render_frame_host()->GetGlobalId());
-      // RFH could have been deleted. E.g. eviction timer fired
-      if (rfh && rfh->IsInBackForwardCache()) {
-        // rfh is still in the cache so the navigation must have failed. But we
-        // have already disabled eviction so the safest thing to do here to
-        // recover is to evict.
-        rfh->EvictFromBackForwardCacheWithReason(
-            BackForwardCacheMetrics::NotRestoredReason::
-                kNavigationCancelledWhileRestoring);
+      // TODO(crbug.com/1430653): Check the
+      // `BackForwardCacheImpl::GetEntryFailureCase` in the return value and
+      // cancel the NavigationRequest to avoid use-after-free if we know that it
+      // will be restarted.
+      if (bfcache_entry.has_value()) {
+        RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
+            bfcache_entry.value()->render_frame_host()->GetGlobalId());
+        // RFH could have been deleted. E.g. eviction timer fired
+        if (rfh && rfh->IsInBackForwardCache()) {
+          // rfh is still in the cache so the navigation must have failed. But
+          // we have already disabled eviction so the safest thing to do here to
+          // recover is to evict.
+          rfh->EvictFromBackForwardCacheWithReason(
+              BackForwardCacheMetrics::NotRestoredReason::
+                  kNavigationCancelledWhileRestoring);
+        }
       }
     }
   }
@@ -2653,7 +2668,7 @@ void NavigationRequest::BeginNavigationImpl() {
     if (HasRenderFrameHost()) {
       auto* site_instance = render_frame_host_.value()->GetSiteInstance();
       if (!site_instance->HasSite() &&
-          SiteInstanceImpl::ShouldAssignSiteForURL(common_params_->url)) {
+          SiteInstanceImpl::ShouldAssignSiteForUrlInfo(GetUrlInfo())) {
         site_instance->ConvertToDefaultOrSetSite(GetUrlInfo());
       }
     }
@@ -2817,8 +2832,8 @@ void NavigationRequest::StartNavigation() {
   modified_request_headers_.Clear();
   removed_request_headers_.clear();
 
-  throttle_runner_ = base::WrapUnique(new NavigationThrottleRunner(
-      this, navigation_id_, IsInPrimaryMainFrame()));
+  throttle_runner_ = std::make_unique<NavigationThrottleRunner>(
+      this, navigation_id_, IsInPrimaryMainFrame());
 
   // For prerendered page activation, CommitDeferringConditions have already run
   // at the beginning of the navigation, so we won't run them again.
@@ -3715,9 +3730,6 @@ UrlInfo NavigationRequest::GetUrlInfo() {
         UrlInfo::OriginIsolationRequest::kRequiresOriginKeyedProcess;
   }
 
-  if (ShouldRequestSiteIsolationForCOOP())
-    isolation_flags |= UrlInfo::OriginIsolationRequest::kCOOP;
-
   auto isolation_request =
       static_cast<UrlInfo::OriginIsolationRequest>(isolation_flags);
 
@@ -3726,6 +3738,7 @@ UrlInfo NavigationRequest::GetUrlInfo() {
 
   UrlInfoInit url_info_init(GetURL());
   url_info_init.WithOriginIsolationRequest(isolation_request)
+      .WithCOOPSiteIsolation(ShouldRequestSiteIsolationForCOOP())
       .WithWebExposedIsolationInfo(web_exposed_isolation_info)
       .WithIsPdf(is_pdf_);
 
@@ -3773,6 +3786,29 @@ UrlInfo NavigationRequest::GetUrlInfo() {
     // navigations.
     url_info_init.WithOrigin(
         url::Origin::Create(common_params().base_url_for_data_url));
+  } else if (GetURL().IsAboutBlank() && GetInitiatorOrigin().has_value()) {
+    // about:blank inherits its origin from the initiator, so ensure that this
+    // is reflected in the UrlInfo.  In the common case, this isn't needed for
+    // process model decisions, since we already leave about:blank in the
+    // source SiteInstance, which corresponds to the initiator (see
+    // `RenderFrameHostManager::CanUseSourceSiteInstance()`). However, in
+    // certain corner cases, the source SiteInstance can't be used, but we
+    // will still need to assign a proper process for about:blank. In that
+    // case, we should honor the initiator origin, so that about:blank ends up
+    // in a process that's locked to that origin, rather than an unlocked
+    // process with an unassigned SiteInstance.  The latter would be violating
+    // site isolation guarantees and would be problematic for Citadel
+    // enforcements in
+    // ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin().  See
+    // https://crbug.com/1426928.
+    //
+    // TODO(alexmos): Consider also specifying UrlInfo::origin for about:srcdoc
+    // navigations. This is not currently needed in the SiteInstance
+    // and process assignment paths for srcdoc frames, but doing this might
+    // simplify some of that code and would be good for consistency, since both
+    // about:blank and about:srcdoc inherit the origin per spec
+    // (https://html.spec.whatwg.org/multipage/document-sequences.html#determining-the-origin).
+    url_info_init.WithOrigin(*GetInitiatorOrigin());
   } else {
     // Overriding the origin for a URL is dangerous and only allowed in very
     // narrow cases which are handled explicitly above.  Please think very
@@ -4155,18 +4191,25 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
     // If the current navigation is being restarted, it should not try to make
     // any further progress.
     CHECK(!restarting_back_forward_cached_navigation_);
-    if (!rfh_restored_from_back_forward_cache_) {
-      // The RenderFrameHost to restore has been evicted and deleted. We should
-      // stop processing this back/forward cache restore navigation, as the
-      // navigation will soon be restarted as a normal history navigation.
+    NavigationControllerImpl* controller = GetNavigationController();
+    auto entry =
+        controller->GetBackForwardCache().GetOrEvictEntry(nav_entry_id_);
+    if (!rfh_restored_from_back_forward_cache_ ||
+        (!entry.has_value() &&
+         entry.error() == BackForwardCacheImpl::kEntryIneligibleAndEvicted)) {
+      // If the RenderFrameHost to restore has been evicted and deleted, or the
+      // current navigation is being restarted due to the `GetOrEvictEntry`
+      // call, we should stop processing this back/forward cache restore
+      // navigation, as the navigation will soon be restarted as a normal
+      // history navigation.
+
+      // TODO(crbug.com/1430653): Cancel the NavigationRequest to avoid
+      // use-after-free if we know that it will be restarted.
       return;
     }
-    NavigationControllerImpl* controller = GetNavigationController();
-    BackForwardCacheImpl::Entry* entry =
-        controller->GetBackForwardCache().GetEntry(nav_entry_id_);
-    CHECK(entry);
-    CHECK(entry->render_frame_host());
-    render_frame_host_ = entry->render_frame_host()->GetSafeRef();
+    CHECK(entry.has_value() && entry.value());
+    CHECK(entry.value()->render_frame_host());
+    render_frame_host_ = entry.value()->render_frame_host()->GetSafeRef();
   } else if (IsPrerenderedPageActivation()) {
     // Prerendering requires changing pages starting at the root node.
     DCHECK(IsInMainFrame());
@@ -4189,6 +4232,7 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
           // future.
           break;
         case GetFrameHostForNavigationFailed::kBlockedByPendingCommit:
+          DCHECK(ShouldQueueDueToExistingPendingCommitRFH());
           // This closure is posted to the event loop, so it must use WeakPtr.
           resume_commit_closure_ = base::BindOnce(
               &NavigationRequest::SelectFrameHostForOnResponseStarted,
@@ -4237,7 +4281,7 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
 
   subresource_loader_params_ = std::move(subresource_loader_params);
 
-  // Most cases where ShouldAssignSiteForURL() is false should never load
+  // Most cases where ShouldAssignSiteForUrlInfo() is false should never load
   // actual content and reach this.  Since only empty document schemes are
   // allowed to leave a SiteInstance's site unassigned, they should follow the
   // !NeedsUrlLoader() path for committing the navigation early without ever
@@ -4260,7 +4304,7 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
   } else {
     // TODO(alexmos): Convert to a CHECK after verifying that this doesn't
     // happen in practice.
-    if (!SiteInstanceImpl::ShouldAssignSiteForURL(common_params_->url)) {
+    if (!SiteInstanceImpl::ShouldAssignSiteForUrlInfo(GetUrlInfo())) {
       DVLOG(1) << "This URL was unexpectedly loaded through the network stack: "
                << common_params_->url;
       base::debug::DumpWithoutCrashing();
@@ -4274,7 +4318,7 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
     // https://crbug.com/738634.
     SiteInstanceImpl* instance = GetRenderFrameHost()->GetSiteInstance();
     if (!instance->HasSite() &&
-        SiteInstanceImpl::ShouldAssignSiteForURL(common_params_->url)) {
+        SiteInstanceImpl::ShouldAssignSiteForUrlInfo(GetUrlInfo())) {
       instance->ConvertToDefaultOrSetSite(GetUrlInfo());
     }
 
@@ -4342,8 +4386,8 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
     NavigationEntryImpl* nav_entry =
         frame_tree_node_->navigator().controller().GetLastCommittedEntry();
     if (nav_entry && !nav_entry->GetURL().IsAboutBlank() &&
-        !SiteInstanceImpl::ShouldAssignSiteForURL(nav_entry->GetURL()) &&
-        SiteInstanceImpl::ShouldAssignSiteForURL(common_params_->url)) {
+        !SiteInstance::ShouldAssignSiteForURL(nav_entry->GetURL()) &&
+        SiteInstanceImpl::ShouldAssignSiteForUrlInfo(GetUrlInfo())) {
       scoped_refptr<FrameNavigationEntry> frame_entry =
           nav_entry->root_node()->frame_entry;
       scoped_refptr<SiteInstanceImpl> new_site_instance =
@@ -5481,6 +5525,9 @@ void NavigationRequest::CommitNavigation() {
   // A navigation request should only commit once the response has been
   // processed.
   DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
+  // If a WebUI was created for this navigation, it must have been moved to the
+  // RenderFrameHost we're about to commit in already.
+  CHECK(!HasWebUI());
   CheckSoftNavigationHeuristicsInvariants();
 
   if (!CoopCoepSanityCheck())
@@ -9184,7 +9231,7 @@ blink::RuntimeFeatureStateContext&
 NavigationRequest::GetMutableRuntimeFeatureStateContext() {
   // runtime_feature_state_context_ shouldn't be modified after READY_TO_COMMIT
   // as its state has already been sent to the renderer.
-  DCHECK_LT(state_, NavigationState::READY_TO_COMMIT);
+  DCHECK_LE(state_, NavigationState::READY_TO_COMMIT);
   return runtime_feature_state_context_;
 }
 
@@ -9221,13 +9268,33 @@ void NavigationRequest::ComputeDownloadPolicy() {
   // [Interstitial]
 }
 
-void NavigationRequest::ResumeCommitIfNeeded() {
-  DCHECK(ShouldQueueNavigationsWhenPendingCommitRFHExists());
+bool NavigationRequest::ShouldQueueDueToExistingPendingCommitRFH() const {
+  CHECK_EQ(this, frame_tree_node_->navigation_request());
+  CHECK(state_ < READY_TO_COMMIT || state_ == WILL_FAIL_REQUEST);
+
+  if (RenderFrameHostImpl* speculative_rfh =
+          frame_tree_node_->render_manager()->speculative_frame_host()) {
+    // Queue the navigation if there is a pending commit RenderFrameHost.
+    return speculative_rfh->HasPendingCommitForCrossDocumentNavigation();
+  }
+  return false;
+}
+
+void NavigationRequest::PostResumeCommitTask() {
+  DCHECK(ShouldAvoidRedundantNavigationCancellations());
+  DCHECK(!ShouldQueueDueToExistingPendingCommitRFH());
   // TODO(crbug.com/1220337): Add some metrics for how often:
   // - this is run
   // - how long navigations remain queued
   // - how often it ends up having to simply re-queue itself
   if (resume_commit_closure_) {
+    // Post a task so that we resume the navigation asynchronously. Note
+    // that we're guaranteed to not have a new RFH get into a pending commit
+    // stage in between the time we post this task and the time we run it.
+    // `this` is the previously-queued NavigationRequest and is still owned by
+    // the `FrameTreeNode`. If a new `NavigationRequest` is created, it will
+    // replace and delete `this` and the resume callback for `this` will be
+    // skipped.
     base::SequencedTaskRunner::GetCurrentDefault()->PostNonNestableTask(
         FROM_HERE, std::move(resume_commit_closure_));
   }
@@ -9290,6 +9357,54 @@ bool NavigationRequest::GetIsThirdPartyCookiesUserBypassEnabled() {
     return state_context.IsThirdPartyCookiesUserBypassEnabled();
   }
   return GetParentFrame()->GetIsThirdPartyCookiesUserBypassEnabled();
+}
+
+void NavigationRequest::CreateWebUIIfNeeded(RenderFrameHostImpl* frame_host) {
+  TRACE_EVENT1("content", "NavigationRequest::CreateWebUI", "url", GetURL());
+
+  WebUI::TypeID new_web_ui_type =
+      WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
+          frame_tree_node_->navigator().controller().GetBrowserContext(),
+          GetURL());
+  if (new_web_ui_type == WebUI::kNoWebUI) {
+    // The navigation doesn't need a WebUI.
+    return;
+  }
+  CHECK(!web_ui_);
+
+  // We reuse WebUI on navigations with the same WebUI type where we use the
+  // same RFH, so don't create a new one if there is already an existing WebUI
+  // in `frame_host`. However, it is useful to verify that its type hasn't
+  // changed. Site isolation guarantees that RenderFrameHostImpl will be changed
+  // if the WebUI type differs.
+  if (frame_host && frame_host->web_ui()) {
+    CHECK_EQ(new_web_ui_type, frame_host->web_ui_type());
+    return;
+  }
+
+  web_ui_ = std::make_unique<WebUIImpl>(this);
+  std::unique_ptr<WebUIController> controller(
+      WebUIControllerFactoryRegistry::GetInstance()
+          ->CreateWebUIControllerForURL(web_ui_.get(), GetURL()));
+
+  // If we have assigned (zero or more) bindings to the NavigationEntry in
+  // the past, make sure we're not granting it different bindings than it
+  // had before. If so, note it and don't give it any bindings, to avoid a
+  // potential privilege escalation.
+  if (bindings() != FrameNavigationEntry::kInvalidBindings &&
+      bindings() != web_ui_->GetBindings()) {
+    RecordAction(base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
+    base::WeakPtr<NavigationRequest> self = GetWeakPtr();
+    web_ui_.reset();
+    // Resetting the WebUI may indirectly call content's embedders and delete
+    // `this`. There are no known occurrences of it, so we assume this never
+    // happen and crash immediately if it does, because there are no easy ways
+    // to recover.
+    CHECK(self);
+    return;
+  }
+
+  web_ui_->SetController(std::move(controller));
 }
 
 }  // namespace content

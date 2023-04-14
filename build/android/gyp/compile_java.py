@@ -21,6 +21,8 @@ from util import build_utils
 from util import md5_check
 from util import jar_info_utils
 from util import server_utils
+import action_helpers  # build_utils adds //build to sys.path.
+import zip_helpers
 
 _JAVAC_EXTRACTOR = os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party',
                                 'android_prebuilts', 'build_tools', 'common',
@@ -252,24 +254,24 @@ def CreateJarFile(jar_path,
                   extra_classes_jar=None):
   """Zips files from compilation into a single jar."""
   logging.info('Start creating jar file: %s', jar_path)
-  with build_utils.AtomicOutput(jar_path) as f:
+  with action_helpers.atomic_output(jar_path) as f:
     with zipfile.ZipFile(f.name, 'w') as z:
-      build_utils.ZipDir(z, classes_dir)
+      zip_helpers.zip_directory(z, classes_dir)
       if service_provider_configuration_dir:
         config_files = build_utils.FindInDirectory(
             service_provider_configuration_dir)
         for config_file in config_files:
           zip_path = os.path.relpath(config_file,
                                      service_provider_configuration_dir)
-          build_utils.AddToZipHermetic(z, zip_path, src_path=config_file)
+          zip_helpers.add_to_zip_hermetic(z, zip_path, src_path=config_file)
 
       if additional_jar_files:
         for src_path, zip_path in additional_jar_files:
-          build_utils.AddToZipHermetic(z, zip_path, src_path=src_path)
+          zip_helpers.add_to_zip_hermetic(z, zip_path, src_path=src_path)
       if extra_classes_jar:
-        build_utils.MergeZips(
-            z, [extra_classes_jar],
-            path_transform=lambda p: p if p.endswith('.class') else None)
+        path_transform = lambda p: p if p.endswith('.class') else None
+        zip_helpers.merge_zips(z, [extra_classes_jar],
+                               path_transform=path_transform)
   logging.info('Completed jar file: %s', jar_path)
 
 
@@ -398,7 +400,7 @@ class _InfoFileContext:
     entries = self._Collect()
 
     logging.info('Writing info file: %s', output_path)
-    with build_utils.AtomicOutput(output_path, mode='wb') as f:
+    with action_helpers.atomic_output(output_path, mode='wb') as f:
       jar_info_utils.WriteJarInfoFile(f, entries, self._srcjar_files)
     logging.info('Completed info file: %s', output_path)
 
@@ -608,7 +610,7 @@ def _RunCompiler(changes,
 
 def _ParseOptions(argv):
   parser = optparse.OptionParser()
-  build_utils.AddDepfileOption(parser)
+  action_helpers.add_depfile_arg(parser)
 
   parser.add_option('--target-name', help='Fully qualified GN target name.')
   parser.add_option('--skip-build-server',
@@ -687,10 +689,10 @@ def _ParseOptions(argv):
   options, args = parser.parse_args(argv)
   build_utils.CheckOptions(options, parser, required=('jar_path', ))
 
-  options.classpath = build_utils.ParseGnList(options.classpath)
-  options.processorpath = build_utils.ParseGnList(options.processorpath)
-  options.java_srcjars = build_utils.ParseGnList(options.java_srcjars)
-  options.jar_info_exclude_globs = build_utils.ParseGnList(
+  options.classpath = action_helpers.parse_gn_list(options.classpath)
+  options.processorpath = action_helpers.parse_gn_list(options.processorpath)
+  options.java_srcjars = action_helpers.parse_gn_list(options.java_srcjars)
+  options.jar_info_exclude_globs = action_helpers.parse_gn_list(
       options.jar_info_exclude_globs)
 
   additional_jar_files = []

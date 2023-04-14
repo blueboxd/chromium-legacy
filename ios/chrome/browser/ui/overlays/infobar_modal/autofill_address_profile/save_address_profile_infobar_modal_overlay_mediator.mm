@@ -22,8 +22,9 @@
 
 using autofill_address_profile_infobar_overlays::
     SaveAddressProfileModalRequestConfig;
-using save_address_profile_infobar_modal_responses::EditedProfileSaveAction;
 using save_address_profile_infobar_modal_responses::CancelViewAction;
+using save_address_profile_infobar_modal_responses::
+    LegacyEditedProfileSaveAction;
 
 @interface SaveAddressProfileInfobarModalOverlayMediator ()
 // The save address profile modal config from the request.
@@ -67,7 +68,9 @@ using save_address_profile_infobar_modal_responses::CancelViewAction;
     kSyncingUserEmailKey : config->syncing_user_email()
         ? base::SysUTF16ToNSString(config->syncing_user_email().value())
         : @"",
-    kIsProfileAnAccountProfileKey : @(config->is_profile_an_account_profile())
+    kIsProfileAnAccountProfileKey : @(config->is_profile_an_account_profile()),
+    kProfileDescriptionForMigrationPromptKey : base::SysUTF16ToNSString(
+        config->profile_description_for_migration_prompt())
   };
 
   [_consumer setupModalViewControllerWithPrefs:prefs];
@@ -110,9 +113,8 @@ using save_address_profile_infobar_modal_responses::CancelViewAction;
 #pragma mark - InfobarEditAddressProfileModalDelegate
 
 - (void)saveEditedProfileWithData:(NSDictionary*)profileData {
-  [self
-      dispatchResponse:OverlayResponse::CreateWithInfo<EditedProfileSaveAction>(
-                           profileData)];
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                             LegacyEditedProfileSaveAction>(profileData)];
   [self dismissOverlay];
 }
 

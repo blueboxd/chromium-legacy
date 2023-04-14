@@ -694,10 +694,11 @@ CommerceHintAgent::CommerceHintAgent(content::RenderFrame* render_frame)
   // Subframes including fenced frames shouldn't be reached here.
   DCHECK(render_frame->IsMainFrame() && !render_frame->IsInFencedFrameTree());
 
-  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
+
   content::RenderThread::Get()->BindHostReceiver(
-      recorder.InitWithNewPipeAndPassReceiver());
-  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+      factory.BindNewPipeAndPassReceiver());
+  ukm_recorder_ = ukm::MojoUkmRecorder::Create(*factory);
 }
 
 CommerceHintAgent::~CommerceHintAgent() = default;
@@ -927,8 +928,6 @@ void CommerceHintAgent::OnProductsExtracted(absl::optional<base::Value> results,
   if (!extracted_products) {
     return;
   }
-  bool is_partner = commerce::IsPartnerMerchant(
-      GURL(render_frame()->GetWebFrame()->GetDocument().Url()));
   std::vector<mojom::ProductPtr> products;
   for (const auto& product_val : *extracted_products) {
     if (!product_val.is_dict()) {
@@ -947,15 +946,11 @@ void CommerceHintAgent::OnProductsExtracted(absl::optional<base::Value> results,
       DVLOG(1) << "skipped";
       continue;
     }
-    if (is_partner) {
-      std::string product_id;
-      const std::string* extracted_id = product.FindString("productId");
-      if (extracted_id) {
-        product_id = *extracted_id;
-      }
-      DVLOG(1) << "product_id = " << product_id;
-      DCHECK(!product_id.empty());
-      product_ptr->product_id = std::move(product_id);
+    const std::string* product_id = product.FindString("productId");
+    if (product_id) {
+      DVLOG(1) << "product_id = " << *product_id;
+      DCHECK(!product_id->empty());
+      product_ptr->product_id = *product_id;
     }
     products.push_back(std::move(product_ptr));
   }

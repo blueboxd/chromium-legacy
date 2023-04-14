@@ -43,6 +43,7 @@ if (!is_android) {
     "../browser/sync/test/integration/single_client_user_consents_sync_test.cc",
     "../browser/sync/test/integration/single_client_user_events_sync_test.cc",
     "../browser/sync/test/integration/single_client_wallet_sync_test.cc",
+    "../browser/sync/test/integration/single_client_web_apps_sync_generated_icon_fix_sync_test.cc",
     "../browser/sync/test/integration/single_client_web_apps_sync_test.cc",
     "../browser/sync/test/integration/sync_auth_test.cc",
     "../browser/sync/test/integration/sync_errors_test.cc",
@@ -50,6 +51,7 @@ if (!is_android) {
     # Tests with two clients can't run on Android.
     "../browser/sync/test/integration/apps_sync_test_base.cc",
     "../browser/sync/test/integration/apps_sync_test_base.h",
+    "../browser/sync/test/integration/single_client_webauthn_credentials_sync_test.cc",
     "../browser/sync/test/integration/two_client_autocomplete_sync_test.cc",
     "../browser/sync/test/integration/two_client_autofill_sync_test.cc",
     "../browser/sync/test/integration/two_client_bookmarks_sync_test.cc",

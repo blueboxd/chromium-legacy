@@ -13,6 +13,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/home_launcher_animation_info.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/quick_app_access_model.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -147,6 +148,7 @@ class ASH_EXPORT AppListControllerImpl
   AppListNotifier* GetNotifier() override;
   std::unique_ptr<ash::ScopedIphSession> CreateLauncherSearchIphSession()
       override;
+  void OpenSearchBoxIphUrl() override;
   void StartAssistant() override;
   void StartSearch(const std::u16string& raw_query) override;
   void StartZeroStateSearch(base::OnceClosure callback,
@@ -342,6 +344,13 @@ class ASH_EXPORT AppListControllerImpl
 
   // Returns the preferred width for the bubble launcher for the |root_window|.
   int GetPreferredBubbleWidth(aura::Window* root_window) const;
+
+  // Set the launchable quick app button shown next to the home button. This app
+  // icon is shown next to the home button until the app is launched or the
+  // launcher is opened.
+  // Returns true when the quick app was changed to a valid `app_id` or reset
+  // using an empty `app_id`.
+  bool SetHomeButtonQuickApp(const std::string& app_id);
 
  private:
   // Convenience methods for getting models from `model_provider_`.

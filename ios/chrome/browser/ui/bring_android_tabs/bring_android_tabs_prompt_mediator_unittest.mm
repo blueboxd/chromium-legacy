@@ -95,10 +95,12 @@ class BringAndroidTabsPromptMediatorTest : public PlatformTest {
 TEST_F(BringAndroidTabsPromptMediatorTest, ShowPrompt) {
   base::HistogramTester histogram_tester;
   [delegate() bringAndroidTabsPromptViewControllerDidShow];
-  histogram_tester.ExpectUniqueSample(
-      bring_android_tabs::kTabCountHistogramName, 1, 1);
   EXPECT_TRUE(bring_android_tabs_service()->displayed());
   EXPECT_FALSE(bring_android_tabs_service()->interacted());
+  // Verify that no duplicate metric is logged in histogram.
+  [delegate() bringAndroidTabsPromptViewControllerDidShow];
+  histogram_tester.ExpectUniqueSample(
+      bring_android_tabs::kTabCountHistogramName, 1, 1);
 }
 
 // Tests when the prompt is displayed and the user taps "open tabs", the
@@ -135,7 +137,7 @@ TEST_F(BringAndroidTabsPromptMediatorTest, ReviewTabs) {
 TEST_F(BringAndroidTabsPromptMediatorTest, TapCloseButton) {
   base::HistogramTester histogram_tester;
   [delegate() bringAndroidTabsPromptViewControllerDidShow];
-  [delegate() bringAndroidTabsPromptViewControllerDidDismiss:NO];
+  [delegate() bringAndroidTabsPromptViewControllerDidDismissWithSwipe:NO];
   histogram_tester.ExpectUniqueSample(
       bring_android_tabs::kPromptActionHistogramName,
       bring_android_tabs::PromptActionType::kCancel, 1);
@@ -147,7 +149,7 @@ TEST_F(BringAndroidTabsPromptMediatorTest, TapCloseButton) {
 TEST_F(BringAndroidTabsPromptMediatorTest, SwipeToDismiss) {
   base::HistogramTester histogram_tester;
   [delegate() bringAndroidTabsPromptViewControllerDidShow];
-  [delegate() bringAndroidTabsPromptViewControllerDidDismiss:YES];
+  [delegate() bringAndroidTabsPromptViewControllerDidDismissWithSwipe:YES];
   histogram_tester.ExpectUniqueSample(
       bring_android_tabs::kPromptActionHistogramName,
       bring_android_tabs::PromptActionType::kSwipeToDismiss, 1);

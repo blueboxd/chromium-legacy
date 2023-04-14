@@ -30,6 +30,17 @@ typedef std::map<ServerFieldType, std::vector<AutofillDataModel::ValidityState>>
 typedef std::map<ServerFieldType, AutofillDataModel::ValidityState>
     ServerFieldTypeValidityStateMap;
 
+enum class FormControlType {
+  kEmpty = 0,
+  kOther = 1,
+  kText = 2,
+  kTextarea = 3,
+  kCheckbox = 4,
+  kRadio = 5,
+  kSelectOne = 6,
+  kMaxValue = kSelectOne,
+};
+
 class AutofillField : public FormFieldData {
  public:
   using FieldLogEventType = absl::variant<absl::monostate,
@@ -187,6 +198,9 @@ class AutofillField : public FormFieldData {
   // field).
   bool IsFieldFillable() const;
 
+  // Returns true if the field's type is a credit card expiration type.
+  bool HasExpirationDateType() const;
+
   // Address Autofill gets disabled by an unrecognized autocomplete attribute.
   // If `kAutofillFillAndImportFromMoreFields` is enabled, this changes and the
   // server/heuristic predictions overwrite the unrecognized autocomplete
@@ -299,6 +313,8 @@ class AutofillField : public FormFieldData {
   absl::optional<std::string> autofill_source_profile_guid() const {
     return autofill_source_profile_guid_;
   }
+
+  enum FormControlType FormControlType() const;
 
  private:
   explicit AutofillField(FieldSignature field_signature);

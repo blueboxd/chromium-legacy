@@ -58,6 +58,7 @@ void AppListTestViewDelegate::OpenSearchResult(
       case ash::AppListLaunchedFrom::kLaunchedFromGrid:
       case ash::AppListLaunchedFrom::kLaunchedFromShelf:
       case ash::AppListLaunchedFrom::kLaunchedFromContinueTask:
+      case ash::AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
         return;
       case ash::AppListLaunchedFrom::DEPRECATED_kLaunchedFromSuggestionChip:
         NOTREACHED();
@@ -201,6 +202,8 @@ std::unique_ptr<ScopedIphSession>
 AppListTestViewDelegate::CreateLauncherSearchIphSession() {
   return nullptr;
 }
+
+void AppListTestViewDelegate::OpenSearchBoxIphUrl() {}
 
 void AppListTestViewDelegate::RecordAppLaunched(
     ash::AppListLaunchedFrom launched_from) {

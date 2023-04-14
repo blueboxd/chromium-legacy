@@ -53,6 +53,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
       public floss::FlossAdapterClient::Observer,
       public floss::FlossBatteryManagerClient::
           FlossBatteryManagerClientObserver,
+      public floss::FlossGattManagerClient::FlossGattServerObserver,
 #if BUILDFLAG(IS_CHROMEOS)
       public FlossAdminClientObserver,
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -132,16 +133,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
       const std::string& identifier) const override;
 
   // Register a GATT service. The service must belong to this adapter.
-  void RegisterGattService(
-      BluetoothLocalGattServiceFloss* service,
-      base::OnceClosure callback,
-      device::BluetoothGattService::ErrorCallback error_callback);
+  void RegisterGattService(BluetoothLocalGattServiceFloss* service);
+
+  // Gatt service added dbus hook.
+  void OnGattServiceAdded(BluetoothLocalGattServiceFloss* service,
+                          DBusResult<Void> ret);
 
   // Unregister a GATT service. The service must already be registered.
-  void UnregisterGattService(
-      BluetoothLocalGattServiceFloss* service,
-      base::OnceClosure callback,
-      device::BluetoothGattService::ErrorCallback error_callback);
+  void UnregisterGattService(BluetoothLocalGattServiceFloss* service);
+
+  // Gatt service removed dbus hook.
+  void OnGattServiceRemoved(BluetoothLocalGattServiceFloss* service,
+                            DBusResult<Void> ret);
 
   void AddLocalGattService(
       std::unique_ptr<BluetoothLocalGattServiceFloss> service);
@@ -156,6 +159,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   // this method will return false.
   bool SendValueChanged(BluetoothLocalGattCharacteristicFloss* characteristic,
                         const std::vector<uint8_t>& value);
+
+  // FlossGattServerObserver overrides
+  void GattServerNotificationSent(std::string address,
+                                  GattStatus status) override;
 
 #if BUILDFLAG(IS_CHROMEOS)
   void SetServiceAllowList(const UUIDList& uuids,
@@ -331,6 +338,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   // unregistered ones will just be inactive). This will be fixed with
   // crbug.com/687396.
   std::vector<scoped_refptr<BluetoothAdvertisementFloss>> advertisements_;
+
+  // While we are doing discovery, we will also maintain a separate LE scan
+  // session to respond on the current discovery session.
+  std::unique_ptr<device::BluetoothLowEnergyScanSession> le_discovery_session_ =
+      nullptr;
+
+  // Delegate for forwarding scan session notifications.
+  std::unique_ptr<device::BluetoothLowEnergyScanSession::Delegate>
+      le_discovery_session_delegate_;
 
   // Default BLE advertising interval.
   // 100 ms is one of the recommended values on Floss AdvertisingSetParameters.

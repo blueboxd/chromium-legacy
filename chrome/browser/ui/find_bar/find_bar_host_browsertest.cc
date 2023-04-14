@@ -664,11 +664,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(1, ordinal);
 
   // Move the selection to link 1, after searching.
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send(selectLink1());",
-      &result));
+  ASSERT_TRUE(content::ExecJs(web_contents, "selectLink1();"));
 
   // Do a find-next after the selection.  This should move forward
   // from there to the 3rd instance of 'google'.
@@ -693,11 +689,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   int ordinal = 0;
 
   // Move the selection to the text span.
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send(selectSpan());",
-      &result));
+  ASSERT_TRUE(content::ExecJs(web_contents, "selectSpan();"));
 
   // Do a find-next after the selection. This should select the 2nd occurrence
   // of the word 'find'.
@@ -807,8 +799,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NavigateClearsOrdinal) {
 
   // Open the Find box. In most tests we can just search without opening the
   // box first, but in this case we are testing functionality triggered by
-  // NOTIFICATION_NAV_ENTRY_COMMITTED in the FindBarController and the observer
-  // for that event isn't setup unless the box is open.
+  // `NavigationEntryCommitted()` in the FindBarController and it isn't setup
+  // unless the box is open.
   EnsureFindBoxOpen();
 
   // Search for a text that exists within a link on the page.

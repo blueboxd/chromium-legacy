@@ -182,7 +182,9 @@ enum class NotificationCatalogName {
   kWebAppSettings = 167,
   kEOLIncentive = 168,
   kHotspot = 169,
-  kMaxValue = kHotspot
+  kGeolocationSwitch = 170,
+  kMultiCaptureOnLogin = 171,
+  kMaxValue = kMultiCaptureOnLogin
 };
 
 // A living catalog that registers system nudges.
@@ -201,7 +203,8 @@ enum class NudgeCatalogName {
   kPhoneHub = 6,
   kClipboardHistoryZeroState = 7,
   kClipboardHistoryOnboarding = 8,
-  kMaxValue = kClipboardHistoryOnboarding,
+  kDisableDiacritics = 9,
+  kMaxValue = kDisableDiacritics,
 };
 
 // A living catalog that registers toasts.

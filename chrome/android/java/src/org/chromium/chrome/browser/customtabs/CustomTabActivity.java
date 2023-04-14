@@ -21,11 +21,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.OptIn;
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
-import androidx.core.os.BuildCompat;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
@@ -54,13 +52,12 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.util.ColorUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
 public class CustomTabActivity extends BaseCustomTabActivity {
+    private static final String TAG = "CustomTabActivity";
+
     private CustomTabsSessionToken mSession;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
@@ -177,25 +174,7 @@ public class CustomTabActivity extends BaseCustomTabActivity {
                                     mConnection.getClientPackageNameForSession(mSession));
                 });
 
-        setAllowCrossUidActivitySwitchFromBelow();
         super.finishNativeInitialization();
-    }
-
-    @OptIn(markerClass = androidx.core.os.BuildCompat.PrereleaseSdkCheck.class)
-    private void setAllowCrossUidActivitySwitchFromBelow() {
-        if (!ChromeFeatureList.sCctAllowCrossUidActivitySwitchFromBelow.isEnabled()
-                || !BuildCompat.isAtLeastU()) {
-            return;
-        }
-        // TODO(crbug.com/1423489): Replace the reflection with the normal API.
-        try {
-            Method method = Activity.class.getMethod(
-                    "setAllowCrossUidActivitySwitchFromBelow", boolean.class);
-            method.invoke(this, true);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException
-                | RuntimeException e) {
-            assert false : "CCT may not be launched or finished by background apps";
-        }
     }
 
     @Override

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/bubble/bubble_utils.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
@@ -149,12 +150,16 @@ int GetFirstVisibleChildIndex(std::vector<views::View*> event_views,
   return 0;
 }
 
-// Checks if both lists contain the same events by comparing their event IDs.
-// The event IDs should be the same (unique per Calendar) and in the same order.
-bool SameEventIds(const std::list<google_apis::calendar::CalendarEvent>& a,
-                  const std::list<google_apis::calendar::CalendarEvent>& b) {
-  auto proj = &google_apis::calendar::CalendarEvent::id;
-  return base::ranges::equal(a, b, base::ranges::equal_to(), proj, proj);
+// Checks if both lists contain the same events by comparing first their event
+// IDs and then that they start and end at the same time. The event IDs should
+// be the same (unique per Calendar) and in the same order.
+bool SameEvents(const std::list<google_apis::calendar::CalendarEvent>& a,
+                const std::list<google_apis::calendar::CalendarEvent>& b) {
+  return base::ranges::equal(a, b, [](const auto& a, const auto& b) {
+    return a.id() == b.id() &&
+           a.start_time().date_time() == b.start_time().date_time() &&
+           a.end_time().date_time() == b.start_time().date_time();
+  });
 }
 
 }  // namespace
@@ -279,7 +284,7 @@ void CalendarUpNextView::Layout() {
 
 void CalendarUpNextView::UpdateEvents(
     const std::list<google_apis::calendar::CalendarEvent>& events) {
-  if (SameEventIds(displayed_events_, events)) {
+  if (SameEvents(displayed_events_, events)) {
     return;
   }
 

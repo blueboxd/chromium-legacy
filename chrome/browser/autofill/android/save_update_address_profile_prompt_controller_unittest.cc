@@ -6,6 +6,7 @@
 
 #include <jni.h>
 #include <memory>
+#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -34,10 +35,13 @@ class MockSaveUpdateAddressProfilePromptView
               Show,
               (SaveUpdateAddressProfilePromptController * controller,
                const AutofillProfile& autofill_profile,
-               bool is_update),
+               bool is_update,
+               bool is_migration_to_account),
               (override));
 };
 
+// TODO(crbug.com/1432561): remove test parameters to avoid conditionals in
+// tests.
 class SaveUpdateAddressProfilePromptControllerTest
     : public ChromeRenderViewHostTestHarness,
       public ::testing::WithParamInterface<
@@ -85,7 +89,8 @@ class SaveUpdateAddressProfilePromptControllerTest
   bool is_migration_to_account() const { return std::get<1>(GetParam()); }
 
  protected:
-  bool ShouldShowFooter() const;
+  bool ShouldShowSourceNotice() const;
+  std::u16string GetExpectedNegativeButtonText() const;
   void SetUpController(bool is_update);
 
   std::string GetLocale() { return "en-US"; }
@@ -94,6 +99,7 @@ class SaveUpdateAddressProfilePromptControllerTest
   raw_ptr<MockSaveUpdateAddressProfilePromptView> prompt_view_;
   AutofillProfile profile_;
   AutofillProfile original_profile_;
+  bool is_update_;
   base::MockCallback<AutofillClient::AddressProfileSavePromptCallback>
       decision_callback_;
   base::MockCallback<base::OnceCallback<void()>> dismissal_callback_;
@@ -102,39 +108,65 @@ class SaveUpdateAddressProfilePromptControllerTest
   base::android::JavaParamRef<jobject> mock_caller_{nullptr};
 };
 
-bool SaveUpdateAddressProfilePromptControllerTest::ShouldShowFooter() const {
+bool SaveUpdateAddressProfilePromptControllerTest::ShouldShowSourceNotice()
+    const {
   return is_migration_to_account() ||
          profile_source() == AutofillProfile::Source::kAccount;
 }
 
+std::u16string
+SaveUpdateAddressProfilePromptControllerTest::GetExpectedNegativeButtonText()
+    const {
+  if (is_migration_to_account()) {
+    return l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_MIGRATE_ADDRESS_PROMPT_CANCEL_BUTTON_LABEL);
+  }
+
+  if (!is_update_ && profile_.source() == AutofillProfile::Source::kAccount) {
+    return l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_SAVE_IN_ACCOUNT_ADDRESS_PROMPT_CANCEL_BUTTON_LABEL);
+  }
+
+  return l10n_util::GetStringUTF16(
+      IDS_ANDROID_AUTOFILL_SAVE_ADDRESS_PROMPT_CANCEL_BUTTON_LABEL);
+}
+
 void SaveUpdateAddressProfilePromptControllerTest::SetUpController(
     bool is_update) {
+  is_update_ = is_update;
   auto prompt_view = std::make_unique<MockSaveUpdateAddressProfilePromptView>();
   prompt_view_ = prompt_view.get();
   controller_ = std::make_unique<SaveUpdateAddressProfilePromptController>(
       std::move(prompt_view), profile_,
       is_update ? &original_profile_ : nullptr, is_migration_to_account(),
       decision_callback_.Get(), dismissal_callback_.Get());
-  ON_CALL(*prompt_view_, Show(controller_.get(), profile_, is_update))
+  ON_CALL(*prompt_view_, Show(controller_.get(), profile_, is_update,
+                              is_migration_to_account()))
       .WillByDefault(testing::Return(true));
 }
 
 TEST_P(SaveUpdateAddressProfilePromptControllerTest,
        ShouldShowViewOnDisplayPromptWhenSave) {
-  EXPECT_CALL(*prompt_view_, Show(controller_.get(), profile_, false));
+  EXPECT_CALL(*prompt_view_,
+              Show(controller_.get(), profile_, /*is_update=*/false,
+                   is_migration_to_account()));
   controller_->DisplayPrompt();
 }
 
 TEST_P(SaveUpdateAddressProfilePromptControllerTest,
        ShouldShowViewOnDisplayPromptWhenUpdate) {
   SetUpController(/*is_update=*/true);
-  EXPECT_CALL(*prompt_view_, Show(controller_.get(), profile_, true));
+  EXPECT_CALL(*prompt_view_,
+              Show(controller_.get(), profile_, /*is_update=*/true,
+                   is_migration_to_account()));
   controller_->DisplayPrompt();
 }
 
 TEST_P(SaveUpdateAddressProfilePromptControllerTest,
        ShouldInvokeDismissalCallbackWhenShowReturnsFalse) {
-  EXPECT_CALL(*prompt_view_, Show(controller_.get(), profile_, false))
+  EXPECT_CALL(*prompt_view_,
+              Show(controller_.get(), profile_, /*is_update=*/false,
+                   is_migration_to_account()))
       .WillOnce(testing::Return(false));
 
   EXPECT_CALL(dismissal_callback_, Run());
@@ -158,7 +190,9 @@ TEST_P(SaveUpdateAddressProfilePromptControllerTest,
 
   EXPECT_CALL(
       decision_callback_,
-      Run(AutofillClient::SaveAddressProfileOfferUserDecision::kDeclined,
+      Run(is_migration_to_account()
+              ? AutofillClient::SaveAddressProfileOfferUserDecision::kNever
+              : AutofillClient::SaveAddressProfileOfferUserDecision::kDeclined,
           profile_));
   controller_->OnUserDeclined(env_, mock_caller_);
 }
@@ -202,7 +236,7 @@ TEST_P(SaveUpdateAddressProfilePromptControllerTest,
        ShouldReturnDataToDisplayWhenSave) {
   if (is_migration_to_account()) {
     EXPECT_EQ(l10n_util::GetStringUTF16(
-                  IDS_AUTOFILL_SAVE_ADDRESS_MIGRATION_PROMPT_TITLE),
+                  IDS_AUTOFILL_ACCOUNT_MIGRATE_ADDRESS_PROMPT_TITLE),
               controller_->GetTitle());
     EXPECT_EQ(l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_SAVE_ADDRESS_PROMPT_MIGRATION_OK_BUTTON_LABEL),
@@ -222,14 +256,15 @@ TEST_P(SaveUpdateAddressProfilePromptControllerTest,
   EXPECT_EQ(u"johndoe@hades.com", controller_->GetEmail());
   EXPECT_EQ(u"16502111111", controller_->GetPhoneNumber());
 
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ANDROID_AUTOFILL_SAVE_ADDRESS_PROMPT_CANCEL_BUTTON_LABEL),
+  EXPECT_EQ(GetExpectedNegativeButtonText(),
             controller_->GetNegativeButtonText());
 
-  if (ShouldShowFooter()) {
+  if (ShouldShowSourceNotice()) {
     EXPECT_EQ(
         l10n_util::GetStringFUTF16(
-            IDS_AUTOFILL_SAVE_IN_ACCOUNT_PROMPT_ADDRESS_SOURCE_NOTICE,
+            is_migration_to_account()
+                ? IDS_AUTOFILL_ADDRESS_WILL_BE_MIGRATED_TO_ACCOUNT_SOURCE_NOTICE
+                : IDS_AUTOFILL_ADDRESS_WILL_BE_SAVED_IN_ACCOUNT_SOURCE_NOTICE,
             base::ASCIIToUTF16(kUserEmail)),
         controller_->GetSourceNotice(identity_test_env_.identity_manager()));
   } else {
@@ -251,14 +286,15 @@ TEST_P(SaveUpdateAddressProfilePromptControllerTest,
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_OK_BUTTON_LABEL),
             controller_->GetPositiveButtonText());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ANDROID_AUTOFILL_SAVE_ADDRESS_PROMPT_CANCEL_BUTTON_LABEL),
+  EXPECT_EQ(GetExpectedNegativeButtonText(),
             controller_->GetNegativeButtonText());
 
-  if (ShouldShowFooter()) {
+  if (ShouldShowSourceNotice()) {
     EXPECT_EQ(
         l10n_util::GetStringFUTF16(
-            IDS_AUTOFILL_SAVE_IN_ACCOUNT_PROMPT_ADDRESS_SOURCE_NOTICE,
+            is_migration_to_account()
+                ? IDS_AUTOFILL_ADDRESS_WILL_BE_MIGRATED_TO_ACCOUNT_SOURCE_NOTICE
+                : IDS_AUTOFILL_ADDRESS_ALREADY_SAVED_IN_ACCOUNT_SOURCE_NOTICE,
             base::ASCIIToUTF16(kUserEmail)),
         controller_->GetSourceNotice(identity_test_env_.identity_manager()));
   } else {
@@ -286,10 +322,12 @@ TEST_P(SaveUpdateAddressProfilePromptControllerTest,
       u"Underworld\n666 Erebus St.\nApt 8\nElysium, CA 91111\nUnited "
       u"States\n\n16502111111",
       differences.second);
-  if (ShouldShowFooter()) {
+  if (ShouldShowSourceNotice()) {
     EXPECT_EQ(
         l10n_util::GetStringFUTF16(
-            IDS_AUTOFILL_SAVE_IN_ACCOUNT_PROMPT_ADDRESS_SOURCE_NOTICE,
+            is_migration_to_account()
+                ? IDS_AUTOFILL_ADDRESS_WILL_BE_MIGRATED_TO_ACCOUNT_SOURCE_NOTICE
+                : IDS_AUTOFILL_ADDRESS_ALREADY_SAVED_IN_ACCOUNT_SOURCE_NOTICE,
             base::ASCIIToUTF16(kUserEmail)),
         controller_->GetSourceNotice(identity_test_env_.identity_manager()));
   } else {

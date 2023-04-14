@@ -4,8 +4,9 @@
 
 #include "components/autofill/core/browser/iban_manager.h"
 
-#include "base/guid.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "base/uuid.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -28,14 +29,8 @@ using testing::UnorderedElementsAre;
 
 namespace autofill {
 
-// Valid Ireland IBAN number.
-constexpr char16_t kIbanValue_0[] = u"IE64 IRCE 9205 0112 3456 78";
-// Two valid Switzerland IBAN numbers.
-constexpr char16_t kIbanValue_1[] = u"CH56 0483 5012 3456 7800 9";
-constexpr char16_t kIbanValue_2[] = u"CH93 0076 2011 6238 5295 7";
-
-constexpr char16_t kNickname_0[] = u"Nickname 0";
-constexpr char16_t kNickname_1[] = u"Nickname 1";
+constexpr char kNickname_0[] = "Nickname 0";
+constexpr char kNickname_1[] = "Nickname 1";
 
 namespace {
 
@@ -68,9 +63,10 @@ class IBANManagerTest : public testing::Test {
   IBANManagerTest() : iban_manager_(&personal_data_manager_) {}
 
   void SetUp() override {
-    if (ui::ResourceBundle::HasSharedInstance()) {
-      ui::ResourceBundle::CleanupSharedInstance();
-    }
+    personal_data_manager_.SetAutofillCreditCardEnabled(true);
+    original_resource_bundle_ =
+        ui::ResourceBundle::SwapSharedInstanceForTesting(nullptr);
+
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         "en-US", &mock_resource_delegate_,
         ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
@@ -83,13 +79,18 @@ class IBANManagerTest : public testing::Test {
         .WillByDefault(testing::Return(false));
   }
 
+  void TearDown() override {
+    ui::ResourceBundle::CleanupSharedInstance();
+    ui::ResourceBundle::SwapSharedInstanceForTesting(original_resource_bundle_);
+  }
+
   // Sets up the TestPersonalDataManager with an IBAN.
-  IBAN SetUpIBAN(base::StringPiece16 value, base::StringPiece16 nickname) {
+  IBAN SetUpIBAN(base::StringPiece value, base::StringPiece nickname) {
     IBAN iban;
-    std::string guid = base::GenerateGUID();
+    std::string guid = base::GenerateUuid();
     iban.set_guid(guid);
-    iban.set_value(std::u16string(value));
-    iban.set_nickname(std::u16string(nickname));
+    iban.set_value(base::UTF8ToUTF16(std::string(value)));
+    iban.set_nickname(base::UTF8ToUTF16(std::string(nickname)));
     personal_data_manager_.AddIBANForTest(std::make_unique<IBAN>(iban));
     return iban;
   }
@@ -110,8 +111,8 @@ class IBANManagerTest : public testing::Test {
 
   // Sets up the TestPersonalDataManager with an IBAN and corresponding
   // suggestion.
-  Suggestion SetUpIBANAndSuggestion(base::StringPiece16 value,
-                                    base::StringPiece16 nickname) {
+  Suggestion SetUpIBANAndSuggestion(base::StringPiece value,
+                                    base::StringPiece nickname) {
     IBAN iban = SetUpIBAN(value, nickname);
     Suggestion iban_suggestion(iban.GetIdentifierStringForAutofillDisplay());
     iban_suggestion.frontend_id = POPUP_ITEM_ID_IBAN_ENTRY;
@@ -134,12 +135,13 @@ class IBANManagerTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   test::AutofillUnitTestEnvironment autofill_test_environment_;
-  MockSuggestionsHandler suggestions_handler_;
+  testing::NiceMock<MockSuggestionsHandler> suggestions_handler_;
   TestAutofillClient autofill_client_;
   TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<FormStructure> form_structure_;
   IBANManager iban_manager_;
   testing::NiceMock<ui::MockResourceBundleDelegate> mock_resource_delegate_;
+  raw_ptr<ui::ResourceBundle> original_resource_bundle_;
 };
 
 MATCHER_P(MatchesTextAndFrontendId, suggestion, "") {
@@ -149,9 +151,9 @@ MATCHER_P(MatchesTextAndFrontendId, suggestion, "") {
 
 TEST_F(IBANManagerTest, ShowsIBANSuggestions) {
   Suggestion iban_suggestion_0 =
-      SetUpIBANAndSuggestion(kIbanValue_0, kNickname_0);
+      SetUpIBANAndSuggestion(test::kIbanValue, kNickname_0);
   Suggestion iban_suggestion_1 =
-      SetUpIBANAndSuggestion(kIbanValue_1, kNickname_1);
+      SetUpIBANAndSuggestion(test::kIbanValue_1, kNickname_1);
 
   AutofillField test_field;
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
@@ -175,9 +177,27 @@ TEST_F(IBANManagerTest, ShowsIBANSuggestions) {
       /*context=*/context));
 }
 
+TEST_F(IBANManagerTest, PaymentsAutofillEnabledPrefOff_NoIbanSuggestionsShown) {
+  personal_data_manager_.SetAutofillCreditCardEnabled(false);
+  SetUpIBANAndSuggestion(test::kIbanValue, kNickname_0);
+  SetUpIBANAndSuggestion(test::kIbanValue_1, kNickname_1);
+
+  AutofillField test_field;
+  SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
+
+  EXPECT_CALL(suggestions_handler_, OnSuggestionsReturned).Times(0);
+
+  // Because the "Save and autofill payment methods" toggle is off, the
+  // suggestion handler should not be triggered.
+  EXPECT_FALSE(iban_manager_.OnGetSingleFieldSuggestions(
+      AutoselectFirstSuggestion(false), test_field, autofill_client_,
+      suggestions_handler_.GetWeakPtr(),
+      /*context=*/context));
+}
+
 TEST_F(IBANManagerTest, IBANSuggestions_SeparatorAndFooter) {
   Suggestion iban_suggestion_0 =
-      SetUpIBANAndSuggestion(kIbanValue_0, kNickname_0);
+      SetUpIBANAndSuggestion(test::kIbanValue, kNickname_0);
   Suggestion iban_suggestion_1 = SetUpSeparator();
   Suggestion iban_suggestion_2 = SetUpFooterManagePaymentMethods();
 
@@ -207,23 +227,17 @@ TEST_F(IBANManagerTest, IBANSuggestions_SeparatorAndFooter) {
 
 TEST_F(IBANManagerTest, ShowsIBANSuggestions_NoSuggestion) {
   Suggestion iban_suggestion_0 =
-      SetUpIBANAndSuggestion(kIbanValue_0, kNickname_0);
+      SetUpIBANAndSuggestion(test::kIbanValue, kNickname_0);
   Suggestion iban_suggestion_1 =
-      SetUpIBANAndSuggestion(kIbanValue_1, kNickname_1);
+      SetUpIBANAndSuggestion(test::kIbanValue_1, kNickname_1);
 
   AutofillField test_field;
-  test_field.value = std::u16string(kIbanValue_0);
+  test_field.value = base::UTF8ToUTF16(std::string(test::kIbanValue));
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
-  // Setting up mock to verify that the handler is not returned any IBAN-based
+  // Verify that `OnSuggestionsReturned` handler is not triggered any IBAN-based
   // suggestions as the field already contains an IBAN.
-  EXPECT_CALL(suggestions_handler_,
-              OnSuggestionsReturned(
-                  _, _,
-                  testing::Truly(
-                      [](const std::vector<Suggestion>& returned_suggestions) {
-                        return returned_suggestions.empty();
-                      })));
+  EXPECT_CALL(suggestions_handler_, OnSuggestionsReturned).Times(0);
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -236,9 +250,9 @@ TEST_F(IBANManagerTest, ShowsIBANSuggestions_NoSuggestion) {
 
 TEST_F(IBANManagerTest, ShowsIBANSuggestions_OnlyPrefixMatch) {
   Suggestion iban_suggestion_0 =
-      SetUpIBANAndSuggestion(kIbanValue_1, kNickname_0);
+      SetUpIBANAndSuggestion(test::kIbanValue_1, kNickname_0);
   Suggestion iban_suggestion_1 =
-      SetUpIBANAndSuggestion(kIbanValue_2, kNickname_1);
+      SetUpIBANAndSuggestion(test::kIbanValue_2, kNickname_1);
   Suggestion iban_suggestion_2 = SetUpSeparator();
   Suggestion iban_suggestion_3 = SetUpFooterManagePaymentMethods();
 
@@ -293,15 +307,9 @@ TEST_F(IBANManagerTest, ShowsIBANSuggestions_OnlyPrefixMatch) {
 
   test_field.value = u"AB56";
 
-  // Setting up mock to verify that the handler does not return any
-  // IBAN-based suggestion as no prefix matches `prefix_`.
-  EXPECT_CALL(suggestions_handler_,
-              OnSuggestionsReturned(
-                  _, _,
-                  testing::Truly(
-                      [](const std::vector<Suggestion>& returned_suggestions) {
-                        return returned_suggestions.empty();
-                      })));
+  // Verify that the handler is not triggered because no IBAN suggestions match
+  // the given prefix.
+  EXPECT_CALL(suggestions_handler_, OnSuggestionsReturned).Times(0);
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -313,7 +321,7 @@ TEST_F(IBANManagerTest, ShowsIBANSuggestions_OnlyPrefixMatch) {
 }
 
 TEST_F(IBANManagerTest, DoesNotShowIBANsForBlockedWebsite) {
-  SetUpIBAN(kIbanValue_0, kNickname_0);
+  SetUpIBAN(test::kIbanValue, kNickname_0);
   AutofillField test_field;
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
@@ -337,7 +345,7 @@ TEST_F(IBANManagerTest, DoesNotShowIBANsForBlockedWebsite) {
 // suggestions cannot and will not be blocked.
 TEST_F(IBANManagerTest, ShowsIBANSuggestions_OptimizationGuideNotPresent) {
   Suggestion iban_suggestion_0 =
-      SetUpIBANAndSuggestion(kIbanValue_0, kNickname_0);
+      SetUpIBANAndSuggestion(test::kIbanValue, kNickname_0);
   AutofillField test_field;
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
@@ -363,10 +371,10 @@ TEST_F(IBANManagerTest, ShowsIBANSuggestions_OptimizationGuideNotPresent) {
 }
 
 TEST_F(IBANManagerTest, NotIbanFieldFocused_NoSuggestionsShown) {
-  SetUpIBAN(kIbanValue_0, kNickname_0);
+  SetUpIBAN(test::kIbanValue, kNickname_0);
 
   AutofillField test_field;
-  test_field.value = std::u16string(kIbanValue_0);
+  test_field.value = base::UTF8ToUTF16(std::string(test::kIbanValue));
   // Set the field type to any type than "IBAN_VALUE".
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(
       test_field, CREDIT_CARD_VERIFICATION_CODE);
@@ -380,6 +388,101 @@ TEST_F(IBANManagerTest, NotIbanFieldFocused_NoSuggestionsShown) {
       AutoselectFirstSuggestion(false), test_field, autofill_client_,
       suggestions_handler_.GetWeakPtr(),
       /*context=*/context));
+}
+
+// Test that the metrics for IBAN-related suggestions shown and shown once are
+// logged correctly.
+TEST_F(IBANManagerTest, Metrics_SuggestionsShown) {
+  base::HistogramTester histogram_tester;
+  SetUpIBAN(test::kIbanValue, kNickname_0);
+
+  AutofillField test_field;
+  test_field.unique_renderer_id = test::MakeFieldRendererId();
+  SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
+
+  // Simulate request for suggestions.
+  EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
+      AutoselectFirstSuggestion(false), test_field, autofill_client_,
+      suggestions_handler_.GetWeakPtr(), context));
+
+  EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
+      AutoselectFirstSuggestion(false), test_field, autofill_client_,
+      suggestions_handler_.GetWeakPtr(), context));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.Iban.Suggestions"),
+      BucketsAre(
+          base::Bucket(
+              autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionsShown, 2),
+          base::Bucket(
+              autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionsShownOnce,
+              1)));
+}
+
+// Test that the metrics for IBAN-related suggestion selected and selected once
+// are logged correctly.
+TEST_F(IBANManagerTest, Metrics_SuggestionSelected) {
+  base::HistogramTester histogram_tester;
+  SetUpIBAN(test::kIbanValue, kNickname_0);
+  SetUpIBAN(test::kIbanValue_1, kNickname_1);
+  SetUpIBAN(test::kIbanValue_2, "");
+
+  AutofillField test_field;
+  test_field.unique_renderer_id = test::MakeFieldRendererId();
+  SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
+
+  // Simulate request for suggestions and select one suggested IBAN.
+  EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
+      AutoselectFirstSuggestion(false), test_field, autofill_client_,
+      suggestions_handler_.GetWeakPtr(), context));
+  iban_manager_.OnSingleFieldSuggestionSelected(u"", POPUP_ITEM_ID_IBAN_ENTRY);
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Iban.Suggestions",
+      autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionSelected, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Iban.Suggestions",
+      autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionSelectedOnce, 1);
+
+  EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
+      AutoselectFirstSuggestion(false), test_field, autofill_client_,
+      suggestions_handler_.GetWeakPtr(), context));
+  iban_manager_.OnSingleFieldSuggestionSelected(u"", POPUP_ITEM_ID_IBAN_ENTRY);
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Iban.Suggestions",
+      autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionSelected, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Iban.Suggestions",
+      autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionSelectedOnce, 1);
+}
+
+TEST_F(IBANManagerTest, Metrics_NoSuggestionShown) {
+  base::HistogramTester histogram_tester;
+  SetUpIBAN(test::kIbanValue, kNickname_0);
+  SetUpIBAN(test::kIbanValue_1, kNickname_1);
+  AutofillField test_field;
+  // Input a prefix that does not have any matching IBAN value so that no IBAN
+  // suggestions will be shown.
+  test_field.value = u"XY";
+  SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
+
+  EXPECT_CALL(suggestions_handler_, OnSuggestionsReturned).Times(0);
+
+  // The suggestion handler should be triggered as some IBANs are available.
+  // However, no suggestions are returned due to the prefix match requirement.
+  EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
+      AutoselectFirstSuggestion(false), test_field, autofill_client_,
+      suggestions_handler_.GetWeakPtr(),
+      /*context=*/context));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.Iban.Suggestions"),
+      BucketsAre(
+          base::Bucket(
+              autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionsShown, 0),
+          base::Bucket(
+              autofill_metrics::IbanSuggestionsEvent::kIbanSuggestionsShownOnce,
+              0)));
 }
 
 }  // namespace autofill

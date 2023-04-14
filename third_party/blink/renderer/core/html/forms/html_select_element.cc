@@ -60,10 +60,9 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
@@ -397,12 +396,11 @@ bool HTMLSelectElement::CanSelectAll() const {
 }
 
 LayoutObject* HTMLSelectElement::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy_layout) {
+    const ComputedStyle& style) {
   if (UsesMenuList()) {
     return MakeGarbageCollected<LayoutNGFlexibleBox>(this);
   }
-  return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy_layout);
+  return MakeGarbageCollected<LayoutNGBlockFlow>(this);
 }
 
 HTMLCollection* HTMLSelectElement::selectedOptions() {

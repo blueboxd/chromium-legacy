@@ -54,6 +54,7 @@ import org.chromium.ui.test.util.modaldialog.FakeModalDialogManager;
 @EnableFeatures({ChromeFeatureList.AUTOFILL_ADDRESS_PROFILE_SAVE_PROMPT_NICKNAME_SUPPORT})
 public class SaveUpdateAddressProfilePromptTest {
     private static final long NATIVE_SAVE_UPDATE_ADDRESS_PROFILE_PROMPT_CONTROLLER = 100L;
+    private static final boolean NO_MIGRATION = false;
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule
@@ -90,10 +91,14 @@ public class SaveUpdateAddressProfilePromptTest {
     }
 
     private void createAndShowPrompt(boolean isUpdate) {
+        createAndShowPrompt(isUpdate, NO_MIGRATION);
+    }
+
+    private void createAndShowPrompt(boolean isUpdate, boolean isMigrationToAccount) {
         AutofillProfile dummyProfile = new AutofillProfile();
         mModalDialogManager = new FakeModalDialogManager(ModalDialogType.APP);
         mPrompt = new SaveUpdateAddressProfilePrompt(mPromptController, mModalDialogManager,
-                mActivity, mProfile, dummyProfile, isUpdate);
+                mActivity, mProfile, dummyProfile, isUpdate, isMigrationToAccount);
         mPrompt.setAddressEditorForTesting(mAddressEditor);
         mPrompt.show();
     }
@@ -169,10 +174,29 @@ public class SaveUpdateAddressProfilePromptTest {
                 propertyModel.get(ModalDialogProperties.POSITIVE_BUTTON_TEXT));
         Assert.assertEquals("negative button text",
                 propertyModel.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT));
+    }
+
+    @Test
+    @SmallTest
+    public void dialogStrings_SourceNotice() {
+        createAndShowPrompt(false, true);
+        View dialog = mPrompt.getDialogViewForTesting();
+
+        mPrompt.setSourceNotice(null);
+        Assert.assertEquals(View.GONE,
+                dialog.findViewById(R.id.autofill_address_profile_prompt_source_notice)
+                        .getVisibility());
+
+        mPrompt.setSourceNotice("");
+        Assert.assertEquals(View.GONE,
+                dialog.findViewById(R.id.autofill_address_profile_prompt_source_notice)
+                        .getVisibility());
 
         mPrompt.setSourceNotice("source notice");
-        validateTextView(
-                dialog.findViewById(R.id.autofill_save_update_address_profile_prompt_footer),
+        Assert.assertEquals(View.VISIBLE,
+                dialog.findViewById(R.id.autofill_address_profile_prompt_source_notice)
+                        .getVisibility());
+        validateTextView(dialog.findViewById(R.id.autofill_address_profile_prompt_source_notice),
                 "source notice");
     }
 

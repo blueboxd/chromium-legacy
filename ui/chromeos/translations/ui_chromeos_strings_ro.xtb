@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Certificatul de autentificare a fost respins local</translation>
 <translation id="1775381402323441512">Informații despre fișierul video</translation>
 <translation id="180035236176489073">Trebuie să fiți online pentru a accesa aceste fișiere.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Extensia cu codul}few{Extensiile cu codurile}other{Extensiile cu codurile}}</translation>
 <translation id="1807938677607439181">Toate fișierele</translation>
 <translation id="1810764548349082891">Nicio previzualizare disponibilă</translation>
 <translation id="1812302367230252929">Amharică, transliterație</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">intrare nevalidă a potrivirii numelui alternativ al subiectului</translation>
 <translation id="1838709767668011582">Site Google</translation>
 <translation id="1853795129690976061">Linux are acces la acest dosar</translation>
-<translation id="1859422890169495746">Acest Chromebook</translation>
 <translation id="1864756863218646478">Fișierul nu a putut fi găsit.</translation>
 <translation id="1884013283844450420">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectează-te</translation>
 <translation id="1920670151694390848">Malayalam, transliterație</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planetă</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> a fost scos.</translation>
 <translation id="2307462900900812319">Configurați rețeaua</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Nu se poate găsi o extensie cu ID-ul <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Contactează administratorul.}few{Nu se pot găsi extensiile cu ID-urile <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Contactează administratorul.}other{Nu se pot găsi extensiile cu ID-urile <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Contactează administratorul.}}</translation>
 <translation id="2325650632570794183">Acest tip de fișier nu este acceptat. Vă rugăm să accesați Magazinul web Chrome pentru a găsi o aplicație care poate deschide acest tip de fișier.</translation>
 <translation id="2326539130272988168">Bulgară</translation>
 <translation id="2337715497728194187">Permite accesul pentru Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Nesecurizată</translation>
 <translation id="3291218047831493686">Conectează-te la această rețea ca să modifici setarea pentru codarea cardului SIM</translation>
 <translation id="3293023191599135697">Rețelele WEP nu sunt acceptate</translation>
+<translation id="3295006446256079333">Acest volum</translation>
 <translation id="3295357220137379386">Dispozitivul este ocupat</translation>
 <translation id="3296763833017966289">Georgiană</translation>
 <translation id="3307875152560779385">Ucraineană</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Dispozitivele Chromebase</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="485316830061041779">Germană</translation>
+<translation id="4862885579661885411">Setări pentru Fișiere</translation>
 <translation id="4867079195717347957">Dă clic pentru a sorta coloana în ordine descrescătoare.</translation>
 <translation id="4867297348137739678">Ultima săptămână</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byți</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Se copiază <ph name="NUMBER_OF_ITEMS" /> elemente.</translation>
 <translation id="7375951387215729722">Lista de fișiere este sortată după coloana <ph name="COLUMN_NAME" /> în ordine descrescătoare.</translation>
 <translation id="7377161162143020057">Copierea acestui fișier este blocată de politica implementată de administrator</translation>
-<translation id="7392500733467492920">nu poate fi găsită. Contactează administratorul.</translation>
 <translation id="7402503521691663770">Dispozitive cu sistemul de operare Chrome Flex</translation>
 <translation id="7408870451288633753">Cehă</translation>
 <translation id="7417453074306512035">Tastatură etiopiană</translation>

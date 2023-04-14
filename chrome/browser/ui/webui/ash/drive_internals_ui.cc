@@ -101,9 +101,7 @@ size_t LogMarkToLogLevelNameIndex(char mark) {
 
 template <typename T>
 std::string ToString(const T x) {
-  std::ostringstream oss;
-  oss << x;
-  return std::move(oss).str();
+  return (std::ostringstream() << drivefs::pinning::NiceNum << x).str();
 }
 
 // Gets metadata of all files and directories in |root_path|
@@ -637,7 +635,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler,
     using drivefs::pinning::HumanReadableSize;
 
     base::Value::Dict d;
-    d.Set("stage", ToString(progress.stage));
+    d.Set("stage", drivefs::pinning::ToString(progress.stage));
     d.Set("free_space", ToString(HumanReadableSize(progress.free_space)));
     d.Set("required_space",
           ToString(HumanReadableSize(progress.required_space)));
@@ -649,6 +647,12 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler,
     d.Set("syncing_files", ToString(progress.syncing_files));
     d.Set("skipped_items", ToString(progress.skipped_items));
     d.Set("listed_items", ToString(progress.listed_items));
+    d.Set("listed_dirs", ToString(progress.listed_dirs));
+    d.Set("listed_files", ToString(progress.listed_files));
+    d.Set("listed_docs", ToString(progress.listed_docs));
+    d.Set("listed_shortcuts", ToString(progress.listed_shortcuts));
+    d.Set("active_queries", ToString(progress.active_queries));
+    d.Set("max_active_queries", ToString(progress.max_active_queries));
     MaybeCallJavascript("onBulkPinningProgress", base::Value(std::move(d)));
   }
 

@@ -123,6 +123,7 @@
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_device_status_ui_handler.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
+#include "ash/system/bluetooth/bluetooth_state_cache.h"
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/camera/autozoom_controller_impl.h"
@@ -181,7 +182,6 @@
 #include "ash/wm/container_finder.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_controller.h"
 #include "ash/wm/desks/templates/saved_desk_controller.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/float/float_controller.h"
@@ -243,7 +243,6 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/compositor/layer.h"
@@ -256,6 +255,7 @@
 #include "ui/display/manager/touch_transform_setter.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/native_display_delegate.h"
+#include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
@@ -761,11 +761,6 @@ Shell::~Shell() {
   shelf_controller_->Shutdown();
   shelf_config_->Shutdown();
 
-  // Destroy PersistentDesksBarController before `overview_controller_`,
-  // `tablet_mode_controller_`, `desks_controller_` and
-  // `app_list_controller_` that it observes.
-  persistent_desks_bar_controller_.reset();
-
   // Depends on `app_list_controller_` and `tablet_mode_controller_`.
   app_list_feature_usage_metrics_.reset();
 
@@ -1265,7 +1260,7 @@ void Shell::Init(
   //  - `KeyboardModifierMetricsRecorder`
   //  - `InputDeviceSettingsDispatcher`
   input_device_settings_controller_ =
-      std::make_unique<InputDeviceSettingsControllerImpl>();
+      std::make_unique<InputDeviceSettingsControllerImpl>(local_state_);
   input_device_tracker_ = std::make_unique<InputDeviceTracker>();
   input_device_settings_dispatcher_ =
       std::make_unique<InputDeviceSettingsDispatcher>(
@@ -1458,14 +1453,6 @@ void Shell::Init(
   // used in its constructor.
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
 
-  // Create PersistentDesksBarController after `overview_controller_`,
-  // `tablet_mode_controller_`, `desks_controller_` and
-  // `app_list_controller_` that it observes.
-  if (features::IsBentoBarEnabled()) {
-    persistent_desks_bar_controller_ =
-        std::make_unique<PersistentDesksBarController>();
-  }
-
   autoclick_controller_ = std::make_unique<AutoclickController>();
 
   color_enhancement_controller_ =
@@ -1573,6 +1560,7 @@ void Shell::Init(
           user_activity_detector_.get(), std::move(fingerprint));
   video_activity_notifier_ =
       std::make_unique<VideoActivityNotifier>(video_detector_.get());
+  bluetooth_state_cache_ = std::make_unique<BluetoothStateCache>();
   bluetooth_device_status_ui_handler_ =
       std::make_unique<BluetoothDeviceStatusUiHandler>();
   bluetooth_notification_controller_ =

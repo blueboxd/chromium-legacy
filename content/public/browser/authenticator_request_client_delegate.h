@@ -138,15 +138,6 @@ class CONTENT_EXPORT WebAuthenticationDelegate {
       const url::Origin& caller_origin);
 #endif  // !IS_ANDROID
 
-#if BUILDFLAG(IS_WIN)
-  // OperationSucceeded is called when a registration or assertion operation
-  // succeeded. It communicates whether the Windows API was used or not. The
-  // implementation may wish to use this information to guide the UI for future
-  // operations towards the types of security keys that the user tends to use.
-  virtual void OperationSucceeded(BrowserContext* browser_context,
-                                  bool used_win_api);
-#endif
-
 #if BUILDFLAG(IS_MAC)
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
 
@@ -290,7 +281,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // caBLE on the |FidoDiscoveryFactory| for use in this request.
   virtual void ConfigureCable(
       const url::Origin& origin,
-      device::CableRequestType request_type,
+      device::FidoRequestType request_type,
       absl::optional<device::ResidentKeyRequirement> resident_key_requirement,
       base::span<const device::CableDiscoveryData> pairings_from_extension,
       device::FidoDiscoveryFactory* fido_discovery_factory);

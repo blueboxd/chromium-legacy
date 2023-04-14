@@ -237,6 +237,10 @@ struct MessageService::OpenChannelParams {
 
   OpenChannelParams(const OpenChannelParams&) = delete;
   OpenChannelParams& operator=(const OpenChannelParams&) = delete;
+
+  bool is_onetime_channel() const {
+    return channel_name == "chrome.runtime.sendMessage";
+  }
 };
 
 MessageService::MessageService(BrowserContext* context)
@@ -279,7 +283,7 @@ void MessageService::OpenChannelToExtension(
   DCHECK(source_port_id.is_opener);
   DCHECK(!target_extension_id.empty());
   DCHECK(source_endpoint.extension_id.has_value() ||
-         source_endpoint.type == MessagingEndpoint::Type::kTab ||
+         source_endpoint.type == MessagingEndpoint::Type::kWebPage ||
          source_endpoint.type == MessagingEndpoint::Type::kNativeApp);
   DCHECK_EQ(source_endpoint.native_app_name.has_value(),
             source_endpoint.type == MessagingEndpoint::Type::kNativeApp);
@@ -296,7 +300,8 @@ void MessageService::OpenChannelToExtension(
   MaybeDisableBackForwardCacheForMessaging(source_render_frame_host);
 
   if (!opener_port) {
-    DCHECK(source_endpoint.type == MessagingEndpoint::Type::kTab ||
+    DCHECK(source_endpoint.type == MessagingEndpoint::Type::kContentScript ||
+           source_endpoint.type == MessagingEndpoint::Type::kWebPage ||
            source_endpoint.type == MessagingEndpoint::Type::kExtension);
     opener_port = ExtensionMessagePort::CreateForEndpoint(
         weak_factory_.GetWeakPtr(), source_port_id,
@@ -315,14 +320,21 @@ void MessageService::OpenChannelToExtension(
     return;
   }
 
-  bool is_web_connection = false;
-
-  if ((source_endpoint.type == MessagingEndpoint::Type::kTab ||
+  bool is_web_connection =
+      source_endpoint.type == MessagingEndpoint::Type::kWebPage;
+  bool is_external_extension_connection =
+      (source_endpoint.type == MessagingEndpoint::Type::kContentScript ||
        source_endpoint.type == MessagingEndpoint::Type::kExtension) &&
-      source_endpoint.extension_id != target_extension_id) {
+      source_endpoint.extension_id != target_extension_id;
+
+  if (is_web_connection || is_external_extension_connection) {
     // It's an external connection. Check the externally_connectable manifest
     // key if it's present. If it's not, we allow connection from any extension
     // but not webpages.
+    // TODO(devlin): We should just use ExternallyConnectableInfo::Get() here.
+    // We don't currently because we don't synthesize externally-connectable
+    // information (so that it's always present, even for extensions that don't
+    // have an explicit key); we should.
     ExternallyConnectableInfo* externally_connectable =
         static_cast<ExternallyConnectableInfo*>(
             target_extension->GetManifestData(
@@ -330,15 +342,15 @@ void MessageService::OpenChannelToExtension(
     bool is_externally_connectable = false;
 
     if (externally_connectable) {
-      if (source_endpoint.extension_id) {
-        // The source was an extension or a content script. Check that the
+      if (is_external_extension_connection) {
+        DCHECK(source_endpoint.extension_id);
+        // The source was another extension or a content script. Check that the
         // extension ID matches.
         is_externally_connectable =
             externally_connectable->IdCanConnect(*source_endpoint.extension_id);
       } else {
         DCHECK(source_render_frame_host);
-
-        is_web_connection = true;
+        DCHECK(is_web_connection);
 
         // Check that the web page URL matches.
         is_externally_connectable = externally_connectable->matches.MatchesURL(
@@ -346,7 +358,7 @@ void MessageService::OpenChannelToExtension(
       }
     } else {
       // Default behaviour. Any extension or content script, no webpages.
-      is_externally_connectable = source_endpoint.extension_id.has_value();
+      is_externally_connectable = is_external_extension_connection;
     }
 
     if (!is_externally_connectable) {
@@ -515,7 +527,7 @@ void MessageService::OpenChannelToNativeApp(
 
   // Keep the opener alive until the channel is closed.
   channel->opener->set_should_have_strong_keepalive(true);
-  channel->opener->IncrementLazyKeepaliveCount();
+  channel->opener->IncrementLazyKeepaliveCount(Activity::MESSAGE_PORT);
 
   AddChannel(std::move(channel), receiver_port_id);
 #else   // !(BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
@@ -642,12 +654,16 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   const PortContext& port_context = source.port_context();
   params->opener_port->OpenPort(source.render_process_id(), port_context);
   params->opener_port->RevalidatePort();
+  // TODO(richardzh) Move this property setting to port creation, or params
+  // creation, to have cleaner code here.
+  params->opener_port->set_is_for_onetime_channel(params->is_onetime_channel());
 
   params->receiver->RemoveCommonFrames(*params->opener_port);
   if (!params->receiver->IsValidPort()) {
     params->opener_port->DispatchOnDisconnect(kReceivingEndDoesntExistError);
     return;
   }
+  params->receiver->set_is_for_onetime_channel(params->is_onetime_channel());
 
   std::unique_ptr<MessageChannel> channel_ptr =
       std::make_unique<MessageChannel>();
@@ -686,10 +702,14 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   // built using the connect framework (see messaging.js).
   if (target_extension) {
     events::HistogramValue histogram_value = events::UNKNOWN;
+    // TODO(devlin): We should isolate these external checks; they happen both
+    // here and in `OpenChannelToExtension()`.
     bool is_external =
-        (params->source_endpoint.type == MessagingEndpoint::Type::kExtension ||
-         params->source_endpoint.type == MessagingEndpoint::Type::kTab) &&
-        params->source_endpoint.extension_id != params->target_extension_id;
+        params->source_endpoint.type == MessagingEndpoint::Type::kWebPage ||
+        ((params->source_endpoint.type == MessagingEndpoint::Type::kExtension ||
+          params->source_endpoint.type ==
+              MessagingEndpoint::Type::kContentScript) &&
+         params->source_endpoint.extension_id != params->target_extension_id);
     if (params->source_endpoint.type == MessagingEndpoint::Type::kNativeApp) {
       histogram_value = events::RUNTIME_ON_CONNECT_NATIVE;
     } else if (params->channel_name == "chrome.runtime.onRequest") {
@@ -727,8 +747,8 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   }
 
   // Keep both ends of the channel alive until the channel is closed.
-  channel->opener->IncrementLazyKeepaliveCount();
-  channel->receiver->IncrementLazyKeepaliveCount();
+  channel->opener->IncrementLazyKeepaliveCount(Activity::MESSAGE_PORT);
+  channel->receiver->IncrementLazyKeepaliveCount(Activity::MESSAGE_PORT);
 }
 
 void MessageService::AddChannel(std::unique_ptr<MessageChannel> channel,
@@ -830,8 +850,8 @@ void MessageService::CloseChannelImpl(MessageChannelMap::iterator channel_iter,
   }
 
   // Balance the IncrementLazyKeepaliveCount() in OpenChannelImpl.
-  channel->opener->DecrementLazyKeepaliveCount();
-  channel->receiver->DecrementLazyKeepaliveCount();
+  channel->opener->DecrementLazyKeepaliveCount(Activity::MESSAGE_PORT);
+  channel->receiver->DecrementLazyKeepaliveCount(Activity::MESSAGE_PORT);
 }
 
 void MessageService::PostMessage(const PortId& source_port_id,

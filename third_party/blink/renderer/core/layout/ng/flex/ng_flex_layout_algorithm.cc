@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -294,8 +295,9 @@ void NGFlexLayoutAlgorithm::HandleOutOfFlowPositionedItems(
       const auto& style = Style();
       const auto& child_style = child.Style();
       const PhysicalToLogical<Length> insets_in_flexbox_writing_mode(
-          Style().GetWritingDirection(), child_style.Top(), child_style.Right(),
-          child_style.Bottom(), child_style.Left());
+          Style().GetWritingDirection(), child_style.UsedTop(),
+          child_style.UsedRight(), child_style.UsedBottom(),
+          child_style.UsedLeft());
       if (is_column_) {
         const ItemPosition normalized_alignment =
             FlexLayoutAlgorithm::AlignmentForChild(style, child_style);
@@ -437,15 +439,17 @@ bool NGFlexLayoutAlgorithm::IsItemCrossAxisLengthDefinite(
 bool NGFlexLayoutAlgorithm::DoesItemCrossSizeComputeToAuto(
     const NGBlockNode& child) const {
   const ComputedStyle& child_style = child.Style();
-  if (is_horizontal_flow_)
-    return child_style.Height().IsAuto();
-  return child_style.Width().IsAuto();
+  if (is_horizontal_flow_) {
+    return child_style.UsedHeight().IsAuto();
+  }
+  return child_style.UsedWidth().IsAuto();
 }
 
 bool NGFlexLayoutAlgorithm::AspectRatioProvidesMainSize(
     const NGBlockNode& child) const {
-  const Length& cross_axis_length =
-      is_horizontal_flow_ ? child.Style().Height() : child.Style().Width();
+  const Length& cross_axis_length = is_horizontal_flow_
+                                        ? child.Style().UsedHeight()
+                                        : child.Style().UsedWidth();
   return child.HasAspectRatio() &&
          (IsItemCrossAxisLengthDefinite(child, cross_axis_length) ||
           WillChildCrossSizeBeContainerCrossSize(child));
@@ -529,7 +533,7 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForFlexBasis(
 Length NGFlexLayoutAlgorithm::GetUsedFlexBasis(const NGBlockNode& child) const {
   const ComputedStyle& child_style = child.Style();
   const Length& specified_length_in_main_axis =
-      is_horizontal_flow_ ? child_style.Width() : child_style.Height();
+      is_horizontal_flow_ ? child_style.UsedWidth() : child_style.UsedHeight();
   const Length& specified_flex_basis = child_style.FlexBasis();
 
   if (specified_flex_basis.IsAuto()) {
@@ -717,8 +721,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems(
         is_horizontal_flow_ ? physical_border_padding.VerticalSum()
                             : physical_border_padding.HorizontalSum();
 
-    const Length& cross_axis_length =
-        is_horizontal_flow_ ? child.Style().Height() : child.Style().Width();
+    const Length& cross_axis_length = is_horizontal_flow_
+                                          ? child.Style().UsedHeight()
+                                          : child.Style().UsedWidth();
     all_items_have_non_auto_cross_sizes &= !cross_axis_length.IsAuto();
 
     absl::optional<MinMaxSizesResult> min_max_sizes;
@@ -739,9 +744,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems(
                                                      LayoutUnit::Max()};
     MinMaxSizes min_max_sizes_in_cross_axis_direction{LayoutUnit(),
                                                       LayoutUnit::Max()};
-    const Length& max_property_in_main_axis = is_horizontal_flow_
-                                                  ? child.Style().MaxWidth()
-                                                  : child.Style().MaxHeight();
+    const Length& max_property_in_main_axis =
+        is_horizontal_flow_ ? child.Style().UsedMaxWidth()
+                            : child.Style().UsedMaxHeight();
     if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.max_size = ResolveMaxInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
@@ -894,8 +899,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems(
     LayoutUnit flex_base_content_size =
         flex_base_border_box - main_axis_border_padding;
 
-    const Length& min = is_horizontal_flow_ ? child.Style().MinWidth()
-                                            : child.Style().MinHeight();
+    const Length& min = is_horizontal_flow_ ? child.Style().UsedMinWidth()
+                                            : child.Style().UsedMinHeight();
     if (algorithm_.ShouldApplyMinSizeAutoForChild(*child.GetLayoutBox())) {
       LayoutUnit content_size_suggestion;
       if (MainAxisIsInlineAxis(child)) {
@@ -916,7 +921,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems(
 
       LayoutUnit specified_size_suggestion = LayoutUnit::Max();
       const Length& specified_length_in_main_axis =
-          is_horizontal_flow_ ? child_style.Width() : child_style.Height();
+          is_horizontal_flow_ ? child_style.UsedWidth()
+                              : child_style.UsedHeight();
       // If the item’s computed main size property is definite, then the
       // specified size suggestion is that size.
       if (MainAxisIsInlineAxis(child)) {
@@ -2153,7 +2159,7 @@ MinMaxSizesResult NGFlexLayoutAlgorithm::ComputeItemContributions(
   // "... outer preferred size (its width/height as appropriate) if that is not
   // auto ..."
   const Length& preferred_main_axis_length =
-      is_horizontal_flow_ ? child_style.Width() : child_style.Height();
+      is_horizontal_flow_ ? child_style.UsedWidth() : child_style.UsedHeight();
   bool is_preferred_main_axis_length_auto = preferred_main_axis_length.IsAuto();
   // This block of if-statements that computes
   // |is_preferred_main_axis_length_auto| is fragile.

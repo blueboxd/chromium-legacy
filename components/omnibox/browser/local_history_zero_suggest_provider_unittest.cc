@@ -376,8 +376,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, DefaultSearchProvider) {
 
 // Tests that extracted search terms are normalized (their whitespaces are
 // collapsed, are lowercased and deduplicated) without loss of unicode encoding.
-// Note: Disabled for now due to flakes; see: https://crbug.com/1174382
-TEST_F(LocalHistoryZeroSuggestProviderTest, DISABLED_Normalization) {
+TEST_F(LocalHistoryZeroSuggestProviderTest, Normalization) {
   LoadURLs({
       // Issued too closely to the original query; will be ignored:
       {default_search_provider(), "HELLO   WORLD  ", "&foo=bar4", 1},
@@ -509,7 +508,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Deletion) {
       default_search_provider()->id());
   ASSERT_TRUE(enumerator_1);
   history::GetAutocompleteSearchTermsFromEnumerator(
-      *enumerator_1, /*count=*/SIZE_MAX, /*ignore_duplicate_visits=*/false,
+      *enumerator_1, /*count=*/SIZE_MAX,
       history::SearchTermRankingPolicy::kFrecency, &visits);
   EXPECT_EQ(1U, visits.size());
   EXPECT_EQ(u"not to be deleted", visits[0]->normalized_term);
@@ -521,7 +520,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Deletion) {
       other_search_provider->id());
   ASSERT_TRUE(enumerator_2);
   history::GetAutocompleteSearchTermsFromEnumerator(
-      *enumerator_2, /*count=*/SIZE_MAX, /*ignore_duplicate_visits=*/false,
+      *enumerator_2, /*count=*/SIZE_MAX,
       history::SearchTermRankingPolicy::kFrecency, &visits);
   EXPECT_EQ(1U, visits.size());
   EXPECT_EQ(u"hello world", visits[0]->normalized_term);

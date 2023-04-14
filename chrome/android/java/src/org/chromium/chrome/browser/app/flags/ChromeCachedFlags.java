@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
-import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
@@ -68,8 +67,10 @@ public class ChromeCachedFlags {
 
         // clang-format off
         List<CachedFlag> featuresToCache = List.of(ChromeFeatureList.sAppMenuMobileSiteOption,
+                ChromeFeatureList.sBackGestureActivityTabProvider,
                 ChromeFeatureList.sBackGestureRefactorAndroid,
                 ChromeFeatureList.sBaselineGm3SurfaceColors,
+                ChromeFeatureList.sBottomSheetGtsSupport,
                 ChromeFeatureList.sCctAutoTranslate,
                 ChromeFeatureList.sCctBottomBarSwipeUpGesture,
                 ChromeFeatureList.sCctBrandTransparency,
@@ -87,7 +88,6 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.sCctToolbarCustomizations,
                 ChromeFeatureList.sCloseTabSuggestions,
                 ChromeFeatureList.sCommandLineOnNonRooted,
-                ChromeFeatureList.sCommerceCoupons,
                 ChromeFeatureList.sCriticalPersistedTabData,
                 ChromeFeatureList.sDiscoverMultiColumn,
                 ChromeFeatureList.sTabStripRedesign,
@@ -102,7 +102,6 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.sOmniboxMatchToolbarAndStatusBarColor,
                 ChromeFeatureList.sOmniboxModernizeVisualUpdate,
                 ChromeFeatureList.sOmniboxMostVisitedTilesAddRecycledViewPool,
-                ChromeFeatureList.sOmniboxRemoveExcessiveRecycledViewClearCalls,
                 ChromeFeatureList.sOptimizationGuidePushNotifications,
                 ChromeFeatureList.sPaintPreviewDemo,
                 ChromeFeatureList.sQueryTiles,
@@ -120,7 +119,6 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.sTabGroupsAndroid,
                 ChromeFeatureList.sTabGroupsContinuationAndroid,
                 ChromeFeatureList.sTabGroupsForTablets,
-                ChromeFeatureList.sTabSelectionEditorV2,
                 ChromeFeatureList.sTabToGTSAnimation,
                 ChromeFeatureList.sToolbarUseHardwareBitmapDraw,
                 ChromeFeatureList.sUseChimeAndroidSdk,
@@ -144,7 +142,6 @@ public class ChromeCachedFlags {
                 OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET,
                 OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX,
                 OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALL_BOTTOM_MARGIN,
-                PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL,
                 CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES,
                 CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST,
                 CustomTabIntentDataProvider.THIRD_PARTIES_DEFAULT_POLICY,
@@ -169,9 +166,7 @@ public class ChromeCachedFlags {
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,
                 TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
                 TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO,
-                TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY,
-                TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_SHARE,
-                TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_BOOKMARKS,
+                TabUiFeatureUtilities.TAB_STRIP_REDESIGN_DISABLE_NTB_ANCHOR,
                 TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO,
                 TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED,
                 VersionNumberGetter.MIN_SDK_VERSION,

@@ -229,6 +229,8 @@
   E_CPONLY(kColorAvatarIconIncognito) \
   E_CPONLY(kColorBadgeBackground) \
   E_CPONLY(kColorBadgeForeground) \
+  E_CPONLY(kColorBadgeInCocoaMenuBackground) \
+  E_CPONLY(kColorBadgeInCocoaMenuForeground) \
   E_CPONLY(kColorBubbleBackground) \
   E_CPONLY(kColorBubbleBorder) \
   E_CPONLY(kColorBubbleBorderShadowLarge) \
@@ -250,6 +252,7 @@
   E_CPONLY(kColorButtonForegroundDisabled) \
   E_CPONLY(kColorButtonForegroundProminent) \
   E_CPONLY(kColorButtonForegroundTonal) \
+  E_CPONLY(kColorButtonHoverBackgroundText) \
   E_CPONLY(kColorMultitaskFeedbackButtonLabelBackground) \
   E_CPONLY(kColorMultitaskFeedbackButtonLabelForeground) \
   E_CPONLY(kColorMultitaskMenuNudgePulse) \
@@ -259,6 +262,9 @@
   E_CPONLY(kColorCheckboxForegroundUnchecked) \
   E_CPONLY(kColorComboboxBackground) \
   E_CPONLY(kColorComboboxBackgroundDisabled) \
+  E_CPONLY(kColorComboboxContainerOutline) \
+  E_CPONLY(kColorComboboxInkDropHovered) \
+  E_CPONLY(kColorComboboxInkDropRipple) \
   E_CPONLY(kColorCustomFrameCaptionForeground) \
   E_CPONLY(kColorDebugBoundsOutline) \
   E_CPONLY(kColorDebugContentOutline) \
@@ -391,6 +397,8 @@
   E_CPONLY(kColorTextfieldForegroundPlaceholder) \
   E_CPONLY(kColorTextfieldSelectionBackground) \
   E_CPONLY(kColorTextfieldSelectionForeground) \
+  E_CPONLY(kColorTextfieldOutline) \
+  E_CPONLY(kColorTextfieldDisabledOutline) \
   E_CPONLY(kColorTextfieldInvalidOutline) \
   E_CPONLY(kColorThrobber) \
   E_CPONLY(kColorThrobberPreconnect) \

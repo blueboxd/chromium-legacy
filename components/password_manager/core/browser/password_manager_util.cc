@@ -93,7 +93,7 @@ void UpdateMetadataForUsage(PasswordForm* credential) {
 
   // Remove alternate usernames. At this point we assume that we have found
   // the right username.
-  credential->all_possible_usernames.clear();
+  credential->all_alternative_usernames.clear();
 }
 
 password_manager::SyncState GetPasswordSyncState(
@@ -429,7 +429,6 @@ bool ShouldShowBiometricAuthenticationBeforeFillingPromo(
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
 bool CanUseBiometricAuth(device_reauth::DeviceAuthenticator* authenticator,
-                         device_reauth::DeviceAuthRequester requester,
                          password_manager::PasswordManagerClient* client) {
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   if (!client || !client->GetLocalStatePrefs() || !client->GetPrefs() ||

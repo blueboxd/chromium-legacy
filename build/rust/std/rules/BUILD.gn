@@ -791,7 +791,6 @@ cargo_crate("test") {
     ":getopts",
     ":panic_abort",
     ":panic_unwind",
-    ":proc_macro",
     ":std",
     "//build/rust/std:std_build_deps",
   ]
@@ -860,7 +859,10 @@ cargo_crate("unwind") {
     ":libc",
     "//build/rust/std:std_build_deps",
   ]
-  rustflags = [ "-Zforce-unstable-if-unmarked" ]
+  rustflags = [
+    "-Zlink-directives=false",
+    "-Zforce-unstable-if-unmarked",
+  ]
   output_dir =
       "$root_out_dir/local_rustc_sysroot/lib/rustlib/$rust_abi_target/lib/"
 }

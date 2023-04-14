@@ -46,7 +46,7 @@ var PersonalizationAppComponentBrowserTest = class extends PolymerTest {
  ['AmbientPreviewLargeTest', 'ambient_preview_large_element_test.js'],
  ['AmbientPreviewSmallTest', 'ambient_preview_small_element_test.js'],
  ['AmbientSubpageTest', 'ambient_subpage_element_test.js'],
- ['AvatarCameraTest', 'avatar_list_element_test.js'],
+ ['AvatarCameraTest', 'avatar_camera_element_test.js'],
  ['AvatarListTest', 'avatar_list_element_test.js'],
  ['DynamicColorTest', 'dynamic_color_element_test.js'],
  ['GooglePhotosAlbumsTest', 'google_photos_albums_element_test.js'],
@@ -84,7 +84,7 @@ var PersonalizationAppComponentBrowserTest = class extends PolymerTest {
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {
-  const className = `PersonalizationApp${testName}`;
+  const className = `PersonalizationAppComponent${testName}`;
   this[className] = class extends PersonalizationAppComponentBrowserTest {
     /** @override */
     get browsePreload() {

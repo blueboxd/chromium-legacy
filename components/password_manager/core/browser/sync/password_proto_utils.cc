@@ -68,12 +68,12 @@ void TrimPasswordSpecificsDataNotesForCaching(
 
 }  // namespace
 
-sync_pb::PasswordSpecificsData_PasswordIssues PasswordIssuesMapToProto(
+sync_pb::PasswordIssues PasswordIssuesMapToProto(
     const base::flat_map<InsecureType, InsecurityMetadata>&
         form_password_issues) {
-  sync_pb::PasswordSpecificsData::PasswordIssues password_issues;
+  sync_pb::PasswordIssues password_issues;
   for (const auto& [insecure_type, insecure_metadata] : form_password_issues) {
-    sync_pb::PasswordSpecificsData::PasswordIssues::PasswordIssue issue;
+    sync_pb::PasswordIssues::PasswordIssue issue;
     issue.set_date_first_detection_windows_epoch_micros(
         insecure_metadata.create_time.ToDeltaSinceWindowsEpoch()
             .InMicroseconds());
@@ -275,6 +275,11 @@ sync_pb::PasswordSpecificsMetadata SpecificsMetadataFromPassword(
   password_metadata.set_blacklisted(password_form.blocked_by_user);
   password_metadata.set_date_last_used_windows_epoch_micros(
       password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordIssuesInSpecificsMetadata)) {
+    *password_metadata.mutable_password_issues() =
+        PasswordIssuesMapToProto(password_form.password_issues);
+  }
   return password_metadata;
 }
 

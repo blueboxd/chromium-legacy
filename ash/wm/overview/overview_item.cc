@@ -46,6 +46,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -436,8 +437,9 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   // will be squashed to fit the given bounds. To get around this, stretch out
   // the contents so that it matches `unclipped_size_`, then clip the layer to
   // match `target_bounds`. This is what is done on non-minimized windows.
-  ui::Layer* preview_layer = overview_item_view_->preview_view()->layer();
-  DCHECK(preview_layer);
+  auto* preview_view = overview_item_view_->preview_view();
+  CHECK(preview_view);
+  ui::Layer* preview_layer = preview_view->layer();
   if (unclipped_size_) {
     gfx::SizeF target_size(*unclipped_size_);
     gfx::SizeF preview_size = GetWindowTargetBoundsWithInsets().size();
@@ -614,8 +616,9 @@ void OverviewItem::HideCannotSnapWarning(bool animate) {
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
+
   overview_item_view_->SetHeaderVisibility(
-      is_being_dragged_
+      is_being_dragged_ && !chromeos::features::IsJellyrollEnabled()
           ? OverviewItemView::HeaderVisibility::kInvisible
           : OverviewItemView::HeaderVisibility::kCloseButtonInvisibleOnly,
       /*animate=*/true);
@@ -772,10 +775,13 @@ void OverviewItem::SetShadowBounds(
   shadow_->GetLayer()->SetVisible(true);
   gfx::Rect bounds_in_item =
       gfx::Rect(item_widget_->GetNativeWindow()->GetTargetBounds().size());
-  bounds_in_item.Inset(gfx::Insets::TLBR(kHeaderHeightDp, 0, 0, 0));
+
   bounds_in_item.ClampToCenteredSize(
       gfx::ToRoundedSize(bounds_in_screen->size()));
   shadow_->SetContentBounds(bounds_in_item);
+  if (chromeos::features::IsJellyrollEnabled()) {
+    shadow_->SetRoundedCornerRadius(kOverviewItemCornerRadius);
+  }
 }
 
 void OverviewItem::UpdateRoundedCornersAndShadow() {
@@ -806,13 +812,15 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
            ->GetAnimator()
            ->is_animating();
   if (should_show_shadow) {
-    // The shadow should always match the size of the item minus the border and
-    // header instead of the transformed window or preview view, since for the
-    // window which has `kPillarBoxed` or `kLetterBoxed` dimension types, it
-    // doesn't occupy the whole remaining area of the overview item widget minus
-    // the header view in which case, the shadow looks weird if it matches the
-    // size of the transformed window or preview view.
-    SetShadowBounds(absl::make_optional(GetWindowTargetBoundsWithInsets()));
+    // The shadow should always match the size of the item minus the border
+    // instead of the transformed window or preview view, since for the window
+    // which has `kPillarBoxed` or `kLetterBoxed` dimension types, it doesn't
+    // occupy the whole remaining area of the overview item widget minus the
+    // header view in which case, the shadow looks weird if it matches the size
+    // of the transformed window or preview view.
+    gfx::RectF shadow_bounds = target_bounds_;
+    shadow_bounds.Inset(gfx::InsetsF(kWindowMargin));
+    SetShadowBounds(absl::make_optional(shadow_bounds));
   } else {
     SetShadowBounds(absl::nullopt);
   }
@@ -1051,10 +1059,10 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
 }
 
 void OverviewItem::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(GetWindow(), window);
+  CHECK_EQ(GetWindow(), window);
 
   if (is_being_dragged_) {
-    DCHECK_EQ(this, overview_session_->window_drag_controller()->item());
+    CHECK_EQ(this, overview_session_->window_drag_controller()->item());
     overview_session_->window_drag_controller()->ResetGesture();
   }
 
@@ -1248,6 +1256,17 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   gfx::RectF overview_item_bounds =
       transform_window_.ShrinkRectToFitPreservingAspectRatio(
           screen_rect, transformed_bounds, top_view_inset, kHeaderHeightDp);
+
+  if (chromeos::features::IsJellyrollEnabled()) {
+    // Adjust the `overview_item_bounds` if the window has normal dimensions
+    // type to make sure it's aligned with overview item header view after the
+    // transform.
+    if (transform_window_.type() == OverviewGridWindowFillMode::kNormal &&
+        overview_item_bounds.width() != transformed_bounds.width()) {
+      overview_item_bounds.set_x(transformed_bounds.x());
+      overview_item_bounds.set_width(transformed_bounds.width());
+    }
+  }
 
   const gfx::Transform transform =
       gfx::TransformBetweenRects(screen_rect, overview_item_bounds);

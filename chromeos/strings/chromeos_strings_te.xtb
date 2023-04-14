@@ -123,6 +123,7 @@
 <translation id="1904932688895783618">కొన్ని ఇతర సహాయకరమైన రిసోర్స్‌లు ఇవిగోండి:</translation>
 <translation id="1905710495812624430">అనుమతించిన గరిష్ట ప్రయత్నాలు మించిపోయారు.</translation>
 <translation id="1908234395526491708">UDP రిక్వెస్ట్ వైఫల్యాలు</translation>
+<translation id="1923388006036088459">యాక్సెంట్ రంగు</translation>
 <translation id="1947737735496445907">ప్రింట్ అయింది</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1962550982027027473">ఆటోమేటిక్ సెట్టింగ్ APN అవసరం</translation>
@@ -140,6 +141,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">మరిన్ని సెట్టింగ్‌లు</translation>
 <translation id="2085089206770112532">డిస్‌ప్లే బ్రైట్‌నెస్‌ను తగ్గించండి</translation>
+<translation id="209751264101900360">డాన్ టు డార్క్ - క్లౌడ్ ఫ్లో</translation>
 <translation id="2102231663024125441">టెక్స్ట్‌ను ఎడిట్ చేయడం</translation>
 <translation id="2105810540595158374">పరికర రకం గేమ్ కంట్రోలర్.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, వెర్షన్ <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +333,7 @@
 <translation id="3967822245660637423">డౌన్‌లోడ్ పూర్తయింది</translation>
 <translation id="3969602104473960991">ChromeOS పాస్‌వర్డ్ అప్‌డేట్ చేయబడింది</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
+<translation id="3974175076798940554">ప్రత్యేకమైన Chromebook Plus అస్సెట్‌లు ఇప్పుడు అందుబాటులో ఉన్నాయి</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> రోజులకు పైగా ఉన్న ప్రింట్ టాస్క్‌లు తీసివేయబడతాయి</translation>
 <translation id="3993704782688964914">మీ <ph name="DEVICE_NAME" /> ఇప్పుడు అప్‌డేట్ అయ్యి ఉంది</translation>
 <translation id="4003384961948020559">విఫలమైంది - అవుట్‌పుట్, ప్రింటింగ్ జాబ్‌లతో నిండి ఉంది</translation>
@@ -370,6 +373,7 @@
 <translation id="4275663329226226506">మీడియా</translation>
 <translation id="4289540628985791613">స్థూలదృష్టి</translation>
 <translation id="4289849978083912975">స్లయిడ్ షో</translation>
+<translation id="4293621540182258188">డాన్ టు డార్క్ - ఎర్త్ ఫ్లో</translation>
 <translation id="4297501883039923494">ఆగిపోయింది - తెలియని ఎర్రర్</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> ఇమేజ్‌లు</translation>
 <translation id="4311195029067684288">సంపూర్ణం</translation>
@@ -544,6 +548,7 @@
 <translation id="576835345334454681">డిస్‌ప్లే బ్రైట్‌నెస్‌ను పెంచండి</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
 <translation id="5784136236926853061">అధిక HTTPS ప్రతిస్పందన సమయం</translation>
+<translation id="5809090008577139505">అరోరా</translation>
 <translation id="5826644637650799838">ఆర్ట్ గురించి</translation>
 <translation id="5832805196449965646">వ్యక్తిని జోడించండి</translation>
 <translation id="583281660410589416">తెలియని</translation>
@@ -562,6 +567,7 @@
 <translation id="5907649332524363701">కీ రంగు</translation>
 <translation id="5916084858004523819">నిషేధించబడింది</translation>
 <translation id="5916664084637901428">ఆన్ చేయి</translation>
+<translation id="5918201491776799918">Chromebook Plus ప్రత్యేక పోస్టర్ ఇమేజ్‌ను ఎంచుకోండి</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{మీ ఫైల్ విజయవంతంగా స్కాన్ చేయబడి, <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />కు సేవ్ చేయబడింది.}other{మీ ఫైళ్లు విజయవంతంగా స్కాన్ చేయబడి, <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />కు సేవ్ చేయబడ్డాయి.}}</translation>
 <translation id="5931523347251946569">ఫైల్ కనుగొనబడలేదు</translation>
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
@@ -761,6 +767,7 @@
 <translation id="7656388927906093505">పరికరం రకం మౌస్.</translation>
 <translation id="7658239707568436148">రద్దు చేయండి</translation>
 <translation id="7665800271478495366">అవతార్‌ను మార్చండి</translation>
+<translation id="7675241868020048622">అరోరా (ప్లస్ ఎక్స్‌క్లూజివ్)</translation>
 <translation id="7690294790491645610">కొత్త పాస్‌వర్డ్‌ను నిర్ధారించండి</translation>
 <translation id="7701040980221191251">ఏదీ లేదు</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +824,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />ని ఎంచుకోండి</translation>
 <translation id="8151185429379586178">డెవలపర్ సాధనాలు</translation>
+<translation id="8153923300383192510">Chromebook Plus ప్రత్యేకం</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">అటాచ్ చేయండి</translation>
 <translation id="8206859287963243715">సెల్యులార్</translation>
@@ -839,6 +847,7 @@
 <translation id="8352772353338965963">బహుళ సైన్ ఇన్ కోసం ఖాతాను జోడించండి. అన్ని సైన్ ఇన్ చేసిన ఖాతాలను పాస్‌వర్డ్ లేకుండానే యాక్సెస్‌ చేయవచ్చు. కాబ‌ట్టి ఈ ఫీచ‌ర్‌ను విశ్వసనీయ ఖాతాలతో మాత్రమే ఉపయోగించాలి.</translation>
 <translation id="8364946094152050673">ఖాళీ పేరు సర్వర్‌లు</translation>
 <translation id="8372477600026034341">అదనపు హోస్ట్‌లు</translation>
+<translation id="8373046809163484087">మీ వాల్‌పేపర్‌కు మ్యాచ్ అయ్యే రంగు సెట్‌లను ఉపయోగించండి</translation>
 <translation id="8380114448424469341">స్క్రీన్ యొక్క <ph name="DIRECTION" /> వైపున సగంలో విండోను డాక్ చేయండి</translation>
 <translation id="8395584934117017006">ఈ <ph name="DEVICE_TYPE" /> ఎంటర్‌ప్రైజ్ ద్వారా మేనేజ్ చేయబడుతుంది</translation>
 <translation id="8398927464629426868">పరికరం ప్రస్తుతం ఛార్జ్ అవుతున్న లేదా డిశ్చార్జ్ అవుతున్న రేట్</translation>
@@ -858,6 +867,7 @@
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
 <translation id="8503836310948963452">మరికొన్ని నిమిషాలు మాత్రమే…</translation>
 <translation id="8508640263392900755">APN వివరాలు</translation>
+<translation id="8522687886059337719">మీరు ఇప్పుడు కొత్త <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />వాల్‌పేపర్‌లు<ph name="END_LINK_WALLPAPER_SUBPAGE" />, <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />స్క్రీన్ సేవర్‌<ph name="END_LINK_SCREENSAVER_SUBPAGE" />కు యాక్సెస్ కలిగి ఉన్నారు</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">వారి నెట్‌వర్క్‌కు కనెక్ట్ అవ్వడానికి మీ క్యారియర్‌కు ఈ ఆప్షన్ అవసరం పడవచ్చు. వివరాల కోసం మీ క్యారియర్‌ను సంప్రదించండి.</translation>
@@ -889,7 +899,7 @@
 <translation id="8834539327799336565">ప్రస్తుతం కనెక్ట్ చేయబడింది</translation>
 <translation id="8845001906332463065">సహాయం పొందండి</translation>
 <translation id="8855781559874488009">HTTP వెబ్‌సైట్‌లకు ఫైర్‌వాల్ ద్వారా కనెక్ట్ చేయడం సాధ్యపడదు</translation>
-<translation id="885701979325669005">నిల్వ</translation>
+<translation id="885701979325669005">స్టోరేజ్‌</translation>
 <translation id="8863170912498892583">ముదురు రంగు రూపాన్ని ఎనేబుల్ చేయండి</translation>
 <translation id="8863888432376731307">"<ph name="QUERY" />", అలాగే మరిన్నింటి కోసం <ph name="INTENT" />ను పొందండి</translation>
 <translation id="8864415976656252616">ఏ కంటెంట్ సూచించబడలేదు. టాప్ సహాయక కంటెంట్‌ను చూడండి.</translation>

@@ -32,13 +32,40 @@
 #error "This file requires ARC support."
 #endif
 
+using password_manager::WarningType;
+
+namespace {
+
+// Returns a DetailsContext based on the given WarningType.
+DetailsContext ComputeDetailsContextFromWarningType(WarningType warning_type) {
+  switch (warning_type) {
+    case WarningType::kCompromisedPasswordsWarning:
+      return DetailsContext::kCompromisedIssues;
+    case WarningType::kReusedPasswordsWarning:
+      return DetailsContext::kReusedIssues;
+    case WarningType::kWeakPasswordsWarning:
+      return DetailsContext::kWeakIssues;
+    case WarningType::kDismissedWarningsWarning:
+      return DetailsContext::kDismissedWarnings;
+    case WarningType::kNoInsecurePasswordsWarning:
+      return DetailsContext::kGeneral;
+  }
+}
+
+}  // namespace
+
 @interface PasswordIssuesCoordinator () <PasswordDetailsCoordinatorDelegate,
+                                         PasswordIssuesCoordinatorDelegate,
                                          PasswordIssuesPresenter> {
   // Password check manager to power mediator.
   IOSChromePasswordCheckManager* _manager;
 
   // Type of insecure credentials issues to display.
   password_manager::WarningType _warningType;
+
+  // Coordinator for password issues displaying dismissed compromised
+  // credentials.
+  PasswordIssuesCoordinator* _dismissedPasswordIssuesCoordinator;
 }
 
 // Main view controller for this coordinator.
@@ -111,6 +138,8 @@
   [self.passwordDetails stop];
   self.passwordDetails.delegate = nil;
   self.passwordDetails = nil;
+
+  [self stopDismissedPasswordIssuesCordinator];
 }
 
 #pragma mark - PasswordIssuesPresenter
@@ -132,9 +161,22 @@
                                browser:self.browser
                             credential:password.credential
                           reauthModule:self.reauthModule
-                  supportMoveToAccount:NO];
+                               context:ComputeDetailsContextFromWarningType(
+                                           _warningType)];
   self.passwordDetails.delegate = self;
   [self.passwordDetails start];
+}
+
+- (void)presentDismissedCompromisedCredentials {
+  CHECK(!_dismissedPasswordIssuesCoordinator);
+  _dismissedPasswordIssuesCoordinator = [[PasswordIssuesCoordinator alloc]
+            initForWarningType:password_manager::WarningType::
+                                   kDismissedWarningsWarning
+      baseNavigationController:self.baseNavigationController
+                       browser:self.browser];
+  _dismissedPasswordIssuesCoordinator.reauthModule = self.reauthModule;
+  _dismissedPasswordIssuesCoordinator.delegate = self;
+  [_dismissedPasswordIssuesCoordinator start];
 }
 
 #pragma mark - PasswordDetailsCoordinatorDelegate
@@ -145,6 +187,23 @@
   [self.passwordDetails stop];
   self.passwordDetails.delegate = nil;
   self.passwordDetails = nil;
+}
+
+#pragma mark - PasswordIssuesCoordinatorDelegate
+
+- (void)passwordIssuesCoordinatorDidRemove:
+    (PasswordIssuesCoordinator*)coordinator {
+  CHECK_EQ(_dismissedPasswordIssuesCoordinator, coordinator);
+  [self stopDismissedPasswordIssuesCordinator];
+}
+
+#pragma mark - Private
+
+- (void)stopDismissedPasswordIssuesCordinator {
+  [_dismissedPasswordIssuesCoordinator stop];
+  _dismissedPasswordIssuesCoordinator.reauthModule = nil;
+  _dismissedPasswordIssuesCoordinator.delegate = nil;
+  _dismissedPasswordIssuesCoordinator = nil;
 }
 
 @end

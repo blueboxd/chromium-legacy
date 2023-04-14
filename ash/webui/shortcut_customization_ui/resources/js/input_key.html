@@ -5,11 +5,12 @@
     box-sizing: border-box;
     display: flex;
     font-weight: 500;
-    height: 28px;
+    height: 32px;
     justify-content: center;
     margin-inline-end: 8px;
-    min-width: 28px;
-    padding-inline: 8px;
+    min-width: 32px;
+    padding-bottom: 6px;
+    padding-top: 6px;
   }
 
   :host([narrow]) .key-container {
@@ -19,6 +20,7 @@
 
   #key-text {
     color: var(--cros-text-color-secondary);
+    font: var(--cros-button-2-font);
   }
 
   :host([key-state='not-selected']) .key-container {
@@ -34,10 +36,27 @@
     box-shadow: 0 1px 1px var(--cros-highlight-color);
   }
 
+  :host([key-state='modifier-selected']:not([key='meta'])) .key-container {
+    min-width: 44px;
+    padding-inline: 12px;
+  }
+
+  :host([key-state='modifier-selected'][key='meta']) .key-container {
+    padding-inline: 6px;
+  }
+
   :host([key-state='alpha-numeric-selected']) .key-container {
     background-color: var(--cros-bg-color-dropped-elevation-1);
     border: none;
     box-shadow: 0 1px 1px var(--cros-bg-color-dropped-elevation-1);
+  }
+
+  :host([key-state='alpha-numeric-selected'][has-icon]) .key-container {
+    padding-inline: 6px;
+  }
+
+  :host([key-state='alpha-numeric-selected']:not([has-icon])) .key-container {
+    padding-inline: 11px;
   }
 
   :host([highlighted][key-state='modifier-selected']) div.key-container {
@@ -52,17 +71,14 @@
     background-color: var(--cros-bg-color);
   }
 
-  :host(#ctrlKey) .key-container,
-  :host(#altKey) .key-container,
-  :host(#shiftKey) .key-container,
-  :host(#searchKey) .key-container,
-  :host([key-state='modifier-selected']) .key-container {
-    min-width: 46px;
+  :host([highlighted][key-state='modifier-selected']) #key-icon {
+    --iron-icon-fill-color: var(--cros-button-label-color-primary);
   }
 
   #key-icon {
-    --iron-icon-height: 14px;
-    --iron-icon-width: 14px;
+    --iron-icon-height: 16px;
+    --iron-icon-width: 16px;
+    --iron-icon-fill-color: var(--cros-text-color-secondary);
   }
 </style>
 

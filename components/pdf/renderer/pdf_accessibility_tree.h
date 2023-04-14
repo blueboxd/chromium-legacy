@@ -115,7 +115,6 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   void ClearChildCache(const ui::AXNode*) override {}
   ui::AXNode* GetParent(const ui::AXNode* node) const override;
   bool IsIgnored(const ui::AXNode* node) const override;
-  bool IsValid(const ui::AXNode* node) const override;
   bool IsEqual(const ui::AXNode* node1, const ui::AXNode* node2) const override;
   const ui::AXNode* GetNull() const override;
   void SerializeNode(const ui::AXNode* node,
@@ -141,6 +140,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   // request to the Screen AI library. The number of remaining OCR requests
   // will decrement by one in `OnOcrDataReceived()`.
   void IncrementNumberOfRemainingOcrRequests();
+
+  const ui::AXTree& tree_for_testing() const { return tree_; }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   bool ShowContextMenu();
@@ -171,12 +172,12 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   // Called after the data for all pages in the PDF have been received.
   // Finishes assembling a complete accessibility tree and grafts it
   // onto the host tree.
-  void Finish();
+  void UnserializeNodes();
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   // Called after the OCR data for all images in the PDF have been received.
-  // Finishes updating the status node.
-  void FinishWithStatus();
+  // Set the status node with the OCR completion message.
+  void SetOcrCompleteStatus();
 
   // Set the status node's message.
   void SetStatusMessage(int message_id);
@@ -267,6 +268,10 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   std::unique_ptr<PdfOcrService> ocr_service_;
   // The number of remaining OCR service requests.
   uint32_t num_remaining_ocr_requests_ = 0;
+  // Flag that will be switched on when UnserializeNodes() is called. This flag
+  // will be used to check if an initial AXTreeUpdate with `nodes_` has been
+  // unserialized into `tree_`.
+  bool did_unserialize_nodes_once_ = false;
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   base::WeakPtrFactory<PdfAccessibilityTree> weak_ptr_factory_{this};

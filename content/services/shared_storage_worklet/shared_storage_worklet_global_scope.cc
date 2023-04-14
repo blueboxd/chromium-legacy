@@ -4,10 +4,15 @@
 
 #include "content/services/shared_storage_worklet/shared_storage_worklet_global_scope.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/task/single_thread_task_runner.h"
 #include "content/services/shared_storage_worklet/console.h"
 #include "content/services/shared_storage_worklet/private_aggregation.h"
@@ -21,10 +26,12 @@
 #include "gin/v8_initializer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/shared_storage/module_script_downloader.h"
+#include "third_party/blink/public/common/shared_storage/shared_storage_utils.h"
 #include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-function.h"
 #include "v8/include/v8-initialization.h"
+#include "v8/include/v8-local-handle.h"
 #include "v8/include/v8-object.h"
 
 namespace shared_storage_worklet {
@@ -56,7 +63,6 @@ void SharedStorageWorkletGlobalScope::AddModule(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_url_loader_factory,
     blink::mojom::SharedStorageWorkletServiceClient* client,
-    blink::mojom::PrivateAggregationHost* private_aggregation_host,
     const GURL& script_source_url,
     blink::mojom::SharedStorageWorkletService::AddModuleCallback callback) {
   mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory(
@@ -65,14 +71,12 @@ void SharedStorageWorkletGlobalScope::AddModule(
   module_script_downloader_ = std::make_unique<blink::ModuleScriptDownloader>(
       url_loader_factory.get(), script_source_url,
       base::BindOnce(&SharedStorageWorkletGlobalScope::OnModuleScriptDownloaded,
-                     weak_ptr_factory_.GetWeakPtr(), client,
-                     private_aggregation_host, script_source_url,
+                     weak_ptr_factory_.GetWeakPtr(), client, script_source_url,
                      std::move(callback)));
 }
 
 void SharedStorageWorkletGlobalScope::OnModuleScriptDownloaded(
     blink::mojom::SharedStorageWorkletServiceClient* client,
-    blink::mojom::PrivateAggregationHost* private_aggregation_host,
     const GURL& script_source_url,
     blink::mojom::SharedStorageWorkletService::AddModuleCallback callback,
     std::unique_ptr<std::string> response_body,
@@ -119,16 +123,6 @@ void SharedStorageWorkletGlobalScope::OnModuleScriptDownloaded(
             console_->GetWrapper(Isolate()).ToLocalChecked())
       .Check();
 
-  if (private_aggregation_host) {
-    private_aggregation_ = std::make_unique<PrivateAggregation>(
-        *client, private_aggregation_permissions_policy_allowed_,
-        *private_aggregation_host);
-    global
-        ->Set(context, gin::StringToSymbol(Isolate(), "privateAggregation"),
-              private_aggregation_->GetWrapper(Isolate()).ToLocalChecked())
-        .Check();
-  }
-
   global
       ->Set(context, gin::StringToSymbol(Isolate(), "register"),
             gin::CreateFunctionTemplate(
@@ -151,12 +145,21 @@ void SharedStorageWorkletGlobalScope::OnModuleScriptDownloaded(
   DCHECK(error_message.empty());
 
   // After the module script execution, create and expose the shared storage
-  // object.
+  // and private aggregation object.
   shared_storage_ = std::make_unique<SharedStorage>(client, embedder_context_);
   context->Global()
       ->Set(context, gin::StringToSymbol(Isolate(), "sharedStorage"),
             shared_storage_->GetWrapper(Isolate()).ToLocalChecked())
       .Check();
+
+  if (blink::ShouldDefinePrivateAggregationInSharedStorage()) {
+    private_aggregation_ = std::make_unique<PrivateAggregation>(
+        *client, private_aggregation_permissions_policy_allowed_, *this);
+    global
+        ->Set(context, gin::StringToSymbol(Isolate(), "privateAggregation"),
+              private_aggregation_->GetWrapper(Isolate()).ToLocalChecked())
+        .Check();
+  }
 
   std::move(callback).Run(true, {});
 }
@@ -165,6 +168,8 @@ void SharedStorageWorkletGlobalScope::RunURLSelectionOperation(
     const std::string& name,
     const std::vector<GURL>& urls,
     const std::vector<uint8_t>& serialized_data,
+    mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
+        private_aggregation_host,
     blink::mojom::SharedStorageWorkletService::RunURLSelectionOperationCallback
         callback) {
   if (!isolate_holder_) {
@@ -179,16 +184,18 @@ void SharedStorageWorkletGlobalScope::RunURLSelectionOperation(
   }
 
   WorkletV8Helper::HandleScope scope(Isolate());
+  base::OnceClosure operation_completion_cb =
+      StartOperation(std::move(private_aggregation_host));
   url_selection_operation_handler_->RunOperation(
       LocalContext(), name, urls, serialized_data,
-      std::move(callback).Then(base::BindOnce(
-          &SharedStorageWorkletGlobalScope::FlushAndResetPrivateAggregation,
-          weak_ptr_factory_.GetWeakPtr())));
+      std::move(callback).Then(std::move(operation_completion_cb)));
 }
 
 void SharedStorageWorkletGlobalScope::RunOperation(
     const std::string& name,
     const std::vector<uint8_t>& serialized_data,
+    mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
+        private_aggregation_host,
     blink::mojom::SharedStorageWorkletService::RunOperationCallback callback) {
   if (!isolate_holder_) {
     // TODO(yaoxia): if this operation comes while fetching the module script,
@@ -201,11 +208,11 @@ void SharedStorageWorkletGlobalScope::RunOperation(
   }
 
   WorkletV8Helper::HandleScope scope(Isolate());
+  base::OnceClosure operation_completion_cb =
+      StartOperation(std::move(private_aggregation_host));
   unnamed_operation_handler_->RunOperation(
       LocalContext(), name, serialized_data,
-      std::move(callback).Then(base::BindOnce(
-          &SharedStorageWorkletGlobalScope::FlushAndResetPrivateAggregation,
-          weak_ptr_factory_.GetWeakPtr())));
+      std::move(callback).Then(std::move(operation_completion_cb)));
 }
 
 void SharedStorageWorkletGlobalScope::Register(gin::Arguments* args) {
@@ -263,17 +270,48 @@ void SharedStorageWorkletGlobalScope::Register(gin::Arguments* args) {
       name, v8::Global<v8::Function>(isolate, run_function.As<v8::Function>()));
 }
 
-void SharedStorageWorkletGlobalScope::FlushAndResetPrivateAggregation() {
+base::OnceClosure SharedStorageWorkletGlobalScope::StartOperationForTesting(
+    mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
+        private_aggregation_host) {
+  return StartOperation(std::move(private_aggregation_host));
+}
+
+base::OnceClosure SharedStorageWorkletGlobalScope::StartOperation(
+    mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
+        private_aggregation_host) {
+  CHECK_EQ(!!private_aggregation_host, !!private_aggregation_);
+  int64_t operation_id = operation_counter_++;
+
+  v8::Local<v8::Context> context = LocalContext();
+
+  context->SetContinuationPreservedEmbedderData(
+      v8::BigInt::New(context->GetIsolate(), operation_id));
+
   if (private_aggregation_) {
-    private_aggregation_->FlushAndReset();
+    private_aggregation_->OnOperationStarted(
+        operation_id, std::move(private_aggregation_host));
+  }
+  return base::BindOnce(&SharedStorageWorkletGlobalScope::FinishOperation,
+                        weak_ptr_factory_.GetWeakPtr(), operation_id);
+}
+
+void SharedStorageWorkletGlobalScope::FinishOperation(int64_t operation_id) {
+  if (private_aggregation_) {
+    private_aggregation_->OnOperationFinished(operation_id);
   }
 }
 
-v8::Isolate* SharedStorageWorkletGlobalScope::Isolate() {
+int64_t SharedStorageWorkletGlobalScope::GetCurrentOperationId() const {
+  v8::Local<v8::Value> data =
+      LocalContext()->GetContinuationPreservedEmbedderData();
+  return data.As<v8::BigInt>()->Int64Value();
+}
+
+v8::Isolate* SharedStorageWorkletGlobalScope::Isolate() const {
   return isolate_holder_->isolate();
 }
 
-v8::Local<v8::Context> SharedStorageWorkletGlobalScope::LocalContext() {
+v8::Local<v8::Context> SharedStorageWorkletGlobalScope::LocalContext() const {
   return global_context_.Get(Isolate());
 }
 

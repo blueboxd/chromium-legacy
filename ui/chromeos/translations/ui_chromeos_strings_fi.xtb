@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Todennusvarmenne on hylätty paikallisesti</translation>
 <translation id="1775381402323441512">Videon tiedot</translation>
 <translation id="180035236176489073">Sinun täytyy olla online-tilassa käyttääksesi näitä tiedostoja.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Laajennuksen tunnus:}other{Laajennusten tunnukset:}}</translation>
 <translation id="1807938677607439181">Kaikki tiedostot</translation>
 <translation id="1810764548349082891">Esikatselu ei saatavilla</translation>
 <translation id="1812302367230252929">translitteroitu amhara</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Virheellinen aiheen vaihtoehtoisen nimen vastaavuusarvo</translation>
 <translation id="1838709767668011582">Google-sivusto</translation>
 <translation id="1853795129690976061">Tämä kansio on jaettu Linuxille</translation>
-<translation id="1859422890169495746">Tämä Chromebook</translation>
 <translation id="1864756863218646478">Tiedostoa ei löytynyt.</translation>
 <translation id="1884013283844450420">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, yhdistä</translation>
 <translation id="1920670151694390848">translitteroitu malajalam</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planeetta</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> on poistettu.</translation>
 <translation id="2307462900900812319">Määritä verkko</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Laajennusta, jonka tunnus on <ph name="BEGIN_LIST" /><ph name="END_LIST" />, ei löydy. Ota yhteyttä järjestelmänvalvojaan.}other{Laajennuksia, joiden tunnukset ovat <ph name="BEGIN_LIST" /><ph name="END_LIST" />, ei löydy. Ota yhteyttä järjestelmänvalvojaan.}}</translation>
 <translation id="2325650632570794183">Tätä tiedostotyyppiä ei tueta. Etsi tämäntyyppisiä tiedostoja avaava sovellus Chrome Web Storesta.</translation>
 <translation id="2326539130272988168">bulgaria</translation>
 <translation id="2337715497728194187">Jaa Bruschettalle</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Suojaamaton</translation>
 <translation id="3291218047831493686">Yhdistä tähän verkkoon vaihtaaksesi SIM-lukituksen asetuksia</translation>
 <translation id="3293023191599135697">WEP-verkkoja ei tueta</translation>
+<translation id="3295006446256079333">Tämä määrä</translation>
 <translation id="3295357220137379386">Laite on varattu</translation>
 <translation id="3296763833017966289">gruusia</translation>
 <translation id="3307875152560779385">ukraina</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebaset</translation>
 <translation id="4850886885716139402">Näytä</translation>
 <translation id="485316830061041779">saksa</translation>
+<translation id="4862885579661885411">Tiedostoasetukset</translation>
 <translation id="4867079195717347957">Klikkaa, jos haluat lajitella laskevaan järjestykseen.</translation>
 <translation id="4867297348137739678">Viime viikko</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> tavua</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Kopioidaan <ph name="NUMBER_OF_ITEMS" /> kohdetta…</translation>
 <translation id="7375951387215729722">Tiedostoluettelo lajiteltu laskevassa järjestyksessä (<ph name="COLUMN_NAME" />).</translation>
 <translation id="7377161162143020057">Järjestelmänvalvojakäytäntö on estänyt tämän tiedoston kopioimisen</translation>
-<translation id="7392500733467492920">ei löydy. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="7402503521691663770">ChromeOS Flex ‑laitteet</translation>
 <translation id="7408870451288633753">tšekki</translation>
 <translation id="7417453074306512035">Etiopialainen näppäimistö</translation>

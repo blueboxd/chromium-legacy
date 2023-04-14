@@ -34,7 +34,8 @@ void DCHECKTriggeringOutcomeTransitions(PreloadingTriggeringOutcome old_state,
             PreloadingTriggeringOutcome::kFailure,
             PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown,
             PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender,
-            PreloadingTriggeringOutcome::kTriggeredButPending}},
+            PreloadingTriggeringOutcome::kTriggeredButPending,
+            PreloadingTriggeringOutcome::kNoOp}},
 
           {PreloadingTriggeringOutcome::kDuplicate, {}},
 
@@ -66,6 +67,8 @@ void DCHECKTriggeringOutcomeTransitions(PreloadingTriggeringOutcome old_state,
           {PreloadingTriggeringOutcome::kTriggeredButPending,
            {PreloadingTriggeringOutcome::kRunning,
             PreloadingTriggeringOutcome::kFailure}},
+
+          {PreloadingTriggeringOutcome::kNoOp, {}},
       }));
   DCHECK_STATE_TRANSITION(allowed_transitions,
                           /*old_state=*/old_state,
@@ -188,8 +191,15 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
   // Ensure that when the `triggering_outcome_` is kSuccess, then the
   // accurate_triggering should be true.
   if (triggering_outcome_ == PreloadingTriggeringOutcome::kSuccess) {
-    DCHECK(is_accurate_triggering_)
-        << "TriggeringOutcome set to kSuccess without correct prediction\n";
+    // TODO(https://crbug.com/1431055): Fix PreloadingAttempt for Prefetching in
+    // a different WebContents. It is allowed to activate a prefetched result in
+    // another WebContents instance, and the WebContents that stores `this`
+    // instance does not have the opportunity to set the
+    // `is_accurate_triggering_` flag to true in this case.
+    if (preloading_type_ != PreloadingType::kPrefetch) {
+      DCHECK(is_accurate_triggering_)
+          << "TriggeringOutcome set to kSuccess without correct prediction\n";
+    }
   }
 
   // Always record UMA, regardless of sampling.
@@ -327,6 +337,9 @@ std::ostream& operator<<(std::ostream& os,
       break;
     case PreloadingTriggeringOutcome::kTriggeredButPending:
       os << "TriggeredButPending";
+      break;
+    case PreloadingTriggeringOutcome::kNoOp:
+      os << "NoOp";
       break;
   }
   return os;

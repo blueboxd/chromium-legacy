@@ -613,8 +613,8 @@ void NetworkingPrivateLinux::GetDeviceStateList(
   std::unique_ptr<DeviceStateList> device_state_list(new DeviceStateList);
   std::unique_ptr<api::networking_private::DeviceStateProperties> properties(
       new api::networking_private::DeviceStateProperties);
-  properties->type = api::networking_private::NETWORK_TYPE_WIFI;
-  properties->state = api::networking_private::DEVICE_STATE_TYPE_ENABLED;
+  properties->type = api::networking_private::NetworkType::kWiFi;
+  properties->state = api::networking_private::DeviceStateType::kEnabled;
   device_state_list->push_back(std::move(properties));
   std::move(callback).Run(std::move(device_state_list));
 }
@@ -677,8 +677,9 @@ void NetworkingPrivateLinux::SendNetworkListChangedEvent(
   GuidList guidsForEventCallback;
 
   for (const auto& network : network_list) {
-    if (!network.is_dict())
+    if (!network.is_dict()) {
       continue;
+    }
     if (const std::string* guid =
             network.GetDict().FindString(kAccessPointInfoGuid)) {
       guidsForEventCallback.push_back(*guid);
@@ -760,8 +761,9 @@ void NetworkingPrivateLinux::GetAllWiFiAccessPoints(bool configured_only,
 
     // Get the access points for each WiFi adapter. Other network types are
     // ignored.
-    if (device_type != NetworkingPrivateLinux::NM_DEVICE_TYPE_WIFI)
+    if (device_type != NetworkingPrivateLinux::NM_DEVICE_TYPE_WIFI) {
       continue;
+    }
 
     // Found a wlan adapter
     if (!AddAccessPointsFromDevice(device_path, network_map)) {
@@ -1209,15 +1211,17 @@ bool NetworkingPrivateLinux::SetConnectionStateAndPostEvent(
 void NetworkingPrivateLinux::OnNetworksChangedEventOnUIThread(
     const GuidList& network_guids) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (auto& observer : network_events_observers_)
+  for (auto& observer : network_events_observers_) {
     observer.OnNetworksChangedEvent(network_guids);
+  }
 }
 
 void NetworkingPrivateLinux::OnNetworkListChangedEventOnUIThread(
     const GuidList& network_guids) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (auto& observer : network_events_observers_)
+  for (auto& observer : network_events_observers_) {
     observer.OnNetworkListChangedEvent(network_guids);
+  }
 }
 
 void NetworkingPrivateLinux::PostOnNetworksChangedToUIThread(

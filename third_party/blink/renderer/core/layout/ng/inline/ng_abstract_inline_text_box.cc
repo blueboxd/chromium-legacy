@@ -84,8 +84,8 @@ void NGAbstractInlineTextBox::WillDestroy(const NGInlineCursor& cursor) {
 }
 
 NGAbstractInlineTextBox::NGAbstractInlineTextBox(const NGInlineCursor& cursor)
-    : AbstractInlineTextBox(LineLayoutText(
-          To<LayoutText>(cursor.Current().GetMutableLayoutObject()))),
+    : AbstractInlineTextBox(
+          To<LayoutText>(cursor.Current().GetMutableLayoutObject())),
       fragment_item_(cursor.CurrentItem()),
       root_box_fragment_(&cursor.ContainerFragment()) {
   DCHECK(fragment_item_->IsText()) << fragment_item_;
@@ -97,11 +97,11 @@ NGAbstractInlineTextBox::~NGAbstractInlineTextBox() {
 }
 
 void NGAbstractInlineTextBox::Detach() {
-  LayoutObject* prev_layout_object = GetLayoutObject();
+  LayoutObject* prev_layout_object = GetLayoutText();
   AXObjectCache* cache = ExistingAXObjectCache();
 
   AbstractInlineTextBox::Detach();
-  DCHECK(!GetLayoutObject());
+  DCHECK(!GetLayoutText());
 
   fragment_item_ = nullptr;
   root_box_fragment_ = nullptr;
@@ -140,8 +140,9 @@ String NGAbstractInlineTextBox::GetTextContent() const {
 
 bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
   const NGInlineCursor& cursor = GetCursor();
-  if (!cursor.Current().Style().CollapseWhiteSpace())
+  if (cursor.Current().Style().ShouldPreserveWhiteSpaces()) {
     return false;
+  }
   NGInlineCursor line_box = cursor;
   line_box.MoveToContainingLine();
   if (!line_box.Current().HasSoftWrapToNextLine())
@@ -213,8 +214,9 @@ AbstractInlineTextBox::Direction NGAbstractInlineTextBox::GetDirection() const {
   if (!cursor)
     return kLeftToRight;
   const TextDirection text_direction = cursor.Current().ResolvedDirection();
-  if (GetLineLayoutItem().Style()->IsHorizontalWritingMode())
+  if (GetLayoutText()->Style()->IsHorizontalWritingMode()) {
     return IsLtr(text_direction) ? kLeftToRight : kRightToLeft;
+  }
   return IsLtr(text_direction) ? kTopToBottom : kBottomToTop;
 }
 

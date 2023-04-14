@@ -18,11 +18,11 @@
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
-#include "android_webview/browser/aw_origin_verification_scheduler_bridge.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
+#include "android_webview/browser/content_relationship_verification/aw_origin_verification_scheduler_bridge.h"
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
@@ -603,8 +603,7 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
     auto* origin_verification_bridge =
         AwOriginVerificationSchedulerBridge::GetInstance();
     result.push_back(
-        content_relationship_verification::BrowserURLLoaderThrottle::Create(
-            origin_verification_bridge));
+        BrowserURLLoaderThrottle::Create(origin_verification_bridge));
   }
 
   result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
@@ -631,8 +630,8 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
         ui::PAGE_TRANSITION_RELOAD);
     if (is_load_url || is_go_back_forward || is_reload) {
       result.push_back(
-          std::make_unique<AwURLLoaderThrottle>(static_cast<AwResourceContext*>(
-              browser_context->GetResourceContext())));
+          std::make_unique<AwURLLoaderThrottle>(static_cast<AwBrowserContext*>(
+              browser_context)));
     }
   }
 

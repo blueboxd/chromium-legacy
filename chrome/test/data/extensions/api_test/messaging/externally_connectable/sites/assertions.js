@@ -91,6 +91,13 @@ var results = {
   INCORRECT_RESPONSE_MESSAGE: 6,
 };
 
+class ResultError extends Error {
+  constructor(result) {
+    super('ResultError');
+    this.result = result;
+  }
+}
+
 // Make the messages sent vaguely complex, but unambiguously JSON-ifiable.
 var kMessage = [{'a': {'b': 10}}, 20, 'c\x10\x11'];
 
@@ -113,17 +120,15 @@ if (parent == window) {
   });
 }
 
-function checkLastError(reply) {
+function checkLastError() {
   if (!chrome.runtime.lastError)
-    return true;
+    return;
   if (chrome.runtime.lastError.message == kCouldNotEstablishConnection)
-    reply(results.COULD_NOT_ESTABLISH_CONNECTION_ERROR);
-  else
-    reply(results.OTHER_ERROR);
-  return false;
+    throw new ResultError(results.COULD_NOT_ESTABLISH_CONNECTION_ERROR);
+  throw new ResultError(results.OTHER_ERROR);
 }
 
-function checkResponse(response, reply, expectedMessage, isApp) {
+function checkResponse(response, expectedMessage, isApp) {
   // The response will be an echo of both the original message *and* the
   // MessageSender (with the tab field stripped down).
   //
@@ -151,18 +156,16 @@ function checkResponse(response, reply, expectedMessage, isApp) {
     incorrectSender = true;
   }
   if (incorrectSender) {
-    reply(results.INCORRECT_RESPONSE_SENDER);
-    return false;
+    throw new ResultError(results.INCORRECT_RESPONSE_SENDER);
   }
 
   // Check the correct content was echoed.
   var expectedJson = stringify(expectedMessage);
   var actualJson = stringify(response.message);
   if (actualJson == expectedJson)
-    return true;
+    return;
   console.warn('Expected message ' + expectedJson + ' got ' + actualJson);
-  reply(results.INCORRECT_RESPONSE_MESSAGE);
-  return false;
+  throw new ResultError(results.INCORRECT_RESPONSE_MESSAGE);
 }
 
 function sendToBrowser(msg) {
@@ -174,42 +177,29 @@ function sendToBrowserForTlsChannelId(result) {
   // TLS channel ID string from the same value, they require the result code
   // to be sent as a string.
   // String() is clobbered, so coerce string creation with +.
-  sendToBrowser("" + result);
+  return "" + result;
 }
 
-function checkRuntime(reply) {
-  if (!reply)
-    reply = sendToBrowser;
-
+function checkRuntime() {
   if (!chrome.runtime) {
-    reply(results.NAMESPACE_NOT_DEFINED);
-    return false;
+    throw new ResultError(results.NAMESPACE_NOT_DEFINED);
   }
 
   if (!chrome.runtime.connect || !chrome.runtime.sendMessage) {
-    reply(results.FUNCTION_NOT_DEFINED);
-    return false;
+    throw new ResultError(results.FUNCTION_NOT_DEFINED);
   }
-  return true;
-}
-
-function checkRuntimeForTlsChannelId() {
-  return checkRuntime(sendToBrowserForTlsChannelId);
 }
 
 function checkTlsChannelIdResponse(response) {
   if (chrome.runtime.lastError) {
     if (chrome.runtime.lastError.message == kCouldNotEstablishConnection)
-      sendToBrowserForTlsChannelId(
+      return sendToBrowserForTlsChannelId(
           results.COULD_NOT_ESTABLISH_CONNECTION_ERROR);
-    else
-      sendToBrowserForTlsChannelId(results.OTHER_ERROR);
-    return;
+    return sendToBrowserForTlsChannelId(results.OTHER_ERROR);
   }
   if (response.sender.tlsChannelId !== undefined)
-    sendToBrowserForTlsChannelId(response.sender.tlsChannelId);
-  else
-    sendToBrowserForTlsChannelId('');
+    return sendToBrowserForTlsChannelId(response.sender.tlsChannelId);
+  return sendToBrowserForTlsChannelId('');
 }
 
 window.actions = {
@@ -228,47 +218,63 @@ window.actions = {
 };
 
 window.assertions = {
-  canConnectAndSendMessages: function(extensionId, isApp, message) {
-    if (!checkRuntime())
-      return;
+  canConnectAndSendMessages: async function(extensionId, isApp, message) {
+    try {
+      checkRuntime();
 
-    if (!message)
-      message = kMessage;
+      if (!message)
+        message = kMessage;
 
-    function canSendMessage(reply) {
-      chrome.runtime.sendMessage(extensionId, message, function(response) {
-        if (checkLastError(reply) &&
-            checkResponse(response, reply, message, isApp)) {
-          reply(results.OK);
-        }
-      });
+      async function canSendMessage() {
+        const response = await new Promise((resolve) => {
+          chrome.runtime.sendMessage(extensionId, message, function(response) {
+            resolve(response);
+          });
+        });
+        checkLastError();
+        checkResponse(response, message, isApp);
+      }
+
+      async function canConnectAndSendMessages() {
+        var port = chrome.runtime.connect(extensionId);
+        return new Promise((resolve, reject) => {
+          port.postMessage(message, function() {
+            try {
+              checkLastError();
+            } catch(err) {
+              reject(err);
+            }
+          });
+          port.postMessage(message, function() {
+            try {
+              checkLastError();
+            } catch(err) {
+              reject(err);
+            }
+          });
+          var pendingResponses = 2;
+          port.onMessage.addListener(async function(response) {
+            pendingResponses--;
+            try {
+              checkLastError();
+              checkResponse(response, message, isApp);
+            } catch (err) {
+              return reject(err);
+            }
+            if (pendingResponses == 0)
+              return resolve(results.OK);
+          });
+        });
+      }
+
+      await canSendMessage();
+      return await canConnectAndSendMessages();
+    } catch (err) {
+      if (err instanceof ResultError) {
+        return err.result;
+      }
+      throw err;
     }
-
-    function canConnectAndSendMessages(reply) {
-      var port = chrome.runtime.connect(extensionId);
-      port.postMessage(message, function() {
-        checkLastError(reply);
-      });
-      port.postMessage(message, function() {
-        checkLastError(reply);
-      });
-      var pendingResponses = 2;
-      var ok = true;
-      port.onMessage.addListener(function(response) {
-        pendingResponses--;
-        ok = ok && checkLastError(reply) &&
-            checkResponse(response, reply, message, isApp);
-        if (pendingResponses == 0 && ok)
-          reply(results.OK);
-      });
-    }
-
-    canSendMessage(function(result) {
-      if (result != results.OK)
-        sendToBrowser(result);
-      else
-        canConnectAndSendMessages(sendToBrowser);
-    });
   },
 
   trySendMessage: function(extensionId) {
@@ -332,29 +338,45 @@ window.assertions = {
 
   getTlsChannelIdFromPortConnect: function(extensionId, includeTlsChannelId,
                                            message) {
-    if (!checkRuntimeForTlsChannelId())
-      return;
+    try {
+      checkRuntime();
+    } catch (err) {
+      if (err instanceof ResultError) {
+        return sendToBrowserForTlsChannelId(err.result);
+      }
+      throw err;
+    }
 
     if (!message)
       message = kMessage;
 
     var port = chrome.runtime.connect(extensionId,
         {'includeTlsChannelId': includeTlsChannelId});
-    port.onMessage.addListener(checkTlsChannelIdResponse);
-    port.postMessage(message);
+    return new Promise(resolve => {
+      port.onMessage.addListener(resolve);
+      port.postMessage(message);
+    }).then(checkTlsChannelIdResponse);
   },
 
   getTlsChannelIdFromSendMessage: function(extensionId, includeTlsChannelId,
                                            message) {
-    if (!checkRuntimeForTlsChannelId())
-      return;
+    try {
+      checkRuntime();
+    } catch (err) {
+      if (err instanceof ResultError) {
+        return sendToBrowserForTlsChannelId(err.result);
+      }
+      throw err;
+    }
 
     if (!message)
       message = kMessage;
 
-    chrome.runtime.sendMessage(extensionId, message,
-        {'includeTlsChannelId': includeTlsChannelId},
-        checkTlsChannelIdResponse);
+    return new Promise(resolve => {
+      chrome.runtime.sendMessage(extensionId, message,
+          {'includeTlsChannelId': includeTlsChannelId},
+          resolve);
+    }).then(checkTlsChannelIdResponse);
   }
 };
 

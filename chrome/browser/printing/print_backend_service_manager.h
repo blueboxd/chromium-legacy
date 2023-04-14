@@ -343,6 +343,8 @@ class PrintBackendServiceManager {
   PrintBackendServiceManager();
   ~PrintBackendServiceManager();
 
+  static std::string ClientTypeToString(ClientType client_type);
+
   static void LogCallToRemote(base::StringPiece name,
                               const CallbackContext& context);
   static void LogCallbackFromRemote(base::StringPiece name,
@@ -382,16 +384,17 @@ class PrintBackendServiceManager {
   // platform specific.
   bool PrinterDriverKnownToRequireElevatedPrivilege(
       const std::string& printer_name,
-      ClientType client_type);
+      ClientType client_type) const;
 #endif
 
+  // Determines if a service should be sandboxed when launched.
+  bool ShouldServiceBeSandboxed(const std::string& printer_name,
+                                ClientType client_type) const;
+
   // Acquires a remote handle to the Print Backend Service instance, launching a
-  // process to host the service if necessary. `is_sandboxed` is set to indicate
-  // if the service was launched within a sandbox.
-  const mojo::Remote<mojom::PrintBackendService>& GetService(
-      const std::string& printer_name,
-      ClientType client_type,
-      bool* is_sandboxed);
+  // process to host the service if necessary.
+  const mojo::Remote<mojom::PrintBackendService>&
+  GetService(const RemoteId& remote_id, ClientType client_type, bool sandboxed);
 
   // Helper to `GetService` for a particular remotes bundle type.
   template <class T>

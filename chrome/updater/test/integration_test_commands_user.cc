@@ -30,6 +30,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
  public:
   IntegrationTestCommandsUser() = default;
 
+  void ExpectNoCrashes() const override {
+    updater::test::ExpectNoCrashes(updater_scope_);
+  }
+
   void PrintLog() const override { updater::test::PrintLog(updater_scope_); }
 
   void CopyLog() const override {
@@ -61,8 +65,11 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::ExpectCandidateUninstalled(updater_scope_);
   }
 
-  void EnterTestMode(const GURL& url) const override {
-    updater::test::EnterTestMode(url);
+  void EnterTestMode(const GURL& update_url,
+                     const GURL& crash_upload_url,
+                     const GURL& device_management_url) const override {
+    updater::test::EnterTestMode(update_url, crash_upload_url,
+                                 device_management_url);
   }
 
   void ExitTestMode() const override {
@@ -182,6 +189,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::RunWakeAll(updater_scope_);
   }
 
+  void RunCrashMe() const override {
+    updater::test::RunCrashMe(updater_scope_);
+  }
+
   void RunWakeActive(int exit_code) const override {
     updater::test::RunWakeActive(updater_scope_, exit_code);
   }
@@ -285,6 +296,12 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   void SetupFakeLegacyUpdater() const override {
     updater::test::SetupFakeLegacyUpdater(updater_scope_);
   }
+
+#if BUILDFLAG(IS_WIN)
+  void RunFakeLegacyUpdater() const override {
+    updater::test::RunFakeLegacyUpdater(updater_scope_);
+  }
+#endif  // BUILDFLAG(IS_WIN)
 
   void ExpectLegacyUpdaterMigrated() const override {
     updater::test::ExpectLegacyUpdaterMigrated(updater_scope_);

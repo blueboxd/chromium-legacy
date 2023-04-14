@@ -70,8 +70,10 @@
 #include "chrome/browser/ash/multidevice_setup/auth_token_validator_factory.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/ash/multidevice_setup/oobe_completion_tracker_factory.h"
+#include "chrome/browser/ash/nearby/nearby_dependencies_provider.h"
 #include "chrome/browser/ash/nearby/nearby_dependencies_provider_factory.h"
 #include "chrome/browser/ash/nearby/nearby_process_manager_factory.h"
+#include "chrome/browser/ash/nearby/presence/nearby_presence_service_factory.h"
 #include "chrome/browser/ash/nearby/quick_start_connectivity_service_factory.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
@@ -90,6 +92,7 @@
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/secure_channel/nearby_connector_factory.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
+#include "chrome/browser/ash/sync/sync_appsync_service_factory.h"
 #include "chrome/browser/ash/sync/sync_error_notifier_factory.h"
 #include "chrome/browser/ash/sync/sync_mojo_service_factory_ash.h"
 #include "chrome/browser/ash/tether/tether_service_factory.h"
@@ -102,6 +105,7 @@
 #include "chrome/browser/ui/ash/glanceables/glanceables_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/global_media_controls/cast_media_notification_producer_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_hats_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager_factory.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -149,6 +153,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ash::personalization_app::PersonalizationAppManagerFactory::GetInstance();
   ash::quick_start::QuickStartConnectivityServiceFactory::GetInstance();
   ash::quick_unlock::QuickUnlockFactory::GetInstance();
+  ash::settings::OsSettingsHatsManagerFactory::GetInstance();
   ash::settings::OsSettingsManagerFactory::GetInstance();
   AuthPolicyCredentialsManagerFactory::GetInstance();
   ax::AccessibilityServiceRouterFactory::EnsureFactoryBuilt();
@@ -186,6 +191,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   file_manager::VolumeManagerFactory::GetInstance();
   file_system_provider::ServiceFactory::GetInstance();
   full_restore::FullRestoreServiceFactory::GetInstance();
+  GlanceablesKeyedServiceFactory::GetInstance();
   guest_os::GuestOsMimeTypesServiceFactory::GetInstance();
   guest_os::GuestOsRegistryServiceFactory::GetInstance();
   guest_os::GuestOsServiceFactory::GetInstance();
@@ -197,8 +203,10 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   LoginScreenExtensionsLifetimeManagerFactory::GetInstance();
   LoginScreenExtensionsContentScriptManagerFactory::GetInstance();
   login::SigninPartitionManager::Factory::GetInstance();
+  nearby::NearbyDependenciesProvider::EnsureFactoryBuilt();
   nearby::NearbyDependenciesProviderFactory::GetInstance();
   nearby::NearbyProcessManagerFactory::GetInstance();
+  ash::nearby::presence::NearbyPresenceServiceFactory::GetInstance();
   OwnerSettingsServiceAshFactory::GetInstance();
   phonehub::PhoneHubManagerFactory::GetInstance();
   platform_keys::KeyPermissionsServiceFactory::GetInstance();
@@ -214,11 +222,11 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   secure_channel::NearbyConnectorFactory::GetInstance();
   sharesheet::SharesheetServiceFactory::GetInstance();
   smb_client::SmbServiceFactory::GetInstance();
+  SyncAppsyncServiceFactory::GetInstance();
   SyncedPrintersManagerFactory::GetInstance();
   SyncMojoServiceFactoryAsh::GetInstance();
   tether::TetherServiceFactory::GetInstance();
   TtsEngineExtensionObserverChromeOS::EnsureFactoryBuilt();
-  GlanceablesKeyedServiceFactory::GetInstance();
 }
 
 }  // namespace ash

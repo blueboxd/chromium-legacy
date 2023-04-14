@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/containers/fixed_flat_map.h"
-#include "base/guid.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/common/autofill_regexes.h"
@@ -54,7 +54,6 @@ static constexpr auto kCountryToIbanLength =
         {"GT", 28},  // Guatemala
         {"HR", 21},  // Croatia
         {"HU", 28},  // Hungary
-        {"IE", 22},  // Ireland
         {"IL", 23},  // Israel
         {"IQ", 23},  // Iraq
         {"IS", 26},  // Iceland
@@ -77,7 +76,6 @@ static constexpr auto kCountryToIbanLength =
         {"MT", 31},  // Malta
         {"MU", 30},  // Mauritius
         {"NL", 18},  // Netherlands
-        {"NO", 15},  // Norway
         {"PK", 24},  // Pakistan
         {"PL", 28},  // Poland
         {"PS", 29},  // Palestinian territories
@@ -181,7 +179,7 @@ constexpr char16_t kEllipsisOneSpace = u'\u2006';
 IBAN::IBAN(const std::string& guid)
     : AutofillDataModel(guid, /*origin=*/std::string()) {}
 
-IBAN::IBAN() : IBAN(base::GenerateGUID()) {}
+IBAN::IBAN() : IBAN(base::GenerateUuid()) {}
 
 IBAN::IBAN(const IBAN& iban) : IBAN() {
   operator=(iban);

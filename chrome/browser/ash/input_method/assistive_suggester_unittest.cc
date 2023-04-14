@@ -93,12 +93,10 @@ void SetInputMethodOptions(Profile& profile,
       std::string(kUsEnglishEngineId) +
           ".physicalKeyboardEnablePredictiveWriting",
       predictive_writing_enabled);
-  input_method_setting.SetByDottedPath(
-      std::string(kUsEnglishEngineId) +
-          ".physicalKeyboardEnableDiacriticsOnLongpress",
-      diacritics_on_longpress_enabled);
   profile.GetPrefs()->Set(::prefs::kLanguageInputMethodSpecificSettings,
                           base::Value(std::move(input_method_setting)));
+  profile.GetPrefs()->Set(::ash::prefs::kLongPressDiacriticsEnabled,
+                          base::Value(diacritics_on_longpress_enabled));
 }
 
 }  // namespace
@@ -556,7 +554,7 @@ TEST_F(
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
   task_environment_.FastForwardBy(base::Seconds(1));
 
-  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
+  EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
 }
 
 TEST_F(
@@ -580,7 +578,7 @@ TEST_F(
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
   task_environment_.FastForwardBy(base::Seconds(1));
 
-  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
+  EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
 }
 
 TEST_F(
@@ -604,7 +602,7 @@ TEST_F(
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
   task_environment_.FastForwardBy(base::Seconds(1));
 
-  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
+  EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
 }
 
 TEST_F(
@@ -628,7 +626,7 @@ TEST_F(
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
   task_environment_.FastForwardBy(base::Seconds(1));
 
-  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
+  EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
 }
 
 TEST_F(AssistiveSuggesterTest, DiacriticsSuggestionOnKeyDownRecordsSuccess) {

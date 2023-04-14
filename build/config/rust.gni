@@ -15,6 +15,8 @@ declare_args() {
   # Whether to allow Rust code to be part of the Chromium *build process*.
   # This can be used to create Rust test binaries, even if the flag below
   # is false.
+  # This only applies to Chromium itself, so the build_with_chromium check
+  # should not be removed.
   # TODO(crbug.com/1386212): Mac
   # TODO(crbug.com/1271215): Windows
   # TODO(crbug.com/1426472): use_clang_coverage
@@ -25,7 +27,7 @@ declare_args() {
   # slowly and carefully and there may be no actual bugs there.
   enable_rust = is_linux && !is_official_build && !using_sanitizer &&
                 target_cpu != "x86" && !use_clang_coverage && is_clang &&
-                target_os == host_os
+                build_with_chromium
 
   # As we incrementally enable Rust on mainstream builders, we want to enable
   # the toolchain (by switching 'enable_rust' to true) while still disabling
@@ -33,13 +35,8 @@ declare_args() {
   # all Rust features enabled.
   enable_all_rust_features = false
 
-  # Use the Rust toolchain built in-tree. See //tools/rust. The toolchain comes
-  # with a prebuilt stdlib for the host platform.
-  #
-  # For now, we don't support cross-compilation at all, but it's in progress. To
-  # allow Rust on Android we have a prebuilt toolchain from the Android team,
-  # which is used when this variable is `false`.
-  use_chromium_rust_toolchain = target_os == host_os
+  # Use the Rust toolchain built in-tree. See //tools/rust.
+  use_chromium_rust_toolchain = true
 
   # Build libstd locally with GN and use that instead of the prebuilts, where
   # applicable. If this is false the prebuilt libstd will always be used. If
@@ -108,13 +105,10 @@ declare_args() {
   # Support for chrome://crash-rust to check crash dump collection works.
   enable_rust_crash = enable_all_rust_features
 
-  # Build the Rust bindgen tool. This requires libclang
-  enable_rust_bindgen = enable_all_rust_features
-
-  # Support for Rust mojo bindings. Needs bindgen.
+  # Support for Rust mojo bindings.
   enable_rust_mojo = enable_all_rust_features
 
-  # Support for the 'gnrt' Rust tool
+  # Support for the 'gnrt' Rust tool.
   enable_rust_gnrt = enable_all_rust_features
 
   # Rust gtest interop
@@ -170,12 +164,6 @@ if (enable_rust) {
     rust_sysroot = get_path_info(rust_sysroot_absolute, "abspath")
     use_unverified_rust_toolchain = true
   } else if (use_chromium_rust_toolchain) {
-    if (host_os != target_os) {
-      assert(
-          false,
-          "Attempt to use Chromium Rust toolchain on an unsupported platform")
-    }
-
     rust_sysroot = "//third_party/rust-toolchain"
     use_unverified_rust_toolchain = false
   } else {
@@ -202,7 +190,7 @@ if (enable_rust) {
 # (see '*_toolchain_supports_platform above') to enable experimentation with
 # other toolchains.
 rust_abi_target = ""
-if (is_linux) {
+if (is_linux || is_chromeos) {
   cpu = current_cpu
   if (cpu == "arm64") {
     cpu = "aarch64"

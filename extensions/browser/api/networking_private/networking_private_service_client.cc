@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/base64.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
@@ -340,8 +339,8 @@ void NetworkingPrivateServiceClient::GetDeviceStateList(
   std::unique_ptr<DeviceStateList> device_state_list(new DeviceStateList);
   std::unique_ptr<api::networking_private::DeviceStateProperties> properties(
       new api::networking_private::DeviceStateProperties);
-  properties->type = api::networking_private::NETWORK_TYPE_WIFI;
-  properties->state = api::networking_private::DEVICE_STATE_TYPE_ENABLED;
+  properties->type = api::networking_private::NetworkType::kWiFi;
+  properties->state = api::networking_private::DeviceStateType::kEnabled;
   device_state_list->push_back(std::move(properties));
   std::move(callback).Run(std::move(device_state_list));
 }
@@ -481,15 +480,17 @@ void NetworkingPrivateServiceClient::AfterStartDisconnect(
 void NetworkingPrivateServiceClient::OnNetworksChangedEventOnUIThread(
     const std::vector<std::string>& network_guids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (auto& observer : network_events_observers_)
+  for (auto& observer : network_events_observers_) {
     observer.OnNetworksChangedEvent(network_guids);
+  }
 }
 
 void NetworkingPrivateServiceClient::OnNetworkListChangedEventOnUIThread(
     const std::vector<std::string>& network_guids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (auto& observer : network_events_observers_)
+  for (auto& observer : network_events_observers_) {
     observer.OnNetworkListChangedEvent(network_guids);
+  }
 }
 
 }  // namespace extensions

@@ -12,6 +12,8 @@ import sys
 import zipfile
 
 from util import build_utils
+import action_helpers  # build_utils adds //build to sys.path.
+import zip_helpers
 
 
 _NATIVE_LIBRARIES_TEMPLATE = """\
@@ -50,7 +52,7 @@ def _FormatLibraryName(library_name):
 def main():
   parser = argparse.ArgumentParser()
 
-  build_utils.AddDepfileOption(parser)
+  action_helpers.add_depfile_arg(parser)
   parser.add_argument('--final', action='store_true', help='Use final fields.')
   parser.add_argument(
       '--enable-chromium-linker',
@@ -104,18 +106,18 @@ def main():
       'LIBRARIES': ','.join(_FormatLibraryName(n) for n in native_libraries),
       'CPU_FAMILY': options.cpu_family,
   }
-  with build_utils.AtomicOutput(options.output) as f:
+  with action_helpers.atomic_output(options.output) as f:
     with zipfile.ZipFile(f.name, 'w') as srcjar_file:
-      build_utils.AddToZipHermetic(
+      zip_helpers.add_to_zip_hermetic(
           zip_file=srcjar_file,
           zip_path='org/chromium/build/NativeLibraries.java',
           data=_NATIVE_LIBRARIES_TEMPLATE.format(**format_dict))
 
   if options.depfile:
     assert options.native_libraries_list
-    build_utils.WriteDepfile(options.depfile,
-                             options.output,
-                             inputs=[options.native_libraries_list])
+    action_helpers.write_depfile(options.depfile,
+                                 options.output,
+                                 inputs=[options.native_libraries_list])
 
 
 if __name__ == '__main__':

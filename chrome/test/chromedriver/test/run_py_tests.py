@@ -3124,7 +3124,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                                 })
     decoded_pdf = base64.b64decode(pdf)
     self.assertTrue(decoded_pdf.startswith(b'%PDF'))
-    self.assertTrue(decoded_pdf.endswith(b'%%EOF'))
+    self.assertTrue(decoded_pdf.endswith(b'%%EOF\n'))
 
   def testPrintInvalidArgument(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -4299,7 +4299,12 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
       <!DOCTYPE html>
         <html>
           <body>
-            <fencedframe src="/fencedframe.html"></fencedframe>
+            <fencedframe></fencedframe>
+            <script>
+              const url = new URL("fencedframe.html", location.href);
+              document.querySelector("fencedframe").config =
+                  new FencedFrameConfig(url);
+            </script>
           </body>
         </html>
       """, 'utf-8'))
@@ -4338,7 +4343,8 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
     self._driver = self.CreateDriver(
         accept_insecure_certs = True,
         chrome_switches=['--site-per-process',
-            '--enable-features=FencedFrames,PrivacySandboxAdsAPIsOverride'])
+          '--enable-features=FencedFrames,PrivacySandboxAdsAPIsOverride,'
+          'FencedFramesAPIChanges'])
 
   def testCanSwitchToFencedFrame(self):
     self._initDriver()
@@ -5505,7 +5511,7 @@ class HeadlessChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                                 })
     decoded_pdf = base64.b64decode(pdf)
     self.assertTrue(decoded_pdf.startswith(b"%PDF"))
-    self.assertTrue(decoded_pdf.endswith(b"%%EOF"))
+    self.assertTrue(decoded_pdf.endswith(b"%%EOF\n"))
 
   def testPrintInvalidArgumentHeadless(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))

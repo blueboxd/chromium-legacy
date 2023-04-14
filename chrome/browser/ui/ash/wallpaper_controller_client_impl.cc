@@ -209,6 +209,12 @@ void WallpaperControllerClientImpl::InitForTesting(
   InitController();
 }
 
+void WallpaperControllerClientImpl::SetWallpaperFetcherDelegateForTesting(
+    std::unique_ptr<wallpaper_handlers::WallpaperFetcherDelegate>
+        wallpaper_fetcher_delegate) {
+  wallpaper_fetcher_delegate_.swap(wallpaper_fetcher_delegate);
+}
+
 void WallpaperControllerClientImpl::SetInitialWallpaper() {
   // Apply device customization.
   namespace customization_util = ash::customization_wallpaper_util;
@@ -331,13 +337,14 @@ void WallpaperControllerClientImpl::ShowSigninWallpaper() {
   wallpaper_controller_->ShowSigninWallpaper();
 }
 
-void WallpaperControllerClientImpl::ShowAlwaysOnTopWallpaper(
-    const base::FilePath& image_path) {
-  wallpaper_controller_->ShowAlwaysOnTopWallpaper(image_path);
+void WallpaperControllerClientImpl::ShowOverrideWallpaper(
+    const base::FilePath& image_path,
+    bool always_on_top) {
+  wallpaper_controller_->ShowOverrideWallpaper(image_path, always_on_top);
 }
 
-void WallpaperControllerClientImpl::RemoveAlwaysOnTopWallpaper() {
-  wallpaper_controller_->RemoveAlwaysOnTopWallpaper();
+void WallpaperControllerClientImpl::RemoveOverrideWallpaper() {
+  wallpaper_controller_->RemoveOverrideWallpaper();
 }
 
 void WallpaperControllerClientImpl::RemoveUserWallpaper(

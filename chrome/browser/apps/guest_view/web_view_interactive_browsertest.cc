@@ -647,7 +647,8 @@ IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest, MAYBE_PointerLock) {
 }
 
 // flaky http://crbug.com/412086
-#if defined(SUPPORTS_SYNC_MOUSE_UTILS) && !BUILDFLAG(IS_CHROMEOS)
+#if defined(SUPPORTS_SYNC_MOUSE_UTILS) && !BUILDFLAG(IS_CHROMEOS) && \
+    !BUILDFLAG(IS_MAC) && defined(NDEBUG)
 #define MAYBE_PointerLockFocus PointerLockFocus
 #else
 #define MAYBE_PointerLockFocus DISABLED_PointerLockFocus
@@ -691,13 +692,12 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_FocusTakeFocus) {
   ASSERT_TRUE(GetGuestRenderFrameHost());
 
   // Compute where to click in the window to focus the guest input box.
-  int clickX, clickY;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      embedder_web_contents(),
-      "domAutomationController.send(Math.floor(window.clickX));", &clickX));
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      embedder_web_contents(),
-      "domAutomationController.send(Math.floor(window.clickY));", &clickY));
+  int clickX =
+      content::EvalJs(embedder_web_contents(), "Math.floor(window.clickX);")
+          .ExtractInt();
+  int clickY =
+      content::EvalJs(embedder_web_contents(), "Math.floor(window.clickY);")
+          .ExtractInt();
 
   ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED");
   next_step_listener.set_failure_message("TEST_STEP_FAILED");
@@ -981,17 +981,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 
-// Trips over a DCHECK in content::MouseLockDispatcher::OnLockMouseACK; see
-// https://crbug.com/761783.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_PointerLock_PointerLockLostWithFocus \
-  PointerLock_PointerLockLostWithFocus
-#else
-#define MAYBE_PointerLock_PointerLockLostWithFocus \
-  DISABLED_PointerLock_PointerLockLostWithFocus
-#endif
 IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
-                       MAYBE_PointerLock_PointerLockLostWithFocus) {
+                       PointerLock_PointerLockLostWithFocus) {
   TestHelper("testPointerLockLostWithFocus", "web_view/pointerlock",
              NO_TEST_SERVER);
 }

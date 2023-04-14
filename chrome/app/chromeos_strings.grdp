@@ -1287,6 +1287,9 @@
   <message name="IDS_LOGIN_GET_STARTED" desc="A label on the button. Used on the welcome screen (the first one on OOBE) and on the marketing optin screen (the last one in OOBE).">
     Get started
   </message>
+  <message name="IDS_LOGIN_QUICK_START_SETUP" desc="A label on the button. Used on multiple screens in OOBE to allow the user to initiate the Quick Start flow which allows them to set up their Chromebook using an existing Android phone.">
+    Set up with Android phone
+  </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SWIPE_FROM_SHELF_LABEL" desc="The label shown in ChromeOS system shelf above a drag handle UI on the last dialog in the set of screens displayed to the user on the first login to the ChromeOS device. The label informs the user that swiping up from the shelf will start the session.">
     Swipe up to get started
   </message>
@@ -5228,29 +5231,11 @@
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_RSSI_TOO_LOW" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's both (a) locked and (b) not in the Chromebook's proximity (> 1 foot away).">
     Unlock your phone and bring it closer to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS" desc="Tooltip for an icon on user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected and authenticated. The tooltip shows instructions for hard-locking the Chromebook.">
-    If you click this icon, you will manually lock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Next time, you’ll need to type your password to enter.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REAUTH" desc="Tooltip for an icon on user's lock screen pod shown by EasyUnlock when the user must enter their password instead of using EasyUnlock, because too much time has passed since their last password entry.">
-    For added security, Smart Lock will ask you to enter your password after 20 hours.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock feature is enabled for the user, but the user hard locked the device. Hard lock is done by clicking the Easy Unlock icon on the user's pod. When a device is hard locked by a user, the Easy Unlock cannot be used to unlock the device as that user. A password has to be entered to unlock the device.">
-    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is locked for security. Manually enter your password to continue.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock feature is enabled for the user, but the pairing data is changed. A password has to be entered to unlock the device.">
-    Smart Lock phone changed. Enter your password to update Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. You can turn off Smart Lock in Settings
-  </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock pairing data is synced on a new Chromebook.">
-    Enter your password to enable Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. You can turn off Smart Lock in Settings.
-  </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE" desc="Tooltip text shown on a user's sign-in screen when Smart Lock sign-in attempt fails.">
     Smart Lock couldn’t verify your account. Type your password to enter.
   </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_DISABLED" desc="Tooltip for an icon on user's sign-in screen pod shown by EasyUnlock when the feature is only enabled for unlock, not sign-in.">
     To use Smart Lock to sign in to your Google Account, go to Settings &gt; Connected devices &gt; Your phone &gt; Smart Lock.
-  </message>
-  <message name="IDS_SMART_LOCK_SCREENLOCK_TOOLTIP_HARDLOCK_REAUTH_USER" desc="Tooltip text shown on a user's lock screen pod to reauthenticate the user before setting up Smart Lock. A password has to be entered to unlock the device.">
-    To set up Smart Lock for Chromebook, Google needs to make sure it’s you—type your password to get started.
   </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PRIMARY_USER_ABSENT" desc="Tooltip for the icon on user's lock screen pod shown by Easy Unlock when a phone set up to unlock the Chromebook is detected, but the primary user profile is in the background on the phone or the user is a secondary user profile. The user is asked to switch to the primary user.">
     To use Smart Lock, switch to the primary user profile on your phone
@@ -6230,23 +6215,29 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_PARENT_ACCESS_OK_BUTTON" desc="OK button text on the parent access dialog.">
     OK
   </message>
-  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_DISABLED_TITLE" desc="Title for the extension approvals disabled page indicating that an extension cannot be installed.">
-    Can't add extension
+  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_DISABLED_TITLE" desc="Title for the extension approvals disabled page indicating that extensions can't be used.">
+    Can’t use extension
   </message>
   <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_DISABLED_SUBTITLE" desc="Text telling the user that an extension cannot be installed because a parent has disallowed it.">
-    Your parent has turned off "Permissions for sites, apps, and extensions" for Chrome. Adding this extension is not allowed.
+    You can’t use this extension. Your parent or guardian has turned off “Permissions for sites, apps and extensions” for Chrome.
   </message>
-  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_ADD_EXTENSION_BEFORE_TITLE" desc="Title for the dialog asking a supervised user if they would like to ask for approval to install a new extension.">
-    Ask your parent to add this extension?
+  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_BEFORE_TITLE" desc="Title for the dialog asking a supervised user if they would like to ask for approval to install an extension.">
+    Ask your parent to allow an extension
   </message>
-  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_ADD_EXTENSION_BEFORE_SUBTITLE" desc="Text indicating that a parent must approve the extension for the supervised user to gain access.">
-    A parent or guardian has to say that it's OK for you to add this extension
+  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_BEFORE_SUBTITLE" desc="Text indicating that a parent must approve the extension for the supervised user to gain access.">
+    Your parent or guardian has to say it’s OK for you to use this extension
   </message>
-  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_ENABLE_EXTENSION_BEFORE_TITLE" desc="Title for the dialog asking a supervised user if they would like to ask for approval to enable an installed extension.">
-    Ask your parent to enable this extension?
+  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_AFTER_TITLE" desc="Title for the dialog asking a parent if they would like to allow an extension for a supervised user.">
+    <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> wants to use this extension:
   </message>
-  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_ENABLE_EXTENSION_BEFORE_SUBTITLE" desc="Text indicating that a parent must approve the extension for the supervised user to gain access.">
-    A parent or guardian has to say that it's OK for you to enable this extension
+  <message name="IDS_PARENT_ACCESS_EXTENSION_PERMISSIONS_HEADER" desc="Header that comes before a list of extension permissions.">
+    It can:
+  </message>
+  <message name="IDS_PARENT_ACCESS_EXTENSION_PERMISSION_SHOW_DETAILS" desc="Text for a button that shows details for an extension permission.">
+    Show details
+  </message>
+  <message name="IDS_PARENT_ACCESS_EXTENSION_PERMISSION_HIDE_DETAILS" desc="Text for a button that hides details for an extension permission.">
+    Hide details
   </message>
 
   <!-- Strings shared among supervised user experiences -->
@@ -6505,6 +6496,12 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_MULTI_CAPTURE_NOTIFICATION_MESSAGE" desc="This is the message of the notification when an application starts capturing multiple surfaces.">
     Your system administrator has allowed <ph name="APP_ORIGIN">$1</ph> to record your screen
   </message>
+  <message name="IDS_MULTI_CAPTURE_NOTIFICATION_ON_LOGIN_TITLE" desc="This is the title of the notification on login when multi capture is enabled and capturing potentially could happen.">
+    Your screen might be recorded
+  </message>
+  <message name="IDS_MULTI_CAPTURE_NOTIFICATION_ON_LOGIN_MESSAGE" desc="This is the message of the notification on login when multi capture is enabled and capturing potentially could happen.">
+    You'll see a notification if recording starts on this managed device
+  </message>
 
   <!-- Strings for Projector-->
   <message name="IDS_PROJECTOR_APP_NAME" desc="Name for the Projector app in the launcher">
@@ -6581,6 +6578,19 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OOBE_TOUCHPAD_SCROLL_AREA_DESC" desc="Description for a scroll area that allows user to try the selected scrolling directions" translateable="false">
     Scroll with two fingers on your touchpad in this area
   </message>
+
+  <!-- Drive Offline-->
+  <!-- TODO(b/278024582): Remove translateable tags when strings are finalized. -->
+  <message name="IDS_OOBE_DRIVE_OFFLINE_TITLE" desc="Title of the drive offline screen." translateable="false">
+    Keep your files available when you're offline
+  </message>
+  <message name="IDS_OOBE_DRIVE_OFFLIBE_SUBTITLE" desc="Description of the drive offline screen." translateable="false">
+    Automatically download files in your My Drive so you can access and edit them without an internet connection.
+  </message>
+  <message name="IDS_OOBE_DRIVE_OFFLIBE_ADDITIONAL_SUBTITLE" desc="Additional description of the drive offline screen." translateable="false">
+    This will use about <ph name="REQUIRED_SPACE">$1<ex>12.2 GB</ex></ph> leaving <ph name="FREE_SPACE">$2<ex>96.8 GB</ex></ph> available
+  </message>
+
 
   <!-- Strings for the locale switch notification inside the OOBE. -->
   <message name="IDS_LOCALE_SWITCH_NOTIFICATION_TITLE" desc="Title of the notification that is displayed at the bottom-right corner of the screen.">

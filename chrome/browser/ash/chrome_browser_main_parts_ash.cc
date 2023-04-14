@@ -127,6 +127,7 @@
 #include "chrome/browser/ash/notifications/debugd_notification_handler.h"
 #include "chrome/browser/ash/notifications/gnubby_notification.h"
 #include "chrome/browser/ash/notifications/low_disk_notification.h"
+#include "chrome/browser/ash/notifications/multi_capture_login_notification.h"
 #include "chrome/browser/ash/notifications/multi_capture_notification.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
@@ -203,6 +204,7 @@
 #include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/ash/components/device_activity/device_active_use_case.h"
 #include "chromeos/ash/components/device_activity/device_activity_controller.h"
@@ -274,7 +276,7 @@
 #include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/chromeos/events/pref_names.h"
+#include "ui/events/ash/pref_names.h"
 #include "ui/events/event_utils.h"
 
 #if BUILDFLAG(PLATFORM_CFM)
@@ -1020,6 +1022,9 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   // Needs to be initialized after crosapi_manager_.
   metrics::structured::ChromeStructuredMetricsRecorder::Get()->Initialize();
 
+  multi_capture_login_notification_ =
+      std::make_unique<MultiCaptureLoginNotification>();
+
   if (immediate_login) {
     const user_manager::CryptohomeId cryptohome_id(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -1264,6 +1269,16 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
 
     screen_ai::chrome_os_installer::ManageInstallation(
         g_browser_process->local_state());
+
+    ash::ShillManagerClient::Get()->SetProperty(
+        shill::kEnableRFC8925Property,
+        base::Value(base::FeatureList::IsEnabled(features::kEnableRFC8925)),
+        base::DoNothing(),
+        base::BindOnce([](const std::string& error_name,
+                          const std::string& error_message) {
+          NET_LOG(ERROR) << "Fail to set EnableRFC8925 shill property, error:"
+                         << error_name << ", message: " << error_message;
+        }));
   }
 
   ChromeBrowserMainPartsLinux::PostProfileInit(profile, is_initial_profile);
@@ -1585,6 +1600,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   lacros_data_backward_migration_mode_policy_observer_.reset();
 
   multi_capture_notification_.reset();
+  multi_capture_login_notification_.reset();
 
   // vc_app_service_client_ has to be destructed before PostMainMessageLoopRun.
   vc_app_service_client_.reset();

@@ -302,8 +302,10 @@ std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateIfNeeded(
       return nullptr;
   }
 
-  if (g_network_change_notifier_factory)
-    return g_network_change_notifier_factory->CreateInstance();
+  if (g_network_change_notifier_factory) {
+    return g_network_change_notifier_factory->CreateInstanceWithInitialTypes(
+        initial_type, initial_subtype);
+  }
 
 #if BUILDFLAG(IS_WIN)
   std::unique_ptr<NetworkChangeNotifierWin> network_change_notifier =
@@ -520,10 +522,9 @@ const char* NetworkChangeNotifier::ConnectionTypeToString(
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // static
-const internal::AddressTrackerLinux*
-NetworkChangeNotifier::GetAddressTracker() {
+const AddressMapOwnerLinux* NetworkChangeNotifier::GetAddressMapOwner() {
   return g_network_change_notifier
-             ? g_network_change_notifier->GetAddressTrackerInternal()
+             ? g_network_change_notifier->GetAddressMapOwnerInternal()
              : nullptr;
 }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -874,8 +875,8 @@ NetworkChangeNotifier::NetworkChangeNotifier(
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-const internal::AddressTrackerLinux*
-NetworkChangeNotifier::GetAddressTrackerInternal() const {
+const AddressMapOwnerLinux* NetworkChangeNotifier::GetAddressMapOwnerInternal()
+    const {
   return nullptr;
 }
 #endif

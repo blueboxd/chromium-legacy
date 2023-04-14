@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
@@ -44,7 +46,6 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
@@ -62,6 +63,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuItemProperties;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -412,13 +414,12 @@ public class CustomTabActivityAppMenuTest {
 
         onFinished.waitForCallback("Pending Intent was not sent.");
         Intent callbackIntent = onFinished.getCallbackIntent();
-        Assert.assertThat(callbackIntent.getDataString(), equalTo(mTestPage));
+        assertThat(callbackIntent.getDataString(), equalTo(mTestPage));
 
         // Verify that the callback intent has the page title as the subject, but other extras are
         // kept intact.
-        Assert.assertThat(
-                callbackIntent.getStringExtra(Intent.EXTRA_SUBJECT), equalTo("The Google"));
-        Assert.assertThat(callbackIntent.getIntExtra("FOO", 0), equalTo(42));
+        assertThat(callbackIntent.getStringExtra(Intent.EXTRA_SUBJECT), equalTo("The Google"));
+        assertThat(callbackIntent.getIntExtra("FOO", 0), equalTo(42));
     }
 
     /**

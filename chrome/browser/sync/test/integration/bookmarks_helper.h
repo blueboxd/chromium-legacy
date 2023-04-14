@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/functional/callback_forward.h"
+#include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -34,10 +35,6 @@
 class BookmarkUndoService;
 class GURL;
 
-namespace base {
-class GUID;
-}  // namespace base
-
 namespace bookmarks {
 class BookmarkModel;
 }  // namespace bookmarks
@@ -48,9 +45,9 @@ class Image;
 
 namespace bookmarks_helper {
 
-MATCHER_P(HasGuid, expected_guid, "") {
+MATCHER_P(HasUuid, expected_uuid, "") {
   const bookmarks::BookmarkNode* actual_node = arg;
-  return actual_node->guid() == expected_guid;
+  return actual_node->uuid() == expected_uuid;
 }
 
 // Helping matchers to check the hierarchy of bookmarks. All matchers work with

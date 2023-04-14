@@ -149,6 +149,44 @@ TEST_F(ArcNetUtilsTest, TranslateInvalidEapMethod) {
   EXPECT_TRUE(net_utils::TranslateEapMethod(invalidEapMethod).empty());
 }
 
+TEST_F(ArcNetUtilsTest, TranslateEapMethodToOnc) {
+  EXPECT_EQ(onc::eap::kLEAP,
+            net_utils::TranslateEapMethodToOnc(arc::mojom::EapMethod::kLeap));
+  EXPECT_EQ(onc::eap::kPEAP,
+            net_utils::TranslateEapMethodToOnc(arc::mojom::EapMethod::kPeap));
+  EXPECT_EQ(onc::eap::kEAP_TLS,
+            net_utils::TranslateEapMethodToOnc(arc::mojom::EapMethod::kTls));
+  EXPECT_EQ(onc::eap::kEAP_TTLS,
+            net_utils::TranslateEapMethodToOnc(arc::mojom::EapMethod::kTtls));
+  EXPECT_TRUE(
+      net_utils::TranslateEapMethodToOnc(arc::mojom::EapMethod::kNone).empty());
+}
+
+TEST_F(ArcNetUtilsTest, TranslateInvalidEapMethodToOnc) {
+  arc::mojom::EapMethod invalidEapMethod =
+      static_cast<arc::mojom::EapMethod>(-1);
+  EXPECT_TRUE(net_utils::TranslateEapMethodToOnc(invalidEapMethod).empty());
+}
+
+TEST_F(ArcNetUtilsTest, TranslateEapPhase2MethodToOnc) {
+  EXPECT_EQ(onc::eap::kPAP, net_utils::TranslateEapPhase2MethodToOnc(
+                                arc::mojom::EapPhase2Method::kPap));
+  EXPECT_EQ(onc::eap::kMSCHAP, net_utils::TranslateEapPhase2MethodToOnc(
+                                   arc::mojom::EapPhase2Method::kMschap));
+  EXPECT_EQ(onc::eap::kMSCHAPv2, net_utils::TranslateEapPhase2MethodToOnc(
+                                     arc::mojom::EapPhase2Method::kMschapv2));
+  EXPECT_TRUE(net_utils::TranslateEapPhase2MethodToOnc(
+                  arc::mojom::EapPhase2Method::kNone)
+                  .empty());
+}
+
+TEST_F(ArcNetUtilsTest, TranslateInvalidEapPhase2MethodToOnc) {
+  arc::mojom::EapPhase2Method invalidEapPhase2Method =
+      static_cast<arc::mojom::EapPhase2Method>(-1);
+  EXPECT_TRUE(
+      net_utils::TranslateEapPhase2MethodToOnc(invalidEapPhase2Method).empty());
+}
+
 TEST_F(ArcNetUtilsTest, TranslateEapPhase2Method) {
   EXPECT_EQ(
       shill::kEapPhase2AuthTTLSPAP,
@@ -204,6 +242,42 @@ TEST_F(ArcNetUtilsTest, TranslateInvalidKeyManagement) {
   arc::mojom::KeyManagement invalidKeyManagement =
       static_cast<arc::mojom::KeyManagement>(-1);
   EXPECT_TRUE(net_utils::TranslateKeyManagement(invalidKeyManagement).empty());
+}
+
+TEST_F(ArcNetUtilsTest, TranslateKeyManagementToOnc) {
+  EXPECT_EQ(onc::wifi::kWEP_8021X, net_utils::TranslateKeyManagementToOnc(
+                                       arc::mojom::KeyManagement::kIeee8021X));
+  EXPECT_TRUE(
+      net_utils::TranslateKeyManagementToOnc(arc::mojom::KeyManagement::kFtEap)
+          .empty());
+  EXPECT_TRUE(
+      net_utils::TranslateKeyManagementToOnc(arc::mojom::KeyManagement::kFtPsk)
+          .empty());
+  EXPECT_TRUE(
+      net_utils::TranslateKeyManagementToOnc(arc::mojom::KeyManagement::kFtSae)
+          .empty());
+  EXPECT_TRUE(
+      net_utils::TranslateKeyManagementToOnc(arc::mojom::KeyManagement::kWpaEap)
+          .empty());
+  EXPECT_TRUE(net_utils::TranslateKeyManagementToOnc(
+                  arc::mojom::KeyManagement::kWpaEapSha256)
+                  .empty());
+  EXPECT_TRUE(
+      net_utils::TranslateKeyManagementToOnc(arc::mojom::KeyManagement::kWpaPsk)
+          .empty());
+  EXPECT_TRUE(
+      net_utils::TranslateKeyManagementToOnc(arc::mojom::KeyManagement::kSae)
+          .empty());
+  EXPECT_TRUE(
+      net_utils::TranslateKeyManagementToOnc(arc::mojom::KeyManagement::kNone)
+          .empty());
+}
+
+TEST_F(ArcNetUtilsTest, TranslateInvalidKeyManagementToOnc) {
+  arc::mojom::KeyManagement invalidKeyManagement =
+      static_cast<arc::mojom::KeyManagement>(-1);
+  EXPECT_TRUE(
+      net_utils::TranslateKeyManagementToOnc(invalidKeyManagement).empty());
 }
 
 TEST_F(ArcNetUtilsTest, TranslateWiFiSecurity) {
@@ -321,6 +395,32 @@ TEST_F(ArcNetUtilsTest, TranslateNetworkStates) {
   EXPECT_EQ(16u, res[0]->arc_ipv4_prefix_length);
   EXPECT_EQ(kNameServer1, res[0]->dns_proxy_addresses.value()[0]);
   EXPECT_EQ(kNameServerIpv6, res[0]->dns_proxy_addresses.value()[1]);
+}
+
+TEST_F(ArcNetUtilsTest, TranslateSubjectNameMatchListToValue) {
+  std::vector<std::string> subjectMatch = {
+      "DNS:example1.com", "DNS:example2.com", "EMAIL:example@domain.com"};
+  base::Value::List result =
+      net_utils::TranslateSubjectNameMatchListToValue(subjectMatch);
+
+  EXPECT_EQ(*result[0].GetDict().FindString(
+                ::onc::eap_subject_alternative_name_match::kType),
+            "DNS");
+  EXPECT_EQ(*result[0].GetDict().FindString(
+                ::onc::eap_subject_alternative_name_match::kValue),
+            "example1.com");
+  EXPECT_EQ(*result[1].GetDict().FindString(
+                ::onc::eap_subject_alternative_name_match::kType),
+            "DNS");
+  EXPECT_EQ(*result[1].GetDict().FindString(
+                ::onc::eap_subject_alternative_name_match::kValue),
+            "example2.com");
+  EXPECT_EQ(*result[2].GetDict().FindString(
+                ::onc::eap_subject_alternative_name_match::kType),
+            "EMAIL");
+  EXPECT_EQ(*result[2].GetDict().FindString(
+                ::onc::eap_subject_alternative_name_match::kValue),
+            "example@domain.com");
 }
 
 }  // namespace

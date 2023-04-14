@@ -123,6 +123,7 @@
 <translation id="1904932688895783618">Oto inne przydatne materiały:</translation>
 <translation id="1905710495812624430">Przekroczono maksymalną liczbę prób.</translation>
 <translation id="1908234395526491708">Nieudane żądania UDP</translation>
+<translation id="1923388006036088459">Kolory uzupełniające</translation>
 <translation id="1947737735496445907">Wydrukowano</translation>
 <translation id="1951012854035635156">Asystent</translation>
 <translation id="1962550982027027473">Domyślny punkt APN jest wymagany</translation>
@@ -140,6 +141,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Więcej ustawień</translation>
 <translation id="2085089206770112532">Zmniejsz jasność wyświetlacza</translation>
+<translation id="209751264101900360">Od świtu do zmierzchu – płynące chmury</translation>
 <translation id="2102231663024125441">Edytowanie tekstu</translation>
 <translation id="2105810540595158374">Urządzenie to kontroler do gier.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, wersja <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +333,7 @@
 <translation id="3967822245660637423">Pobieranie zakończone</translation>
 <translation id="3969602104473960991">Hasło do Chrome OS zostało zaktualizowane</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
+<translation id="3974175076798940554">Wyjątkowe zasoby Chromebooka Plus są już dostępne</translation>
 <translation id="39823212440917567">Zadania drukowania starsze niż <ph name="NUMBER_OF_DAYS" /> dni zostaną usunięte</translation>
 <translation id="3993704782688964914">Oprogramowanie urządzenia (<ph name="DEVICE_NAME" />) jest aktualne</translation>
 <translation id="4003384961948020559">Niepowodzenie – odbiornik papieru jest pełny</translation>
@@ -370,6 +373,7 @@
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4289540628985791613">Przegląd</translation>
 <translation id="4289849978083912975">Pokaz slajdów</translation>
+<translation id="4293621540182258188">Od świtu do zmierzchu – osuwisko</translation>
 <translation id="4297501883039923494">Zatrzymano – nieznany błąd</translation>
 <translation id="4300073214558989">Obrazy: <ph name="IMAGE_COUNT" /></translation>
 <translation id="4311195029067684288">Pełne</translation>
@@ -513,6 +517,7 @@
 <translation id="5423849171846380976">Aktywowano</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431318178759467895">Kolor</translation>
+<translation id="5456936324019847994">Nie można się połączyć z żadnym włączonym niestandardowym punktem APN. Aby dowiedzieć się więcej, skontaktuj się z operatorem komórkowym.</translation>
 <translation id="5457599981699367932">Przeglądaj jako gość</translation>
 <translation id="54609108002486618">Zarządzany</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Pozostała {0} próba}few{Pozostały {0} próby}many{Pozostało {0} prób}other{Pozostało {0} próby}}</translation>
@@ -544,6 +549,7 @@
 <translation id="576835345334454681">Zwiększ jasność wyświetlacza</translation>
 <translation id="57838592816432529">Wycisz</translation>
 <translation id="5784136236926853061">Duże opóźnienie HTTP</translation>
+<translation id="5809090008577139505">Aurora</translation>
 <translation id="5826644637650799838">Informacje o grafice</translation>
 <translation id="5832805196449965646">Dodaj osobę</translation>
 <translation id="583281660410589416">Nieznany</translation>
@@ -562,10 +568,12 @@
 <translation id="5907649332524363701">kolor klawiszy</translation>
 <translation id="5916084858004523819">Niedozwolone</translation>
 <translation id="5916664084637901428">Włączone</translation>
+<translation id="5918201491776799918">Wybierz wyjątkowe animacje na Chromebooka Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Plik został zeskanowany i zapisany w folderze <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}few{Pliki zostały zeskanowane i zapisane w folderze <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}many{Pliki zostały zeskanowane i zapisane w folderze <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Pliki zostały zeskanowane i zapisane w folderze <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Nie znaleziono pliku</translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="594552776027197022">Wygeneruj losową parę kluczy</translation>
+<translation id="5946538341867151940">Nie masz jeszcze połączenia. Jeśli Twój operator komórkowy zaleca niestandardowy punkt APN, wpisz informacje o APN, wybierając „+ Nowy APN”</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Domyślna tapeta</translation>
 <translation id="6017514345406065928">Zielony</translation>
@@ -761,6 +769,7 @@
 <translation id="7656388927906093505">Urządzenie to mysz.</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7665800271478495366">Zmień awatara</translation>
+<translation id="7675241868020048622">Zorza polarna (tylko na urządzeniach Plus)</translation>
 <translation id="7690294790491645610">Potwierdź nowe hasło</translation>
 <translation id="7701040980221191251">Brak</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +826,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Wybierz <ph name="TOPIC_SOURCE" /> (<ph name="TOPIC_SOURCE_DESC" />)</translation>
 <translation id="8151185429379586178">Narzędzia dla deweloperów</translation>
+<translation id="8153923300383192510">Tylko na Chromebooku Plus</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Załącz</translation>
 <translation id="8206859287963243715">Komórka</translation>
@@ -839,6 +849,7 @@
 <translation id="8352772353338965963">Tu możesz dodać konto do wielokrotnego logowania. Ponieważ dostęp do wszystkich zalogowanych kont można uzyskać bez podawania hasła, tej funkcji należy używać tylko z zaufanymi kontami.</translation>
 <translation id="8364946094152050673">Puste serwery nazw</translation>
 <translation id="8372477600026034341">Dodatkowe hosty</translation>
+<translation id="8373046809163484087">Używaj zestawów kolorów, które pasują do tapety</translation>
 <translation id="8380114448424469341">Zadokuj okno po tej stronie ekranu: <ph name="DIRECTION" /></translation>
 <translation id="8395584934117017006">Tym urządzeniem (<ph name="DEVICE_TYPE" />) zarządza firma</translation>
 <translation id="8398927464629426868">Obecne tempo, w jakim urządzenie się ładuje lub rozładowuje</translation>
@@ -858,6 +869,7 @@
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="8503836310948963452">Jeszcze kilka minut…</translation>
 <translation id="8508640263392900755">Dane APN</translation>
+<translation id="8522687886059337719">Teraz masz dostęp do nowych <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />tapet<ph name="END_LINK_WALLPAPER_SUBPAGE" /> i <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />wygaszacza ekranu<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Tej opcji może wymagać operator do połączenia z jego siecią. Aby uzyskać szczegółowe informacje, skontaktuj się z operatorem.</translation>

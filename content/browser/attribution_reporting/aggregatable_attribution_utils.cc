@@ -10,6 +10,7 @@
 
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -139,7 +140,7 @@ absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
       [](const auto& contribution) {
         return blink::mojom::AggregatableReportHistogramContribution(
             /*bucket=*/contribution.key(),
-            /*value=*/static_cast<int>(contribution.value()));
+            /*value=*/base::checked_cast<int32_t>(contribution.value()));
       });
 
   base::Value::Dict additional_fields;
@@ -157,7 +158,7 @@ absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
           blink::mojom::AggregationServiceMode::kDefault,
           data->aggregation_coordinator),
       AggregatableReportSharedInfo(
-          data->initial_report_time, report.external_report_id(),
+          report.initial_report_time(), report.external_report_id(),
           attribution_info.source.common_info().reporting_origin(), debug_mode,
           std::move(additional_fields),
           AttributionReport::AggregatableAttributionData::kVersion,

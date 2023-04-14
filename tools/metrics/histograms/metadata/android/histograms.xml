@@ -56,25 +56,6 @@ chromium-metrics-reviews@google.com.
   <variant name="Waived" summary="strongest binding of Waived"/>
 </variants>
 
-<variants name="JankMetricsScenarios">
-  <variant name=".NewTabPage" summary="while NTP is open"/>
-  <variant name=".OmniboxFocus" summary="while Omnibox is focused"/>
-  <variant name=".OpenLinkInNewTab"
-      summary="while opening a link in a new tab using the long press menu"/>
-  <variant name=".StartSurfaceHomepage"
-      summary="while the homepage on start surface is visible"/>
-  <variant name=".StartSurfaceTabSwitcher"
-      summary="while the tab switcher on start surface is visible"/>
-  <variant name=".Startup" summary="while Chrome is starting"/>
-  <variant name=".TabSwitcher" summary="while Tab switcher is open"/>
-  <variant name=".Total"
-      summary="while ChromeTabbedActivity is resumed. However, there's an
-               unusual implementation detail: Individual frame durations are
-               measured in Java, and passed over to C++ for recording once
-               every 30 seconds. Thus, frames that occur near program
-               termination might be dropped from the data"/>
-</variants>
-
 <variants name="MessageIdentifiers">
   <variant name=".AboutThisSite"/>
   <variant name=".AddToHomescreenIPH"/>
@@ -133,9 +114,6 @@ chromium-metrics-reviews@google.com.
   <variant name="NotificationService" summary="NotificationService"/>
   <variant name="NotificationTrigger" summary="NotificationTrigger"/>
   <variant name="OfflinePages" summary="OfflinePages"/>
-  <variant name="OfflinePagesPrefetch" summary="OfflinePagesPrefetch"/>
-  <variant name="OfflinePagesPrefetchNotification"
-      summary="OfflinePagesPrefetchNotification"/>
   <variant name="Omaha" summary="Omaha"/>
   <variant name="PeriodicBackgroundSyncChromeWakeup"
       summary="PeriodicBackgroundSyncChromeWakeup"/>
@@ -154,7 +132,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Android.ActivityStop.NumberOfTabsUsed" units="count"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>gauravjj@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -308,7 +286,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AppLaunch.DurationDrawWasBlocked.OnIncognitoReauth"
-    units="ms" expires_after="2023-08-08">
+    units="ms" expires_after="2023-10-08">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -356,7 +334,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.ApplicationState.TimeInBackgroundBeforeForegroundedAgain"
-    units="ms" expires_after="2023-08-08">
+    units="ms" expires_after="2023-10-08">
   <owner>lizeb@google.com</owner>
   <owner>clank-performance-team@google.com</owner>
   <summary>
@@ -553,7 +531,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskStarted"
-    enum="BackgroundTaskId" expires_after="2023-08-08">
+    enum="BackgroundTaskId" expires_after="2023-10-08">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>Records that a specific background task has been started.</summary>
@@ -1197,7 +1175,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.DropInWebContent.Duration"
-    units="ms" expires_after="2023-07-30">
+    units="ms" expires_after="2023-10-01">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1229,7 +1207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.TargetType"
-    enum="AndroidDragTargetType" expires_after="2023-08-08">
+    enum="AndroidDragTargetType" expires_after="2023-10-08">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1331,7 +1309,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DynamicColors.IsAvailable" enum="Boolean"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>skym@chromium.org</owner>
   <owner>clank-sbui-team@google.com</owner>
   <summary>
@@ -1339,6 +1317,16 @@ chromium-metrics-reviews@google.com.
     dynamic colors logic thinks dynamic colors are available. This is often
     based on Android version and OEM. This metric is not related to whether
     dynamic colors are desired by features/experiments.
+  </summary>
+</histogram>
+
+<histogram name="Android.Event.ActionDown" enum="InputDeviceSource"
+    expires_after="2024-04-01">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <owner>src/chrome/android/OWNERS</owner>
+  <summary>
+    Records the input device source for the action down touch event.
   </summary>
 </histogram>
 
@@ -1494,7 +1482,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.FetchAllFontFiles.Time" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1619,7 +1607,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.HistoryPage.ClearBrowsingData.PerProfileType"
-    enum="BrowserProfileType" expires_after="2023-08-08">
+    enum="BrowserProfileType" expires_after="2023-10-08">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1660,7 +1648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.IncognitoReauth.PrefToggledFromSettingPage"
-    enum="IncognitoReauthToggleValueType" expires_after="2023-08-08">
+    enum="IncognitoReauthToggleValueType" expires_after="2023-10-08">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1837,76 +1825,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Jank.FrameDuration{Scenario}" units="ms"
-    expires_after="2022-06-30">
-  <owner>salg@google.com</owner>
-  <owner>ssid@chromium.org</owner>
-  <summary>
-    Amount of time it takes to draw Android UI frames on ChromeTabbedActivity as
-    measured by Android's FrameMetrics API. Each frame's draw duration is stored
-    individually {Scenario}.
-
-    The samples for this metric (Along with Android.Jank.JankBursts and
-    Android.Jank.MissedFrames) are manually passed from Java to C++ to be
-    recorded. This is done instead of recording in real time from Java due to
-    the large number of generated samples (potentially ~60 per second).
-    Recording them directly from Java would result in a JNI call for each sample
-    which could cause performance issues.
-
-    FrameMetrics only reports frames with Android UI updates. An idle omnibox
-    would report only 2 frames per second due to the cursor blink animation.
-    Scrolling through a web page may record no frames if no Android UI (like the
-    address bar) updates.
-  </summary>
-  <token key="Scenario" variants="JankMetricsScenarios"/>
-</histogram>
-
-<histogram name="Android.Jank.JankBursts{Scenario}" units="ms"
-    expires_after="2022-06-30">
-  <owner>salg@google.com</owner>
-  <owner>ssid@chromium.org</owner>
-  <summary>
-    Recorded alongside Android.Jank.FrameDuration {Scenario}. Each sample
-    represents a jank burst: the total frame duration of one or many janky
-    frames drawn in quick succession. For example, the following sequence of
-    frame durations: [2ms, 100ms, 100ms, 100ms, 2ms, 2ms, 2ms, 100ms, 2ms] would
-    be recorded as 2 jank bursts: [300ms, 100ms].
-
-    Jank bursts may include non-janky frames if both adjacent frames are janky,
-    example: [2ms, 100ms, 100ms, 2ms, 100ms, 100ms, 2ms] would count as a single
-    jank burst: [402ms].
-
-    Jank bursts are started with a single janky frame, and end with either 2 or
-    more non-janky frames or a period of inactivity between janky frames
-    (&gt;50ms). For example: [100ms, 100ms, (...500ms without new frames
-    later...), 100ms] would be recorded as 2 jank bursts: [200ms, 100ms]. The
-    third frame is counted separately because of the period of inactivity before
-    it indicates its jankyness is caused by a different event or animation. (see
-    go/clank-zero-browser-jank for more details).
-  </summary>
-  <token key="Scenario" variants="JankMetricsScenarios"/>
-</histogram>
-
-<histogram name="Android.Jank.MissedFrames{Scenario}" units="frames"
-    expires_after="2022-06-30">
-  <owner>salg@google.com</owner>
-  <owner>ssid@chromium.org</owner>
-  <summary>
-    Number of frames that Android's FrameMetrics API skipped reporting on
-    because of high main thread activity. This metric is recorded at the same
-    time as Android.Jank.* histograms {Scenario}. Each sample is the number of
-    frames that we didn't receive timings for, so their draw duration is not
-    recorded in the respective Android.Jank.FrameDuration.* histogram, and (even
-    if its duration was greater than 16ms) it is not counted in any
-    Android.Jank.JankyBursts.* samples.
-
-    A high number of missed frames would mean that we are taking too long to
-    record frame metrics and that the other Android.Jank.* histograms may not be
-    accurate.
-  </summary>
-  <token key="Scenario" variants="JankMetricsScenarios"/>
-</histogram>
-
 <histogram name="Android.KernelVersion" enum="AndroidKernelVersion"
     expires_after="2023-08-27">
   <owner>rsesek@chromium.org</owner>
@@ -1963,7 +1881,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Dismissed{MessageIdentifier}"
-    enum="MessageDismissReason" expires_after="M115">
+    enum="MessageDismissReason" expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -1975,7 +1893,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued" enum="MessageIdentifier"
-    expires_after="2023-08-08">
+    expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -1987,7 +1905,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued.Hidden" enum="MessageIdentifier"
-    expires_after="2023-08-08">
+    expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2000,7 +1918,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued.Hiding" enum="MessageIdentifier"
-    expires_after="M115">
+    expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2013,7 +1931,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued.Visible" enum="MessageIdentifier"
-    expires_after="2023-08-08">
+    expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2025,7 +1943,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Stacking" enum="StackingAnimationType"
-    expires_after="2023-09-24">
+    expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2036,7 +1954,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Stacking.ThreeStacked"
-    enum="StackingAnimationThreeStackedType" expires_after="2023-08-20">
+    enum="StackingAnimationThreeStackedType" expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2045,7 +1963,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Stacking.{Action}" enum="MessageIdentifier"
-    expires_after="M115">
+    expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2062,7 +1980,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.TimeToAction.Dismiss{MessageIdentifier}"
-    units="ms" expires_after="M115">
+    units="ms" expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2077,7 +1995,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.TimeToAction{MessageIdentifier}" units="ms"
-    expires_after="M115">
+    expires_after="M122">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2093,8 +2011,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ModalDialog.SecurityFilteredTouchResult"
-    enum="SecurityFilteredTouchResult" expires_after="2022-04-01">
-  <owner>pavely@chromium.org</owner>
+    enum="SecurityFilteredTouchResult" expires_after="2023-09-01">
+  <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
     Records the action taken on a security sensitive touch event in modal
@@ -2161,7 +2079,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.MultipleUserProfilesState"
-    enum="MultipleUserProfilesState" expires_after="2023-08-08">
+    enum="MultipleUserProfilesState" expires_after="2023-10-08">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <owner>chrome-metrics-team@google.com</owner>
@@ -2296,6 +2214,20 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Android.Omnibox.ActionInSuggest.IntentResult"
+    enum="ActionInSuggestIntentResult" expires_after="2023-08-20">
+  <owner>ender@google.com</owner>
+  <owner>chrome-mobile-search@google.com</owner>
+  <summary>
+    Records the outcome of the User's interaction with ActionInSuggest chips,
+    breaking down the cases where the intent could not be created or started.
+
+    Recorded every time the user interacts with the ActionInSuggest, for the
+    Action that the user interacted with. Not recorded if the user does not
+    interact with ActionInSuggest.
+  </summary>
+</histogram>
+
 <histogram name="Android.Omnibox.InputToNavigationControllerStart" units="ms"
     expires_after="2023-08-20">
   <owner>spelchat@chromium.org</owner>
@@ -2353,8 +2285,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionList.LayoutTime"
-    units="microseconds" expires_after="2022-10-23">
+<histogram name="Android.Omnibox.SuggestionList.LayoutTime" units="ms"
+    expires_after="2022-10-23">
   <obsolete>
     Retired with M103. Please refer to .CreateTime2
   </obsolete>
@@ -2383,8 +2315,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionList.LayoutTime2"
-    units="microseconds" expires_after="2023-08-13">
+<histogram name="Android.Omnibox.SuggestionList.LayoutTime2" units="ms"
+    expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2410,8 +2342,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionList.MeasureTime"
-    units="microseconds" expires_after="2022-06-19">
+<histogram name="Android.Omnibox.SuggestionList.MeasureTime" units="ms"
+    expires_after="2022-06-19">
   <obsolete>
     Retired with M103. Please refer to .MeasureTime2
   </obsolete>
@@ -2441,8 +2373,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionList.MeasureTime2"
-    units="microseconds" expires_after="2023-08-13">
+<histogram name="Android.Omnibox.SuggestionList.MeasureTime2" units="ms"
+    expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2466,6 +2398,42 @@ chromium-metrics-reviews@google.com.
     This histogram is related to Android.Omnibox.SuggestionView.Reused,
     Android.Omnibox.SuggestionList.LayoutTime2,
     Android.Omnibox.SuggestionView.CreateTime2.
+  </summary>
+</histogram>
+
+<histogram name="Android.Omnibox.SuggestionList.RequestToUiModel.First"
+    units="ms" expires_after="2023-08-20">
+  <owner>ender@google.com</owner>
+  <owner>pnoland@chromium.org</owner>
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    Records time elapsed between requesting the suggestions and converting the
+    first (synchronous) set of received suggestions to the UI model.
+
+    For the complete, asynchronous iteration see the
+    Android.Omnibox.SuggestionList.RequestToUiModel.Last metric.
+
+    This metric is recorded exactly once per request, including the zero-prefix
+    suggestions request.
+  </summary>
+</histogram>
+
+<histogram name="Android.Omnibox.SuggestionList.RequestToUiModel.Last"
+    units="ms" expires_after="2023-08-20">
+  <owner>ender@google.com</owner>
+  <owner>pnoland@chromium.org</owner>
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    Records time elapsed between requesting the suggestions and converting the
+    final (asynchronous) set of received suggestions to the UI model.
+
+    For the short, synchronous iteration see the
+    Android.Omnibox.SuggestionList.RequestToUiModel.First metric.
+
+    This metric is recorded at most once per request, including the zero-prefix
+    suggestions request. The metric will not be emitted if the current
+    Autocomplete cycle was canceled by the user - either by refining the input
+    in the omnibox, or by ending the interaction with the Omnibox.
   </summary>
 </histogram>
 
@@ -2511,8 +2479,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionView.CreateTime"
-    units="microseconds" expires_after="2022-06-19">
+<histogram name="Android.Omnibox.SuggestionView.CreateTime" units="ms"
+    expires_after="2022-06-19">
   <obsolete>
     Retired with M103. Please refer to .CreateTime2
   </obsolete>
@@ -2537,8 +2505,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionView.CreateTime2"
-    units="microseconds" expires_after="2023-08-13">
+<histogram name="Android.Omnibox.SuggestionView.CreateTime2" units="ms"
+    expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2696,7 +2664,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.OmniboxFocusReason" enum="OmniboxFocusReason"
-    expires_after="2023-08-06">
+    expires_after="2023-10-08">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>amaralp@chromium.org</owner>
@@ -2881,7 +2849,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.PhotoPicker.DialogAction"
-    enum="PhotoPickerDialogAction" expires_after="2023-08-08">
+    enum="PhotoPickerDialogAction" expires_after="2023-10-08">
   <owner>finnur@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3546,7 +3514,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.CreationTime" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>skavuluru@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -3802,7 +3770,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Callback.Counts" enum="WebViewCallbackType"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Records the invocation count of WebView callbacks.</summary>
@@ -4235,7 +4203,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Gfx.HardwareDrawType"
-    enum="WebViewDrawAndSubmissionType" expires_after="2023-07-30">
+    enum="WebViewDrawAndSubmissionType" expires_after="2023-10-01">
   <owner>vasilyt@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>
@@ -4257,7 +4225,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.InputStreamTime" units="ms"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
   <summary>
@@ -4713,19 +4681,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.WebView.SafeMode.ActionsCount"
-    units="SafeMode actions" expires_after="2023-04-28">
-  <owner>ntfschr@chromium.org</owner>
-  <owner>src/android_webview/OWNERS</owner>
-  <summary>
-    Records the number of SafeMode actions WebView received from the
-    SafeModeService. This is only recorded once during startup if SafeMode is
-    enabled (see &quot;Android.WebView.SafeMode.SafeModeEnabled&quot;),
-    otherwise this is not recorded at all (because there were no SafeMode
-    actions to execute). This is recorded before executing any SafeMode actions.
-  </summary>
-</histogram>
-
 <histogram name="Android.WebView.SafeMode.CheckStateBlockingTime" units="ms"
     expires_after="2023-04-28">
   <owner>ntfschr@chromium.org</owner>
@@ -4738,7 +4693,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SafeMode.ExecutionResult"
-    enum="AndroidWebViewSafeModeResult" expires_after="2023-04-28">
+    enum="AndroidWebViewSafeModeResult" expires_after="2024-01-28">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4753,7 +4708,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SafeMode.QueryAndExecuteBlockingTime"
-    units="ms" expires_after="2023-04-28">
+    units="ms" expires_after="2024-01-28">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4766,7 +4721,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SafeMode.SafeModeEnabled"
-    enum="BooleanEnabled" expires_after="2023-08-20">
+    enum="BooleanEnabled" expires_after="2024-01-28">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4778,7 +4733,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SecureCookieAction" enum="SecureCookieAction"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4944,7 +4899,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.WebView.UniversalAccess.OriginUrlMismatchInHistoryUtil"
-    enum="BooleanAllowed" expires_after="2023-08-08">
+    enum="BooleanAllowed" expires_after="2023-10-08">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

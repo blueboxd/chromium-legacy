@@ -101,13 +101,6 @@ bool IsDataOrAbout(const GURL& url) {
          url.scheme() == url::kDataScheme;
 }
 
-// When enabled, we cache the result of IsNavigationSameSite() to avoid
-// redundant work during a given navigation event. See
-// RenderFrameHostManager::IsSameSiteGetter for more details.
-BASE_FEATURE(kCacheIsNavigationSameSite,
-             "CacheIsNavigationSameSite",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Helper function to determine whether a navigation from `current_rfh` to
 // `destination_effective_url_info` should swap BrowsingInstances to ensure that
 // `destination_effective_url_info` ends up in a dedicated process.  This is the
@@ -326,7 +319,7 @@ void ReuseDefaultProcessFromDifferentBrowsingInstanceIfPossible(
         if (RenderProcessHost* default_process =
                 rfhi->GetSiteInstance()
                     ->GetDefaultProcessForBrowsingInstance()) {
-          site_instance->ReuseCurrentProcessIfPossible(default_process);
+          site_instance->ReuseExistingProcessIfPossible(default_process);
           if (site_instance->HasProcess())
             return RenderFrameHost::FrameIterationAction::kStop;
         }
@@ -338,22 +331,14 @@ void ReuseDefaultProcessFromDifferentBrowsingInstanceIfPossible(
 }  // namespace
 
 RenderFrameHostManager::IsSameSiteGetter::IsSameSiteGetter()
-    : is_same_site_(absl::nullopt),
-      should_use_cached_value_(
-          base::FeatureList::IsEnabled(kCacheIsNavigationSameSite)) {}
+    : is_same_site_(absl::nullopt) {}
 
 RenderFrameHostManager::IsSameSiteGetter::IsSameSiteGetter(bool is_same_site)
-    : is_same_site_(is_same_site),
-      should_use_cached_value_(
-          base::FeatureList::IsEnabled(kCacheIsNavigationSameSite)) {}
+    : is_same_site_(is_same_site) {}
 
 bool RenderFrameHostManager::IsSameSiteGetter::Get(
     const RenderFrameHostImpl& render_frame_host,
     const UrlInfo& url_info) {
-  if (!should_use_cached_value_) {
-    return render_frame_host.IsNavigationSameSite(url_info);
-  }
-
   if (!is_same_site_.has_value()) {
     is_same_site_ = render_frame_host.IsNavigationSameSite(url_info);
   } else {
@@ -1095,13 +1080,14 @@ void RenderFrameHostManager::RestorePage(
   // in the long run. For now, and to avoid complex edge cases, we simply reuse
   // it to preserve the understood logic in CommitPending.
 
-  // When navigation queueing is disabled, there should be no speculative RFH at
-  // this point. With BackForwardCache, it should have never been created, and
-  // with prerender activation, it should have been cleared out earlier.
-  // TODO(https://crbug.com/1220337): Ensure we aren't deleting a pending commit
-  // RFH.
-  DCHECK(ShouldAvoidRedundantNavigationCancellations() ||
-         !speculative_render_frame_host_);
+  // There should be no speculative RFH at this point. With BackForwardCache, it
+  // should have never been created, and with prerender activation, it should
+  // have been cleared out earlier. If a speculative RenderFrameHost used for
+  // another NavigationRequest existed, then it must be a pending commit RFH,
+  // which would delay the activation navigation from getting here (see also
+  // ConcurrentNavigationsCommitDeferringCondition) until the pending commit
+  // RFH finished the commit and becomes the current RenderFrameHost.
+  DCHECK(!speculative_render_frame_host_);
   SCOPED_CRASH_KEY_BOOL("Bug1407526", "spec_rfh_exists",
                         !!speculative_render_frame_host_);
   speculative_render_frame_host_ = stored_page->TakeRenderFrameHost();
@@ -1251,7 +1237,6 @@ RenderFrameHostManager::GetFrameHostForNavigation(
   // First compute the SiteInstance to use for the navigation.
   SiteInstanceImpl* current_site_instance =
       render_frame_host_->GetSiteInstance();
-  BrowserContext* browser_context = current_site_instance->GetBrowserContext();
   bool is_same_site =
       render_frame_host_->IsNavigationSameSite(request->GetUrlInfo());
 
@@ -1292,7 +1277,22 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     use_current_rfh = false;
   }
 
-  bool notify_webui_of_rf_creation = false;
+  // Create WebUI objects for this navigation if it is needed. Note that we
+  // create this earlier than the `use_current_rfh` if clause below to ensure
+  // we still create the WebUI objects even if we return early due to the
+  // kBlockedByPendingCommit case. After a RenderFrameHost has been picked for
+  // this navigation (either now or later on after this function is called again
+  // upon reaching OnResponseStarted, in the case of navigation queueing), the
+  // ownership of the WebUIImpl will move from the NavigationRequest to the
+  // RenderFrameHost.
+  // Note: We need to create the WebUI objects early in the navigation even when
+  // there is no RenderFrameHost to host it yet, because the creation of
+  // WebUIImpl will trigger the creation of WebUI data sources, which is needed
+  // for WebUI navigations to reach the OnResponseStarted stage.
+  CreateWebUIForNavigationIfNeeded(request, dest_site_instance.get(),
+                                   use_current_rfh);
+  bool notify_webui_of_rf_creation = request->HasWebUI();
+
   // We only do this if the policy allows it and are recovering a crashed frame.
   bool recovering_without_early_commit =
       ShouldSkipEarlyCommitPendingForCrashedFrame() &&
@@ -1308,52 +1308,10 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     // navigation race should be fairly rare, so for navigation queueing, do the
     // simple thing and give up trying to assign a RenderFrameHost for the
     // navigation.
-    if (speculative_render_frame_host_ &&
-        speculative_render_frame_host_
-            ->HasPendingCommitForCrossDocumentNavigation() &&
-        ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
+    if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
+        request->ShouldQueueDueToExistingPendingCommitRFH()) {
       return base::unexpected(
           GetFrameHostForNavigationFailed::kBlockedByPendingCommit);
-    }
-    // If the navigation is to a WebUI and the current RenderFrameHost is going
-    // to be used, there are only two possible ways to get here:
-    // * The navigation is between two different documents belonging to the same
-    //   WebUI or reloading the same document.
-    // * Newly created window with a RenderFrameHost which hasn't committed a
-    //   navigation yet.
-    if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
-            browser_context, request->common_params().url) &&
-        request->state() < NavigationRequest::CANCELING) {
-      if (render_frame_host_->has_committed_any_navigation()) {
-        // If |render_frame_host_| has committed at least one navigation and it
-        // is in a WebUI SiteInstance, then it must have the exact same WebUI
-        // type if it will be reused.
-        CHECK_EQ(render_frame_host_->web_ui_type(),
-                 WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
-                     browser_context, request->common_params().url));
-        render_frame_host_->web_ui()->RenderFrameReused(
-            render_frame_host_.get());
-      } else if (!render_frame_host_->web_ui()) {
-        // It is possible to reuse a RenderFrameHost when going to a WebUI URL
-        // and not have created a WebUI instance. An example is a WebUI main
-        // frame that includes an iframe to URL that doesn't require WebUI but
-        // stays in the parent frame SiteInstance (e.g. about:blank).  If that
-        // frame is subsequently navigated to a URL in the same WebUI as the
-        // parent frame, the RenderFrameHost will be reused and WebUI instance
-        // for the child frame needs to be created.
-        // During navigation, this method is called twice - at the beginning
-        // and at ReadyToCommit time. The first call would have created the
-        // WebUI instance and since the initial about:blank has not committed
-        // a navigation, the else branch would be taken. Explicit check for
-        // web_ui_ is required, otherwise we will allocate a new instance
-        // unnecessarily here.
-        render_frame_host_->CreateWebUI(request->common_params().url,
-                                        request->bindings());
-        if (render_frame_host_->IsRenderFrameLive()) {
-          render_frame_host_->web_ui()->WebUIRenderFrameCreated(
-              render_frame_host_.get());
-        }
-      }
     }
 
     navigation_rfh = render_frame_host_.get();
@@ -1395,9 +1353,7 @@ RenderFrameHostManager::GetFrameHostForNavigation(
       // order for the browser and the renderer state to remain in sync. See
       // https://crbug.com/838348.
       if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
-          speculative_render_frame_host_ &&
-          speculative_render_frame_host_
-              ->HasPendingCommitForCrossDocumentNavigation()) {
+          request->ShouldQueueDueToExistingPendingCommitRFH()) {
         return base::unexpected(
             GetFrameHostForNavigationFailed::kBlockedByPendingCommit);
       }
@@ -1425,17 +1381,6 @@ RenderFrameHostManager::GetFrameHostForNavigation(
       }
     }
     DCHECK(speculative_render_frame_host_);
-
-    // If the navigation is to a WebUI URL, the WebUI needs to be created to
-    // allow the navigation to be served correctly.
-    if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
-            browser_context, request->common_params().url) &&
-        request->state() < NavigationRequest::CANCELING) {
-      bool created_web_ui = speculative_render_frame_host_->CreateWebUI(
-          request->common_params().url, request->bindings());
-      notify_webui_of_rf_creation =
-          created_web_ui && speculative_render_frame_host_->web_ui();
-    }
 
     navigation_rfh = speculative_render_frame_host_.get();
     request->SetAssociatedRFHType(
@@ -1490,6 +1435,17 @@ RenderFrameHostManager::GetFrameHostForNavigation(
       navigation_rfh->SetPolicyContainerForEarlyCommitAfterCrash(
           current_frame_host()->policy_container_host()->Clone());
 
+      if (request->HasWebUI()) {
+        // If a WebUI has been created for the NavigationRequest, set it on the
+        // RenderFrameHost picked for the navigation. Note that there is a
+        // similar WebUI handling near the end of this function to cover the
+        // non-early commit cases, which won't run if we already run this code
+        // because `HasWebUI()` will return false after we take the WebUI from
+        // the NavigationRequest here.
+        navigation_rfh->SetWebUI(*request);
+        CHECK(navigation_rfh->web_ui());
+      }
+
       CommitPending(
           std::move(speculative_render_frame_host_), nullptr,
           request->browsing_context_group_swap().ShouldClearProxiesOnCommit());
@@ -1535,10 +1491,17 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     }
   }
 
-  // If a WebUI was created in a speculative RenderFrameHost or a new
-  // RenderFrame was created then the WebUI never interacted with the
-  // RenderFrame. Notify using WebUIRenderFrameCreated.
+  if (request->HasWebUI()) {
+    // If a WebUI has been created for the NavigationRequest, set it on the
+    // RenderFrameHost picked for the navigation.
+    navigation_rfh->SetWebUI(*request);
+    CHECK(navigation_rfh->web_ui());
+  }
   if (notify_webui_of_rf_creation && navigation_rfh->web_ui()) {
+    CHECK(navigation_rfh->IsRenderFrameLive());
+    // If a WebUI was created in a speculative RenderFrameHost, or a new
+    // RenderFrame was created for an existing WebUI, then the WebUI never
+    // interacted with the RenderFrame. Notify using WebUIRenderFrameCreated.
     navigation_rfh->web_ui()->WebUIRenderFrameCreated(navigation_rfh);
   }
 
@@ -1574,6 +1537,75 @@ RenderFrameHostManager::GetFrameHostForNavigation(
   }
 
   return navigation_rfh;
+}
+
+void RenderFrameHostManager::CreateWebUIForNavigationIfNeeded(
+    NavigationRequest* request,
+    SiteInstanceImpl* dest_site_instance,
+    bool use_current_rfh) {
+  if (request->HasWebUI()) {
+    // It's possible for the navigation to already have a WebUI associated with
+    // it if this function is called from OnResponseStarted.
+    CHECK_GE(request->state(), NavigationRequest::WILL_PROCESS_RESPONSE);
+    CHECK(!request->web_ui()->HasRenderFrameHost());
+    return;
+  }
+
+  BrowserContext* browser_context =
+      render_frame_host_->GetSiteInstance()->GetBrowserContext();
+  if (!WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
+          browser_context, request->common_params().url) ||
+      request->state() >= NavigationRequest::CANCELING) {
+    return;
+  }
+
+  // If the navigation is to a WebUI URL, the WebUI needs to be created to
+  // allow the navigation to be served correctly.
+  if (use_current_rfh) {
+    // If the navigation is to a WebUI and the current RenderFrameHost is
+    // going to be used, there are only two possible ways to get here:
+    // * The navigation is between two different documents belonging to the
+    //   same WebUI or reloading the same document.
+    // * Newly created window with a RenderFrameHost which hasn't committed a
+    //   navigation yet.
+    if (render_frame_host_->has_committed_any_navigation()) {
+      // If |render_frame_host_| has committed at least one navigation and it
+      // is in a WebUI SiteInstance, then it must have the exact same WebUI
+      // type if it will be reused.
+      CHECK_EQ(render_frame_host_->web_ui_type(),
+               WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
+                   browser_context, request->common_params().url));
+      render_frame_host_->web_ui()->RenderFrameReused(render_frame_host_.get());
+    } else if (!render_frame_host_->web_ui()) {
+      // It is possible to reuse a RenderFrameHost when going to a WebUI URL
+      // and not have created a WebUI instance. An example is a WebUI main
+      // frame that includes an iframe to URL that doesn't require WebUI but
+      // stays in the parent frame SiteInstance (e.g. about:blank).  If that
+      // frame is subsequently navigated to a URL in the same WebUI as the
+      // parent frame, the RenderFrameHost will be reused and WebUI instance
+      // for the child frame needs to be created.
+      // During navigation, this method is called twice - at the beginning
+      // and at ReadyToCommit time. The first call would have created the
+      // WebUI instance and since the initial about:blank has not committed
+      // a navigation, the else branch would be taken. Explicit check for
+      // `web_ui()` is required, otherwise we will allocate a new instance
+      // unnecessarily here.
+      request->CreateWebUIIfNeeded(render_frame_host_.get());
+    }
+  } else if (speculative_render_frame_host_ &&
+             speculative_render_frame_host_->GetSiteInstance() ==
+                 dest_site_instance) {
+    // The navigation will reuse the speculative RenderFrameHost. In this case,
+    // a WebUI might have already been created in the speculative RFH, but it's
+    // OK because `CreateWebUIIfNeeded()` won't create a new WebUI in that case
+    // and this function will return false.
+    request->CreateWebUIIfNeeded(speculative_render_frame_host_.get());
+  } else {
+    // The navigation will create a new speculative RenderFrameHost, so pass in
+    // nullptr to `CreateWebUIIfNeeded()` as the RenderFrameHost is yet to be
+    // created.
+    request->CreateWebUIIfNeeded(nullptr);
+  }
 }
 
 void RenderFrameHostManager::DiscardSpeculativeRFHIfUnused(
@@ -1959,6 +1991,8 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
           UrlInfo(UrlInfoInit(destination_effective_url)
                       .WithOriginIsolationRequest(
                           destination_url_info.origin_isolation_request)
+                      .WithCOOPSiteIsolation(
+                          destination_url_info.requests_coop_isolation())
                       .WithWebExposedIsolationInfo(
                           destination_url_info.web_exposed_isolation_info)))) {
     return BrowsingContextGroupSwap::CreateSecuritySwap();
@@ -2343,7 +2377,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // Note: process reuse might not be possible in some cases, e.g. for
   // cross-site navigations when the current SiteInstance needs a dedicated
   // process.  This will be enforced by the checks inside
-  // ReuseCurrentProcessIfPossible().
+  // ReuseExistingProcessIfPossible().
   RenderProcessHost* process_to_reuse = nullptr;
 
   // Process-reuse cases include:
@@ -2423,7 +2457,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
 
   if (process_to_reuse) {
     DCHECK(frame_tree_node_->IsMainFrame());
-    new_instance->ReuseCurrentProcessIfPossible(process_to_reuse);
+    new_instance->ReuseExistingProcessIfPossible(process_to_reuse);
   }
 
   // We want fenced frame BrowsingInstances to share the same default
@@ -4028,28 +4062,37 @@ void RenderFrameHostManager::CommitPending(
   // For all main frames, the RenderWidgetHost will not be destroyed when the
   // local frame is detached. https://crbug.com/419087
   //
-  // The RenderWidget in the renderer process is destroyed, but the
-  // RenderWidgetHost and RenderWidgetHostView are still kept alive for a remote
-  // main frame.
+  // The blink::WidgetBase in the renderer process has its lifetime connected to
+  // a RenderWdigetHost, which is owned by a RenderFrameHost. While the host is
+  // eligible for BFCache it will remain alive. The eligibility is decided in
+  // UnloadOldFrame. If not eligible then the host will be added to
+  // `pending_delete_host_` to be destroyed.
   //
-  // To work around that, we hide it here. Truly this is to hit all the hide
-  // paths in the browser side, but has a side effect of also hiding the
-  // renderer side RenderWidget, even though it will get frozen anyway in the
-  // future. However freezing doesn't do all the things hiding does at this time
-  // so that's probably good.
+  // The blink::WebFrameWidget is destroyed when the blink::WebLocalFrame goes
+  // away.
+  //
+  // The RenderWidgetHost and RenderWidgetHostView are still kept alive, paired
+  // to the blink::WidgetBase and blink::FrameWidget.
+  //
+  // We hide the browser side here, which will have side-effects from notifying
+  // listeners. This will also have the side effect of hiding the
+  // blink::WidgetBase, which is desired so that frame production stops, and we
+  // can reclaim memory when we eventually evict it.
   //
   // Note the RenderWidgetHostView can be missing if the process for the old
   // RenderFrameHost crashed.
   //
-  // TODO(crbug.com/419087): This is only done for the main frame, as for sub
-  // frames the RenderWidgetHost and its view will be destroyed when the frame
-  // is detached, but for the main frame it is not. This call to Hide() can go
-  // away when the main frame's RenderWidgetHost is destroyed on frame detach.
-  // Note that calling this on a subframe that is not a local root would be
-  // incorrect as it would hide an ancestor local root's RenderWidget when that
-  // frame is not necessarily navigating. Removing this Hide() has previously
-  // been attempted without success in r426913 (https://crbug.com/658688) and
-  // r438516 (broke assumptions about RenderWidgetHosts not changing
+  // We also hide all subframes that are a local root. As while in BFCache they
+  // are not detached nor destroyed. This prevents them from continuing frame
+  // production, and allows for memory to be reclaimed when they are evicted.
+  //
+  // TODO(crbug.com/419087): This call to Hide() can go away when the main
+  // frame's RenderWidgetHost is destroyed on frame detach. Note that calling
+  // this on a subframe that is not a local root would be incorrect as it would
+  // hide an ancestor local root's RenderWidget when that frame is not
+  // necessarily navigating. Removing this Hide() has previously been attempted
+  // without success in r426913 (https://crbug.com/658688) and r438516
+  // (broke assumptions about RenderWidgetHosts not changing
   // RenderWidgetHostViews over time).
   //
   // |old_rvh| and |new_rvh| can be the same when navigating same-site from a
@@ -4063,7 +4106,18 @@ void RenderFrameHostManager::CommitPending(
     // did hide the Page then making a new RenderFrameHost on another call to
     // here would need to make sure it showed the `blink::WebView` when the
     // RenderWidget was created as visible.
+    //
+    // TODO(crbug.com/1429008): In addition to the RenderWidgetHostView
+    // visibility there is also the concept of PageVisibilityState. The
+    // PageLifecycleStateManager will have the RenderViewHostImpl notify the
+    // blink::Page of changes to the PageVisibilityState. This currently does
+    // not affect the visibility of the blink::WidgetBase. We should unify these
+    // two visibility states to prevent them from drifting.
     old_view->Hide();
+    if (base::FeatureList::IsEnabled(kNavigationUpdatesChildViewsVisibility) &&
+        old_render_frame_host->child_count()) {
+      old_render_frame_host->SetVisibilityForChildViews(false);
+    }
   }
 
   RenderWidgetHostView* new_view = render_frame_host_->GetView();
@@ -4257,8 +4311,14 @@ void RenderFrameHostManager::CommitPending(
   if (render_frame_host_->is_local_root()) {
     // RenderFrames are created with a hidden RenderWidgetHost. When navigation
     // finishes, we show it if the delegate is shown.
-    if (!frame_tree_node_->frame_tree().IsHidden())
+    if (!frame_tree_node_->frame_tree().IsHidden()) {
       new_view->Show();
+      if (base::FeatureList::IsEnabled(
+              kNavigationUpdatesChildViewsVisibility) &&
+          render_frame_host_->child_count()) {
+        render_frame_host_->SetVisibilityForChildViews(true);
+      }
+    }
   }
 
   // The process will no longer try to exit, so we can decrement the count.

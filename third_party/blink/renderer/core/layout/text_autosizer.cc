@@ -45,8 +45,8 @@
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -195,8 +195,8 @@ static bool BlockHeightConstrained(const LayoutBlock* block) {
     if (style.OverflowY() != EOverflow::kVisible
         && style.OverflowY() != EOverflow::kHidden)
       return false;
-    if (style.Height().IsSpecified() || style.MaxHeight().IsSpecified() ||
-        block->IsOutOfFlowPositioned()) {
+    if (style.UsedHeight().IsSpecified() ||
+        style.UsedMaxHeight().IsSpecified() || block->IsOutOfFlowPositioned()) {
       // Some sites (e.g. wikipedia) set their html and/or body elements to
       // height:100%, without intending to constrain the height of the content
       // within them.
@@ -245,7 +245,7 @@ static bool BlockSuppressesAutosizing(const LayoutBlock* block) {
 static bool HasExplicitWidth(const LayoutBlock* block) {
   // FIXME: This heuristic may need to be expanded to other ways a block can be
   // wider or narrower than its parent containing block.
-  return block->Style() && block->StyleRef().Width().IsSpecified();
+  return block->Style() && block->StyleRef().UsedWidth().IsSpecified();
 }
 
 static LayoutObject* GetParent(const LayoutObject* object) {
@@ -382,20 +382,16 @@ void TextAutosizer::BeginLayout(LayoutBlock* block,
 
   DCHECK(!cluster_stack_.empty());
 
-  // Cells in auto-layout tables are handled separately by inflateAutoTable.
+  // Cells in auto-layout tables are handled separately by InflateAutoTable.
+  auto* cell = DynamicTo<LayoutNGTableCell>(block);
   bool is_auto_table_cell =
-      block->IsTableCell() && !ToInterface<LayoutNGTableCellInterface>(block)
-                                   ->TableInterface()
-                                   ->ToLayoutObject()
-                                   ->StyleRef()
-                                   .IsFixedTableLayout();
+      cell && !cell->Table()->StyleRef().IsFixedTableLayout();
   if (!is_auto_table_cell && !cluster_stack_.empty())
     Inflate(block, layouter);
 }
 
-void TextAutosizer::InflateAutoTable(LayoutNGTableInterface* table_interface) {
-  DCHECK(table_interface);
-  const LayoutBlock* table = To<LayoutBlock>(table_interface->ToLayoutObject());
+void TextAutosizer::InflateAutoTable(LayoutNGTable* table) {
+  DCHECK(table);
   DCHECK(!table->StyleRef().IsFixedTableLayout());
   DCHECK(table->ContainingBlock());
 
@@ -405,23 +401,22 @@ void TextAutosizer::InflateAutoTable(LayoutNGTableInterface* table_interface) {
 
   // Pre-inflate cells that have enough text so that their inflated preferred
   // widths will be used for column sizing.
-  for (LayoutObject* section = table->FirstChild(); section;
-       section = section->NextSibling()) {
-    if (!section->IsTableSection())
+  for (LayoutObject* child = table->FirstChild(); child;
+       child = child->NextSibling()) {
+    auto* section = DynamicTo<LayoutNGTableSection>(child);
+    if (!section) {
       continue;
-    for (const LayoutNGTableRowInterface* row =
-             ToInterface<LayoutNGTableSectionInterface>(section)
-                 ->FirstRowInterface();
-         row; row = row->NextRowInterface()) {
-      for (LayoutNGTableCellInterface* cell = row->FirstCellInterface(); cell;
-           cell = cell->NextCellInterface()) {
-        LayoutBlock* cell_layout_object =
-            To<LayoutBlock>(cell->ToMutableLayoutObject());
-        if (!cell_layout_object->NeedsLayout())
+    }
+    for (const LayoutNGTableRow* row = section->FirstRow(); row;
+         row = row->NextRow()) {
+      for (LayoutNGTableCell* cell = row->FirstCell(); cell;
+           cell = cell->NextCell()) {
+        if (!cell->NeedsLayout()) {
           continue;
-        BeginLayout(cell_layout_object, nullptr);
-        Inflate(cell_layout_object, nullptr, kDescendToInnerBlocks);
-        EndLayout(cell_layout_object);
+        }
+        BeginLayout(cell, nullptr);
+        Inflate(cell, nullptr, kDescendToInnerBlocks);
+        EndLayout(cell);
       }
     }
   }
@@ -458,9 +453,6 @@ float TextAutosizer::Inflate(LayoutObject* parent,
       child = run->FirstChild();
       behavior = kDescendToInnerBlocks;
     }
-  } else if (parent->IsListMarker()) {
-    // The list item already applied the multiplier to the marker, keep it.
-    return multiplier;
   } else if (parent->IsLayoutBlock() &&
              (parent->ChildrenInline() || behavior == kDescendToInnerBlocks)) {
     child = To<LayoutBlock>(parent)->FirstChild();
@@ -511,7 +503,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     ApplyMultiplier(parent, 1, layouter);
   }
 
-  if (parent->IsListItemIncludingNG()) {
+  if (parent->IsLayoutNGListItem()) {
     float list_item_multiplier = ClusterMultiplier(cluster);
     ApplyMultiplier(parent, list_item_multiplier, layouter);
 
@@ -519,11 +511,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     // that you have a list item for a form inside it. The list marker then ends
     // up inside the form and when we try to get the clusterMultiplier we have
     // the wrong cluster root to work from and get the wrong value.
-    LayoutObject* marker = nullptr;
-    if (parent->IsListItem())
-      marker = To<LayoutListItem>(parent)->Marker();
-    else if (parent->IsLayoutNGListItem())
-      marker = To<LayoutNGListItem>(parent)->Marker();
+    LayoutObject* marker = To<LayoutNGListItem>(parent)->Marker();
 
     // A LayoutNGOutsideListMarker has a text child that needs its font
     // multiplier updated. Just mark the entire subtree, to make sure we get to
@@ -872,7 +860,7 @@ TextAutosizer::Fingerprint TextAutosizer::ComputeFingerprint(
         (static_cast<unsigned>(style->UnresolvedFloating()) << 4);
     data.packed_style_properties_ |=
         (static_cast<unsigned>(style->Display()) << 7);
-    const Length& width = style->Width();
+    const Length& width = style->UsedWidth();
     data.packed_style_properties_ |= (width.GetType() << 12);
     // packedStyleProperties effectively using 16 bits now.
 
@@ -1441,8 +1429,8 @@ TextAutosizer::LayoutScope::~LayoutScope() {
     text_autosizer_->EndLayout(block_);
 }
 
-TextAutosizer::TableLayoutScope::TableLayoutScope(LayoutNGTableInterface* table)
-    : LayoutScope(To<LayoutBlock>(table->ToMutableLayoutObject())) {
+TextAutosizer::TableLayoutScope::TableLayoutScope(LayoutNGTable* table)
+    : LayoutScope(table) {
   if (text_autosizer_) {
     DCHECK(text_autosizer_->ShouldHandleLayout());
     text_autosizer_->InflateAutoTable(table);

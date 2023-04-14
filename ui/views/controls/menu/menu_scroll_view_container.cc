@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_flags.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -454,6 +455,10 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
   if (use_ash_system_ui_layout_)
     shadow_type = BubbleBorder::CHROMEOS_SYSTEM_UI_SHADOW;
 #endif
+  if (border_color_id_.has_value()) {
+    // If there's a custom border color, use this for the bubble border color.
+    id = border_color_id_.value();
+  }
   auto bubble_border = std::make_unique<BubbleBorder>(arrow_, shadow_type, id);
   bool has_customized_corner = use_ash_system_ui_layout_ && menu_controller &&
                                menu_controller->rounded_corners().has_value();
@@ -492,7 +497,9 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
       background_view_->SetBorder(std::make_unique<HighlightBorder>(
           GetRoundedCorners(),
           // corner_radius_,
-          HighlightBorder::Type::kHighlightBorder1,
+          chromeos::features::IsJellyrollEnabled()
+              ? HighlightBorder::Type::kHighlightBorderOnShadow
+              : HighlightBorder::Type::kHighlightBorder1,
           /*use_light_colors=*/false));
     }
 #endif

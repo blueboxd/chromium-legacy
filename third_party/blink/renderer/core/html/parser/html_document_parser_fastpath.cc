@@ -334,8 +334,7 @@ class HTMLFastPathParser {
       static constexpr const char tagname[] = "div";
     };
 
-    struct Footer
-        : ContainerTag<HTMLDivElement, PermittedParents::kFlowContent> {
+    struct Footer : ContainerTag<HTMLElement, PermittedParents::kFlowContent> {
       static constexpr const char tagname[] = "footer";
       static HTMLElement* Create(Document& document) {
         return MakeGarbageCollected<HTMLElement>(html_names::kFooterTag,
@@ -778,8 +777,9 @@ class HTMLFastPathParser {
       out->push_back(0xa0);
     } else {
       // This handles uncommon named references.
-      String input_string{reference.data(),
-                          static_cast<unsigned>(reference.size())};
+      // This does not use `reference` as `reference` does not contain the `;`,
+      // which impacts behavior of ConsumeHTMLEntity().
+      String input_string{start, static_cast<unsigned>(pos_ - start)};
       SegmentedString input_segmented{input_string};
       DecodedHTMLEntity entity;
       bool not_enough_characters = false;
@@ -793,9 +793,6 @@ class HTMLFastPathParser {
       // ConsumeHTMLEntity() may not have consumed all the input.
       const unsigned remaining_length = input_segmented.length();
       if (remaining_length) {
-        if (*(pos_ - 1) == ';') {
-          --pos_;
-        }
         pos_ -= remaining_length;
       }
     }

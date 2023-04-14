@@ -451,6 +451,7 @@ chromium-metrics-reviews@google.com.
   </token>
   <token key="FastPairDeviceType">
     <variant name="HeadphonesDeviceType" summary="Device Type: Headphones"/>
+    <variant name="InputDeviceDeviceType" summary="Device Type: Input Device"/>
     <variant name="SpeakerDeviceType" summary="Device Type: Speaker"/>
     <variant name="TrueWirelessHeadphonesDeviceType"
         summary="Device Type: True Wireless Headphones"/>
@@ -714,7 +715,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.GattConnection.AttemptCount"
-    units="count" expires_after="2023-07-30">
+    units="count" expires_after="2023-10-01">
   <owner>jackshira@google.com</owner>
   <owner>dclasson@google.com</owner>
   <owner>brandosocarras@google.com</owner>
@@ -741,7 +742,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.GattConnection.ErrorReason"
-    enum="BluetoothDeviceConnectErrorCode" expires_after="2023-07-30">
+    enum="BluetoothDeviceConnectErrorCode" expires_after="2023-10-01">
   <owner>jackshira@google.com</owner>
   <owner>dclasson@google.com</owner>
   <owner>brandosocarras@google.com</owner>
@@ -1211,7 +1212,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.RetroactiveEngagementFunnel.Steps"
-    enum="FastPairRetroactiveEngagementFlowEvent" expires_after="2023-09-17">
+    enum="FastPairRetroactiveEngagementFlowEvent" expires_after="2023-10-01">
   <owner>jackshira@google.com</owner>
   <owner>dclasson@google.com</owner>
   <owner>brandosocarras@google.com</owner>
@@ -1243,6 +1244,7 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="FastPairDeviceType">
     <variant name="HeadphonesDeviceType" summary="Device Type: Headphones"/>
+    <variant name="InputDeviceDeviceType" summary="Device Type: Input Device"/>
     <variant name="SpeakerDeviceType" summary="Device Type: Speaker"/>
     <variant name="TrueWirelessHeadphonesDeviceType"
         summary="Device Type: True Wireless Headphones"/>
@@ -1670,7 +1672,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.PoweredState" enum="BooleanEnabled"
-    expires_after="2023-09-24">
+    expires_after="2023-10-08">
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -1869,7 +1871,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.StackName" enum="BluetoothStackName"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>michaelfsun@google.com</owner>
   <owner>chromeos-bt-kpi@google.com</owner>
   <summary>

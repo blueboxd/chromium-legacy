@@ -266,11 +266,9 @@ public abstract class SyncConsentFragmentBase
             SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
                     Profile.getLastUsedRegularProfile());
             signinManager.signinAndEnableSync(
-                    mSigninAccessPoint, account, new SigninManager.SignInCallback() {
+                    account, mSigninAccessPoint, new SigninManager.SignInCallback() {
                         @Override
                         public void onSignInComplete() {
-                            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
-                                    Profile.getLastUsedRegularProfile(), true);
                             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TANGIBLE_SYNC)
                                     && getTangibleSyncGroup() != TangibleSyncGroup.GROUP_F) {
                                 // Groups A-E are only for enabling History and Tab Sync
@@ -279,6 +277,9 @@ public abstract class SyncConsentFragmentBase
                                                 UserSelectableType.TABS));
                             }
                             if (!settingsClicked) {
+                                UnifiedConsentServiceBridge
+                                        .setUrlKeyedAnonymizedDataCollectionEnabled(
+                                                Profile.getLastUsedRegularProfile(), true);
                                 SyncService.get().setFirstSetupComplete(
                                         SyncFirstSetupCompleteSource.BASIC_FLOW);
                             }

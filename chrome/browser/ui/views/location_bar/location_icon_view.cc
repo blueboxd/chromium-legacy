@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,7 +33,13 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_host.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
@@ -61,9 +68,40 @@ LocationIconView::LocationIconView(
   label()->SetAutoColorReadabilityEnabled(false);
 
   SetAccessibleProperties(/*is_initialization*/ true);
-  if (features::IsChromeRefresh2023()) {
-    ConfigureInkdropForRefresh2023(this, kColorPageInfoIconHover,
-                                   kColorPageInfoIconPressed);
+
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
+    // TODO(crbug/1399991): Use the ConfigureInkdropForRefresh2023 method once
+    // you do not need to hardcode color values.
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::Get(this)->SetLayerRegion(views::LayerRegion::kAbove);
+    views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
+        [](views::View* host) -> std::unique_ptr<views::InkDropRipple> {
+          const SkColor pressed_color =
+              host->GetColorProvider()->GetColor(kColorPageInfoIconPressed);
+          const float pressed_alpha = SkColorGetA(pressed_color);
+
+          return std::make_unique<views::FloodFillInkDropRipple>(
+              views::InkDrop::Get(host), host->size(),
+              host->GetLocalBounds().CenterPoint(),
+              SkColorSetA(pressed_color, SK_AlphaOPAQUE),
+              pressed_alpha / SK_AlphaOPAQUE);
+        },
+        this));
+
+    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
+        [](views::View* host) {
+          const SkColor hover_color =
+              host->GetColorProvider()->GetColor(kColorPageInfoIconHover);
+          const float hover_alpha = SkColorGetA(hover_color);
+
+          auto ink_drop_highlight = std::make_unique<views::InkDropHighlight>(
+              host->size(), host->height() / 2,
+              gfx::PointF(host->GetLocalBounds().CenterPoint()),
+              SkColorSetA(hover_color, SK_AlphaOPAQUE));
+          ink_drop_highlight->set_visible_opacity(hover_alpha / SK_AlphaOPAQUE);
+          return ink_drop_highlight;
+        },
+        this));
   }
 
   UpdateBorder();
@@ -89,7 +127,7 @@ SkColor LocationIconView::GetForegroundColor() const {
 }
 
 bool LocationIconView::ShouldShowSeparator() const {
-  return !features::IsChromeRefresh2023() && ShouldShowLabel();
+  return !OmniboxFieldTrial::IsChromeRefreshIconsEnabled() && ShouldShowLabel();
 }
 
 bool LocationIconView::ShowBubble(const ui::Event& event) {
@@ -115,6 +153,7 @@ void LocationIconView::AddedToWidget() {
 void LocationIconView::OnThemeChanged() {
   IconLabelBubbleView::OnThemeChanged();
   UpdateIcon();
+  UpdateBackground();
 }
 
 int LocationIconView::GetMinimumLabelTextWidth() const {
@@ -156,7 +195,7 @@ int LocationIconView::GetInternalSpacing() const {
 
   return (ui::TouchUiController::Get()->touch_ui()
               ? kDefaultInternalSpacingTouchUI
-              : (features::IsChromeRefresh2023()
+              : (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
                      ? kDefaultInternalSpacingChromeRefresh
                      : kDefaultInternalSpacing)) +
          GetExtraInternalSpacing();
@@ -261,6 +300,13 @@ void LocationIconView::UpdateIcon() {
     SetImageModel(icon);
 }
 
+void LocationIconView::UpdateBackground() {
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
+    SetBackground(views::CreateRoundedRectBackground(
+        GetColorProvider()->GetColor(kColorPageInfoBackground), height() / 2));
+  }
+}
+
 void LocationIconView::OnIconFetched(const gfx::Image& image) {
   DCHECK(!image.IsEmpty());
   SetImageModel(ui::ImageModel::FromImage(image));
@@ -269,13 +315,9 @@ void LocationIconView::OnIconFetched(const gfx::Image& image) {
 void LocationIconView::Update(bool suppress_animations) {
   UpdateTextVisibility(suppress_animations);
   UpdateIcon();
+  UpdateBorder();
   SetAccessibleProperties(/*is_initialization*/ false);
-
-  if (features::IsChromeRefresh2023()) {
-    SetBackground(views::CreateRoundedRectBackground(
-        GetColorProvider()->GetColor(ui::kColorSysBaseContainerElevated),
-        height() / 2));
-  }
+  UpdateBackground();
   // The label text color may have changed in response to changes in security
   // level.
   UpdateLabelColors();
@@ -332,10 +374,14 @@ void LocationIconView::UpdateBorder() {
   // child views in the location bar have the same height. The visible height of
   // the bubble should be smaller, so use an empty border to shrink down the
   // content bounds so the background gets painted correctly.
-  if (features::IsChromeRefresh2023()) {
-    SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(
-        GetLayoutInsets(LOCATION_BAR_PAGE_INFO_ICON_PADDING).top(),
-        GetLayoutInsets(LOCATION_BAR_PAGE_INFO_ICON_PADDING).left())));
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
+    gfx::Insets insets = GetLayoutInsets(LOCATION_BAR_PAGE_INFO_ICON_PADDING);
+    if (ShouldShowLabel()) {
+      // An extra space between chip's label and right edge.
+      const int kExtraRightPadding = 4;
+      insets.set_right(insets.right() + kExtraRightPadding);
+    }
+    SetBorder(views::CreateEmptyBorder(insets));
   } else {
     IconLabelBubbleView::UpdateBorder();
   }

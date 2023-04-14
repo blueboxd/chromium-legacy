@@ -95,14 +95,16 @@ void CardUnmaskAuthenticationSelectionDialogControllerImpl::OnDialogClosed(
     if (cancel_unmasking_closure_)
       std::move(cancel_unmasking_closure_).Run();
   } else if (selected_challenge_option_type_ ==
-             CardUnmaskChallengeOptionType::kSmsOtp) {
-    // If we have an SMS OTP challenge selected and `user_closed_dialog` is
-    // false, that means that the user accepted the dialog after selecting the
-    // SMS OTP challenge option, and we have a server response returned since we
+                 CardUnmaskChallengeOptionType::kSmsOtp ||
+             selected_challenge_option_type_ ==
+                 CardUnmaskChallengeOptionType::kEmailOtp) {
+    // If we have an OTP challenge selected and `user_closed_dialog` is false,
+    // that means that the user accepted the dialog after selecting the OTP
+    // challenge option, and we have a server response returned since we
     // immediately send a SelectChallengeOption request to the server and only
     // close the dialog once a response is returned. The SelectChallengeOption
-    // request is sent to the payments server to generate an SMS OTP with the
-    // bank or issuer and send it to the user.
+    // request is sent to the payments server to generate an OTP with the bank
+    // or issuer and send it to the user.
     AutofillMetrics::LogCardUnmaskAuthenticationSelectionDialogResultMetric(
         server_success
             ? AutofillMetrics::
@@ -166,6 +168,7 @@ void CardUnmaskAuthenticationSelectionDialogControllerImpl::
                               /*server_success=*/false);
         break;
       case CardUnmaskChallengeOptionType::kSmsOtp:
+      case CardUnmaskChallengeOptionType::kEmailOtp:
         // Show the OTP pending dialog.
         dialog_view_->UpdateContent();
         break;
@@ -203,6 +206,8 @@ ui::ImageModel CardUnmaskAuthenticationSelectionDialogControllerImpl::
   switch (challenge_option.type) {
     case CardUnmaskChallengeOptionType::kSmsOtp:
       return ui::ImageModel::FromVectorIcon(vector_icons::kSmsIcon);
+    case CardUnmaskChallengeOptionType::kEmailOtp:
+      return ui::ImageModel::FromVectorIcon(vector_icons::kEmailIcon);
     case CardUnmaskChallengeOptionType::kCvc:
     case CardUnmaskChallengeOptionType::kUnknownType:
       NOTREACHED();
@@ -222,6 +227,9 @@ std::u16string CardUnmaskAuthenticationSelectionDialogControllerImpl::
     case CardUnmaskChallengeOptionType::kCvc:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_AUTHENTICATION_MODE_SECURITY_CODE);
+    case CardUnmaskChallengeOptionType::kEmailOtp:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_AUTHENTICATION_MODE_GET_EMAIL);
     case CardUnmaskChallengeOptionType::kUnknownType:
       NOTREACHED();
       return std::u16string();
@@ -246,6 +254,7 @@ CardUnmaskAuthenticationSelectionDialogControllerImpl::GetOkButtonLabel()
 
   switch (selected_challenge_option->type) {
     case CardUnmaskChallengeOptionType::kSmsOtp:
+    case CardUnmaskChallengeOptionType::kEmailOtp:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CARD_UNMASK_AUTHENTICATION_SELECTION_DIALOG_OK_BUTTON_LABEL_SEND);
     case CardUnmaskChallengeOptionType::kCvc:

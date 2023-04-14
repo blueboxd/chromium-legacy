@@ -83,6 +83,7 @@ dependencies {
     compile 'androidx.legacy:legacy-support-core-utils:1.0.0'
     compile 'androidx.documentfile:documentfile:{{androidx_dependency_version}}'
     compile 'androidx.print:print:{{androidx_dependency_version}}'
+    compile 'androidx.credentials:credentials:{{androidx_dependency_version}}'
 
     compile 'androidx.multidex:multidex:2.0.0'
     compile 'androidx.webkit:webkit:{{androidx_dependency_version}}'
@@ -96,6 +97,7 @@ dependencies {
 
     // testCompile targets have test_only = true.
     androidTestCompile 'androidx.fragment:fragment-testing:{{androidx_dependency_version}}'
+    androidTestCompile 'androidx.benchmark:benchmark-macro:{{androidx_dependency_version}}'
     androidTestCompile 'androidx.benchmark:benchmark-macro-junit4:{{androidx_dependency_version}}'
     androidTestCompile 'androidx.benchmark:benchmark-junit4:{{androidx_dependency_version}}'
     androidTestCompile 'androidx.test:core:1.4.0-rc01'

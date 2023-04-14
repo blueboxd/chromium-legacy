@@ -31,6 +31,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -54,6 +55,7 @@ import java.util.List;
 @RunWith(ParameterizedRunner.class)
 @Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@DisabledTest(message = "https://crbug.com/1424888")
 public class FastCheckoutRenderTest {
     private static final FastCheckoutAutofillProfile AUTOFILL_PROFILE =
             FastCheckoutTestUtils.createDetailedProfile(
@@ -143,8 +145,7 @@ public class FastCheckoutRenderTest {
         });
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
 
-        View bottomSheetView = mActivityTestRule.getActivity().findViewById(
-                org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet);
+        View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
         mRenderTestRule.render(bottomSheetView, "fast_checkout_home_screen_local_card");
     }
 
@@ -158,8 +159,7 @@ public class FastCheckoutRenderTest {
         });
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
 
-        View bottomSheetView = mActivityTestRule.getActivity().findViewById(
-                org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet);
+        View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
         mRenderTestRule.render(bottomSheetView, "fast_checkout_home_screen_server_card");
     }
 
@@ -175,8 +175,7 @@ public class FastCheckoutRenderTest {
         });
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
 
-        View bottomSheetView = mActivityTestRule.getActivity().findViewById(
-                org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet);
+        View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
         mRenderTestRule.render(bottomSheetView, "fast_checkout_addresses_screen");
     }
 
@@ -192,8 +191,7 @@ public class FastCheckoutRenderTest {
         });
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
 
-        View bottomSheetView = mActivityTestRule.getActivity().findViewById(
-                org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet);
+        View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
         mRenderTestRule.render(bottomSheetView, "fast_checkout_credit_cards_screen");
     }
 }

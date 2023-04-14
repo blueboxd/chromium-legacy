@@ -742,8 +742,8 @@ class GenXproto(FileWriter):
         # multiple windows. This is a list of all possible window names,
         # ordered from highest to lowest priority.
         WINDOW_NAMES = [
-            'event',
             'window',
+            'event',
             'request_window',
             'owner',
         ]
@@ -1544,7 +1544,7 @@ class GenReadEvent(FileWriter):
             self.write()
             for name, event, proto in self.events:
                 self.gen_event(name, event, proto)
-            self.write('NOTREACHED();')
+            self.write('// Leave `event` default-initialized.')
         self.write()
         self.write('}  // namespace x11')
 

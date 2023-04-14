@@ -2,16 +2,11 @@
  * Helper functions for attribution reporting API tests.
  */
 
-const blankURL = (base = location.origin) => new URL('/wpt_internal/attribution-reporting/resources/empty.py', base);
+const blankURL = (base = location.origin) => new URL('/wpt_internal/attribution-reporting/resources/reporting_origin.py', base);
 
 const attribution_reporting_promise_test = (f, name) =>
     promise_test(async t => {
       t.add_cleanup(() => internals.resetAttributionReporting());
-      t.add_cleanup(() => resetAttributionReports(eventLevelReportsUrl));
-      t.add_cleanup(() => resetAttributionReports(aggregatableReportsUrl));
-      t.add_cleanup(() => resetAttributionReports(eventLevelDebugReportsUrl));
-      t.add_cleanup(() => resetAttributionReports(aggregatableDebugReportsUrl));
-      t.add_cleanup(() => resetAttributionReports(verboseDebugReportsUrl));
       return f(t);
     }, name);
 
@@ -28,33 +23,15 @@ const verboseDebugReportsUrl =
 
 const attributionDebugCookie = 'ar_debug=1;Secure;HttpOnly;SameSite=None;Path=/';
 
-/**
- * Method to clear the stash. Takes the URL as parameter. This could be for
- * event-level or aggregatable reports.
- */
-const resetAttributionReports = url => {
-  // The view of the stash is path-specific (https://web-platform-tests.org/tools/wptserve/docs/stash.html),
-  // therefore the origin doesn't need to be specified.
-  url = `${url}?clear_stash=true`;
-  const options = {
-    method: 'POST',
-  };
-  return fetch(url, options);
-};
-
 const pipeHeaderPattern = /[,)]/g;
 
 // , and ) in pipe values must be escaped with \
 const encodeForPipe = urlString => urlString.replace(pipeHeaderPattern, '\\$&');
 
-const blankURLWithHeaders = (headers, origin, status) => {
+const blankURLWithHeaders = (headers, origin) => {
   const url = blankURL(origin);
 
   const parts = headers.map(h => `header(${h.name},${encodeForPipe(h.value)})`);
-
-  if (status !== undefined) {
-    parts.push(`status(${encodeForPipe(status)})`);
-  }
 
   if (parts.length > 0) {
     url.searchParams.set('pipe', parts.join('|'));
@@ -88,7 +65,7 @@ const getFetchParams = (origin, cookie) => {
     });
     headers.push({
       name: allowHeadersHeader,
-      value: 'Attribution-Reporting-Eligible, Attribution-Reporting-Support',
+      value: `${eligibleHeader}, ${supportHeader}`,
     })
   } else {
     headers.push({
@@ -128,7 +105,6 @@ const registerAttributionSrc = async (t, {
 
   const eligible = searchParams.get('eligible');
 
-  let status;
   let headers = [];
 
   if (source) {
@@ -157,12 +133,6 @@ const registerAttributionSrc = async (t, {
                   }]), reportingOrigin), {credentials: params.credentials}));
   }
 
-  // a and open with valueless attributionsrc support registrations on all
-  // but the last request in a redirect chain, so add a no-op redirect.
-  if (eligible !== null && (method === 'a' || method === 'open')) {
-    headers.push({name: 'Location', value: blankURL().toString()});
-    status = '302';
-  }
 
   let credentials;
   if (method === 'fetch') {
@@ -171,7 +141,12 @@ const registerAttributionSrc = async (t, {
     headers = headers.concat(params.headers);
   }
 
-  const url = blankURLWithHeaders(headers, reportingOrigin, status);
+  const url = blankURLWithHeaders(headers, reportingOrigin);
+  if (source && 'source_event_id' in source) {
+    // We add param indicating to stash the ID to be able to poll in
+    // `waitForSourceToBeRegistered` and know when a source has been processed.
+    url.searchParams.set("store-source-id", source.source_event_id);
+  }
 
   Object.entries(extraQueryParams)
       .forEach(([key, value]) => url.searchParams.set(key, value));
@@ -237,10 +212,6 @@ const registerAttributionSrc = async (t, {
       if (eligible !== null) {
         headers[eligibleHeader] = eligible;
       }
-      const support = searchParams.get('support');
-      if (support !== null) {
-        headers[supportHeader] = support;
-      }
       await fetch(url, {headers, credentials});
       return 'event';
     case 'xhr':
@@ -260,6 +231,14 @@ const registerAttributionSrc = async (t, {
   }
 };
 
+
+/**
+ * Generates a random pseudo-unique source event id.
+ */
+const generateSourceEventId = () => {
+  return `${Math.round(Math.random() * 10000000000000)}`;
+}
+
 /**
  * Delay method that waits for prescribed number of milliseconds.
  */
@@ -276,7 +255,26 @@ const pollAttributionReports = async (url, origin = location.origin, interval = 
     await delay(interval);
     return pollAttributionReports(url, origin, interval);
   }
-  return new Promise(resolve => resolve(payload));
+  return payload;
+};
+
+/**
+ * Waits for source `sourceId` to be done registering. Resolves when it is. If
+ * the source is not done registering after 2 seconds, it times out and throws
+ * an error.
+ */
+const waitForSourceToBeRegistered = async (sourceId) => {
+  const url = blankURL();
+  url.searchParams.set("check-source-id", sourceId);
+
+  for (let i = 0; i < 20; i++) {
+    const {status} = await fetch(url);
+    if (status !== 404) {
+      return;
+    }
+    await delay(100);
+  }
+  throw new Error(`Timeout polling source ${sourceId} registration`);
 };
 
 const pollEventLevelReports = (origin, interval) =>

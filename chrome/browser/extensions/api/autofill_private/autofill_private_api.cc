@@ -156,11 +156,26 @@ autofill::AutofillManager* GetAutofillManager(
 }
 
 autofill::AutofillProfile CreateNewAutofillProfile(
-    autofill::PersonalDataManager* personal_data) {
-  const autofill::AutofillProfile::Source source =
+    autofill::PersonalDataManager* personal_data,
+    const absl::optional<std::string>& country_code) {
+  static const base::NoDestructor<base::flat_set<std::string>>
+      kSanctionedCountries({"CU", "IR", "KP", "SD", "SY"});
+  autofill::AutofillProfile::Source source =
       personal_data->IsEligibleForAddressAccountStorage()
           ? autofill::AutofillProfile::Source::kAccount
           : autofill::AutofillProfile::Source::kLocalOrSyncable;
+
+  if (base::FeatureList::IsEnabled(
+          autofill::features::test::
+              kAutofillCreateAccountProfilesFromSettings)) {
+    // Note: overriding address profile source only if test feature is enabled.
+    source = autofill::AutofillProfile::Source::kAccount;
+  }
+  if (country_code && kSanctionedCountries->count(country_code.value())) {
+    // Note: addresses from sanctioned countries can't be saved in account.
+    // TODO(crbug.com/1432505): remove temporary sanctioned countries filtering.
+    source = autofill::AutofillProfile::Source::kLocalOrSyncable;
+  }
   return autofill::AutofillProfile(base::GenerateGUID(), kSettingsOrigin,
                                    source);
 }
@@ -217,8 +232,9 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
       return RespondNow(Error(kErrorDataUnavailable));
   }
   autofill::AutofillProfile profile =
-      existing_profile ? *existing_profile
-                       : CreateNewAutofillProfile(personal_data);
+      existing_profile
+          ? *existing_profile
+          : CreateNewAutofillProfile(personal_data, address->country_code);
 
   if (address->full_names) {
     std::string full_name;

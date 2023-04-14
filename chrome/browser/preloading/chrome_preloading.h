@@ -70,6 +70,17 @@ static constexpr content::PreloadingPredictor kOmniboxSearchSuggestDefaultMatch(
     105,
     "OmniboxSearchSuggestDefaultMatch");
 
+// When the user hovers their mouse over the back button.
+static constexpr content::PreloadingPredictor kBackButtonHover(
+    106,
+    "BackButtonHover");
+
+// When a pointerdown (e.g. mousedown or touchstart) event happens on an
+// bookmark bar link to an HTTP(S) origin, we may attempt to preload the link.
+static constexpr content::PreloadingPredictor kPointerDownOnBookmarkBar(
+    107,
+    "PointerDownOnBookmarkBar");
+
 // TODO(crbug.com/1309934): Integrate more Preloading predictors with
 // Preloading logging APIs.
 }  // namespace chrome_preloading_predictor
@@ -123,6 +134,8 @@ enum class ChromePreloadingEligibility {
       static_cast<int>(
           content::PreloadingEligibility::kPreloadingEligibilityContentEnd) +
       6,
+
+  kMaxValue = kPreloadingErrorBackOff,
 };
 
 // Helper method to convert ChromePreloadingEligibility to

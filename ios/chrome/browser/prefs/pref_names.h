@@ -10,6 +10,7 @@ namespace prefs {
 extern const char kApplicationLocale[];
 extern const char kAppStoreRatingPolicyEnabled[];
 extern const char kArticlesForYouEnabled[];
+extern const char kBrowserLockdownModeEnabled[];
 extern const char kBrowserStateInfoCache[];
 extern const char kBrowserStateLastUsed[];
 extern const char kBrowserStatesLastActive[];
@@ -38,6 +39,7 @@ extern const char kIosShareChromeCount[];
 extern const char kIosShareChromeLastShare[];
 extern const char kIosDiscoverFeedLastRefreshTime[];
 extern const char kIosDiscoverFeedLastUnseenRefreshTime[];
+extern const char kIosPasswordBottomSheetDismissCount[];
 extern const char kIosPreRestoreAccountInfo[];
 extern const char kIosPromosManagerActivePromos[];
 extern const char kIosPromosManagerImpressions[];
@@ -59,6 +61,7 @@ extern const char kOverflowMenuNewDestinations[];
 extern const char kPrintingEnabled[];
 extern const char kSearchSuggestEnabled[];
 extern const char kTrackPricesOnTabsEnabled[];
+extern const char kLensCameraAssistedSearchPolicyAllowed[];
 
 extern const char kNetworkPredictionSetting[];
 

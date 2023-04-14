@@ -29,8 +29,6 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
@@ -55,19 +53,17 @@ LayoutTextFragment::~LayoutTextFragment() {
 LayoutTextFragment* LayoutTextFragment::Create(Node* node,
                                                const String& str,
                                                int start_offset,
-                                               int length,
-                                               LegacyLayout legacy) {
-  return LayoutObjectFactory::CreateTextFragment(node, str, start_offset,
-                                                 length, legacy);
+                                               int length) {
+  return MakeGarbageCollected<LayoutTextFragment>(node, str, start_offset,
+                                                  length);
 }
 
 LayoutTextFragment* LayoutTextFragment::CreateAnonymous(Document& doc,
                                                         const String& text,
                                                         unsigned start,
-                                                        unsigned length,
-                                                        LegacyLayout legacy) {
+                                                        unsigned length) {
   LayoutTextFragment* fragment =
-      LayoutTextFragment::Create(nullptr, text, start, length, legacy);
+      LayoutTextFragment::Create(nullptr, text, start, length);
   fragment->SetDocumentForAnonymous(&doc);
   if (length)
     doc.View()->IncrementVisuallyNonEmptyCharacterCount(length);
@@ -77,15 +73,13 @@ LayoutTextFragment* LayoutTextFragment::CreateAnonymous(Document& doc,
 LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
                                                         const String& text,
                                                         unsigned start,
-                                                        unsigned length,
-                                                        LegacyLayout legacy) {
-  return CreateAnonymous(pseudo.GetDocument(), text, start, length, legacy);
+                                                        unsigned length) {
+  return CreateAnonymous(pseudo.GetDocument(), text, start, length);
 }
 
 LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
-                                                        const String& text,
-                                                        LegacyLayout legacy) {
-  return CreateAnonymous(pseudo, text, 0, text ? text.length() : 0, legacy);
+                                                        const String& text) {
+  return CreateAnonymous(pseudo, text, 0, text ? text.length() : 0);
 }
 
 void LayoutTextFragment::Trace(Visitor* visitor) const {

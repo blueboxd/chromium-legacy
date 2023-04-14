@@ -5,6 +5,7 @@
 #include "ash/capture_mode/capture_mode_controller.h"
 
 #include <utility>
+#include <vector>
 
 #include "ash/capture_mode/capture_mode_ash_notification_view.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
@@ -61,6 +62,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/snapshot/snapshot.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -698,6 +700,12 @@ void CaptureModeController::PerformCapture() {
 }
 
 void CaptureModeController::EndVideoRecording(EndRecordingReason reason) {
+  if (!is_recording_in_progress()) {
+    // A user may click on the stop recording button multiple times while still
+    // in the process of hiding. See http://b/270625738.
+    return;
+  }
+
   RecordEndRecordingReason(reason);
   recording_service_remote_->StopRecording();
   TerminateRecordingUiElements();
@@ -795,6 +803,33 @@ gfx::Rect CaptureModeController::GetCaptureSurfaceConfineBounds() const {
     return capture_mode_session_->GetCaptureSurfaceConfineBounds();
 
   return gfx::Rect();
+}
+
+std::vector<aura::Window*>
+CaptureModeController::GetWindowsForCollisionAvoidance() const {
+  std::vector<aura::Window*> windows_to_be_avoided;
+  if (IsActive()) {
+    aura::Window* capture_bar_window =
+        capture_mode_session_->capture_mode_bar_widget()->GetNativeWindow();
+    windows_to_be_avoided.push_back(capture_bar_window);
+  }
+
+  auto* camera_preview_widget = camera_controller_->camera_preview_widget();
+  if (camera_preview_widget && camera_preview_widget->IsVisible()) {
+    windows_to_be_avoided.push_back(camera_preview_widget->GetNativeView());
+  }
+
+  if (video_recording_watcher_ &&
+      !video_recording_watcher_->is_shutting_down() &&
+      video_recording_watcher_->recording_source() !=
+          CaptureModeSource::kWindow) {
+    if (auto* key_combo_widget =
+            video_recording_watcher_->GetKeyComboWidgetIfVisible()) {
+      windows_to_be_avoided.push_back(key_combo_widget->GetNativeWindow());
+    }
+  }
+
+  return windows_to_be_avoided;
 }
 
 void CaptureModeController::OnRecordingEnded(
@@ -1248,9 +1283,11 @@ void CaptureModeController::OnImageFileSaved(
   ShowPreviewNotification(file_saved_path, image, CaptureModeType::kImage);
   if (Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     RecordSaveToLocation(GetSaveToOption(file_saved_path));
-  HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
-  if (client)  // May be `nullptr` in tests.
-    client->AddScreenshot(file_saved_path);
+  // NOTE: Holding space `client` may be `nullptr` in tests.
+  if (auto* client = HoldingSpaceController::Get()->client()) {
+    client->AddScreenCapture(HoldingSpaceItem::Type::kScreenshot,
+                             file_saved_path);
+  }
 }
 
 void CaptureModeController::OnVideoFileSaved(
@@ -1267,9 +1304,14 @@ void CaptureModeController::OnVideoFileSaved(
       ShowPreviewNotification(saved_video_file_path,
                               gfx::Image(video_thumbnail),
                               CaptureModeType::kVideo);
-      HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
-      if (client)  // May be `nullptr` in tests.
-        client->AddScreenRecording(saved_video_file_path);
+      // NOTE: Holding space `client` may be `nullptr` in tests.
+      if (auto* client = HoldingSpaceController::Get()->client()) {
+        client->AddScreenCapture(
+            recording_type_ == RecordingType::kGif
+                ? HoldingSpaceItem::Type::kScreenRecordingGif
+                : HoldingSpaceItem::Type::kScreenRecording,
+            saved_video_file_path);
+      }
     }
     DCHECK(!recording_start_time_.is_null());
     RecordCaptureModeRecordTime(

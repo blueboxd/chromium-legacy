@@ -288,6 +288,7 @@
 <translation id="2475982808118771221">အမှားတစ်ခု ဖြစ်ခဲ့သည်။</translation>
 <translation id="2482878487686419369">အကြောင်းကြားစာ</translation>
 <translation id="2484513351006226581">ကီးဘုတ်လက်ကွက် ပြောင်းရန် <ph name="KEYBOARD_SHORTCUT" /> ကို နှိပ်ပါ။</translation>
+<translation id="2487915095798731898">ချိတ်ဆက်ပါ</translation>
 <translation id="2501920221385095727">Sticky keys</translation>
 <translation id="2509468283778169019">စာလုံးကြီးရန် သော့ခလုတ် ပွင့်နေ</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@
 <translation id="3925540965556789199"><ph name="DATE" />၊ အစီအစဉ်များ ဖွင့်နေသည်။</translation>
 <translation id="3932043219784172185">ချိတ်ဆက်ထားသော စက်မရှိပါ</translation>
 <translation id="3934456833412894880">အလိုက်သင့်အားသွင်းခြင်းကို ဖွင့်ထားသည်။ သင့်ဘက်ထရီ သက်တမ်းကြာရှည်စေရန် ၈၀% တွင် ရပ်နေမည်ဖြစ်ပြီး အလိုရှိသောအချိန်တွင် အားအပြည့်သွင်းပါမည်။</translation>
+<translation id="3936620957945677513"><ph name="EVENT_SUMMARY" /> အစီအစဉ်တွင် ပါဝင်ရန် Enter ခလုတ်နှိပ်ပါ</translation>
 <translation id="3943857333388298514">ကူးဖြည့်ရန်</translation>
 <translation id="394485226368336402">အသံဆက်တင်များ</translation>
 <translation id="3945319193631853098">စနစ်ထည့်သွင်းခြင်း အပြီးသတ်ရန် တို့ပါ</translation>

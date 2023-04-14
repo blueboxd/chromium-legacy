@@ -22,6 +22,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -121,44 +122,6 @@ HRESULT CreateLocalServer(GUID clsid,
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
-[[nodiscard]] bool DeleteRegValue(HKEY root,
-                                  const std::wstring& path,
-                                  const std::wstring& value) {
-  if (!base::win::RegKey(root, path.c_str(), Wow6432(KEY_QUERY_VALUE))
-           .Valid()) {
-    return true;
-  }
-
-  LONG result = base::win::RegKey(root, path.c_str(), Wow6432(KEY_WRITE))
-                    .DeleteValue(value.c_str());
-  return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
-}
-
-[[nodiscard]] bool DeleteService(const std::wstring& service_name) {
-  SC_HANDLE scm = ::OpenSCManager(
-      nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
-  if (!scm)
-    return false;
-
-  SC_HANDLE service = ::OpenService(scm, service_name.c_str(), DELETE);
-  bool is_service_deleted = !service;
-  if (!is_service_deleted) {
-    is_service_deleted =
-        ::DeleteService(service)
-            ? true
-            : ::GetLastError() == ERROR_SERVICE_MARKED_FOR_DELETE;
-
-    ::CloseServiceHandle(service);
-  }
-  ::CloseServiceHandle(scm);
-
-  if (!DeleteRegValue(HKEY_LOCAL_MACHINE, UPDATER_KEY, service_name)) {
-    return false;
-  }
-
-  return is_service_deleted;
-}
-
 [[nodiscard]] bool IsServiceGone(const std::wstring& service_name) {
   SC_HANDLE scm = ::OpenSCManager(
       nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
@@ -184,52 +147,6 @@ HRESULT CreateLocalServer(GUID clsid,
   return is_service_gone &&
          !base::win::RegKey(HKEY_LOCAL_MACHINE, UPDATER_KEY, Wow6432(KEY_READ))
               .HasValue(service_name.c_str());
-}
-
-// Runs `callback` for each run value in the registry that matches `prefix`.
-void ForEachRunValue(
-    const std::wstring& prefix,
-    base::RepeatingCallback<void(const std::wstring&)> callback) {
-  for (base::win::RegistryValueIterator it(HKEY_CURRENT_USER, REGSTR_PATH_RUN,
-                                           KEY_WOW64_32KEY);
-       it.Valid(); ++it) {
-    const std::wstring run_name = it.Name();
-    if (base::StartsWith(run_name, prefix)) {
-      callback.Run(run_name);
-    }
-  }
-}
-
-// Runs `callback` for each task that matches `scope` and `prefix`.
-void ForEachTask(UpdaterScope scope,
-                 const std::wstring& prefix,
-                 base::RepeatingCallback<void(const std::wstring&)> callback) {
-  std::unique_ptr<TaskScheduler> task_scheduler =
-      TaskScheduler::CreateInstance(scope);
-  ASSERT_TRUE(task_scheduler);
-  std::vector<std::wstring> task_names;
-  task_scheduler->GetTaskNameList(&task_names);
-
-  for (const std::wstring& task_name : task_names) {
-    if (base::StartsWith(task_name, prefix)) {
-      callback.Run(task_name);
-    }
-  }
-}
-
-// Runs `callback` for each system service that matches `prefix`.
-void ForEachService(
-    const std::wstring& prefix,
-    base::RepeatingCallback<void(const std::wstring&)> callback) {
-  for (base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE,
-                                         L"SYSTEM\\CurrentControlSet\\Services",
-                                         KEY_WOW64_32KEY);
-       it.Valid(); ++it) {
-    const std::wstring service_name = it.Name();
-    if (base::StartsWith(service_name, prefix)) {
-      callback.Run(service_name);
-    }
-  }
 }
 
 // Checks the installation states (installed or uninstalled) and versions (SxS
@@ -293,11 +210,11 @@ void CheckInstallation(UpdaterScope scope,
       EXPECT_FALSE(RegKeyExists(root, UPDATER_KEY));
 
       if (!IsSystemInstall(scope)) {
-        ForEachRunValue(base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
-                        base::BindRepeating([](const std::wstring& run_name) {
-                          ADD_FAILURE()
-                              << "Unexpected Run key found: " << run_name;
-                        }));
+        ForEachRegistryRunValueWithPrefix(
+            base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+            base::BindRepeating([](const std::wstring& run_name) {
+              ADD_FAILURE() << "Unexpected Run key found: " << run_name;
+            }));
       }
     }
   }
@@ -341,10 +258,11 @@ void CheckInstallation(UpdaterScope scope,
 // build containing fix r1105318 is published.
 #if 0
       if (!is_installed) {
-        ForEachService(
+        ForEachServiceWithPrefix(
             base::StrCat({base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
                           is_internal_service ? kWindowsInternalServiceName
                                               : kWindowsServiceName}),
+            base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
             base::BindRepeating([](const std::wstring& service_name) {
               ADD_FAILURE() << "Unexpected service found: " << service_name;
             }));
@@ -353,9 +271,9 @@ void CheckInstallation(UpdaterScope scope,
     }
   }
 
+  scoped_refptr<TaskScheduler> task_scheduler =
+      TaskScheduler::CreateInstance(scope);
   if (is_installed) {
-    std::unique_ptr<TaskScheduler> task_scheduler =
-        TaskScheduler::CreateInstance(scope);
     const std::wstring task_name =
         task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
     EXPECT_TRUE(!task_name.empty());
@@ -372,13 +290,12 @@ void CheckInstallation(UpdaterScope scope,
                       L"*/components/update_client/*=2,"
                       L"*/chrome/updater/*=2"})
             .c_str());
-  }
-
-  if (!is_installed) {
-    ForEachTask(scope, base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
-                base::BindRepeating([](const std::wstring& task_name) {
-                  ADD_FAILURE() << "Unexpected task found: " << task_name;
-                }));
+  } else {
+    task_scheduler->ForEachTask(
+        base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+        base::BindRepeating([](const std::wstring& task_name) {
+          ADD_FAILURE() << "Unexpected task found: " << task_name;
+        }));
   }
 
   const absl::optional<base::FilePath> path =
@@ -646,29 +563,33 @@ void Clean(UpdaterScope scope) {
   }
 
   if (!IsSystemInstall(scope)) {
-    ForEachRunValue(base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
-                    base::BindRepeating([](const std::wstring& run_name) {
-                      base::win::RegKey(HKEY_CURRENT_USER, REGSTR_PATH_RUN,
-                                        KEY_WRITE)
-                          .DeleteValue(run_name.c_str());
-                    }));
+    ForEachRegistryRunValueWithPrefix(
+        base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+        base::BindRepeating([](const std::wstring& run_name) {
+          base::win::RegKey(HKEY_CURRENT_USER, REGSTR_PATH_RUN, KEY_WRITE)
+              .DeleteValue(run_name.c_str());
+        }));
   }
 
   if (IsSystemInstall(scope)) {
-    ForEachService(base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
-                   base::BindRepeating([](const std::wstring& service_name) {
-                     EXPECT_TRUE(DeleteService(service_name));
-                   }));
+    ForEachServiceWithPrefix(
+        base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+        base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+        base::BindRepeating([](const std::wstring& service_name) {
+          EXPECT_TRUE(DeleteService(service_name));
+        }));
   }
 
-  ForEachTask(
-      scope, base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
-      base::BindLambdaForTesting([scope](const std::wstring& task_name) {
-        std::unique_ptr<TaskScheduler> task_scheduler =
-            TaskScheduler::CreateInstance(scope);
-        ASSERT_TRUE(task_scheduler);
-        task_scheduler->DeleteTask(task_name.c_str());
-      }));
+  scoped_refptr<TaskScheduler> task_scheduler =
+      TaskScheduler::CreateInstance(scope);
+  task_scheduler->ForEachTask(
+      base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+      base::BindRepeating(
+          [](scoped_refptr<TaskScheduler> task_scheduler,
+             const std::wstring& task_name) {
+            task_scheduler->DeleteTask(task_name.c_str());
+          },
+          task_scheduler));
 
   const absl::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);
@@ -1039,7 +960,7 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
              GetAppVersionWebString(next_version_web_dispatch), L"]"});
 
         if (!done) {
-          EXPECT_HRESULT_SUCCEEDED(bundle->install());
+          EXPECT_HRESULT_SUCCEEDED(bundle->download());
         }
         break;
       }

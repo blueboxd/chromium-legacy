@@ -307,6 +307,8 @@ public final class ProductionSupportedFlagList {
                             + "for commit to finish on the compositor thread."),
             Flag.baseFeature(CcFeatures.USE_DMSAA_FOR_TILES,
                     "Switches skia to use DMSAA instead of MSAA for tile raster"),
+            Flag.baseFeature(BlinkFeatures.CSS_PAINTING_FOR_SPELLING_GRAMMAR_ERRORS,
+                    "Use the new CSS-based painting for spelling and grammar errors"),
             Flag.baseFeature(
                     CcFeatures.AVOID_RASTER_DURING_ELASTIC_OVERSCROLL, "No effect on webview"),
             Flag.baseFeature(BlinkFeatures.WEB_RTC_ENCODER_ASYNC_ENCODE,
@@ -381,6 +383,11 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(ContentFeatures.PRIVACY_SANDBOX_ADS_AP_IS_OVERRIDE,
                     "When enabled, the following ads APIs will be available: Attribution Reporting,"
                             + "FLEDGE, Topics."),
+            Flag.baseFeature(BlinkFeatures.WEB_RTC_STATS_REPORT_IDL,
+                    "Backs the WebRTC stats report object with generated objects defined in IDL"),
+            Flag.baseFeature(BlinkFeatures.RENDER_BLOCKING_FONTS,
+                    "When enabled, blocks rendering on font preloads to reduce CLS. "
+                            + "See go/critical-font-analysis"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

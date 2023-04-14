@@ -1858,7 +1858,7 @@
         # passed, but 0 times when '--test-list' is passed. We want to always
         # retry 3 times, so we explicitly specify it.
         'args': [
-          '--flag-specific=dangling-pointer-detection',
+          '--additional-driver-flag=--enable-features=PartitionAllocDanglingPtr:mode/crash',
           '--num-retries=3',
         ],
         'isolate_name': 'blink_web_tests',
@@ -1887,7 +1887,7 @@
         # passed, but 0 times when '--test-list' is passed. We want to always
         # retry 3 times, so we explicitly specify it.
         'args': [
-          '--flag-specific=dangling-pointer-detection',
+          '--additional-driver-flag=--enable-features=PartitionAllocDanglingPtr:mode/crash',
           '--num-retries=3',
           '--step-name=blink-wpt-tests',
         ],
@@ -5172,7 +5172,6 @@
         ],
       },
       'web_engine_unittests': {},
-      'web_runner_integration_tests': {},
     },
 
     'webengine_android_gtests': {
@@ -5507,7 +5506,7 @@
       'wpt_tests_ios': {
         'args': [
           '--log-wptreport',
-          '--use-upstream-wpt',
+          '--no-wpt-internal',
         ],
         'merge': {
           'args': [

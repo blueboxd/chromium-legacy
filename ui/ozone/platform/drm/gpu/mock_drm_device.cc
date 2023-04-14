@@ -4,15 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 
-#include <stdint.h>
-#include <xf86drm.h>
-#include <xf86drmMode.h>
-
-#include <cstdint>
-#include <memory>
-#include <tuple>
 #include <utility>
-#include <vector>
 
 #include "base/check.h"
 #include "base/containers/contains.h"
@@ -55,11 +47,6 @@ constexpr uint32_t kCommitModesetFlags = DRM_MODE_ATOMIC_ALLOW_MODESET;
 // This also happens to be the same set of flags as would be used for a
 // pageflip, or other atomic property changes that do not require modesetting.
 constexpr uint32_t kSeamlessModesetFlags = 0;
-
-template <class Object>
-Object* DrmAllocator() {
-  return static_cast<Object*>(drmMalloc(sizeof(Object)));
-}
 
 const std::map<uint32_t, std::string> kCrtcRequiredPropertyNames = {
     {kActivePropId, "ACTIVE"},
@@ -367,6 +354,7 @@ bool MockDrmDevice::InitializeStateWithResult(const MockDrmState& state,
   } else {
     plane_manager_ = std::make_unique<HardwareDisplayPlaneManagerLegacy>(this);
   }
+  SetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 
   return plane_manager_->Initialize();
 }
@@ -559,6 +547,11 @@ void MockDrmDevice::DestroyPropertyBlob(uint32_t id) {
 }
 
 bool MockDrmDevice::GetCapability(uint64_t capability, uint64_t* value) const {
+  const auto it = capabilities_.find(capability);
+  if (it == capabilities_.end())
+    return false;
+
+  *value = it->second;
   return true;
 }
 
@@ -647,7 +640,7 @@ bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {
   return true;
 }
 
-bool MockDrmDevice::CommitPropertiesInternal(
+bool MockDrmDevice::CommitProperties(
     drmModeAtomicReq* request,
     uint32_t flags,
     uint32_t crtc_count,
@@ -712,6 +705,10 @@ bool MockDrmDevice::CommitPropertiesInternal(
       return false;
   }
 
+  // Increment modeset sequence ID upon success.
+  if (flags == DRM_MODE_ATOMIC_ALLOW_MODESET)
+    ++modeset_sequence_id_;
+
   // Count all committed planes at the end just before returning true to
   // reflect the number of planes that have successfully been committed.
   last_planes_committed_count_ = 0;
@@ -737,6 +734,7 @@ void MockDrmDevice::SetDriverName(absl::optional<std::string> name) {
 }
 
 bool MockDrmDevice::SetCapability(uint64_t capability, uint64_t value) {
+  capabilities_.insert({capability, value});
   return true;
 }
 
@@ -806,6 +804,10 @@ bool MockDrmDevice::ValidatePropertyValue(uint32_t id, uint64_t value) {
     return base::Contains(allocated_property_blobs_, value);
 
   return true;
+}
+
+int MockDrmDevice::modeset_sequence_id() const {
+  return modeset_sequence_id_;
 }
 
 }  // namespace ui

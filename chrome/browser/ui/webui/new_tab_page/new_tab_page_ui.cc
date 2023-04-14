@@ -20,6 +20,8 @@
 #include "chrome/browser/cart/cart_handler.h"
 #include "chrome/browser/new_tab_page/modules/drive/drive_handler.h"
 #include "chrome/browser/new_tab_page/modules/feed/feed_handler.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_page_handler.h"
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos_handler.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_handler.h"
@@ -39,7 +41,6 @@
 #include "chrome/browser/ui/webui/cr_components/most_visited/most_visited_handler.h"
 #include "chrome/browser/ui/webui/customize_themes/chrome_customize_themes_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/history_clusters/history_clusters_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/ntp_pref_names.h"
 #include "chrome/browser/ui/webui/new_tab_page/untrusted_source.h"
@@ -99,6 +100,13 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(NewTabPageUI,
 namespace {
 
 constexpr char kPrevNavigationTimePrefName[] = "NewTabPage.PrevNavigationTime";
+
+bool HasCredentials(Profile* profile) {
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  return
+      /* Can be null if Chrome signin is disabled. */ identity_manager &&
+      identity_manager->GetAccountsInCookieJar().signed_in_accounts.size() > 0;
+}
 
 void AddRawStringOrDefault(content::WebUIDataSource* source,
                            const char key[],
@@ -206,6 +214,13 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
                                                ntp_features::kNtpModulesLoad));
   source->AddInteger("modulesLoadTimeout",
                      ntp_features::GetModulesLoadTimeout().InMilliseconds());
+  source->AddBoolean(
+      "historyClustersModuleEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule));
+  source->AddBoolean("historyClustersModuleLoadEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpHistoryClustersModuleLoad) &&
+                         HasCredentials(profile));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
@@ -530,13 +545,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
   return source;
 }
 
-bool HasCredentials(Profile* profile) {
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  return
-      /* Can be null if Chrome signin is disabled. */ identity_manager &&
-      identity_manager->GetAccountsInCookieJar().signed_in_accounts.size() > 0;
-}
-
 }  // namespace
 
 NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
@@ -760,11 +768,10 @@ void NewTabPageUI::BindInterface(
 }
 
 void NewTabPageUI::BindInterface(
-    mojo::PendingReceiver<history_clusters::mojom::PageHandler>
+    mojo::PendingReceiver<ntp::history_clusters::mojom::PageHandler>
         pending_page_handler) {
-  history_clusters_handler_ =
-      std::make_unique<history_clusters::HistoryClustersHandler>(
-          std::move(pending_page_handler), profile_, web_contents());
+  history_clusters_handler_ = std::make_unique<HistoryClustersPageHandler>(
+      std::move(pending_page_handler), profile_);
 }
 
 void NewTabPageUI::BindInterface(

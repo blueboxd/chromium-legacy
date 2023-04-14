@@ -10,7 +10,6 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/debug/activity_tracker.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
@@ -54,7 +53,6 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
-#include "ui/gfx/switches.h"
 #endif
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
@@ -187,7 +185,6 @@ RunContentProcess(ContentMainParams params,
   base::PlatformThread::SetCurrentThreadType(base::ThreadType::kDefault);
 #endif
   int exit_code = -1;
-  base::debug::GlobalActivityTracker* tracker = nullptr;
 #if BUILDFLAG(IS_MAC)
   std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool;
 #endif
@@ -299,24 +296,16 @@ RunContentProcess(ContentMainParams params,
 #endif
 
     ui::RegisterPathProvider();
-    tracker = base::debug::GlobalActivityTracker::Get();
     exit_code = content_main_runner->Initialize(std::move(params));
 
     if (exit_code >= 0) {
-      if (tracker) {
-        tracker->SetProcessPhase(
-            base::debug::GlobalActivityTracker::PROCESS_LAUNCH_FAILED);
-        tracker->process_data().SetInt("exit-code", exit_code);
-      }
       return exit_code;
     }
 
 #if BUILDFLAG(IS_WIN)
     // Route stdio to parent console (if any) or create one.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableLogging) ||
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kHeadless)) {
+            switches::kEnableLogging)) {
       base::RouteStdioToConsole(true);
     }
 #endif
@@ -333,17 +322,6 @@ RunContentProcess(ContentMainParams params,
   if (IsSubprocess())
     CommonSubprocessInit();
   exit_code = content_main_runner->Run();
-
-  if (tracker) {
-    if (exit_code == 0) {
-      tracker->SetProcessPhaseIfEnabled(
-          base::debug::GlobalActivityTracker::PROCESS_EXITED_CLEANLY);
-    } else {
-      tracker->SetProcessPhaseIfEnabled(
-          base::debug::GlobalActivityTracker::PROCESS_EXITED_WITH_CODE);
-      tracker->process_data().SetInt("exit-code", exit_code);
-    }
-  }
 
 #if BUILDFLAG(IS_MAC)
   autorelease_pool.reset();

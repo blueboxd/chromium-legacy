@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -185,6 +186,7 @@
 namespace blink {
 class AssociatedInterfaceRegistry;
 class DocumentPolicy;
+class RuntimeFeatureStateReadContext;
 struct FramePolicy;
 struct TransferableMessage;
 struct UntrustworthyContextMenuParams;
@@ -272,7 +274,6 @@ class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
-class RuntimeFeatureStateControllerImpl;
 class ServiceWorkerContainerHost;
 class SiteInfo;
 class SpeechSynthesisImpl;
@@ -476,6 +477,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
   bool IsFeatureEnabled(
       blink::mojom::PermissionsPolicyFeature feature) override;
+  const blink::PermissionsPolicy* GetPermissionsPolicy() override;
+  const blink::ParsedPermissionsPolicy& GetPermissionsPolicyHeader() override;
   void ViewSource() override;
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point&,
@@ -1380,10 +1383,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   class CookieChangeListener : public network::mojom::CookieChangeListener {
    public:
     struct CookieChangeInfo {
-      // Indicates whether any cookie modification has been observed.
-      bool cookie_modified = false;
-      // Indicates whether any HTTPOnly cookie modification has been observed.
-      bool http_only_cookie_modified = false;
+      // The number of observed cookie modifications.
+      int64_t cookie_modification_count_ = 0;
+      // The number of observed HTTPOnly cookie modifications.
+      int64_t http_only_cookie_modification_count_ = 0;
     };
 
     CookieChangeListener(StoragePartition* storage_partition, GURL& url);
@@ -1393,6 +1396,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
     // Returns a copy of the `cookie_change_info_`.
     CookieChangeInfo cookie_change_info() { return cookie_change_info_; }
+
+    // We don't want to count the cookie modification made by the
+    // `NavigationRequest` itself, so provide this function to allow the count
+    // adjustment.
+    // Passing the `base::PassKey` to restrict the caller of this method to
+    // `NavigationRequest` only.
+    void RemoveNavigationCookieModificationCount(
+        base::PassKey<content::NavigationRequest> navigation_request,
+        uint64_t cookie_modification_count_delta,
+        uint64_t http_only_cookie_modification_count_delta) {
+      cookie_change_info_.cookie_modification_count_ -=
+          cookie_modification_count_delta;
+      cookie_change_info_.http_only_cookie_modification_count_ -=
+          http_only_cookie_modification_count_delta;
+    }
 
    private:
     // network::mojom::CookieChangeListener
@@ -2353,6 +2371,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& event_data,
       const std::vector<blink::FencedFrame::ReportingDestination>& destination)
       override;
+  void SendPrivateAggregationRequestsForFencedFrameEvent(
+      const std::string& event_type) override;
   void CreatePortal(
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
@@ -2647,18 +2667,27 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // children, or nullptr if there is no such node.
   FrameTreeNode* NextSibling() const;
 
-  // Set the |last_committed_origin_|, |isolation_info_|, and
-  // |permissions_policy_| of |this| frame, inheriting the origin from
-  // |new_frame_creator| as appropriate (e.g. depending on whether |this| frame
-  // should be sandboxed / should have an opaque origin instead).
-  void SetOriginDependentStateOfNewFrame(const url::Origin& new_frame_creator);
+  // Set the |last_committed_origin_|, |isolation_info_|,
+  // |permissions_policy_|, and the RuntimeFeatureStateDocumentData of |this|
+  // frame, inheriting both the origin from |creator_frame| as appropriate (e.g.
+  // depending on whether |this| frame should be sandboxed / should have an
+  // opaque origin instead).
+  void SetOriginDependentStateOfNewFrame(RenderFrameHostImpl* creator_frame);
+
+  // Returns the value of `this`'s main frame's
+  // RuntimeFeatureStateReadContext::
+  // IsDisableThirdPartyStoragePartitioningEnabled()
+  bool IsMainFrameThirdPartyStoragePartitioningEnabled();
 
   // Calculates the storage key for this RenderFrameHostImpl using the passed
-  // `new_rfh_origin`, and `nonce` and calculating the storage key's
-  // top_level_site` and `ancestor_bit` parameters. This takes into account
-  // possible host permissions of the top_level RenderFrameHostImpl.
-  blink::StorageKey CalculateStorageKey(const url::Origin& new_rfh_origin,
-                                        const base::UnguessableToken* nonce);
+  // `new_rfh_origin`, and `nonce`, and
+  // `is_third_party_storage_partitioning_allowed` and deriving the storage
+  // key's top_level_site` and `ancestor_bit` parameters. This takes into
+  // account possible host permissions of the top_level RenderFrameHostImpl.
+  blink::StorageKey CalculateStorageKey(
+      const url::Origin& new_rfh_origin,
+      const base::UnguessableToken* nonce,
+      bool is_third_party_storage_partitioning_allowed);
 
   // Returns the BrowsingContextState associated with this RenderFrameHostImpl.
   // See class comments in BrowsingContextState for a more detailed description.
@@ -4302,10 +4331,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Hosts blink::mojom::PushMessaging for the RenderFrame.
   std::unique_ptr<PushMessagingManager> push_messaging_manager_;
-
-  // Hosts blink::mojom::RuntimeFeatureStateController for the RenderFrame.
-  std::unique_ptr<RuntimeFeatureStateControllerImpl>
-      runtime_feature_state_controller_;
 
   // Hosts blink::mojom::SpeechSynthesis for the RenderFrame.
   std::unique_ptr<SpeechSynthesisImpl> speech_synthesis_impl_;

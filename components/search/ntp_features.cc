@@ -233,6 +233,28 @@ BASE_FEATURE(kNtpHistoryClustersModule,
              "NtpHistoryClustersModule",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Dummy feature to set kNtpHistoryClustersModuleBeginTimeDurationHoursParam.
+BASE_FEATURE(kNtpHistoryClustersModuleBeginTimeDuration,
+             "NtpHistoryClustersModuleBeginTimeDuration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Dummy feature to set kNtpHistoryClustersModuleMinimumImagesRequiredParam.
+BASE_FEATURE(kNtpHistoryClustersModuleMinimumImagesRequired,
+             "NtpHistoryClustersModuleMinimumImagesRequired",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Dummy feature to set kNtpHistoryClustersModuleCategoriesParam.
+BASE_FEATURE(kNtpHistoryClustersModuleCategories,
+             "NtpHistoryClustersModuleCategories",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the history clusters module will be loaded but not shown. This is
+// useful to determine if a user would have seen modules in order to
+// counterfactually log or trigger.
+BASE_FEATURE(kNtpHistoryClustersModuleLoad,
+             "NtpHistoryClustersModuleLoad",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<double>
     kNtpElementLuminosityChangeForLightBackgroundParam{
         &kNtpComprehensiveTheming,
@@ -287,6 +309,12 @@ const char kNtpRecipeTasksModuleCacheMaxAgeSParam[] =
     "NtpRecipeTasksModuleCacheMaxAgeSParam";
 const char kNtpRecipeTasksModuleExperimentGroupParam[] =
     "NtpRecipeTasksModuleExperimentGroupParam";
+const char kNtpHistoryClustersModuleBeginTimeDurationHoursParam[] =
+    "NtpHistoryClustersModuleBeginTimeDurationHoursParam";
+const char kNtpHistoryClustersModuleMinimumImagesRequiredParam[] =
+    "NtpHistoryClustersModuleMinimumImagesRequiredParam";
+const char kNtpHistoryClustersModuleCategoriesParam[] =
+    "NtpHistoryClustersModuleCategoriesParam";
 
 base::TimeDelta GetModulesLoadTimeout() {
   std::string param_value = base::GetFieldTrialParamValueByFeature(

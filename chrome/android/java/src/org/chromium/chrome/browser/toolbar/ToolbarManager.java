@@ -952,15 +952,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     if (mToolbar.setForceTextureCapture(true)) {
                         mControlContainer.invalidateBitmap();
                     }
-                    if (mIsStartSurfaceRefactorEnabled) {
-                        @LayoutType
-                        int nextLayoutType = mLayoutManager.getNextLayoutType();
-                        mToolbar.updateStartSurfaceToolbarState(null,
-                                nextLayoutType == LayoutType.TAB_SWITCHER
-                                        || (nextLayoutType == LayoutType.START_SURFACE
-                                                && !isUrlBarFocused()),
-                                nextLayoutType);
-                    }
                 }
             }
 
@@ -1672,8 +1663,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     public void onUrlFocusChange(boolean hasFocus) {
         mToolbar.onUrlFocusChange(hasFocus);
 
-        if (mIsStartSurfaceRefactorEnabled
-                && mLayoutManager.isLayoutVisible(LayoutType.START_SURFACE)) {
+        if (mIsStartSurfaceRefactorEnabled && mLayoutStateProvider != null
+                && mLayoutStateProvider.isLayoutVisible(LayoutType.START_SURFACE)) {
             mToolbar.updateStartSurfaceToolbarState(null, !hasFocus, LayoutType.START_SURFACE);
         }
 
@@ -2123,7 +2114,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     @Override
-    public void handleBackPress() {
+    public @BackPressResult int handleBackPress() {
         boolean ret = back();
         if (!ret) {
             var bc = mBottomControlsCoordinatorSupplier != null
@@ -2138,6 +2129,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     tab != null && tab.isDestroyed());
             assert false : msg;
         }
+        return ret ? BackPressResult.SUCCESS : BackPressResult.FAILURE;
     }
 
     @Override

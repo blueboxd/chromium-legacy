@@ -613,6 +613,11 @@ bool OmniboxFieldTrial::IsDefaultBrowserPedalEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxDefaultBrowserPedal);
 }
 
+const base::FeatureParam<bool> OmniboxFieldTrial::kDefaultBrowserPedalImmediate(
+    &omnibox::kOmniboxDefaultBrowserPedal,
+    "DefaultBrowserPedalImmediate",
+    false);
+
 const base::FeatureParam<bool>
     OmniboxFieldTrial::kDefaultBrowserPedalInteractive(
         &omnibox::kOmniboxDefaultBrowserPedal,
@@ -679,9 +684,23 @@ bool OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() {
 }
 
 // Omnibox UI simplification - Uniform Suggestion Row Heights
-bool OmniboxFieldTrial::IsSquareSuggestIconEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kSquareSuggestIcons);
-}
+const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconAnswers(
+    &omnibox::kSquareSuggestIcons,
+    "OmniboxSquareSuggestIconAnswers",
+    false);
+const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconIcons(
+    &omnibox::kSquareSuggestIcons,
+    "OmniboxSquareSuggestIconIcons",
+    false);
+const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconEntities(
+    &omnibox::kSquareSuggestIcons,
+    "OmniboxSquareSuggestIconEntities",
+    false);
+const base::FeatureParam<double>
+    OmniboxFieldTrial::kSquareSuggestIconEntitiesScale(
+        &omnibox::kSquareSuggestIcons,
+        "OmniboxSquareSuggestIconEntitiesScale",
+        0.8722);
 
 bool OmniboxFieldTrial::IsUniformRowHeightEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kUniformRowHeight);

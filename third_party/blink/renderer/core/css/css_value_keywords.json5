@@ -204,8 +204,6 @@
     "transparent",
     "-webkit-link",
     "-webkit-activelink",
-    "accentcolor",
-    "accentcolortext",
     "activeborder",
     "activecaption",
     "activetext",
@@ -1063,6 +1061,9 @@
     "browser",
     "window-controls-overlay",
     "tabbed",
+
+    // (overflow-block:) media feature
+    "paged",
 
     // position
     "sticky",

@@ -313,6 +313,7 @@ struct SameSizeAsDocumentLoader
   absl::optional<ViewTransitionState> view_transition_state;
   absl::optional<FencedFrame::RedactedFencedFrameProperties>
       fenced_frame_properties;
+  bool has_storage_access;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -511,7 +512,8 @@ DocumentLoader::DocumentLoader(
       extra_data_(std::move(extra_data)),
       reduced_accept_language_(params_->reduced_accept_language),
       navigation_delivery_type_(params_->navigation_delivery_type),
-      view_transition_state_(std::move(params_->view_transition_state)) {
+      view_transition_state_(std::move(params_->view_transition_state)),
+      has_storage_access_(params_->has_storage_access) {
   DCHECK(frame_);
   DCHECK(params_);
 
@@ -648,6 +650,7 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   params->has_fenced_frame_reporting = has_fenced_frame_reporting_;
   params->reduced_accept_language = reduced_accept_language_;
   params->navigation_delivery_type = navigation_delivery_type_;
+  params->has_storage_access = has_storage_access_;
   return params;
 }
 
@@ -2277,6 +2280,7 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
         owner_document->domWindow()->GetAgent()->IsOriginKeyedForInheritance();
   }
 
+  bool inherited_has_storage_access = false;
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
   // JavaScript a window synchronously but kicks off the load in the window
@@ -2298,6 +2302,11 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
     if (!ShouldInheritExplicitOriginKeying(Url(), commit_reason_) &&
         origin_agent_cluster) {
       agent->ForceOriginKeyedBecauseOfInheritance();
+    }
+
+    if (has_storage_access_) {
+      frame_->DomWindow()->SetHasStorageAccess();
+      inherited_has_storage_access = true;
     }
   } else {
     if (frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame() &&
@@ -2327,44 +2336,38 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
     // above.
     DCHECK(did_have_policy_container || WillLoadUrlAsEmpty(Url()));
   }
+  base::UmaHistogramBoolean("API.StorageAccess.DocumentLoadedWithStorageAccess",
+                            frame_->DomWindow()->HasStorageAccess());
+  base::UmaHistogramBoolean("API.StorageAccess.DocumentInheritedStorageAccess",
+                            inherited_has_storage_access);
 
   frame_->DomWindow()->SetPolicyContainer(std::move(policy_container_));
   frame_->DomWindow()->SetContentSecurityPolicy(csp);
+
+  BlinkStorageKey storage_key(storage_key_);
+  // TODO(crbug.com/1199077): For some reason `storage_key_` is occasionally
+  // null. If that's the case this will create one based on the
+  // `security_origin`.
+  // TODO(crbug.com/1199077): Some tests (potentially other code?) rely on an
+  // opaque origin + nonce. Investigate whether this combination should be
+  // disallowed.
+  if (storage_key.GetSecurityOrigin()->IsOpaque() && !storage_key.GetNonce()) {
+    storage_key = BlinkStorageKey::CreateFirstParty(security_origin);
+  }
 
   // Now that we have the final window and Agent, ensure the security origin has
   // the appropriate agent cluster id. This may derive a new security origin.
   security_origin = security_origin->GetOriginForAgentCluster(
       frame_->DomWindow()->GetAgent()->cluster_id());
 
-  if (storage_key_.GetNonce()) {
-    // If the nonce isn't null, we can use the simpler form of the constructor.
-    frame_->DomWindow()->SetStorageKey(BlinkStorageKey::CreateWithNonce(
-        security_origin, *storage_key_.GetNonce()));
-  } else {
-    // TODO(crbug.com/1159586): Remove this when 3psp storage is on. It's here
-    // to preserve the information that is stripped due to the key being
-    // re-made.
-    const auto& storage_key_with_3psp =
-        storage_key_.CopyWithForceEnabledThirdPartyStoragePartitioning();
-    BlinkSchemefulSite top_level_site = storage_key_with_3psp.GetTopLevelSite();
-    // If `security_origin` is opaque or does not match `top_level_site` we
-    // must ensure `ancestor_chain_bit` is kCrossSite.
-    mojom::blink::AncestorChainBit ancestor_chain_bit =
-        storage_key_with_3psp.GetAncestorChainBit();
-    if (security_origin->IsOpaque() ||
-        BlinkSchemefulSite(security_origin) != top_level_site) {
-      ancestor_chain_bit = mojom::blink::AncestorChainBit::kCrossSite;
-    }
-    // TODO(https://crbug.com/888079): Just use the storage key sent by the
-    // browser once the browser will be able to compute the origin in all cases.
-    frame_->DomWindow()->SetStorageKey(BlinkStorageKey::Create(
-        security_origin, top_level_site, ancestor_chain_bit));
-  }
+  // TODO(https://crbug.com/888079): Just use the storage key sent by the
+  // browser once the browser will be able to compute the origin in all cases.
+  frame_->DomWindow()->SetStorageKey(storage_key.WithOrigin(security_origin));
 
-  if (storage_key_ == session_storage_key_ ||
-      storage_key_.GetSecurityOrigin()->IsOpaque() ||
+  if (storage_key == session_storage_key_ ||
+      storage_key.GetSecurityOrigin()->IsOpaque() ||
       session_storage_key_.GetSecurityOrigin()->IsOpaque()) {
-    // If the `storage_key_` and `session_storage_key_` match (or either are
+    // If the `storage_key` and `session_storage_key_` match (or either are
     // opaque), we should just use whatever storage key was built above as we
     // aren't preventing partition.
     frame_->DomWindow()->SetSessionStorageKey(

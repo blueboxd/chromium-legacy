@@ -288,6 +288,7 @@
 <translation id="2475982808118771221">Սխալ առաջացավ</translation>
 <translation id="2482878487686419369">Ծանուցումներ</translation>
 <translation id="2484513351006226581">Ստեղնաշարի դասավորությունը փոխելու համար սեղմեք <ph name="KEYBOARD_SHORTCUT" />։</translation>
+<translation id="2487915095798731898">Միանալ</translation>
 <translation id="2501920221385095727">Կպչուն ստեղներ</translation>
 <translation id="2509468283778169019">CAPS LOCK-ը միացված է</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -365,7 +366,7 @@
 <translation id="296762781903199866">Չհաջողվեց ներբեռնել <ph name="LANGUAGE" /> լեզվով խոսքի ճանաչման ֆայլերը</translation>
 <translation id="2970920913501714344">Տեղադրել հավելվածներ, ընդլայնումներ և թեմաներ</translation>
 <translation id="2977598380246111477">Հաջորդ համարը</translation>
-<translation id="2985148236010982088">Դիտել բոլոր հավելվածները</translation>
+<translation id="2985148236010982088">Տեսնել բոլոր հավելվածները</translation>
 <translation id="2992327365391326550">Սարքի խոսափողի կոճակն անջատված է։</translation>
 <translation id="2996462380875591307">Ամրացված խոշորացույցը միացավ: Այն անջատելու համար նորից սեղմեք Ctrl+Search+D:</translation>
 <translation id="3000461861112256445">Մոնո</translation>
@@ -547,6 +548,7 @@
 <translation id="3925540965556789199"><ph name="DATE" />, միջոցառումների բեռնում։</translation>
 <translation id="3932043219784172185">Միացած սարքեր չկան</translation>
 <translation id="3934456833412894880">Հարմարվող լիցքավորումը միացված է։ Մարտկոցի աշխատաժամանակը երկարացնելու համար այն կլիցքավորվի մինչև 80%։ Մարտկոցն ամբողջությամբ կլիցքավորվի միայն այն դեպքում, երբ իսկապես դրա անհրաժեշտությունը լինի։</translation>
+<translation id="3936620957945677513">Սեղմեք «Մտնել»՝ <ph name="EVENT_SUMMARY" /> միջոցառմանը միանալու համար</translation>
 <translation id="3943857333388298514">Տեղադրել</translation>
 <translation id="394485226368336402">Ձայնի կարգավորումներ</translation>
 <translation id="3945319193631853098">Հպեք՝ կարգավորումն ավարտելու համար</translation>

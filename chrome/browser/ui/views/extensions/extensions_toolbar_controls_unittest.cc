@@ -13,14 +13,10 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_unittest.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_utils.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/test/permissions_manager_waiter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/view_utils.h"
 #include "url/origin.h"
 
 class ExtensionsToolbarControlsUnitTest : public ExtensionsToolbarUnitTest {
@@ -113,11 +109,11 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
           browser()->tab_strip_model()->GetActiveWebContents());
   runner->accept_bubble_for_testing(true);
 
+  auto* manager = extensions::PermissionsManager::Get(profile());
   // Change the extension to run only on click using the context
   // menu. The extension should request access to the current site.
   {
-    extensions::PermissionsManagerWaiter waiter(
-        extensions::PermissionsManager::Get(profile()));
+    extensions::PermissionsManagerWaiter waiter(manager);
     context_menu.ExecuteCommand(
         extensions::ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_CLICK, 0);
     waiter.WaitForExtensionPermissionsUpdate();
@@ -130,8 +126,7 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   // Change the extension to run only on site using the context
   // menu. The extension should not request access to the current site.
   {
-    extensions::PermissionsManagerWaiter waiter(
-        extensions::PermissionsManager::Get(profile()));
+    extensions::PermissionsManagerWaiter waiter(manager);
     context_menu.ExecuteCommand(
         extensions::ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_SITE, 0);
     waiter.WaitForExtensionPermissionsUpdate();
@@ -238,20 +233,10 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   EXPECT_TRUE(IsRequestAccessButtonVisible());
 
   auto* manager = extensions::PermissionsManager::Get(profile());
-  {
-    // Request access button is not visible in permitted sites.
-    extensions::PermissionsManagerWaiter manager_waiter(
-        extensions::PermissionsManager::Get(profile()));
-    manager->AddUserPermittedSite(url_origin);
-    manager_waiter.WaitForUserPermissionsSettingsChange();
-    WaitForAnimation();
-    EXPECT_FALSE(IsRequestAccessButtonVisible());
-  }
 
   {
     // Request access button is not visible in restricted sites.
-    extensions::PermissionsManagerWaiter manager_waiter(
-        extensions::PermissionsManager::Get(profile()));
+    extensions::PermissionsManagerWaiter manager_waiter(manager);
     manager->AddUserRestrictedSite(url_origin);
     manager_waiter.WaitForUserPermissionsSettingsChange();
     WaitForAnimation();
@@ -259,10 +244,9 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   }
 
   {
-    // Request acesss button is visible if site is not permitted or restricted,
+    // Request acesss button is visible if site is not restricted,
     // and at least one extension is requesting access.
-    extensions::PermissionsManagerWaiter manager_waiter(
-        extensions::PermissionsManager::Get(profile()));
+    extensions::PermissionsManagerWaiter manager_waiter(manager);
     manager->RemoveUserRestrictedSite(url_origin);
     manager_waiter.WaitForUserPermissionsSettingsChange();
     WaitForAnimation();
@@ -308,4 +292,60 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   EXPECT_EQ(user_action_tester.GetActionCount(kActivatedUserAction), 1);
   EXPECT_EQ(permissions.GetSiteAccess(*extension, url),
             extensions::SitePermissionsHelper::SiteAccess::kOnClick);
+}
+
+class ExtensionsToolbarControlsWithPermittedSitesUnitTest
+    : public ExtensionsToolbarControlsUnitTest {
+ public:
+  ExtensionsToolbarControlsWithPermittedSitesUnitTest() {
+    std::vector<base::test::FeatureRef> enabled_features = {
+        extensions_features::kExtensionsMenuAccessControl,
+        extensions_features::kExtensionsMenuAccessControlWithPermittedSites};
+    std::vector<base::test::FeatureRef> disabled_features;
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+  ExtensionsToolbarControlsWithPermittedSitesUnitTest(
+      const ExtensionsToolbarControlsWithPermittedSitesUnitTest&) = delete;
+  const ExtensionsToolbarControlsWithPermittedSitesUnitTest& operator=(
+      const ExtensionsToolbarControlsWithPermittedSitesUnitTest&) = delete;
+  ~ExtensionsToolbarControlsWithPermittedSitesUnitTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test that request access button is visible based on the user site setting
+// selected.
+TEST_F(ExtensionsToolbarControlsWithPermittedSitesUnitTest,
+       RequestAccessButtonVisibilityOnPermittedSites) {
+  content::WebContentsTester* web_contents_tester =
+      AddWebContentsAndGetTester();
+  const GURL url("http://www.url.com");
+  auto url_origin = url::Origin::Create(url);
+
+  // Install an extension and withhold permissions so request access button can
+  // be visible.
+  auto extension =
+      InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
+  WithholdHostPermissions(extension.get());
+
+  web_contents_tester->NavigateAndCommit(url);
+  WaitForAnimation();
+
+  // A site has "customize by extensions" site setting by default,
+  ASSERT_EQ(
+      GetUserSiteSetting(url),
+      extensions::PermissionsManager::UserSiteSetting::kCustomizeByExtension);
+  EXPECT_TRUE(IsRequestAccessButtonVisible());
+
+  // Request access button is not visible in permitted sites.
+  auto* manager = extensions::PermissionsManager::Get(profile());
+  extensions::PermissionsManagerWaiter waiter(manager);
+  manager->AddUserPermittedSite(url_origin);
+  waiter.WaitForUserPermissionsSettingsChange();
+  WaitForAnimation();
+
+  // Request access button visibility is the same for other site settings, which
+  // is already tested, regardless of whether permitted sites are supported or
+  // not.
 }

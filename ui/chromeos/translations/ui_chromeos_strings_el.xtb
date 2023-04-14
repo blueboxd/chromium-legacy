@@ -359,11 +359,11 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Επικόλληση</translation>
 <translation id="3952872973865944257">Φωνητική εισαγωγή Τελούγκου</translation>
-<translation id="3954354850384043518">Σε εξέλιξη</translation>
 <translation id="3958548648197196644">Ακτινίδιο</translation>
 <translation id="3971140002794351170">Λήψη προφίλ κινητού, Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Αγγλικά (ΗΒ)</translation>
 <translation id="3975895378829046965">Φωνητική εισαγωγή Βεγγαλικών</translation>
+<translation id="3999574733850440202">Τα αρχεία Microsoft που έχουν ανοιχτεί πρόσφατα μετακινήθηκαν στο OneDrive</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
 <translation id="4017788180641807848">Αγγλικά (ΗΠΑ) με πληκτρολόγιο Workman</translation>
 <translation id="4019998208269143058">Καρφίτσωμα στα γρήγορα αρχεία</translation>
@@ -372,6 +372,7 @@
 <translation id="4092890906744441904">Ιρλανδικά</translation>
 <translation id="4124935795427217608">Μονόκερος</translation>
 <translation id="4131235941541910880">Μεταφέρετε τα στοιχεία που δεν θέλετε στον κάδο</translation>
+<translation id="4134804435730168042">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Ενεργοποίηση μετά τη ρύθμιση συσκευής</translation>
 <translation id="4153015322587141338">Κάντε δεξί κλικ σε ένα αρχείο και επιλέξτε <ph name="PIN_COMMAND" /> για γρήγορη πρόσβαση στα αρχεία σας που βρίσκονται στο ράφι.</translation>
 <translation id="4157569377477607576">Η πολιτική διαχειριστή δεν συνιστά:</translation>
 <translation id="4159731583141908892">Το αρχείο <ph name="FILE_NAME" /> μετακινήθηκε.</translation>
@@ -414,6 +415,7 @@
 <translation id="4414834425328380570">Το αρχείο <ph name="FILE_NAME" /> θα διαγραφεί και δεν θα μπορείτε να το επαναφέρετε.</translation>
 <translation id="4418686080762064601">Δημιουργήστε μια συντόμευση για τα αρχεία σας</translation>
 <translation id="4425149324548788773">Το Drive μου</translation>
+<translation id="4432921877815220091">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ενεργοποίηση μετά τη ρύθμιση της συσκευής, Διαχειριζόμενο από τον διαχειριστή σας</translation>
 <translation id="4439427728133035643">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Σύνδεση</translation>
 <translation id="4442424173763614572">Η αναζήτηση DNS απέτυχε</translation>
 <translation id="4462159676511157176">Προσαρμοσμένοι διακομιστές ονομάτων</translation>
@@ -628,6 +630,7 @@
 <translation id="5913638992615760742">Αποτυχία λειτουργίας αντιγραφής, μη αναμενόμενο σφάλμα: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5926082595146149752">Ολλανδικά (Ολλανδία) με πληκτρολόγιο υπολογιστή Διεθνές ΗΠΑ</translation>
 <translation id="5932901536148835538">Chromebit</translation>
+<translation id="5948255720516436063">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ενεργοποίηση μετά τη ρύθμιση συσκευής</translation>
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> στοιχεία</translation>
 <translation id="5957366693331451795">Chromebox</translation>
 <translation id="5982621672636444458">Επιλογές ταξινόμησης</translation>
@@ -775,6 +778,7 @@
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;αναζήτηση Drive&lt;/em&gt;</translation>
 <translation id="7135561821015524160">Φωνητική εισαγωγή Κανάντα</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7162080671816799010">Λείπουν τα στοιχεία Αντιστοιχία εναλλακτικού ονόματος υποκειμένου ή Αντιστοιχία επιθήματος τομέα, για επικύρωση της ταυτότητας διακομιστή ελέγχου ταυτότητας.</translation>
 <translation id="7165320105431587207">Αποτυχία διαμόρφωσης δικτύου</translation>
 <translation id="7170041865419449892">Εκτός εύρους τιμών</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
@@ -848,6 +852,7 @@
 <translation id="7724603315864178912">Αποκοπή</translation>
 <translation id="7732111077498238432">Το δίκτυο διέπεται από πολιτική</translation>
 <translation id="7736003208887389532">Μόνιμη διαγραφή αυτών των αρχείων;</translation>
+<translation id="7740287852186792672">Αποτελέσματα αναζήτησης</translation>
 <translation id="7748626145866214022">Στη γραμμή ενεργειών υπάρχουν περισσότερες επιλογές. Πιέστε Alt + A, για να εστιάσετε στη γραμμή ενεργειών.</translation>
 <translation id="7760449188139285140">Κινεζικά Wubi</translation>
 <translation id="7765158879357617694">Μεταφορά</translation>
@@ -900,6 +905,7 @@
 <translation id="8116072619078571545">Παγωμένο νερό</translation>
 <translation id="8128733386027980860">Αγγλικά (ΗΠΑ) με πληκτρολόγιο Dvorak</translation>
 <translation id="8137331602592933310">Το "<ph name="FILENAME" />" έχει χρησιμοποιηθεί από κοινού με εσάς. Δεν μπορείτε να το διαγράψετε, επειδή δεν σας ανήκει.</translation>
+<translation id="8138705869659070104">Ενεργοποίηση μετά τη ρύθμιση της συσκευής</translation>
 <translation id="813913629614996137">Εκκίνηση…</translation>
 <translation id="8147028810663464959">Το εύρος χαρακτήρων είναι Πλήρες</translation>
 <translation id="8151638057146502721">Διαμόρφωση</translation>
@@ -926,6 +932,7 @@
 <translation id="8300849813060516376">Αποτυχία OTASP</translation>
 <translation id="8312871300878166382">Επικόλληση στο φάκελο</translation>
 <translation id="8329978297633540474">Απλό κείμενο</translation>
+<translation id="8332007959299458842">Τα αρχεία Microsoft που έχουν ανοιχτεί πρόσφατα μετακινήθηκαν στο Google Drive</translation>
 <translation id="8335587457941836791">Ξεκαρφίτσωμα από το ράφι</translation>
 <translation id="8335837413233998004">Λευκορωσικά</translation>
 <translation id="8336153091935557858">Χθες <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -952,6 +959,7 @@
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8492972329130824181">Το οικιακό δίκτυο δεν είναι διαθέσιμο. Για να συνδεθείτε, πρέπει να ενεργοποιήσετε την περιαγωγή δεδομένων κινητής τηλεφωνίας.</translation>
 <translation id="8499098729323186194">Εξαγωγή <ph name="NUMBER_OF_ITEMS" /> στοιχείων…</translation>
+<translation id="8502913769543567768">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Ενεργοποίηση μετά τη ρύθμιση συσκευής, Διαχειριζόμενο από τον διαχειριστή σας</translation>
 <translation id="8521441079177373948">ΗΒ</translation>
 <translation id="853494022971700746">Γαλλικά (Γαλλίας)</translation>
 <translation id="8540608333167683902">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Λεπτομέρειες</translation>
@@ -1017,6 +1025,7 @@
 <translation id="9046895021617826162">Η σύνδεση απέτυχε</translation>
 <translation id="9065512565307033593">Εάν δεν επαληθεύσετε, θα απενεργοποιηθεί η πρόσβαση δικτύου σας.</translation>
 <translation id="908378762078012445">Ρωσικά με φωνητικό πληκτρολόγιο AATSEEL</translation>
+<translation id="9086302186042011942">Συγχρονισμός</translation>
 <translation id="9099674669267916096">Πλήθος σελίδων</translation>
 <translation id="9100610230175265781">Απαιτείται φράση πρόσβασης</translation>
 <translation id="9110990317705400362">Αναζητούμε συνεχώς νέους τρόπους για να κάνουμε πιο ασφαλή την περιήγησή σας. Παλιότερα, ένας ιστότοπος μπορούσε να σας ζητήσει να προσθέσετε μια επέκταση στο πρόγραμμα περιήγησής σας. Στις πιο πρόσφατες εκδόσεις του Google Chrome, πρέπει να πείτε ρητά στο Chrome ότι επιθυμείτε την εγκατάσταση αυτών των επεκτάσεων, προσθέτοντάς τες μέσω της σελίδας "Επεκτάσεις". <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>

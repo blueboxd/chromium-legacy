@@ -1048,6 +1048,16 @@ constexpr base::FeatureParam<bool> kStartServiceWorkerForEmptyFetchHandler{
     false,
 };
 
+// This feature param controls if the service worker is started for an
+// empty service worker fetch handler while `kSkipEmptyFetchHandler` is on.
+// Unlike the feature param `kStartServiceWorkerForEmptyFetchHandler`,
+// this starts service worker in `TaskRunner::PostTask`.
+constexpr base::FeatureParam<bool> kAsyncStartServiceWorkerForEmptyFetchHandler{
+    &kServiceWorkerSkipIgnorableFetchHandler,
+    "AsyncStartServiceWorkerForEmptyFetchHandler",
+    false,
+};
+
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 BASE_FEATURE(kRunVideoCaptureServiceInBrowserProcess,
@@ -1479,7 +1489,7 @@ BASE_FEATURE(kRequestDesktopSiteAdditions,
 // Refer to the launch bug (https://crbug.com/1244979) for more information.
 BASE_FEATURE(kRequestDesktopSiteExceptions,
              "RequestDesktopSiteExceptions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Request Desktop Site zoom for Android. Apply a pre-defined page zoom level
 // when desktop user agent is used.

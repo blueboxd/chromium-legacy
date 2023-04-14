@@ -84,6 +84,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="1178821169867863726">12 x 16 inci (30 x 40 cm)</translation>
 <translation id="1181037720776840403">Hapus</translation>
 <translation id="1186201132766001848">Periksa Sandi</translation>
+<translation id="1195073053842921378">Alamat ini akan dihapus dari perangkat ini</translation>
 <translation id="1195558154361252544">Notifikasi otomatis diblokir untuk semua situs kecuali situs yang Anda izinkan</translation>
 <translation id="1197088940767939838">Oranye</translation>
 <translation id="1201402288615127009">Berikutnya</translation>
@@ -587,8 +588,8 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2359629602545592467">Beberapa</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2361263712565360498">275 x 395 mm</translation>
-<translation id="2362083820973145409">Login sebagai <ph name="USER_NAME" />. <ph name="USER_EMAIL" />. Membuka setelan.</translation>
 <translation id="236340516568226369">Menu tombol ubah ukuran</translation>
+<translation id="2365355378251437925">Masukkan <ph name="FIELD" /></translation>
 <translation id="2367567093518048410">Tingkat</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2383455408879745299">Personalisasikan alat aksesibilitas Anda di setelan Chrome</translation>
@@ -876,6 +877,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="317878711435188021">Mengetahui saat Anda aktif menggunakan perangkat ini</translation>
 <translation id="3180358318770512945">Parenting</translation>
 <translation id="3187306450550410410">Pengaturan kerja fleksibel</translation>
+<translation id="3187380004437786923">Kelola pembayaran</translation>
 <translation id="3187472288455401631">Pengukuran iklan</translation>
 <translation id="3190736958609431397">Batalkan pemantauan</translation>
 <translation id="319282854780294203">Jaringan sosial</translation>
@@ -1207,6 +1209,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="3992684624889376114">Tentang halaman ini</translation>
 <translation id="399952081411886534">Fitur lain yang membuat iklan bersifat lebih pribadi</translation>
+<translation id="4000598935132966791">Pelajari lebih lanjut batasan situs di browser terkelola</translation>
 <translation id="4006465311664329701">Metode Pembayaran, Penawaran, dan Alamat yang Menggunakan Google Pay</translation>
 <translation id="4009243425692662128">Konten halaman yang Anda cetak akan dikirim ke Google Cloud atau pihak ketiga untuk dianalisis. Misalnya, teks mungkin dipindai untuk mendeteksi data sensitif.</translation>
 <translation id="4010758435855888356">Izinkan akses penyimpanan?</translation>
@@ -1929,7 +1932,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Gunakan nomor virtual untuk kartu ini}other{Pilih kartu}}</translation>
 <translation id="5752552348183096912">Produk antiperspiran, deodoran &amp; spray tubuh</translation>
 <translation id="5754400531489347219">Dunia satwa</translation>
-<translation id="5755162682436943950">Logout. Membuka dialog untuk login dan mengaktifkan sinkronisasi.</translation>
 <translation id="5759751709240058861">Menggunakan &amp; menggerakkan kamera Anda</translation>
 <translation id="5763042198335101085">Masukkan alamat email yang valid</translation>
 <translation id="5764725887548570807">Format asal tidak valid.</translation>
@@ -2017,7 +2019,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5992691462791905444">Lipatan format engineering Z</translation>
 <translation id="5992805036496113940">Lihat info yang digunakan untuk menampilkan iklan kepada Anda</translation>
 <translation id="5995727681868049093">Kelola info, privasi, dan keamanan di Akun Google Anda</translation>
-<translation id="5996887213716993070"><ph name="FIELD" /> tidak boleh kosong</translation>
 <translation id="5997247540087773573">Sandi yang baru saja Anda gunakan terekspos dalam pelanggaran data. Untuk mengamankan akun Anda, Pengelola Sandi Google merekomendasikan untuk mengubah sandi tersebut sekarang dan memeriksa sandi tersimpan Anda.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> hasil untuk '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6005765687956866568">Info yang diisi otomatis telah dihapus dari formulir</translation>
@@ -2474,7 +2475,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7153618581592392745">Lembayung Muda</translation>
 <translation id="7156870133441232244">Sebaiknya server diupgrade ke TLS 1.2 atau yang lebih baru.</translation>
 <translation id="7163295244162773898">{0,plural, =1{Salin file rahasia?}other{Salin file rahasia?}}</translation>
-<translation id="7168323970702333693">Login sebagai <ph name="USER_NAME" />. Membuka setelan.</translation>
 <translation id="717330890047184534">ID GAIA:</translation>
 <translation id="7174545416324379297">Digabung</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}other{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}}</translation>
@@ -2686,6 +2686,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7630470133768862132">Status izin:</translation>
 <translation id="7631444403134069754">Trek &amp; lapangan</translation>
 <translation id="7633909222644580952">Data performa dan laporan kerusakan</translation>
+<translation id="7634280112532283638">Pengurangan spam &amp; penipuan</translation>
 <translation id="7637571805876720304">Hapus kartu kredit dari Chromium?</translation>
 <translation id="7637586430889951925">{COUNT,plural, =0{Tidak ada}=1{1 sandi di akun Anda (untuk <ph name="DOMAIN_LIST" />)}other{# sandi di akun Anda (untuk <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="7638605456503525968">Port serial</translation>
@@ -3186,7 +3187,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8903921497873541725">Perbesar</translation>
 <translation id="890493561996401738">Hapus tombol Saran, tekan Enter untuk menghapus, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910898109640902752">8 x 10 inci (20 x 25 cm)</translation>
-<translation id="8912362522468806198">Akun Google</translation>
 <translation id="8913778647360618320">Tombol Kelola metode pembayaran, tekan Enter untuk mengelola info pembayaran dan kartu kredit di setelan Chrome</translation>
 <translation id="8922013791253848639">Selalu izinkan iklan di situs ini</translation>
 <translation id="892588693504540538">Lubang di kanan atas</translation>
@@ -3331,6 +3331,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="950736567201356821">Tiga lubang di atas</translation>
 <translation id="961663415146723894">Jilid bawah</translation>
 <translation id="962484866189421427">Konten ini mungkin mencoba menginstal aplikasi penipuan dengan berpura-pura menjadi sesuatu yang lain atau mengumpulkan data yang dapat digunakan untuk melacak Anda. <ph name="BEGIN_LINK" />Tampilkan saja<ph name="END_LINK" /></translation>
+<translation id="963837307749850257">Semua pengguna</translation>
 <translation id="964050462028070434">Kelola Sandi dan Passkeys…</translation>
 <translation id="96680173638229310">Mobil &amp; kendaraan</translation>
 <translation id="969892804517981540">Build Resmi</translation>

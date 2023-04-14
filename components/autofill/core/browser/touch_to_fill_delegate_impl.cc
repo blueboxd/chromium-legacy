@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/touch_to_fill_delegate_impl.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -13,13 +14,14 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
 
 TouchToFillDelegateImpl::DryRunResult::DryRunResult(
     TriggerOutcome outcome,
-    std::vector<CreditCard*> cards_to_suggest)
+    std::vector<CreditCard> cards_to_suggest)
     : outcome(outcome), cards_to_suggest(std::move(cards_to_suggest)) {}
 
 TouchToFillDelegateImpl::DryRunResult::DryRunResult(DryRunResult&&) = default;
@@ -95,7 +97,20 @@ TouchToFillDelegateImpl::DryRunResult TouchToFillDelegateImpl::DryRun(
   if (!manager_->CanShowAutofillUi()) {
     return {TriggerOutcome::kCannotShowAutofillUi, {}};
   }
-  return {TriggerOutcome::kShown, std::move(cards_to_suggest)};
+
+  // If the card is enrolled into virtual card number, create a copy of the
+  // card with `CreditCard::VIRTUAL_CARD` as the record type, and insert it
+  // before the actual card.
+  std::vector<autofill::CreditCard> real_and_virtual_cards;
+  for (const CreditCard* card : cards_to_suggest) {
+    if (card->virtual_card_enrollment_state() == CreditCard::ENROLLED &&
+        base::FeatureList::IsEnabled(
+            features::kAutofillVirtualCardsOnTouchToFillAndroid)) {
+      real_and_virtual_cards.push_back(CreditCard::CreateVirtualCard(*card));
+    }
+    real_and_virtual_cards.push_back(*card);
+  }
+  return {TriggerOutcome::kShown, std::move(real_and_virtual_cards)};
 }
 
 void TouchToFillDelegateImpl::SetShouldSuppressKeyboard(bool suppress) {
@@ -186,17 +201,24 @@ void TouchToFillDelegateImpl::OnCreditCardScanned(const CreditCard& card) {
 }
 
 void TouchToFillDelegateImpl::ShowCreditCardSettings() {
-  HideTouchToFill();
   manager_->client()->ShowAutofillSettings(PopupType::kCreditCards);
 }
 
-void TouchToFillDelegateImpl::SuggestionSelected(std::string unique_id) {
+void TouchToFillDelegateImpl::SuggestionSelected(std::string unique_id,
+                                                 bool is_virtual) {
   HideTouchToFill();
-  PersonalDataManager* pdm = manager_->client()->GetPersonalDataManager();
-  DCHECK(pdm);
-  CreditCard* card = pdm->GetCreditCardByGUID(unique_id);
-  manager_->FillOrPreviewCreditCardForm(mojom::RendererFormDataAction::kFill,
-                                        query_form_, query_field_, card);
+
+  if (is_virtual) {
+    manager_->FillOrPreviewVirtualCardInformation(
+        mojom::RendererFormDataAction::kFill, unique_id, query_form_,
+        query_field_);
+  } else {
+    PersonalDataManager* pdm = manager_->client()->GetPersonalDataManager();
+    DCHECK(pdm);
+    CreditCard* card = pdm->GetCreditCardByGUID(unique_id);
+    manager_->FillOrPreviewCreditCardForm(mojom::RendererFormDataAction::kFill,
+                                          query_form_, query_field_, card);
+  }
 }
 
 void TouchToFillDelegateImpl::OnDismissed(bool dismissed_by_user) {

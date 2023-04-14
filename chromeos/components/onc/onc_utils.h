@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "base/values.h"
 #include "components/onc/onc_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -23,10 +24,11 @@ struct OncValueSignature;
 using CertPEMsByGUIDMap = std::map<std::string, std::string>;
 
 // Parses |json| according to the JSON format. If |json| is a JSON formatted
-// dictionary, the function returns the dictionary value, otherwise returns
-// an empty Value.
+// dictionary, the function populates |dict| and returns true, otherwise returns
+// false and |dict| is unchanged.
 COMPONENT_EXPORT(CHROMEOS_ONC)
-base::Value ReadDictionaryFromJson(const std::string& json);
+absl::optional<base::Value::Dict> ReadDictionaryFromJson(
+    const std::string& json);
 
 // Decrypts the given EncryptedConfiguration |onc| (see the ONC specification)
 // using |passphrase|. The resulting UnencryptedConfiguration is returned. If an
@@ -45,7 +47,7 @@ std::string GetSourceAsString(::onc::ONCSource source);
 COMPONENT_EXPORT(CHROMEOS_ONC)
 void ExpandStringsInOncObject(const OncValueSignature& signature,
                               const VariableExpander& variable_expander,
-                              base::Value* onc_object);
+                              base::Value::Dict* onc_object);
 
 // Replaces expandable fields in the networks of |network_configs|, which must
 // be a list of ONC NetworkConfigurations. See ExpandStringsInOncObject above.

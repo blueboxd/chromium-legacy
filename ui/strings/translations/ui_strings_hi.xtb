@@ -61,6 +61,7 @@
 <translation id="2573731672208488250">{HOURS,plural, =1{1 घंटे में}one{#घंटे में}other{#घंटे में}}</translation>
 <translation id="2583543531130364912">अपनी टचस्क्रीन कैलिब्रेट करें</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
+<translation id="2653844658857826081">नया</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> से शेयर किया</translation>
 <translation id="271033894570825754">नया</translation>
@@ -157,7 +158,7 @@
 <translation id="6808150112686056157">मीडिया रोकें</translation>
 <translation id="6845383723252244143">फ़ोल्डर को चुनें</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 घंटा शेष}one{# घंटे शेष}other{# घंटे शेष}}</translation>
-<translation id="688711909580084195">शीर्षक-रहित वेबपेज</translation>
+<translation id="688711909580084195">टाइटल-रहित वेबपेज</translation>
 <translation id="6902419395050653510">एचटीएमएल कॉन्टेंट.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 वर्ष शेष}one{# वर्ष शेष}other{# वर्ष शेष}}</translation>

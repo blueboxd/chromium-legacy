@@ -296,6 +296,7 @@ void PrefModelAssociator::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(type_, type);
   models_associated_ = false;
   sync_processor_.reset();
+  synced_preferences_.clear();
   pref_service_->OnIsSyncingChanged();
 }
 
@@ -440,6 +441,7 @@ void PrefModelAssociator::RegisterPref(const std::string& name) {
   DCHECK(!base::Contains(registered_preferences_, name));
   DCHECK(
       !base::FeatureList::IsEnabled(syncer::kSyncEnforcePreferencesAllowlist) ||
+      !client_ ||
       client_->GetSyncablePrefsDatabase().IsPreferenceSyncable(name))
       << "Preference " << name
       << " has not been added to syncable prefs allowlist";
@@ -452,6 +454,7 @@ void PrefModelAssociator::RegisterPrefWithLegacyModelType(
   DCHECK(!base::Contains(registered_preferences_, name));
   DCHECK(
       !base::FeatureList::IsEnabled(syncer::kSyncEnforcePreferencesAllowlist) ||
+      !client_ ||
       client_->GetSyncablePrefsDatabase().IsPreferenceSyncable(name))
       << "Preference " << name
       << " has not been added to syncable prefs allowlist";

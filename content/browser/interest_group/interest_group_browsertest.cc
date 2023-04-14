@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
@@ -34,10 +35,13 @@
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/ad_auction_service_impl.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
+#include "content/browser/private_aggregation/private_aggregation_manager_impl.h"
+#include "content/browser/private_aggregation/private_aggregation_test_utils.h"
 #include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/private_aggregation_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -141,15 +145,13 @@ base::Value::Dict StringDoubleMapToDict(
 }
 
 base::Value::List SellerCapabilitiesToList(
-    blink::InterestGroup::SellerCapabilitiesType capabilities) {
+    blink::SellerCapabilitiesType capabilities) {
   base::Value::List list;
-  for (blink::InterestGroup::SellerCapabilities capability : capabilities) {
-    if (capability ==
-        blink::InterestGroup::SellerCapabilities::kInterestGroupCounts) {
-      list.Append("interestGroupCounts");
-    } else if (capability ==
-               blink::InterestGroup::SellerCapabilities::kLatencyStats) {
-      list.Append("latencyStats");
+  for (blink::SellerCapabilities capability : capabilities) {
+    if (capability == blink::SellerCapabilities::kInterestGroupCounts) {
+      list.Append("interest-group-counts");
+    } else if (capability == blink::SellerCapabilities::kLatencyStats) {
+      list.Append("latency-stats");
     } else {
       ADD_FAILURE() << "Unknown seller capability "
                     << static_cast<uint32_t>(capability);
@@ -160,9 +162,8 @@ base::Value::List SellerCapabilitiesToList(
 
 base::Value::Dict SellerCapabilitiesToDict(
     const absl::optional<
-        base::flat_map<url::Origin,
-                       blink::InterestGroup::SellerCapabilitiesType>>& map,
-    blink::InterestGroup::SellerCapabilitiesType all_sellers_capabilities) {
+        base::flat_map<url::Origin, blink::SellerCapabilitiesType>>& map,
+    blink::SellerCapabilitiesType all_sellers_capabilities) {
   base::Value::Dict dict;
   if (map) {
     for (const auto& [origin, capabilities] : *map) {
@@ -1332,6 +1333,8 @@ class InterestGroupFencedFrameBrowserTest
       feature_list_.InitWithFeaturesAndParameters(
           {{blink::features::kFencedFrames, {}},
            {features::kPrivacySandboxAdsAPIsOverride, {}},
+           {content::kPrivateAggregationApi, {}},
+           {blink::features::kPrivateAggregationApiFledgeExtensions, {}},
            // This feature allows `runAdAuction()`'s promise to resolve to a
            // `FencedFrameConfig` object upon developer request.
            {blink::features::kFencedFramesAPIChanges, {}}},
@@ -1339,7 +1342,9 @@ class InterestGroupFencedFrameBrowserTest
     } else {
       feature_list_.InitWithFeaturesAndParameters(
           {{blink::features::kFencedFrames, {}},
-           {features::kPrivacySandboxAdsAPIsOverride, {}}},
+           {features::kPrivacySandboxAdsAPIsOverride, {}},
+           {content::kPrivateAggregationApi, {}},
+           {blink::features::kPrivateAggregationApiFledgeExtensions, {}}},
           {/* disabled_features */});
     }
   }
@@ -2604,26 +2609,19 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
-                       JoinInterestGroupInvalidSellerCapabilities) {
+                       JoinInterestGroupInvalidSellerCapabilitiesIgnored) {
   GURL url = https_server_->GetURL("a.test", "/echo");
   std::string origin_string = url::Origin::Create(url).Serialize();
   ASSERT_TRUE(NavigateToURL(shell(), url));
 
-  EXPECT_EQ(
-      base::StringPrintf(
-          "TypeError: Failed to execute 'joinAdInterestGroup' on 'Navigator': "
-          "sellerCapabilities 'nonValidCapability' for AuctionAdInterestGroup "
-          "with owner '%s' and name 'cars' is not a supported seller "
-          "capability.",
-          origin_string.c_str()),
-      EvalJs(shell(), JsReplace(R"(
+  EXPECT_EQ("done", EvalJs(shell(), JsReplace(R"(
 (async function() {
   try {
     await navigator.joinAdInterestGroup(
         {
           name: 'cars',
           owner: $1,
-          sellerCapabilities: {'https://example.test': ['nonValidCapability']},
+          sellerCapabilities: {'https://example.test': ['non-valid-capability']},
         },
         /*joinDurationSec=*/1);
   } catch (e) {
@@ -2631,7 +2629,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   }
   return 'done';
 })())",
-                                origin_string.c_str())));
+                                              origin_string.c_str())));
   WaitForAccessObserved({});
 }
 
@@ -2649,10 +2647,9 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                     /*name=*/"cars")
                     .SetSellerCapabilities(
                         {{{url::Origin::Create(GURL("https://example.test")),
-                           blink::InterestGroup::SellerCapabilities::
-                               kInterestGroupCounts}}})
+                           blink::SellerCapabilities::kInterestGroupCounts}}})
                     .SetAllSellerCapabilities(
-                        blink::InterestGroup::SellerCapabilities::kLatencyStats)
+                        blink::SellerCapabilities::kLatencyStats)
                     .Build()));
 
   WaitForAccessObserved({});
@@ -2661,12 +2658,12 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   ASSERT_EQ(groups.size(), 1u);
   const blink::InterestGroup& group = groups[0].interest_group;
   EXPECT_EQ(group.all_sellers_capabilities,
-            blink::InterestGroup::SellerCapabilities::kLatencyStats);
+            blink::SellerCapabilities::kLatencyStats);
   ASSERT_TRUE(group.seller_capabilities);
   ASSERT_EQ(group.seller_capabilities->size(), 1u);
   EXPECT_EQ(group.seller_capabilities->at(
                 url::Origin::Create(GURL("https://example.test"))),
-            blink::InterestGroup::SellerCapabilities::kInterestGroupCounts);
+            blink::SellerCapabilities::kInterestGroupCounts);
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -2687,8 +2684,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/{},
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilities::
-              kLatencyStats, /*execution_mode=*/
+          blink::SellerCapabilities::kLatencyStats, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/absl::nullopt,
           /*bidding_wasm_helper_url=*/absl::nullopt,
@@ -10491,6 +10487,97 @@ interestGroupBuyers: [$1],
           https_server_->GetURL("d.test", "/echoall?report_win_beacon"));
   ASSERT_TRUE(request);
   EXPECT_EQ(net::HttpRequestHeaders::kPostMethod, request->method);
+}
+
+// Runs an auction similar to
+// InterestGroupFencedFrameBrowserTest.RunAdAuctionWithWinner, but also triggers
+// sending a *private aggregation* event using `window.fence.reportEvent`.
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
+                       RunAdAuctionWithWinnerRegisterPrivateAggregationBuyer) {
+  URLLoaderMonitor url_loader_monitor;
+
+  GURL test_url =
+      https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+
+  base::RunLoop run_loop;
+
+  class TestPrivateAggregationManagerImpl
+      : public PrivateAggregationManagerImpl {
+   public:
+    TestPrivateAggregationManagerImpl(
+        std::unique_ptr<PrivateAggregationBudgeter> budgeter,
+        std::unique_ptr<PrivateAggregationHost> host)
+        : PrivateAggregationManagerImpl(std::move(budgeter),
+                                        std::move(host),
+                                        /*storage_partition=*/nullptr) {}
+  };
+
+  base::MockRepeatingCallback<void(AggregatableReportRequest,
+                                   PrivateAggregationBudgetKey)>
+      mock_callback;
+
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(shell()
+                                             ->web_contents()
+                                             ->GetBrowserContext()
+                                             ->GetDefaultStoragePartition());
+  storage_partition_impl->OverridePrivateAggregationManagerForTesting(
+      std::make_unique<TestPrivateAggregationManagerImpl>(
+          std::make_unique<MockPrivateAggregationBudgeter>(),
+          std::make_unique<PrivateAggregationHost>(
+              /*on_report_request_received=*/mock_callback.Get(),
+              /*browser_context=*/storage_partition_impl->browser_context())));
+
+  // We only need to test that a request was made in PrivateAggregationHost, so
+  // we mock out the callback and check that it was called. The callback will
+  // only run *after* the ad auction finishes, but we register it beforehand
+  // so that it is guaranteed to detect when the private aggregation event is
+  // sent.
+  EXPECT_CALL(mock_callback, Run)
+      .WillRepeatedly(
+          testing::Invoke([&](AggregatableReportRequest request,
+                              PrivateAggregationBudgetKey budget_key) {
+            ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 3);
+            EXPECT_EQ(request.payload_contents().contributions[0].value, 5);
+            EXPECT_EQ(request.shared_info().reporting_origin, test_origin);
+            EXPECT_EQ(budget_key.api(),
+                      PrivateAggregationBudgetKey::Api::kFledge);
+            EXPECT_EQ(budget_key.origin(), test_origin);
+            run_loop.Quit();
+          }));
+
+  GURL ad_url = https_server_->GetURL(
+      "c.test",
+      "/fenced_frames/ad_with_fenced_frame_private_aggregation_reporting.html");
+  EXPECT_EQ(
+      kSuccess,
+      JoinInterestGroupAndVerify(
+          blink::TestInterestGroupBuilder(
+              /*owner=*/test_origin,
+              /*name=*/"cars")
+              .SetBiddingUrl(https_server_->GetURL(
+                  "a.test", "/interest_group/bidding_logic.js"))
+              .SetTrustedBiddingSignalsUrl(https_server_->GetURL(
+                  "a.test", "/interest_group/trusted_bidding_signals.json"))
+              .SetTrustedBiddingSignalsKeys({{"key1"}})
+              .SetAds({{{ad_url, R"({"ad":"metadata","here":[1,2]})"}}})
+              .Build()));
+
+  ASSERT_NO_FATAL_FAILURE(RunAuctionAndNavigateFencedFrame(
+      ad_url, JsReplace(
+                  R"({
+                      seller: $1,
+                      decisionLogicUrl: $2,
+                      interestGroupBuyers: [$1],
+                  })",
+                  test_origin,
+                  https_server_->GetURL("a.test",
+                                        "/interest_group/decision_logic.js"))));
+
+  run_loop.Run();
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

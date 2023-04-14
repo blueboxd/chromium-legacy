@@ -24,6 +24,7 @@
 #include "gin/dictionary.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "v8/include/v8-exception.h"
 #include "v8/include/v8-external.h"
 #include "v8/include/v8-function-callback.h"
@@ -38,15 +39,15 @@ namespace {
 // Converts base value string to corresponding mojom enum.
 absl::optional<auction_worklet::mojom::BaseValue> BaseValueStringToEnum(
     const std::string& base_value) {
-  if (base_value == "winningBid") {
+  if (base_value == "winning-bid") {
     return auction_worklet::mojom::BaseValue::kWinningBid;
-  } else if (base_value == "highestScoringOtherBid") {
+  } else if (base_value == "highest-scoring-other-bid") {
     return auction_worklet::mojom::BaseValue::kHighestScoringOtherBid;
-  } else if (base_value == "scriptRunTime") {
+  } else if (base_value == "script-run-time") {
     return auction_worklet::mojom::BaseValue::kScriptRunTime;
-  } else if (base_value == "signalsFetchTime") {
+  } else if (base_value == "signals-fetch-time") {
     return auction_worklet::mojom::BaseValue::kSignalsFetchTime;
-  } else if (base_value == "bidRejectReason") {
+  } else if (base_value == "bid-reject-reason") {
     return auction_worklet::mojom::BaseValue::kBidRejectReason;
   }
   // Invalid (out of range) base_value.
@@ -301,7 +302,8 @@ void PrivateAggregationBindings::FillInGlobalTemplate(
       v8_helper_->CreateStringFromLiteral("sendHistogramReport"),
       send_histogram_report_template);
 
-  if (content::kPrivateAggregationApiFledgeExtensionsEnabled.Get()) {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kPrivateAggregationApiFledgeExtensions)) {
     v8::Local<v8::FunctionTemplate> report_contribution_for_event_template =
         v8::FunctionTemplate::New(
             v8_helper_->isolate(),

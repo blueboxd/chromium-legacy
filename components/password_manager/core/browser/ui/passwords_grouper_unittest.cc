@@ -55,10 +55,11 @@ TEST_F(PasswordsGrouperTest, GetAffiliatedGroupsWithGroupingInfo) {
   blocked_form.blocked_by_user = true;
 
   PasswordForm federated_form;
-  federated_form.signon_realm = "https://federated.com/";
-  federated_form.username_value = u"example@gmail.com";
+  federated_form.url = GURL("https://test.org/");
+  federated_form.signon_realm = "federation://test.com/accounts.federation.com";
+  federated_form.username_value = u"username2";
   federated_form.federation_origin =
-      url::Origin::Create(GURL(u"federatedOrigin.com"));
+      url::Origin::Create(GURL("https://accounts.federation.com"));
 
   EXPECT_CALL(affiliation_service(), GetAllGroups)
       .WillRepeatedly(
@@ -94,10 +95,11 @@ TEST_F(PasswordsGrouperTest, GroupPasswords) {
   blocked_form.blocked_by_user = true;
 
   PasswordForm federated_form;
-  federated_form.signon_realm = "https://federated.com/";
-  federated_form.username_value = u"example@gmail.com";
+  federated_form.url = GURL("https://test.org/");
+  federated_form.signon_realm = "federation://test.com/accounts.federation.com";
+  federated_form.username_value = u"username2";
   federated_form.federation_origin =
-      url::Origin::Create(GURL(u"federatedOrigin.com"));
+      url::Origin::Create(GURL("https://accounts.federation.com"));
 
   GroupedFacets group;
   group.facets = {
@@ -137,10 +139,11 @@ TEST_F(PasswordsGrouperTest, GroupPasswordsWithoutAffiliation) {
   blocked_form.blocked_by_user = true;
 
   PasswordForm federated_form;
-  federated_form.signon_realm = "https://federated.com/";
-  federated_form.username_value = u"example@gmail.com";
+  federated_form.url = GURL("https://test.org/");
+  federated_form.signon_realm = "federation://test.com/accounts.federation.com";
+  federated_form.username_value = u"username2";
   federated_form.federation_origin =
-      url::Origin::Create(GURL(u"federatedOrigin.com"));
+      url::Origin::Create(GURL("https://accounts.federation.com"));
 
   EXPECT_CALL(affiliation_service(), GetAllGroups)
       .WillRepeatedly(
@@ -310,6 +313,76 @@ TEST_F(PasswordsGrouperTest, HttpAndHttpsGroupedTogether) {
   EXPECT_THAT(
       grouper().GetAffiliatedGroupsWithGroupingInfo(),
       ElementsAre(AffiliatedGroup({credential}, {GetShownOrigin(credential)})));
+}
+
+TEST_F(PasswordsGrouperTest, FederatedAndroidAppGroupedWithRegularPasswords) {
+  PasswordForm form = CreateForm("https://test.app.com/");
+  PasswordForm federated_android_form;
+  federated_android_form.signon_realm =
+      "android://"
+      "5Z0D_o6B8BqileZyWhXmqO_wkO8uO0etCEXvMn5tUzEqkWUgfTSjMcTM7eMMTY_"
+      "FGJC9RlpRNt_8Qp5tgDocXw==@com.bambuna.podcastaddict/";
+  federated_android_form.username_value = u"test@gmail.com";
+  federated_android_form.url = GURL(federated_android_form.signon_realm);
+  federated_android_form.federation_origin =
+      url::Origin::Create(GURL(u"https://federatedOrigin.com"));
+
+  GroupedFacets group;
+  group.facets = {
+      Facet(FacetURI::FromPotentiallyInvalidSpec(
+          "android://"
+          "5Z0D_o6B8BqileZyWhXmqO_wkO8uO0etCEXvMn5tUzEqkWUgfTSjMcTM7eMMTY_"
+          "FGJC9RlpRNt_8Qp5tgDocXw==@com.bambuna.podcastaddict")),
+      Facet(FacetURI::FromPotentiallyInvalidSpec("https://test.app.com")),
+  };
+
+  EXPECT_CALL(affiliation_service(), GetAllGroups)
+      .WillRepeatedly(
+          base::test::RunOnceCallback<0>(std::vector<GroupedFacets>{group}));
+  grouper().GroupPasswords(
+      {
+          std::make_pair("key1", form),
+          std::make_pair("key2", federated_android_form)
+      },
+      base::DoNothing());
+
+  CredentialUIEntry credential({form}),
+      federated_credential({federated_android_form});
+  EXPECT_THAT(
+      grouper().GetAffiliatedGroupsWithGroupingInfo(),
+      ElementsAre(AffiliatedGroup({federated_credential, credential},
+                                  {GetShownOrigin(federated_credential)})));
+}
+
+TEST_F(PasswordsGrouperTest, EncodedCharactersInSignonRealm) {
+  PasswordForm form = CreateForm("https://test.com/sign in/%-.<>`^_'{|}");
+
+  // For federated credentials url is used for grouping. Add space there.
+  PasswordForm federated_form;
+  federated_form.url = GURL("https://test.org/sign in/%-.<>`^_'{|}");
+  federated_form.signon_realm = "federation://test.com/accounts.federation.com";
+  federated_form.username_value = u"username2";
+  federated_form.federation_origin =
+      url::Origin::Create(GURL("https://accounts.federation.com"));
+
+  GroupedFacets group;
+  // Group them only by TLD.
+  group.facets = {
+      Facet(FacetURI::FromCanonicalSpec("https://test.com")),
+      Facet(FacetURI::FromCanonicalSpec("https://test.org")),
+  };
+
+  EXPECT_CALL(affiliation_service(), GetAllGroups)
+      .WillRepeatedly(
+          base::test::RunOnceCallback<0>(std::vector<GroupedFacets>{group}));
+  grouper().GroupPasswords(
+      {std::make_pair("key1", form), std::make_pair("key2", federated_form)},
+      base::DoNothing());
+
+  CredentialUIEntry credential1(form), credential2(federated_form);
+  EXPECT_THAT(grouper().GetAffiliatedGroupsWithGroupingInfo(),
+              UnorderedElementsAre(AffiliatedGroup(
+                  {credential1, credential2}, {GetShownOrigin(credential1)})));
 }
 
 }  // namespace password_manager

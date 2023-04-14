@@ -476,7 +476,8 @@ class CONTENT_EXPORT InterestGroupAuction
   // Returns all interest groups that bid in an auction. Expected to be called
   // after the bidding and scoring phase completes. Returns an empty set if the
   // auction failed for any reason other than the seller rejecting all bids.
-  void GetInterestGroupsThatBid(blink::InterestGroupSet& interest_groups) const;
+  void GetInterestGroupsThatBidAndReportBidCounts(
+      blink::InterestGroupSet& interest_groups) const;
 
   // Retrieves any debug reporting URLs. May only be called once, since it takes
   // ownership of stored reporting URLs. This is called internally by
@@ -524,6 +525,38 @@ class CONTENT_EXPORT InterestGroupAuction
   // particularly if an owner is listed in multiple auction components. May
   // only be called once, since it moves the stored origins.
   void TakePostAuctionUpdateOwners(std::vector<url::Origin>& owners);
+
+  // Reports (via extended private aggregation) the number of interest groups
+  // loaded for the owner of `interest_group` iff `interest_group` has
+  // authorized this auction's seller to receive such information.
+  //
+  // The reported value isn't limited by the auction config's
+  // perBuyerGroupLimits.
+  //
+  // Returns true iff a report was issued.
+  bool ReportInterestGroupCount(const blink::InterestGroup& interest_group,
+                                size_t count);
+
+  // Reports (via extended private aggregation) the number of interest groups
+  // that bid for the owner of `interest_group` iff `interest_group` has
+  // authorized this auction's seller to receive such information.
+  //
+  // Returns true iff a report was issued.
+  bool ReportBidCount(const blink::InterestGroup& interest_group, size_t count);
+
+  // Reports (via extended private aggregation) the time taken to fetch trusted
+  // signals iff `interest_group` has authorized this auction's seller to
+  // receive such information.
+  void ReportTrustedSignalsFetchLatency(
+      const blink::InterestGroup& interest_group,
+      base::TimeDelta trusted_signals_fetch_latency);
+
+  // Reports (via extended private aggregation) the time taken to perform
+  // bidding (including the pre-kanonymous bid, and failed bids) iff
+  // `interest_group` has authorized this auction's seller to receive such
+  // information.
+  void ReportBiddingLatency(const blink::InterestGroup& interest_group,
+                            base::TimeDelta bidding_latency);
 
   // Retrieves the keys that need to be joined as a result of the auction. A
   // failed auction may result in keys that still need to be joined, for
@@ -798,6 +831,35 @@ class CONTENT_EXPORT InterestGroupAuction
           absl::nullopt,
       const absl::optional<auction_worklet::mojom::RejectReason> reject_reason =
           absl::nullopt);
+
+  // Determines if an extended private aggregation buyers request should be
+  // made, and if so, issues the request. Otherwise, does nothing.
+  //
+  // That is, issues the request if all of the following are true:
+  //
+  // 1. `interest_group` has authorized the seller of this auction the
+  // capability of type `capability`.
+  //
+  // 2. `config_`'s `auction_report_buyers` and `auction_report_buyer_keys` have
+  // requested that such a report be made for the owner of `interest_group`.
+  //
+  // 3. `config_`'s `auction_report_buyers` has a key equal to
+  // `buyer_report_type`.
+  //
+  // The issued extended private aggregation report's bucket is calculated from
+  // `config_`'s `auction_report_buyer_keys` and `auction_report_buyers`, and
+  // value equals to `value` times the `scalar` from `config_`'s
+  // `auction_report_buyers`.
+  //
+  // Returns true iff a report was issued.
+  //
+  // TODO(crbug.com/1416621): Consider pre-aggregating metrics before sending to
+  // the server.
+  bool ReportPaBuyersValueIfAllowed(
+      const blink::InterestGroup& interest_group,
+      blink::SellerCapabilities capability,
+      blink::AuctionConfig::NonSharedParams::BuyerReportType buyer_report_type,
+      int value);
 
   // Returns how and whether k-anonymity is being handled.
   auction_worklet::mojom::KAnonymityBidMode kanon_mode() const {

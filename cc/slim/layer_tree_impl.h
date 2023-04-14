@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
@@ -33,6 +34,7 @@ class UIResourceManager;
 }  // namespace cc
 
 namespace viz {
+class ClientResourceProvider;
 class CompositorRenderPass;
 }  // namespace viz
 
@@ -87,12 +89,34 @@ class COMPONENT_EXPORT(CC_SLIM) LayerTreeImpl : public LayerTree,
   // Internal methods called by Layers.
   void NotifyTreeChanged();
   void NotifyPropertyChanged();
+  viz::ClientResourceProvider* GetClientResourceProvider();
+  viz::ResourceId GetVizResourceId(cc::UIResourceId id);
+  bool IsUIResourceOpaque(int resource_id);
+  gfx::Size GetUIResourceSize(int resource_id);
   void AddSurfaceRange(const viz::SurfaceRange& range);
   void RemoveSurfaceRange(const viz::SurfaceRange& range);
 
  private:
   friend class LayerTree;
   friend class TestLayerTreeImpl;
+
+  struct PresentationCallbackInfo {
+    PresentationCallbackInfo(
+        uint32_t frame_token,
+        std::vector<PresentationCallback> presentation_callbacks,
+        std::vector<SuccessfulCallback> success_callbacks);
+    ~PresentationCallbackInfo();
+    PresentationCallbackInfo(PresentationCallbackInfo&&);
+    PresentationCallbackInfo& operator=(PresentationCallbackInfo&&);
+
+    PresentationCallbackInfo(const PresentationCallbackInfo&) = delete;
+    PresentationCallbackInfo& operator=(const PresentationCallbackInfo&) =
+        delete;
+
+    uint32_t frame_token = 0u;
+    std::vector<PresentationCallback> presentation_callbacks;
+    std::vector<SuccessfulCallback> success_callbacks;
+  };
 
   explicit LayerTreeImpl(LayerTreeClient* client);
 
@@ -147,6 +171,15 @@ class COMPONENT_EXPORT(CC_SLIM) LayerTreeImpl : public LayerTree,
   base::flat_set<viz::SurfaceRange> referenced_surfaces_;
   viz::FrameTokenGenerator next_frame_token_;
   gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
+
+  std::vector<std::unique_ptr<viz::CopyOutputRequest>>
+      copy_requests_for_next_frame_;
+  // These are added to `pending_presentation_callbacks_` in the next frame.
+  std::vector<PresentationCallback> presentation_callback_for_next_frame_;
+  std::vector<SuccessfulCallback> success_callback_for_next_frame_;
+
+  base::circular_deque<PresentationCallbackInfo>
+      pending_presentation_callbacks_;
 
   base::WeakPtrFactory<LayerTreeImpl> weak_factory_{this};
 };

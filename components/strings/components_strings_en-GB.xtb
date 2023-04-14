@@ -588,8 +588,8 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2359629602545592467">Multiple</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2361263712565360498">275 x 395 mm</translation>
-<translation id="2362083820973145409">Signed in as <ph name="USER_NAME" />. <ph name="USER_EMAIL" />. Opens settings.</translation>
 <translation id="236340516568226369">Resize toggle menu</translation>
+<translation id="2365355378251437925">Enter <ph name="FIELD" /></translation>
 <translation id="2367567093518048410">Level</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2383455408879745299">Personalise your accessibility tools in Chrome settings</translation>
@@ -877,6 +877,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="317878711435188021">Know when you're actively using this device</translation>
 <translation id="3180358318770512945">Parenting</translation>
 <translation id="3187306450550410410">Flexible work arrangements</translation>
+<translation id="3187380004437786923">Manage payments</translation>
 <translation id="3187472288455401631">Ad measurement</translation>
 <translation id="3190736958609431397">Untrack</translation>
 <translation id="319282854780294203">Social networks</translation>
@@ -1209,6 +1210,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="3992684624889376114">About this page</translation>
 <translation id="399952081411886534">Other features that make ads more private</translation>
+<translation id="4000598935132966791">Learn more about site restrictions in managed browsers</translation>
 <translation id="4006465311664329701">Payment methods, offers and addresses using Google Pay</translation>
 <translation id="4009243425692662128">The content of pages that you print is sent to Google Cloud or third parties for analysis. For example, it might be scanned for sensitive data.</translation>
 <translation id="4010758435855888356">Allow storage access?</translation>
@@ -1931,7 +1933,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Use a virtual number for this card}other{Select a card}}</translation>
 <translation id="5752552348183096912">Antiperspirants, deodorants and body sprays</translation>
 <translation id="5754400531489347219">Pets and animals</translation>
-<translation id="5755162682436943950">Signed out. Opens dialogue to sign in and turn on sync.</translation>
 <translation id="5759751709240058861">Use and move your camera</translation>
 <translation id="5763042198335101085">Enter a valid email address</translation>
 <translation id="5764725887548570807">Invalid origin format.</translation>
@@ -2019,7 +2020,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5992691462791905444">Engineering Z-fold</translation>
 <translation id="5992805036496113940">See info used to show you ads</translation>
 <translation id="5995727681868049093">Manage your info, privacy and security in your Google Account</translation>
-<translation id="5996887213716993070"><ph name="FIELD" /> cannot be empty</translation>
 <translation id="5997247540087773573">The password that you just used was found in a data breach. To secure your accounts, Google Password Manager recommends changing it now and checking your saved passwords.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> results for '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6005765687956866568">The auto-filled info was cleared from the form</translation>
@@ -2476,7 +2476,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="7153618581592392745">Lavender</translation>
 <translation id="7156870133441232244">The server should upgrade to TLS 1.2 or later.</translation>
 <translation id="7163295244162773898">{0,plural, =1{Copy confidential file?}other{Copy confidential files?}}</translation>
-<translation id="7168323970702333693">Signed in as <ph name="USER_NAME" />. Opens settings.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7174545416324379297">Merged</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
@@ -2502,7 +2501,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="7219179957768738017">The connection uses <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Processing</translation>
 <translation id="7221855153210829124">Show notifications</translation>
-<translation id="722454870747268814">New incognito tab</translation>
+<translation id="722454870747268814">New Incognito tab</translation>
 <translation id="7233592378249864828">Print confirmation sheet</translation>
 <translation id="7234638337680728591">Gas prices and vehicle fueling</translation>
 <translation id="7237492777898608035">Don't show this message again for this site</translation>
@@ -2690,6 +2689,7 @@ Additional details:
 <translation id="7630470133768862132">Consent status:</translation>
 <translation id="7631444403134069754">Track and field</translation>
 <translation id="7633909222644580952">Performance data and crash reports</translation>
+<translation id="7634280112532283638">Spam and fraud reduction</translation>
 <translation id="7637571805876720304">Remove credit card from Chromium?</translation>
 <translation id="7637586430889951925">{COUNT,plural, =0{None}=1{1 password in your account (for <ph name="DOMAIN_LIST" />)}other{# passwords in your account (for <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="7638605456503525968">Serial ports</translation>
@@ -3192,7 +3192,6 @@ Additional details:
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="890493561996401738">Remove Suggestion button, press Enter to remove, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910898109640902752">8 x 10 in</translation>
-<translation id="8912362522468806198">Google Account</translation>
 <translation id="8913778647360618320">Manage payment methods button; press enter to manage your payments and credit card info in Chrome settings</translation>
 <translation id="8922013791253848639">Always allow ads on this site</translation>
 <translation id="892588693504540538">Punch top right</translation>
@@ -3337,6 +3336,7 @@ Additional details:
 <translation id="950736567201356821">Triple punch top</translation>
 <translation id="961663415146723894">Bind bottom</translation>
 <translation id="962484866189421427">This content might try to install deceptive apps that pretend to be something else or collect data that may be used to track you. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
+<translation id="963837307749850257">All users</translation>
 <translation id="964050462028070434">Manage passwords and passkeys…</translation>
 <translation id="96680173638229310">Autos and vehicles</translation>
 <translation id="969892804517981540">Official Build</translation>

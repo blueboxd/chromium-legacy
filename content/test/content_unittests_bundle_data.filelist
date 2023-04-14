@@ -53,6 +53,7 @@
 //content/test/data/attribution_reporting/databases/version_44.sql
 //content/test/data/attribution_reporting/databases/version_45.sql
 //content/test/data/attribution_reporting/databases/version_46.sql
+//content/test/data/attribution_reporting/databases/version_47.sql
 //content/test/data/attribution_reporting/interop/aggregatable_budget.json
 //content/test/data/attribution_reporting/interop/aggregatable_contributions_creation.json
 //content/test/data/attribution_reporting/interop/aggregatable_dedup_key.json
@@ -71,11 +72,13 @@
 //content/test/data/attribution_reporting/interop/event_source.json
 //content/test/data/attribution_reporting/interop/expired_source.json
 //content/test/data/attribution_reporting/interop/most_recent_source.json
+//content/test/data/attribution_reporting/interop/multiple_destinations.json
 //content/test/data/attribution_reporting/interop/rate_limit_max_attribution_reporting_endpoints.json
 //content/test/data/attribution_reporting/interop/rate_limit_max_attributions.json
 //content/test/data/attribution_reporting/interop/rate_limit_max_source_registration_reporting_origin_endpoints.json
 //content/test/data/attribution_reporting/interop/same_destination_site.json
 //content/test/data/attribution_reporting/interop/same_reporting_origin.json
+//content/test/data/attribution_reporting/interop/source_deactivation.json
 //content/test/data/attribution_reporting/interop/source_priority.json
 //content/test/data/attribution_reporting/interop/source_storage_limit.json
 //content/test/data/attribution_reporting/interop/success_debug_aggregatable.json
@@ -123,6 +126,7 @@
 //content/test/data/attribution_reporting/register_trigger_source_trigger.html.mock-http-headers
 //content/test/data/attribution_reporting/service_worker.js
 //content/test/data/autofill/autofill_form_devtools_issues_test.html
+//content/test/data/autofill/autofill_password_form_without_username_field_devtools_issue.html
 //content/test/data/back_forward_cache/allowed_path.html
 //content/test/data/back_forward_cache/charset_utf-8.html
 //content/test/data/back_forward_cache/charset_windows-1250.html
@@ -392,6 +396,8 @@
 //content/test/data/fenced_frames/ad_that_leaves_interest_group.html
 //content/test/data/fenced_frames/ad_that_leaves_interest_group.html.mock-http-headers
 //content/test/data/fenced_frames/ad_with_components.html
+//content/test/data/fenced_frames/ad_with_fenced_frame_private_aggregation_reporting.html
+//content/test/data/fenced_frames/ad_with_fenced_frame_private_aggregation_reporting.html.mock-http-headers
 //content/test/data/fenced_frames/ad_with_fenced_frame_reporting.html
 //content/test/data/fenced_frames/ad_with_fenced_frame_reporting.html.mock-http-headers
 //content/test/data/fenced_frames/basic.html

@@ -72,6 +72,7 @@
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/screenshot/screenshot_delegate.h"
 #import "ios/chrome/browser/sessions/session_saving_scene_agent.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/capabilities_types.h"
@@ -100,6 +101,7 @@
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_scene_agent.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
@@ -380,6 +382,7 @@ void InjectNTP(Browser* browser) {
          applicationCommandEndpoint:self
         browsingDataCommandEndpoint:self.browsingDataCommandsHandler
                      regularBrowser:self.mainInterface.browser
+                    inactiveBrowser:self.mainInterface.inactiveBrowser
                    incognitoBrowser:self.incognitoInterface.browser];
     tabGridCoordinator.delegate = self;
     _mainCoordinator = tabGridCoordinator;
@@ -872,6 +875,14 @@ void InjectNTP(Browser* browser) {
   // Create and start the BVC.
   [self.browserViewWrangler createMainCoordinatorAndInterface];
 
+  // Create the inactive browser. Should be called after the main browser is
+  // created (in -createMainBrowser) and restored (in
+  // -createMainCoordinatorAndInterface). Even if the feature is disabled, we
+  // always create the inactive browser to restore any element that have been
+  // saved in the past. To avoid any tab disappearance from user perspective, we
+  // move all tabs accordingly.
+  [self.browserViewWrangler createInactiveBrowser];
+
   id<ApplicationCommands> applicationCommandsHandler =
       HandlerForProtocol(mainCommandDispatcher, ApplicationCommands);
   id<PolicyChangeCommands> policyChangeCommandsHandler =
@@ -961,6 +972,15 @@ void InjectNTP(Browser* browser) {
                      initWithPromosManager:GetApplicationContext()
                                                ->GetPromosManager()]];
   }
+
+  // Do not gate by feature flag so it can run for enabled -> disabled
+  // scenarios.
+  [self.sceneState
+      addAgent:[[CredentialProviderPromoSceneAgent alloc]
+                   initWithPromosManager:GetApplicationContext()
+                                             ->GetPromosManager()
+                             prefService:self.sceneState.appState
+                                             .mainBrowserState->GetPrefs()]];
 }
 
 // Determines the mode (normal or incognito) the initial UI should be in.
@@ -1134,7 +1154,7 @@ void InjectNTP(Browser* browser) {
   // Don't show the default browser promo if the user is in the default browser
   // blue dot experiment.
   // TODO(crbug.com/1410229) clean-up experiment code when fully launched.
-  if (IsInBlueDotExperiment()) {
+  if (!AreDefaultBrowserPromosEnabled()) {
     return;
   }
 
@@ -3302,6 +3322,8 @@ void InjectNTP(Browser* browser) {
   ChromeBrowserState* mainBrowserState =
       self.sceneState.appState.mainBrowserState;
   DCHECK(mainBrowserState->HasOffTheRecordChromeBrowserState());
+  ChromeBrowserState* otrBrowserState =
+      mainBrowserState->GetOffTheRecordChromeBrowserState();
 
   NSMutableArray<SceneController*>* sceneControllers =
       [[NSMutableArray alloc] init];
@@ -3319,14 +3341,19 @@ void InjectNTP(Browser* browser) {
     [sceneController willDestroyIncognitoBrowserState];
   }
 
-  // Record off-the-record metrics before detroying the BrowserState.
-  if (mainBrowserState->HasOffTheRecordChromeBrowserState()) {
-    ChromeBrowserState* otrBrowserState =
-        mainBrowserState->GetOffTheRecordChromeBrowserState();
+  // Delete all the remaining sessions. This is asynchronous, but will happen
+  // after all pending saves, if any, have completed. There is a risk of a
+  // race-condition with loading them, but as -incognitoBrowserStateCreated
+  // does not load the session, the only risk is if the application were to
+  // crash before the deletion could complete (in which case the user may
+  // see the previous state of the app before closing the last incognito tab).
+  [[SessionServiceIOS sharedService]
+      deleteAllSessionFilesInDirectory:otrBrowserState->GetStatePath()
+                            completion:base::DoNothing()];
 
-    SessionMetrics::FromBrowserState(otrBrowserState)
-        ->RecordAndClearSessionMetrics(MetricsToRecordFlags::kNoMetrics);
-  }
+  // Record off-the-record metrics before detroying the BrowserState.
+  SessionMetrics::FromBrowserState(otrBrowserState)
+      ->RecordAndClearSessionMetrics(MetricsToRecordFlags::kNoMetrics);
 
   // Destroy and recreate the off-the-record BrowserState.
   mainBrowserState->DestroyOffTheRecordChromeBrowserState();

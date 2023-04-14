@@ -5,6 +5,7 @@
 #include "content/browser/attribution_reporting/attribution_host.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -13,8 +14,8 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
+#include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -31,8 +32,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -574,7 +578,28 @@ TEST_F(AttributionHostTest, DataHost_RegisteredWithFencedFrame) {
   EXPECT_FALSE(bad_message_observer.got_bad_message());
 }
 
+TEST_F(AttributionHostTest, FeatureDisabled_FencedFrameReportingBeaconDropped) {
+  contents()->NavigateAndCommit(GURL("https:/secure.com"));
+
+  EXPECT_CALL(*mock_data_host_manager(),
+              NotifyFencedFrameReportingBeaconStarted)
+      .Times(0);
+
+  RenderFrameHost* fenced_frame =
+      RenderFrameHostTester::For(main_rfh())
+          ->AppendFencedFrame(blink::mojom::FencedFrameMode::kOpaqueAds);
+  fenced_frame = NavigationSimulatorImpl::NavigateAndCommitFromDocument(
+      GURL("https://fencedframe.example"), fenced_frame);
+
+  conversion_host()->NotifyFencedFrameReportingBeaconStarted(
+      NavigationBeaconId(123), static_cast<RenderFrameHostImpl*>(fenced_frame));
+}
+
 TEST_F(AttributionHostTest, NotifyFencedFrameReportingBeaconStarted) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kAttributionFencedFrameReportingBeacon);
+
   const struct {
     const char* source_origin;
     bool expected_valid;
@@ -582,7 +607,7 @@ TEST_F(AttributionHostTest, NotifyFencedFrameReportingBeaconStarted) {
       {kLocalHost, true},
       {"http://127.0.0.1", true},
       {"http://insecure.com", false},
-      {"https:/secore.com", true},
+      {"https:/secure.com", true},
   };
 
   NavigationBeaconId navigation_id(123);
@@ -610,6 +635,50 @@ TEST_F(AttributionHostTest, NotifyFencedFrameReportingBeaconStarted) {
 
     conversion_host()->NotifyFencedFrameReportingBeaconStarted(
         navigation_id, static_cast<RenderFrameHostImpl*>(fenced_frame));
+  }
+}
+
+TEST_F(AttributionHostTest, FencedFrameReportingBeacon_FeaturePolicyChecked) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kAttributionFencedFrameReportingBeacon);
+
+  contents()->NavigateAndCommit(GURL("https://secure.com"));
+
+  RenderFrameHost* fenced_frame =
+      RenderFrameHostTester::For(main_rfh())
+          ->AppendFencedFrame(blink::mojom::FencedFrameMode::kOpaqueAds);
+
+  static constexpr char kAllowedOriginUrl[] = "https://a.test";
+
+  const struct {
+    const char* fenced_frame_url;
+    bool expected;
+  } kTestCases[] = {
+      {kAllowedOriginUrl, true},
+      {"https://b.test", false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    EXPECT_CALL(*mock_data_host_manager(),
+                NotifyFencedFrameReportingBeaconStarted)
+        .Times(test_case.expected);
+
+    auto simulator = NavigationSimulatorImpl::CreateRendererInitiated(
+        GURL(test_case.fenced_frame_url), fenced_frame);
+    simulator->SetPermissionsPolicyHeader(
+        {blink::ParsedPermissionsPolicyDeclaration(
+            blink::mojom::PermissionsPolicyFeature::kAttributionReporting,
+            /*allowed_origins=*/
+            {blink::OriginWithPossibleWildcards(
+                url::Origin::Create(GURL(kAllowedOriginUrl)),
+                /*has_subdomain_wildcard=*/false)},
+            /*matches_all_origins=*/false, /*matches_opaque_src=*/false)});
+    simulator->Commit();
+    fenced_frame = simulator->GetFinalRenderFrameHost();
+
+    conversion_host()->NotifyFencedFrameReportingBeaconStarted(
+        EventBeaconId(123), static_cast<RenderFrameHostImpl*>(fenced_frame));
   }
 }
 

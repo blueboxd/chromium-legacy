@@ -9186,24 +9186,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "web_runner_integration_tests",
-        "test_id_prefix": "ninja://fuchsia_web/runners:web_runner_integration_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "wm_unittests",
         "test_id_prefix": "ninja://ui/wm:wm_unittests/"
       },
@@ -9580,8 +9562,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9600,8 +9581,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9620,8 +9600,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9640,8 +9619,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9660,8 +9638,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9680,8 +9657,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9700,8 +9676,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9720,8 +9695,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9740,8 +9714,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9760,8 +9733,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9780,8 +9752,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9800,8 +9771,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9820,8 +9790,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9840,8 +9809,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9860,8 +9828,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9880,8 +9847,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9900,8 +9866,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9920,8 +9885,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -9941,8 +9905,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9961,8 +9924,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -9981,8 +9943,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10001,8 +9962,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10021,8 +9981,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10041,8 +10000,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10061,8 +10019,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10081,8 +10038,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10101,8 +10057,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10121,8 +10076,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10141,8 +10095,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10161,8 +10114,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10181,8 +10133,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10201,8 +10152,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10221,8 +10171,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10241,8 +10190,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10261,8 +10209,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10281,8 +10228,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10304,8 +10250,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -10328,8 +10273,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10348,8 +10292,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10368,8 +10311,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10388,8 +10330,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10411,8 +10352,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10431,8 +10371,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10451,8 +10390,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10471,8 +10409,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10491,8 +10428,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10511,8 +10447,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10534,8 +10469,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10554,8 +10488,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10574,8 +10507,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10594,8 +10526,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10617,8 +10548,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10637,8 +10567,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10657,28 +10586,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "web_runner_integration_tests",
-        "test_id_prefix": "ninja://fuchsia_web/runners:web_runner_integration_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10697,8 +10605,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10717,8 +10624,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10745,8 +10651,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -10769,8 +10674,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-20.04",
-              "pool": "chromium.tests.lifo"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"

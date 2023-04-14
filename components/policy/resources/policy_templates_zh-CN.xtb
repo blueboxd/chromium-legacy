@@ -733,6 +733,7 @@
       如果您设置了此政策，当设备上的可用磁盘空间少于此政策规定的数值时，<ph name="PLUGIN_VM_NAME" /> 安装会失败。</translation>
 <translation id="1686952487081322272">停用快速解答功能</translation>
 <translation id="1690383938831887552">阻止加载通过 Signed HTTP Exchange (SXG) 提供的内容</translation>
+<translation id="1692990221685273468">确定内置证书验证程序是否会强制执行从平台可信存储区加载的信任锚中经过编码的限制条件。</translation>
 <translation id="169467210981344373">停用全局范围的 HTTP 身份验证缓存</translation>
 <translation id="1698810555265314018">控制 <ph name="PRODUCT_NAME" /> 以光栅化模式打印 PDF 时的打印图片分辨率。
 
@@ -792,6 +793,7 @@
       如果此政策未设置，用户对屏幕的控制能力以及自动调节亮度功能都不会受到影响。
 
       注意：此政策的值应以百分比（介于 0-100 之间）的形式指定。</translation>
+<translation id="1733092875104864334">不允许从 Google 服务收集 WebRTC 文本日志</translation>
 <translation id="1733768596873041559">默认重定向到 SAML IdP 页面（<ph name="PRODUCT_NAME" /> 99 版之前的版本需要用户确认）</translation>
 <translation id="1733939382419067578">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站可以显示通知。
 
@@ -936,6 +938,11 @@
       如果此政策设为 False 或未设置，<ph name="PRODUCT_NAME" /> 不会在 <ph name="PRODUCT_NAME" /> 19 和更高版本中执行在线撤消检查。
 
       请注意：<ph name="OCSP_CRL_LABEL" /> 检查并不能有效增强安全性。</translation>
+<translation id="1904685047904049720">如果此政策已启用，系统会在 <ph name="PRODUCT_NAME" /> 上停用 Chrome 应用商店中处于未发布状态的扩展程序。
+此政策仅适用于那些通过 Chrome 应用商店安装和更新的扩展程序。系统会忽略并非通过 Chrome 应用商店安装的扩展程序，例如：使用开发者模式安装的未封装扩展程序，以及使用命令行开关安装的扩展程序。系统还会忽略并非通过 Chrome 应用商店更新的强制安装扩展程序，以及所有已被固定了版本的扩展程序。
+
+如果此政策设为 <ph name="ALLOW_UNPUBLISHED" /> (0) 或未设置，系统将允许使用 Chrome 应用商店中处于未发布状态的扩展程序。
+如果此政策设为 <ph name="DISABLE_UNPUBLISHED" /> (1)，系统将停用 Chrome 应用商店中处于未发布状态的扩展程序。</translation>
 <translation id="1905061765326052857">不允许独立用户使用所需的虚拟机来支持 Linux 应用</translation>
 <translation id="1910704279188129272">让您能够设置应用级使用限制。
         使用限制可以针对给定用户应用于 <ph name="PRODUCT_OS_NAME" />上安装的应用。
@@ -1257,6 +1264,15 @@
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="217013996107840632">用于从替代浏览器切换至 Chrome 的命令行参数。</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
+<translation id="2172528612637587749">以列表形式配置锁屏状态时显示的屏保图片。
+
+每个列表项都必须是一个引用图片文件的网址。图片格式必须是 JPEG，且文件大小不得超过 8MB。系统会忽略无效网址和不受支持的图片。<ph name="PRODUCT_OS_NAME" /> 设备会下载这些图片，并将它们保存在本地缓存中。
+
+屏保中最多只能显示 25 张图片。系统只会使用列表中的前 25 个网址条目。
+
+如果 <ph name="SCREENSAVER_ENABLED_POLICY_NAME" /> 政策设为 false，此政策将不会产生任何影响。
+
+如果此政策未设置，或者列表不含任何有效的图片引用，那么无论 <ph name="SCREENSAVER_ENABLED_POLICY_NAME" /> 政策中设置了什么值，系统都不会为锁定的屏幕显示屏保。</translation>
 <translation id="2175353308236295184">包含一系列键值对的应用专属 JSON 配置对象，例如“"managedConfiguration": { "key1": value1, "key2": value2 }”。这些键是在应用清单中定义的。</translation>
 <translation id="2176115444876446233">阻止用户收集系统级性能跟踪记录。</translation>
 <translation id="2177696016354404697">始终停用隐私保护屏幕</translation>
@@ -1314,10 +1330,6 @@
 <translation id="2223393221350938149">不允许任何网站运行 JavaScript JIT</translation>
 <translation id="2223598546285729819">默认通知设置</translation>
 <translation id="222673035924187991">启用经过 TLS 加密的 ClientHello</translation>
-<translation id="2231726854197443389">此政策用于控制用户能否在“设置”中启用纯 HTTPS 模式。纯 HTTPS 模式会将所有导航路径升级到 HTTPS。
-      如果此设置未配置或设为“允许”，用户将能启用纯 HTTPS 模式。
-      如果此设置设为“禁止”，用户将无法启用纯 HTTPS 模式。
-      尚不支持强制启用纯 HTTPS 模式。</translation>
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
 <translation id="2231962946025538735">此政策已被弃用。请使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控制 Flash 插件的可用性，并使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 控制是否应使用集成式 PDF 查看器打开 PDF 文件。
 
@@ -1333,6 +1345,7 @@
 
       如果未设置此政策，那么与“DisabledPlugins”中的格式匹配的所有插件都会被锁定为停用状态，而且用户将无法启用这些插件。</translation>
 <translation id="2236488539271255289">不允许任何网站设置本地数据</translation>
+<translation id="2236593201136596376">允许从 Google 服务收集 WebRTC 文本日志</translation>
 <translation id="2241498944622759244">该功能从未被发布，所以此政策已被弃用。如果此政策设为 true 或未设置，<ph name="PRODUCT_NAME" /> 将会根据当前网页来建议相关网页。
       这些建议是系统从 Google 服务器远程获取的。
 
@@ -2145,6 +2158,7 @@
 
       在 <ph name="PRODUCT_NAME" /> 版本 81 及更高版本中，如果未设置此政策，系统将会仅在常规会话中启用静默身份验证。</translation>
 <translation id="3021562480854470924">指定允许回滚到的里程碑的数量</translation>
+<translation id="3023172689742785487">强制启用 HTTPS-Only 模式</translation>
 <translation id="3023572080620427845">与包含要在替代浏览器中加载的网址的 XML 文件对应的网址。</translation>
 <translation id="302528139996622624">图片设置</translation>
 <translation id="3026740867910702435">在登录屏幕上启用大号光标无障碍功能。
@@ -2429,6 +2443,7 @@
 
       如果此政策未设置，它将默认等同于已设为 false，而且用户将能为此设置选择任意状态 (true/false)。</translation>
 <translation id="3236046242843493070">允许的扩展程序、应用和用户脚本安装源的网址格式</translation>
+<translation id="323609919471603985">允许显示弹出式提醒“Credential Provider 扩展程序”</translation>
 <translation id="3239125988620218257">报告网络状态</translation>
 <translation id="3240609035816615922">打印机配置访问政策。</translation>
 <translation id="324062325008698789">配置打印机列表</translation>
@@ -2807,13 +2822,6 @@
 <translation id="3589193811812796052">禁止跨源发送 WebAssembly 模块</translation>
 <translation id="3591527072193107424">启用“旧版浏览器支持”功能。</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
-<translation id="359203136434560942">以列表形式配置锁屏状态时显示的屏保图片。
-
-每个列表项都会引用要在屏保中显示的某张图片。每个列表项都必须包含以下内容：相应图片的网址，以及用于进行验证的图片文件 SHA-256 哈希值。图片格式必须是 JPEG。<ph name="PRODUCT_OS_NAME" /> 设备会下载这些图片，并保留上述引用的本地缓存。
-
-如果 <ph name="SCREENSAVER_ENABLED_POLICY_NAME" /> 政策设为 false，此政策将不会产生任何影响。
-
-如果此政策未设置，或者列表不含任何有效的图片引用，那么无论 <ph name="SCREENSAVER_ENABLED_POLICY_NAME" /> 政策中设置了什么值，系统都不会为锁定屏幕显示屏保。</translation>
 <translation id="3593905652755912452">系统将使用针对已停用的表单控件分派事件的旧行为。</translation>
 <translation id="3596112486106491038">启用虚拟机命令行访问权限</translation>
 <translation id="3603469950773500315">在新版 <ph name="CORS" /> 实现方案中启用 <ph name="CORS" /> 检查缓解功能，从而允许扩展程序保持兼容的行为，并允许 <ph name="PRODUCT_NAME" /> 无需进行 <ph name="CORS" /> 检查便可发送指定标头。
@@ -2927,6 +2935,7 @@
 <translation id="3749259744154402564">不支持</translation>
 <translation id="3749511622128647337">禁止输出音频</translation>
 <translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>
+<translation id="3753267109888284695">HTTP 许可名单</translation>
 <translation id="3753959315989102457">停用设备位置信息报告功能</translation>
 <translation id="3755237588083934849">通过设置此政策，您可决定设备状态上传内容的发送频率（以毫秒为单位）。所允许的最低频率为 60 秒。
 
@@ -3138,6 +3147,7 @@
 <translation id="3898795800259311780">允许或拒绝屏幕截图</translation>
 <translation id="3903313632842363082">停用设备用户报告功能</translation>
 <translation id="3904304709151553598">停用设备风扇信息报告功能</translation>
+<translation id="3905883021371603181">启用系统音频回声消除功能</translation>
 <translation id="3907683835264956726">允许在线用户从锁定屏幕上登录。如果此政策设为 true，<ph name="POLICY" /> 等政策会触发在锁定屏幕上在线重新验证用户身份的机制。
       当用户已在锁定屏幕上或者在满足相应条件后下次锁定屏幕时，系统会立即强制重新验证用户身份。
       如果此政策设为 false 或未设置，用户始终都能使用自己的本地凭据解锁屏幕。</translation>
@@ -3216,6 +3226,7 @@
       如果此政策设为 False，则“自动填充”功能一律不会建议或填充信用卡信息，也不会保存用户在浏览网页时提交的其他信用卡信息。</translation>
 <translation id="3989829840000169163">屏蔽浏览器旧版扩展点</translation>
 <translation id="3990391739475801018">系统将停用省电模式。</translation>
+<translation id="3990834929384096140">不强制启用系统音频回声消除功能</translation>
 <translation id="3994043824457743421">在“新标签页”页面上显示中间槽通知</translation>
 <translation id="399433537808390819">不为用户提供统一桌面模式选项</translation>
 <translation id="3995880046827722248">停用 Manifest V2</translation>
@@ -3396,6 +3407,7 @@
           如果您设置了此政策，用户将无法更改或覆盖它。
 
           如果您未设置此政策，语音反馈在登录屏幕上最初会处于停用状态，但用户可随时启用它。</translation>
+<translation id="4173974507809462880">在用户登录期间显示触控板滚动方向界面</translation>
 <translation id="417956245902013347">在登录屏幕上启用“插入符号突出显示”无障碍功能。
 
           如果此政策设为 true、“插入符号突出显示”在登录屏幕上将始终处于启用状态。
@@ -3456,6 +3468,15 @@
           如果未设置此政策，则“自动点击”最初会处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="4212181786686887763">可供下载相应壁纸图片的网址。</translation>
 <translation id="4224610387358583899">屏幕锁定延迟时间</translation>
+<translation id="4225083820650584375">以列表形式配置要在为登录界面设定的屏保中显示的图片。
+
+每个列表项都必须是一个引用图片文件的网址。图片格式必须是 JPEG，且文件大小不得超过 8MB。系统会忽略无效网址和不受支持的图片。<ph name="PRODUCT_OS_NAME" /> 设备会下载这些图片，并将它们保存在本地缓存中。
+
+屏保中最多只能显示 25 张图片。系统只会使用列表中的前 25 个网址条目。
+
+如果 <ph name="DEVICE_SCREENSAVER_ENABLED_POLICY_NAME" /> 政策设为 false，此政策将不会产生任何影响。
+
+如果此政策未设置，或者列表不含任何有效的图片引用，那么无论 <ph name="DEVICE_SCREENSAVER_ENABLED_POLICY_NAME" /> 政策中设置了什么值，系统都不会为登录界面显示屏保。</translation>
 <translation id="42267415200641481">如果此政策设为 true，系统 DNS 解析（getaddrinfo()）可能在网络进程外运行，具体取决于系统配置和功能标志。
 
       如果此政策设为 false，系统 DNS 解析（getaddrinfo()）会在网络进程中而非浏览器进程中运行。这可能会强制停用网络服务沙盒，导致 <ph name="PRODUCT_NAME" /> 的安全性降低。
@@ -3671,6 +3692,7 @@
 <translation id="4480694116501920047">强制使用安全搜索</translation>
 <translation id="4481202456143946404">派生自引入新《服务条款》版本的 Google3 cl 的有效《服务条款》版本。</translation>
 <translation id="4481952213163895432">停用 Google 助理启动指令</translation>
+<translation id="4482784169143060077">启用自动 HTTPS 升级</translation>
 <translation id="4483120730995943109">超时设置为 0 毫秒的 JavaScript setTimeout() 将不会延迟到 1 毫秒。</translation>
 <translation id="4483649828988077221">停用自动更新功能</translation>
 <translation id="4484515651939984695">指定使用访问代码或二维码选择的投放设备会在 <ph name="PRODUCT_NAME" /> 菜单的投放设备列表中保留多长时间（以秒为单位）。</translation>
@@ -3692,6 +3714,7 @@
 <translation id="449784980858429908">自动授权网站连接所有串行端口。</translation>
 <translation id="4499376951770369935">ChromeOS 更新已设为自助服务终端应用清单中定义的版本</translation>
 <translation id="450080746522343150">拦截所有下载内容。</translation>
+<translation id="4501388411278568771">可能会应用 HTTPS 升级，具体取决于功能推出状态。</translation>
 <translation id="45036050223225148">停用经过 TLS 加密的 ClientHello 实验</translation>
 <translation id="4503935079903510542">用于在 x86_64 设备上安装虚拟机的 UEFI 可启动式磁盘映像。</translation>
 <translation id="4508728400492074981">控制 First-Party Sets 功能的相关政策。</translation>
@@ -3957,9 +3980,10 @@
           如果您设置了此政策，用户将无法更改或覆盖它。
 
           如果未设置此政策，则“单声道音频”最初会处于停用状态，但用户可以随时启用该功能。</translation>
+<translation id="4767059955897420757">如果此政策未设置或已启用，系统可能会向用户显示弹出式提醒“Credential Provider 扩展程序”。
+如果此政策已停用，系统不会向用户显示弹出式提醒“Credential Provider 扩展程序”。</translation>
 <translation id="4768446404233019970">在传输层安全协议 (TLS) 中启用 3DES 加密套件</translation>
 <translation id="4770334626033858263">用于生成和验证家长访问码的配置。</translation>
-<translation id="4772431363738215349">可供下载相应屏保图片的网址。</translation>
 <translation id="4773997835955617342">旨在为手动创建的新票据更改建议的 <ph name="KRB5_CONFIG" /> 配置。
 
       如果此政策已启用，系统会使用“KerberosCustomPrefilledConfig”政策的值作为建议的配置，并会将其显示在 Kerberos 身份验证对话框内的“高级”部分中。
@@ -3979,6 +4003,12 @@
       如果这一页面大小在用户选择的打印机上不适用，系统会忽略此政策。</translation>
 <translation id="4789450349513792856">禁止这些网站显示弹出式窗口</translation>
 <translation id="4790588245699320140">允许 Google 助理访问屏幕上的内容</translation>
+<translation id="4800438168909332958">启用系统音频回声消除 (AEC) 功能。系统 AEC 是一款回声消除工具，即一种用于从麦克风信号中移除系统音频播放（回声）的音频处理模块。
+此政策只是暂时性政策，待系统 AEC 功能发布后，此政策便会被移除。
+
+  如果此政策设为 true，系统 AEC 功能将始终处于启用状态。
+
+  如果此政策设为 false 或未设置，系统仍可能会根据系统 AEC 功能的发布计划启用该功能，但此政策不会强制启用该功能。</translation>
 <translation id="4801512016965057443">允许移动数据漫游</translation>
 <translation id="4802744647065138872">限制为供执行紧急回滚时使用而保留的用户数据快照的数量。</translation>
 <translation id="4802905909524200151">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新行为</translation>
@@ -4193,6 +4223,11 @@
 <translation id="4996161752665479028">启用终端系统应用中的 SSH</translation>
 <translation id="4997074784107449343">在 PDF 文档的打印预览中，“以图片形式打印”选项（若有）默认处于未选中状态。</translation>
 <translation id="500149597848135831">启用所有变体</translation>
+<translation id="5014511262203433035">此政策用于控制用户能否在“设置”中启用 HTTPS-Only 模式。HTTPS-Only 模式会将所有导航路径升级到 HTTPS。
+      如果此设置设为“allowed”或未配置，用户将能启用 HTTPS-Only 模式。
+      如果此设置设为“disallowed”，用户将无法启用 HTTPS-Only 模式。
+      如果此设置设为“force_enabled”，系统将会启用 HTTPS-Only 模式，且用户无法停用该模式。
+      从 M112 开始，系统支持强制启用 HTTPS-Only 模式。</translation>
 <translation id="5017369989680827157">如果此政策设为 True 或未设置，用户可以控制是否在界面中自动填充地址。
 
       如果此政策设为 False，“自动填充”功能一律不会建议或填充地址信息，也不会保存用户在浏览网页时提交的其他地址信息。</translation>
@@ -4256,6 +4291,9 @@
 <translation id="5105313908130842249">使用电池供电时的屏幕锁定延迟时间</translation>
 <translation id="5108031557082757679">已停用企业设备打印机</translation>
 <translation id="5109383437323376357">确定变体的可用情况</translation>
+<translation id="5109866581154565900">此政策用于控制是否让系统在用户首次登录期间向其显示触控板滚动方向界面。
+      如果此政策设为 false，系统将不会显示触控板滚动方向界面。
+      如果此政策设为 true，系统将会显示触控板滚动方向界面。</translation>
 <translation id="5118635822783657217">停用非关键组件的更新</translation>
 <translation id="5120168808610189805">允许在首次运行时导入主页</translation>
 <translation id="5124368997194894978">启用“接通 AC（交流电）时启动”</translation>
@@ -4484,6 +4522,13 @@
 <translation id="5293285950307241933">清除所有本地用户数据</translation>
 <translation id="5293619885162445352">允许 <ph name="PEPPER_NAME" /> 使用新版视频解码器。</translation>
 <translation id="529457411593078576">在 CCT 首次运行期间启用《服务条款》</translation>
+<translation id="5297873769621042075">通过设置此政策，您能以列表形式指定：在启用了 HTTPS-First 模式的情况下，哪些主机名或主机名格式（例如“[*.]example.com”）不会升级到 HTTPS 且不会显示错误插页。组织可以使用此政策保留对不支持 HTTPS 的服务器的访问权限，而无需停用 HTTPS 升级和/或 HTTPS-First 模式。
+
+必须将所提供的主机名规范化：任何 IDN 都必须转换为对应的 A 标签格式，而且所有 ASCII 字母都必须小写。
+
+不允许使用一揽子主机通配符（例如“*”或“[*]”），而应通过各自的具体政策明确停用 HTTPS-First 模式和 HTTPS 升级。
+
+注意：此政策不适用于 HSTS 升级。</translation>
 <translation id="5297948043665200363">允许用户在帐号身份验证失效后继续保持登录状态</translation>
 <translation id="5298949392804966105">不针对受管理的帐号添加限制</translation>
 <translation id="530134925949808452">应在一天中的什么时间（以当地时间为准）更新用量配额。</translation>
@@ -4540,7 +4585,6 @@
 
       如果此政策设为 False，系统会禁止将端口转发到 Crostini 容器。</translation>
 <translation id="538108065117008131">允许“<ph name="PRODUCT_FRAME_NAME" />”处理以下内容类型。</translation>
-<translation id="5382211603538487131">相应图片的 SHA-256 哈希值。</translation>
 <translation id="538768040137709073">启用“共享剪贴板”功能，以允许已启用同步的已登录用户在 Chrome 桌面版和 Android 设备之间发送文字。
 
           如果此政策设为 true，面向 Chrome 用户提供的跨设备发送文字的功能将处于启用状态。
@@ -4747,13 +4791,6 @@
 <translation id="5535256585099022933">设置重新启动时间间隔</translation>
 <translation id="553806128266843748">一个布尔值标记，用于表明是否启用节流功能。</translation>
 <translation id="5540885720415375851">允许使用“本地设备发现”功能</translation>
-<translation id="5545132877693005604">以列表形式配置要在为登录界面设定的屏保中显示的图片。
-
-每个列表项都会引用要在屏保中显示的某张图片。每个列表项都必须包含以下元素：相应图片的网址，以及用于进行验证的图片文件 SHA-256 哈希值。图片格式必须是 JPEG。<ph name="PRODUCT_OS_NAME" /> 设备会下载这些图片，并保留所涉引用的本地缓存。
-
-如果 <ph name="DEVICE_SCREENSAVER_ENABLED_POLICY_NAME" /> 政策设为 false，此政策将不会产生任何影响。
-
-如果此政策未设置，或者列表不含任何有效的图片引用，那么无论 <ph name="DEVICE_SCREENSAVER_ENABLED_POLICY_NAME" /> 政策中设置了什么值，系统都不会为登录界面显示屏保。</translation>
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">在登录屏幕上启用高对比度模式</translation>
 <translation id="555077880566103058">允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
@@ -4820,6 +4857,7 @@
 <translation id="5601503069213153581">PIN 码</translation>
 <translation id="5607021831414604820">启用设备存储状态报告功能</translation>
 <translation id="5608114828230655271">默认设备行为</translation>
+<translation id="5611869109049836323">在本地添加的信任锚中强制执行限制条件</translation>
 <translation id="5614865701790130558">记录基于政策的扩展程序安装事件</translation>
 <translation id="5618398258385745432">在我们推出“查看密码时需重新验证”这一规定之前，我们是使用相关的设置来控制用户能否查看密码。自这一规定推出后，相关设置以及此政策便不再对 Chrome 的行为有任何影响。Chrome 的当前行为等同于此政策设为在密码管理器设置页面中禁止以明文形式显示密码。这意味着，设置页面中包含的只是一个占位符，仅当用户点击“显示”（并进行重新验证，如果适用的话）后，Chrome 才会显示相应密码。此政策的原始描述如下所示：
 
@@ -5370,6 +5408,7 @@
 <translation id="6181304954168534748">桌面模板的 SHA-256 哈希值。</translation>
 <translation id="6181618732396778048">不允许任何网站请求对文件和目录的写入权限</translation>
 <translation id="6181783961196084973">用于切换应用活动记录功能的状态的值。如果设为 true，系统会向服务器报告用户的应用活动，以便在孩子和家长的 <ph name="PRODUCT_NAME" /> 应用中显示该数据。如果设为 false，应用级使用时限功能仍会正常运行，但系统不会向服务器报告任何数据，因此 <ph name="PRODUCT_NAME" /> 中也不会显示任何数据。</translation>
+<translation id="6182206125906000651">停用 HTTPS 升级。</translation>
 <translation id="6182563940865917569">允许 Chrome 自动播放媒体</translation>
 <translation id="6184385589352532028">禁止第三方使用 Desk API 控制 ChromeOS</translation>
 <translation id="6190367314942602985">报告用户标识信息</translation>
@@ -5627,6 +5666,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 
       如果您设置了此政策，用户便无法更改它。如果您不设置此政策，用户可从书签栏上下文菜单中选择显示/隐藏应用快捷方式。</translation>
 <translation id="638003144128412430">停用设备时区信息报告功能</translation>
+<translation id="6382209369210116232">停用处于未发布状态的扩展程序</translation>
 <translation id="6382351416269252693">供您用来设置一个网站网址格式列表，从而指定要让系统自动拒绝向哪些网站授予本地字体权限。此设置会限制网站查看本地字体相关信息的能力。
 
       如需详细了解有效网站网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。允许使用通配符 <ph name="WILDCARD_VALUE" />。此政策只能根据源进行匹配，所以网址格式中的任何路径都会被忽略。
@@ -5663,6 +5703,11 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="6424486395812679373">对所有下载的文件执行安全浏览检查</translation>
 <translation id="6433697627431665375">阻止 <ph name="PRODUCT_NAME" /> 数据包含在备份中</translation>
 <translation id="6436052172226685535">LBS 的默认行为。</translation>
+<translation id="6438472072089952201"><ph name="PRODUCT_NAME" /> 会尽可能尝试将某些导航从 HTTP 升级到 HTTPS。此政策可用于停止该行为。如果此政策设为“true”或未设置，系统会默认启用该功能。
+
+单独的 <ph name="HTTP_ALLOWLIST_POLICY_NAME" /> 政策可用于豁免特定主机名或主机名格式，使其不会被该功能升级到 HTTPS。
+
+另请参阅 <ph name="HTTPS_ONLY_MODE_POLICY_NAME" /> 政策。</translation>
 <translation id="6438972408080276697">如果您将此政策设为 True，系统便会向 Google 报告由政策触发的主要 Android 应用安装事件。将此政策设为 False 意味着系统不会记录任何事件。</translation>
 <translation id="6440051664870270040">允许网站在导航的同时打开弹出式窗口</translation>
 <translation id="6446366416439249472">禁止在连接移动网络的情况下进行 Google 云端硬盘同步</translation>
@@ -6675,6 +6720,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="7323896582714668701">适用于 <ph name="PRODUCT_NAME" />的其他命令行参数</translation>
 <translation id="7325801934761922681">不允许 Chrome 阻止导航到沙盒化 iframe 内的外部协议</translation>
 <translation id="7326394567531622570">与 Wipe（值 2）类似，但该选项会尝试保留登录令牌，以使用户无需再次登录。</translation>
+<translation id="7331387825106440104">不在本地添加的信任锚中强制执行限制条件</translation>
 <translation id="7331962793961469250">设置为“True”时，新标签页中不会显示 Chrome 应用商店应用的推广内容。如果将此选项设置为“False”或不做任何设置，新标签页中就会显示 Chrome 应用商店应用的推广内容。</translation>
 <translation id="7332963785317884918">此政策已被弃用。<ph name="PRODUCT_OS_NAME" />将始终使用“RemoveLRU”清理策略。
 
@@ -6945,6 +6991,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
           如果此政策设为 false 或未设置，用户将无法在锁定的屏幕和登录屏幕上自动提交 PIN 码。
 
           如果您设置了此政策，用户将无法选择启用该功能。</translation>
+<translation id="7612059745454194563">不允许显示弹出式提醒“Credential Provider 扩展程序”</translation>
 <translation id="7612157962821894603">在 <ph name="PRODUCT_NAME" /> 启动时应用于整个系统的设置</translation>
 <translation id="7613115815080726221">系统应在设备闲置多久（以毫秒为单位）后采取闲置操作</translation>
 <translation id="7614663184588396421">已停用协议架构的列表</translation>
@@ -7299,7 +7346,6 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="7962093600142350905">此政策用于控制是否在“打印预览”对话框中向用户显示任何可用的 Privet 打印机。
       如果此政策已启用，系统将会显示可用的 Privet 打印机。
       如果此政策已停用或未设置，系统将不会在“打印预览”对话框中显示 Privet 打印机，因为该打印方法已被弃用。</translation>
-<translation id="7970844378072291834">强制启用纯 HTTPS 模式（尚不支持）</translation>
 <translation id="7972642710812569707">强制重新启用第三方情境下的 WebSQL。</translation>
 <translation id="7973609468423251675">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
@@ -7771,6 +7817,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 
       如果此政策已启用或未设置，用户便可在任务管理器中结束进程。</translation>
 <translation id="8367209241899435947">在 Windows 系统上启用 Chrome 清理功能</translation>
+<translation id="8367446818896241968">允许在用户登录期间显示触控板滚动方向界面</translation>
 <translation id="8367473200119029349">云报告</translation>
 <translation id="8367488518695804749">不允许任何网站显示弹出式窗口</translation>
 <translation id="8369359426872560378">停用“接入交流电时启动”</translation>
@@ -7950,6 +7997,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 
           如果没有为网站设置此政策，那么 <ph name="DEFAULT_JAVA_SCRIPT_JIT_SETTING_POLICY_NAME" /> 中的政策（若已设置）将应用于该网站，否则为该网站启用 JavaScript JIT。</translation>
 <translation id="8543108307976719751">禁止与这台计算机建立远程访问连接</translation>
+<translation id="8543639085146778837">允许从 Google 服务收集 WebRTC 文本日志</translation>
 <translation id="8543975123557636331">允许输出音频</translation>
 <translation id="8544375438507658205">默认 HTML 呈现器为“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="8544465954173828789">允许将短信从手机同步到 Chromebook。</translation>
@@ -8213,6 +8261,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="8801680448782904838">系统建议或要求重新启动浏览器或重启设备时，通知用户</translation>
 <translation id="8804685015028424497">停用无痕模式</translation>
 <translation id="8806478127647484805">禁止用户通过 Chrome 任务管理器终止进程</translation>
+<translation id="8807274441692477185">不在用户登录期间显示触控板滚动方向界面</translation>
 <translation id="8807313206348471682">显示让用户确认退出登录的对话框</translation>
 <translation id="8812091410765157924">允许以 <ph name="BLANK_PAGE_NAME" /> 为目标打开的弹出式窗口与那个打开弹出式窗口的页面互动，但前提是这个页面已明确接受此类互动</translation>
 <translation id="8816370949847593408">Chrome 应用能否运行取决于弃用安排的状态。</translation>
@@ -8227,6 +8276,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="8827275450034266143">User-Agent 字符串会将主要版本冻结为 99，并在次要位置纳入浏览器的主要版本。</translation>
 <translation id="8827366480126575426">协议处理程序所对应的协议。</translation>
 <translation id="8827417642396462482">允许其他 DNS 查询类型</translation>
+<translation id="8830717323204407209">允许向用户显示弹出式提醒“Credential Provider 扩展程序”</translation>
 <translation id="8831911834413504983">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站可以运行 JavaScript。
 
       如果您未设置此政策，那么，倘若 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> 已设置，系统便会将它应用于所有网站，否则就会应用用户的个人设置。
@@ -8256,6 +8306,17 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="8854571659927427063">如果此政策已启用，当首次运行浏览器时，系统将会从先前的默认浏览器导入书签。如果此政策已停用或未设置，当首次运行浏览器时，系统不会导入任何书签。
 
       用户可以触发导入对话框，系统将会根据此政策的值选中或不选中“书签”复选框。</translation>
+<translation id="8854703425882848037">X.509 证书可能会对证书扩展项中的限制条件（例如名称限制条件）进行编码。RFC 5280 规定，对信任锚证书强制执行此类限制条件是一项可选操作。从 <ph name="PRODUCT_NAME" /> 112 版开始，系统将对从平台证书存储区加载的证书强制执行此类限制条件。
+
+此政策是一项临时的选择停用机制，当企业私有根证书中经过编码的限制条件出现问题时，可以使用此政策。在这种情况下，此政策可用于在更正证书问题期间暂时停止强制执行限制条件。
+
+如果此政策未设置或已启用，<ph name="PRODUCT_NAME" /> 将会强制执行从平台可信存储区加载的信任锚中经过编码的限制条件。
+
+如果此政策已停用，<ph name="PRODUCT_NAME" /> 将不会强制执行从平台可信存储区加载的信任锚中经过编码的限制条件。
+
+如果 <ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME" /> 政策已停用，此政策将不会产生任何影响。
+
+按照我们的计划，此政策将会从 <ph name="PRODUCT_NAME" /> 115 版中移除。</translation>
 <translation id="8855929790177853633">用户屏保图片来源。</translation>
 <translation id="8858642179038618439">强制启用 YouTube 安全模式</translation>
 <translation id="8860342862142842017">对于指定的一系列 subjectPublicKeyInfo 哈希，不强制执行证书透明化要求</translation>
@@ -8452,6 +8513,8 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 
       该政策值应该以毫秒为单位。值的范围限定在 30 秒到 24 小时之间。</translation>
 <translation id="9040042535845939426">设置“隐私保护屏”在登录屏幕上的状态</translation>
+<translation id="9046248916118130378">如果此政策设为启用，<ph name="PRODUCT_NAME" /> 便可从 Google Meet 等 Google 服务收集 WebRTC 文本日志，并将其上传到 Google。这些日志包含诊断信息，例如描述传入和传出 WebRTC 流的文本元数据、特定于 WebRTC 的日志条目，以及其他系统信息。在调试 <ph name="PRODUCT_NAME" /> 中的语音会议或视频会议问题时，这些信息非常有用。这些日志不包含会议的任何音频或视频内容。
+如果此政策设为停用，系统将不会向 Google 上传此类日志。不过，日志仍会存储在用户设备本地，而且存储的日志会越来越多。如果此政策未设置，<ph name="PRODUCT_NAME" /> 将默认能够收集和上传这些日志。</translation>
 <translation id="9050853837490399534">此政策用于控制相应设备是否应该更新至 Quick Fix Build。
 
       如果此政策的值设为与 Quick Fix Build 对应的令牌，那么只要更新未被其他政策阻止，该设备就会更新至相应的 Quick Fix Build。

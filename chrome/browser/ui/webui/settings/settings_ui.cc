@@ -89,6 +89,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "crypto/crypto_buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/interaction/element_identifier.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -290,6 +291,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));
 
+  html_source->AddBoolean("enablePasswordsImportM2",
+                          base::FeatureList::IsEnabled(
+                              password_manager::features::kPasswordsImportM2));
+
   html_source->AddBoolean(
       "enablePasswordViewPage",
       base::FeatureList::IsEnabled(
@@ -455,6 +460,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
     html_source->AddResourcePath(
         "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
   }
+
+  html_source->AddBoolean(
+      "privateStateTokensEnabled",
+      base::FeatureList::IsEnabled(network::features::kPrivateStateTokens));
 
   html_source->AddBoolean("safetyCheckNotificationPermissionsEnabled",
                           base::FeatureList::IsEnabled(

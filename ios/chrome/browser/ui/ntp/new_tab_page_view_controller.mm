@@ -214,7 +214,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
   self.headerController.showing = YES;
 
-  [self applyCollectionViewConstraints];
   [self updateNTPLayout];
 
   // Scroll to the top before coming into view to minimize sudden visual jerking
@@ -238,6 +237,10 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // can open a new tab while an NTP is currently visible. `-viewWillAppear:` is
   // called before the offset can be saved, so `-setContentOffsetToTop` will
   // reset any scrolled position.
+  // It is NOT safe to reset `hasSavedOffsetFromPreviousScrollState` to NO here
+  // because -updateHeightAboveFeedAndScrollToTopIfNeeded calls from async
+  // updates to the Content Suggestions (i.e. MVT, Doodle) can happen after
+  // this.
   if (!self.feedVisible) {
     if (self.hasSavedOffsetFromPreviousScrollState) {
       [self setContentOffset:self.savedScrollOffset];
@@ -286,6 +289,15 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
+
+  if (!self.viewDidAppear) {
+    // The native views in the NTP are not top anchored to the surface in any
+    // way. They are stacked on top of the top of the Feed contents, and the top
+    // Safe Area insets are factored in the height needed above the feed in
+    // -updateFeedInsetsForContentAbove. Update that height here as it is the
+    // soonest place the Safe Area insets are ready.
+    [self updateHeightAboveFeedAndScrollToTopIfNeeded];
+  }
 
   [self.headerController updateConstraints];
 }
@@ -435,14 +447,15 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // changes in feed visibility.
   [self applyCollectionViewConstraints];
 
+  // Force relayout so that the views added in this method are rendered ASAP,
+  // ensuring it is showing in the new tab animation.
+  [self.view setNeedsLayout];
+  [self.view layoutIfNeeded];
+
   // If the feed is not visible, we control the delegate ourself (since it is
-  // otherwise controlled by the feed service). The view is also layed out
-  // so that we can correctly calculate the minimum height.
+  // otherwise controlled by the feed service).
   if (!self.isFeedVisible) {
     self.feedWrapperViewController.contentCollectionView.delegate = self;
-
-    [self.view setNeedsLayout];
-    [self.view layoutIfNeeded];
     [self setMinimumHeight];
   }
 }
@@ -496,6 +509,10 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   [self.viewControllersAboveFeed removeAllObjects];
 }
 
+- (void)resetStateUponReload {
+  self.hasSavedOffsetFromPreviousScrollState = NO;
+}
+
 - (void)setContentOffsetToTopOfFeed:(CGFloat)contentOffset {
   if (contentOffset < [self offsetWhenScrolledIntoFeed]) {
     [self setContentOffset:contentOffset];
@@ -537,14 +554,13 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // Updating insets can influence contentOffset, so update saved scroll state
   // after it. This handles what the starting offset be with the feed enabled,
   // `-viewWillAppear:` handles when the feed is not enabled.
+  // It is NOT safe to reset `hasSavedOffsetFromPreviousScrollState` to NO here
+  // because -updateHeightAboveFeedAndScrollToTopIfNeeded calls from async
+  // updates to the Content Suggestions (i.e. MVT, Doodle) can happen after
+  // this.
   if (self.hasSavedOffsetFromPreviousScrollState) {
     [self setContentOffset:self.savedScrollOffset];
   }
-  [self updateStickyElements];
-}
-
-- (void)updateStickyElements {
-  [self handleStickyElementsForScrollPosition:[self scrollPosition] force:YES];
 }
 
 #pragma mark - NewTabPageConsumer
@@ -578,12 +594,12 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   if ([self.ntpContentDelegate isContentHeaderSticky]) {
     [self setInitialFeedHeaderConstraints];
   }
-  // Reset here since none of the view lifecycle callbacks are called reliably
-  // to be able to be used (it seems) (i.e. switching between NTPs where there
-  // is saved scroll state in the destination tab). If the content offset is
-  // being set to the top, it is safe to assume this can be set to NO. Being
-  // called before setSavedContentOffset: is no problem since then it will be
-  // subsequently overriden to YES.
+  // Reset here since none of the view lifecycle callbacks (e.g.
+  // viewDidDisappear) can be reliably used (it seems) (i.e. switching between
+  // NTPs where there is saved scroll state in the destination tab). If the
+  // content offset is being set to the top, it is safe to assume this can be
+  // set to NO. Being called before setSavedContentOffset: is no problem since
+  // then it will be subsequently overriden to YES.
   self.hasSavedOffsetFromPreviousScrollState = NO;
 }
 
@@ -689,6 +705,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
+  // User has interacted with the surface, so it is safe to assume that a saved
+  // scroll position can now be overriden.
+  self.hasSavedOffsetFromPreviousScrollState = NO;
   [self.overscrollActionsController scrollViewWillBeginDragging:scrollView];
   [self.panGestureHandler scrollViewWillBeginDragging:scrollView];
   self.scrollStartPosition = scrollView.contentOffset.y;
@@ -738,6 +757,13 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // Prevent scrolling back to pre-focus state, making sure we don't have
   // two scrolling animations running at the same time.
   self.collectionShiftingOffset = 0;
+  // Reset here since none of the view lifecycle callbacks are called reliably
+  // to be able to be used (it seems) (i.e. switching between NTPs where there
+  // is saved scroll state in the destination tab). If the content offset is
+  // being set to the top, it is safe to assume this can be set to NO. Being
+  // called before setSavedContentOffset: is no problem since then it will be
+  // subsequently overriden to YES.
+  self.hasSavedOffsetFromPreviousScrollState = NO;
   // Unfocus omnibox without scrolling back.
   [self unfocusOmnibox];
   return YES;

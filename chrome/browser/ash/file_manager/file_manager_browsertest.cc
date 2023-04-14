@@ -1914,6 +1914,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openFileDialogDriveHostedNeedsFile").WithBrowser(),
         TestCase("saveFileDialogDriveHostedNeedsFile").WithBrowser(),
         TestCase("openFileDialogDriveCSEGrey").WithBrowser(),
+        TestCase("openFileDialogDriveCSENeedsFile").WithBrowser(),
         TestCase("openFileDialogDriveOfficeFile").WithBrowser(),
         TestCase("openMultiFileDialogDriveOfficeFile")
             .WithBrowser()
@@ -2170,7 +2171,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchLocalWithTypeOptions").EnableSearchV2(),
         TestCase("searchDriveWithTypeOptions").EnableSearchV2(),
         TestCase("searchWithRecencyOptions").EnableSearchV2(),
-        TestCase("searchRemovableDevice").EnableSearchV2()
+        TestCase("searchRemovableDevice").EnableSearchV2(),
+        TestCase("resetSearchOptionsOnFolderChange").EnableSearchV2(),
+        TestCase("showSearchResultMessageWhenSearching").EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));

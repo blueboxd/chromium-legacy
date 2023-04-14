@@ -17,7 +17,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/types/pass_key.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -683,8 +682,9 @@ absl::optional<syncer::ModelError> WebAppSyncBridge::MergeSyncData(
 absl::optional<syncer::ModelError> WebAppSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  if (!disable_checks_for_testing_)
-    CHECK(change_processor()->IsTrackingMetadata());
+  // `change_processor()->IsTrackingMetadata()` may be false if
+  // the sync database is invalid and CheckForInvalidPersistedMetadata()
+  // is resetting it.
 
   auto update_local_data = std::make_unique<RegistryUpdateData>();
 

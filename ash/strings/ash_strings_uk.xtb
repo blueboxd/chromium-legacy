@@ -288,6 +288,7 @@
 <translation id="2475982808118771221">Сталася помилка</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
 <translation id="2484513351006226581">Натисніть комбінацію клавіш <ph name="KEYBOARD_SHORTCUT" />, щоб змінити розкладку клавіатури.</translation>
+<translation id="2487915095798731898">Приєднатися</translation>
 <translation id="2501920221385095727">Залипання клавіш</translation>
 <translation id="2509468283778169019">Режим CAPS LOCK увімкнено</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@
 <translation id="3925540965556789199"><ph name="DATE" />, завантаження подій.</translation>
 <translation id="3932043219784172185">Немає підключених пристроїв</translation>
 <translation id="3934456833412894880">Адаптивне заряджання ввімкнено. Заряд акумулятора підтримуватиметься на рівні 80%, щоб подовжити час роботи. Акумулятор повністю зарядиться до того, як вам знадобиться пристрій.</translation>
+<translation id="3936620957945677513">Натисніть клавішу Enter, щоб приєднатися до події "<ph name="EVENT_SUMMARY" />"</translation>
 <translation id="3943857333388298514">Вставити</translation>
 <translation id="394485226368336402">Налаштування звуку</translation>
 <translation id="3945319193631853098">Натисніть, щоб завершити налаштування</translation>

@@ -421,6 +421,9 @@ non_web_component_files = [
 mojom_webui_files = [
   "mojom-webui/cros_audio_config.mojom-webui.ts",
   "mojom-webui/app_notification_handler.mojom-webui.ts",
+  "mojom-webui/input_device_settings_provider.mojom-webui.ts",
+  "mojom-webui/input_device_settings.mojom-webui.js",
+  "mojom-webui/modifier_key.mojom-webui.js",
   "mojom-webui/routes.mojom-webui.js",
   "mojom-webui/search/personalization_search.mojom-webui.ts",
   "mojom-webui/search/search.mojom-webui.js",
@@ -431,7 +434,7 @@ mojom_webui_files = [
 
 # TODO(b/207087930) Consider moving these shared files to chrome://resources
 # Files below are from Nearby Share and shared with ChromeOS Settings
-nearby_share_shared_files = [
+shared_nearby_share_files = [
   "shared/nearby_contact_visibility.js",
   "shared/nearby_contact_visibility.html.js",
   "shared/nearby_device_icon.js",
@@ -453,7 +456,7 @@ nearby_share_shared_files = [
 
   "shared/nearby_contact_manager.js",
   "shared/nearby_metrics_logger.js",
-  "shared/nearby_share_settings_behavior.js",
+  "shared/nearby_share_settings_mixin.js",
   "shared/nearby_share_settings.js",
   "shared/types.js",
 

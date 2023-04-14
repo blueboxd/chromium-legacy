@@ -687,12 +687,16 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)editNodeURL:(const BookmarkNode*)node {
   DCHECK(node);
   DCHECK_EQ(node->type(), BookmarkNode::URL);
+  base::RecordAction(
+      base::UserMetricsAction("MobileBookmarkManagerEditBookmark"));
   [self ensureBookmarksCoordinator];
   [self.bookmarksCoordinator presentEditorForURLNode:node];
 }
 
 // Opens the editor on the given Folder node.
 - (void)editNodeFolder:(const BookmarkNode*)node {
+  base::RecordAction(
+      base::UserMetricsAction("MobileBookmarkManagerEditFolder"));
   DCHECK(node);
   DCHECK_EQ(node->type(), BookmarkNode::FOLDER);
   [self ensureBookmarksCoordinator];
@@ -1655,6 +1659,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       [self.tableView selectRowAtIndexPath:path
                                   animated:NO
                             scrollPosition:UITableViewScrollPositionMiddle];
+      [self.tableView.delegate tableView:self.tableView
+                 didSelectRowAtIndexPath:path];
       break;
     }
   }
@@ -1837,6 +1843,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                       bookmark_utils_ios::FindNodesByIds(strongSelf.bookmarks,
                                                          nodeIds);
                   if (nodesFromIds) {
+                    base::RecordAction(base::UserMetricsAction(
+                        "MobileBookmarkManagerMoveToFolderBulk"));
                     [strongSelf moveNodes:*nodesFromIds];
                   }
                 }
@@ -1972,6 +1980,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                bookmark_utils_ios::FindNodeById(
                                    strongSelf.bookmarks, nodeId);
                            if (nodeFromId) {
+                             base::RecordAction(base::UserMetricsAction(
+                                 "MobileBookmarkManagerMoveToFolder"));
                              std::set<const BookmarkNode*> nodes{nodeFromId};
                              [strongSelf moveNodes:nodes];
                            }
@@ -2004,6 +2014,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                       nodesFromIds = bookmark_utils_ios::FindNodesByIds(
                           strongSelf.bookmarks, nodeIds);
                   if (nodesFromIds) {
+                    base::RecordAction(base::UserMetricsAction(
+                        "MobileBookmarkManagerMoveToFolderBulk"));
                     [strongSelf moveNodes:*nodesFromIds];
                   }
                 }
@@ -2308,6 +2320,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     }
     [self.sharedState.editingFolderCell stopEdit];
     if (node->is_folder()) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileBookmarkManagerOpenFolder"));
       [self handleSelectFolderForNavigation:node];
     } else {
       if (self.sharedState.currentlyShowingSearchResults) {
@@ -2499,6 +2513,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         const bookmarks::BookmarkNode* nodeFromId =
             bookmark_utils_ios::FindNodeById(innerStrongSelf.bookmarks, nodeId);
         if (nodeFromId) {
+          base::RecordAction(
+              base::UserMetricsAction("MobileBookmarkManagerMoveToFolder"));
           std::set<const BookmarkNode*> nodes{nodeFromId};
           [innerStrongSelf moveNodes:nodes];
         }

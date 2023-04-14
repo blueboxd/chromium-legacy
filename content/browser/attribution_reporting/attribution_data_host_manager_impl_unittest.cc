@@ -26,14 +26,15 @@
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/registration_type.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
+#include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
 #include "content/browser/attribution_reporting/attribution_constants.h"
-#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/public/browser/global_routing_id.h"
@@ -56,12 +57,14 @@ namespace content {
 
 namespace {
 
+using ::attribution_reporting::DestinationSet;
 using ::attribution_reporting::FilterPair;
 using ::attribution_reporting::SourceRegistration;
 using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::TriggerRegistration;
 using ::attribution_reporting::mojom::RegistrationType;
 using ::attribution_reporting::mojom::SourceRegistrationError;
+using ::attribution_reporting::mojom::SourceType;
 
 using ::blink::mojom::AttributionNavigationType;
 
@@ -165,8 +168,8 @@ TEST_F(AttributionDataHostManagerImplTest, SourceDataHost_SourceRegistered) {
   EXPECT_CALL(
       mock_manager_,
       HandleSource(
-          AllOf(SourceTypeIs(AttributionSourceType::kEvent),
-                SourceEventIdIs(10), DestinationSiteIs(destination_site),
+          AllOf(SourceTypeIs(SourceType::kEvent), SourceEventIdIs(10),
+                DestinationSiteIs(destination_site),
                 ImpressionOriginIs(page_origin),
                 ReportingOriginIs(reporting_origin), SourcePriorityIs(20),
                 SourceDebugKeyIs(789), AggregationKeysAre(aggregation_keys),
@@ -183,7 +186,7 @@ TEST_F(AttributionDataHostManagerImplTest, SourceDataHost_SourceRegistered) {
 
     task_environment_.FastForwardBy(base::Milliseconds(1));
 
-    SourceRegistration source_data(destination_site);
+    SourceRegistration source_data(*DestinationSet::Create({destination_site}));
     source_data.source_event_id = 10;
     source_data.priority = 20;
     source_data.debug_key = 789;
@@ -233,7 +236,7 @@ TEST_F(AttributionDataHostManagerImplTest,
         /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
         kFrameId);
 
-    SourceRegistration source_data(destination_site);
+    SourceRegistration source_data(*DestinationSet::Create({destination_site}));
     data_host_remote.data_host->SourceDataAvailable(reporting_origin,
                                                     source_data);
     data_host_remote.data_host.FlushForTesting();
@@ -246,8 +249,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     checkpoint.Call(2);
 
-    source_data.destination =
-        net::SchemefulSite::Deserialize("https://other-trigger.example");
+    source_data.destination_set = *DestinationSet::Create(
+        {net::SchemefulSite::Deserialize("https://other-trigger.example")});
     data_host_remote.data_host->SourceDataAvailable(reporting_origin,
                                                     source_data);
     data_host_remote.data_host.FlushForTesting();
@@ -386,7 +389,8 @@ TEST_F(AttributionDataHostManagerImplTest,
     {
       mojo::test::BadMessageObserver bad_message_observer;
 
-      SourceRegistration source_data((net::SchemefulSite(destination_origin)));
+      SourceRegistration source_data(
+          *DestinationSet::Create({net::SchemefulSite(destination_origin)}));
 
       data_host_remote.data_host->SourceDataAvailable(reporting_origin,
                                                       std::move(source_data));
@@ -444,7 +448,7 @@ TEST_F(AttributionDataHostManagerImplTest,
         /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
         kFrameId);
 
-    SourceRegistration source_data(destination_site);
+    SourceRegistration source_data(*DestinationSet::Create({destination_site}));
 
     data_host_remote.data_host->SourceDataAvailable(reporting_origin,
                                                     source_data);
@@ -507,8 +511,8 @@ TEST_F(AttributionDataHostManagerImplTest,
     EXPECT_CALL(
         mock_manager_,
         HandleSource(
-            AllOf(SourceTypeIs(AttributionSourceType::kNavigation),
-                  SourceEventIdIs(10), DestinationSiteIs(destination_site),
+            AllOf(SourceTypeIs(SourceType::kNavigation), SourceEventIdIs(10),
+                  DestinationSiteIs(destination_site),
                   ImpressionOriginIs(page_origin),
                   ReportingOriginIs(reporting_origin), SourcePriorityIs(20),
                   SourceDebugKeyIs(789), AggregationKeysAre(aggregation_keys),
@@ -535,7 +539,7 @@ TEST_F(AttributionDataHostManagerImplTest,
         AttributionNavigationType::kContextMenu,
         /*is_within_fenced_frame=*/false, kFrameId);
 
-    SourceRegistration source_data(destination_site);
+    SourceRegistration source_data(*DestinationSet::Create({destination_site}));
     source_data.source_event_id = 10;
     source_data.priority = 20;
     source_data.debug_key = 789;
@@ -549,8 +553,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     // This should succeed even though the destination site doesn't match the
     // final navigation site.
-    source_data.destination =
-        net::SchemefulSite::Deserialize("https://trigger2.example");
+    source_data.destination_set = *DestinationSet::Create(
+        {net::SchemefulSite::Deserialize("https://trigger2.example")});
     data_host_remote.data_host->SourceDataAvailable(reporting_origin,
                                                     std::move(source_data));
     data_host_remote.data_host.FlushForTesting();
@@ -820,7 +824,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   EXPECT_CALL(mock_manager_, NotifyFailedSourceRegistration(
                                  "!!!invalid json", source_site, reporter,
-                                 AttributionSourceType::kNavigation,
+                                 SourceType::kNavigation,
                                  SourceRegistrationError::kInvalidJson));
 
   const blink::AttributionSrcToken attribution_src_token;
@@ -843,7 +847,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
-  histograms.ExpectUniqueSample("Conversions.SourceRegistrationError",
+  histograms.ExpectUniqueSample("Conversions.SourceRegistrationError2",
                                 SourceRegistrationError::kInvalidJson, 1);
 }
 
@@ -1314,8 +1318,8 @@ TEST_F(AttributionDataHostManagerImplTest, SourceThenTrigger_TriggerDelayed) {
       /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
       kFrameId);
 
-  SourceRegistration source_data(
-      net::SchemefulSite::Deserialize("https://dest.test"));
+  SourceRegistration source_data(*DestinationSet::Create(
+      {net::SchemefulSite::Deserialize("https://dest.test")}));
   source_data_host_remote->SourceDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report1.test"),
       std::move(source_data));
@@ -1426,7 +1430,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   auto reporting_origin =
       *SuitableOrigin::Deserialize("https://reporter.example");
 
-  SourceRegistration source_data(destination_site);
+  SourceRegistration source_data(*DestinationSet::Create({destination_site}));
   source_data.source_event_id = 1;
   data_host_remote1->SourceDataAvailable(reporting_origin, source_data);
   data_host_remote1.FlushForTesting();
@@ -1445,14 +1449,14 @@ TEST_F(AttributionDataHostManagerImplTest,
   auto reporting_origin =
       *SuitableOrigin::Deserialize("https://reporter.example");
 
-  EXPECT_CALL(mock_manager_,
-              HandleSource(AllOf(SourceTypeIs(AttributionSourceType::kEvent),
-                                 SourceEventIdIs(10),
-                                 DestinationSiteIs(destination_site),
-                                 ImpressionOriginIs(page_origin),
-                                 ReportingOriginIs(reporting_origin),
-                                 SourceIsWithinFencedFrameIs(true)),
-                           kFrameId));
+  EXPECT_CALL(
+      mock_manager_,
+      HandleSource(AllOf(SourceTypeIs(SourceType::kEvent), SourceEventIdIs(10),
+                         DestinationSiteIs(destination_site),
+                         ImpressionOriginIs(page_origin),
+                         ReportingOriginIs(reporting_origin),
+                         SourceIsWithinFencedFrameIs(true)),
+                   kFrameId));
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
@@ -1462,7 +1466,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
-  SourceRegistration source_data(destination_site);
+  SourceRegistration source_data(*DestinationSet::Create({destination_site}));
   source_data.source_event_id = 10;
   data_host_remote->SourceDataAvailable(reporting_origin,
                                         std::move(source_data));
@@ -1513,9 +1517,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   data_host_remote->SourceDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      SourceRegistration(
-          /*destination=*/net::SchemefulSite::Deserialize(
-              "https://destination.test")));
+      SourceRegistration(*DestinationSet::Create(
+          {net::SchemefulSite::Deserialize("https://destination.test")})));
   data_host_remote.FlushForTesting();
 }
 
@@ -1607,11 +1610,10 @@ TEST_F(AttributionDataHostManagerImplTest,
 
 TEST_F(AttributionDataHostManagerImplTest,
        NavigationBeaconSource_ParsingFinishesBeforeAndAfterNav) {
-  EXPECT_CALL(
-      mock_manager_,
-      HandleSource(AllOf(SourceTypeIs(AttributionSourceType::kNavigation),
-                         SourceIsWithinFencedFrameIs(false)),
-                   kFrameId))
+  EXPECT_CALL(mock_manager_,
+              HandleSource(AllOf(SourceTypeIs(SourceType::kNavigation),
+                                 SourceIsWithinFencedFrameIs(false)),
+                           kFrameId))
       .Times(2);
 
   auto reporting_origin = url::Origin::Create(GURL("https://report.test"));
@@ -1654,7 +1656,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   EXPECT_CALL(mock_manager_, NotifyFailedSourceRegistration(
                                  "!!!invalid json", source_origin,
                                  *SuitableOrigin::Create(reporting_origin),
-                                 AttributionSourceType::kNavigation,
+                                 SourceType::kNavigation,
                                  SourceRegistrationError::kInvalidJson))
       .Times(2);
 
@@ -1687,9 +1689,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
 TEST_F(AttributionDataHostManagerImplTest,
        NavigationBeaconSource_DataReceivedBeforeAndAfterNav) {
-  EXPECT_CALL(
-      mock_manager_,
-      HandleSource(SourceTypeIs(AttributionSourceType::kNavigation), kFrameId))
+  EXPECT_CALL(mock_manager_,
+              HandleSource(SourceTypeIs(SourceType::kNavigation), kFrameId))
       .Times(2);
 
   auto reporting_origin = url::Origin::Create(GURL("https://report.test"));
@@ -1855,7 +1856,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
 TEST_F(AttributionDataHostManagerImplTest, EventBeaconSource_DataReceived) {
   EXPECT_CALL(mock_manager_,
-              HandleSource(AllOf(SourceTypeIs(AttributionSourceType::kEvent),
+              HandleSource(AllOf(SourceTypeIs(SourceType::kEvent),
                                  SourceIsWithinFencedFrameIs(true)),
                            kFrameId));
 

@@ -126,6 +126,7 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -4732,6 +4733,126 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
   EXPECT_TRUE(TryLoadBundle("redirected.wbn", js_url_str));
 }
 
+// Ensure web request listener can intercept requests for web bundles with the
+// resource type "webbundle".
+IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
+                       WebBundleRequestCanceledWithResourceType) {
+  // Create an extension that cancels 'webbundle' resource type request in
+  // chrome.webRequest.onBeforeRequest listener.
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request Subresource Web Bundles Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"], "persistent": true },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+  std::string opt_extra_info_spec = "'blocking'";
+  if (GetExtraInfoSpec() == ExtraInfoSpec::kExtraHeaders) {
+    opt_extra_info_spec += ", 'extraHeaders'";
+  }
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     base::StringPrintf(R"(
+        self.numOnBeforeRequestCalled = 0;
+        self.unexpectedRequests = [];
+        chrome.webRequest.onBeforeRequest.addListener(function(details) {
+          self.numOnBeforeRequestCalled++;
+          if (details.type != 'webbundle') {
+            self.unexpectedRequests.push(details);
+          }
+          return {cancel: true};
+        }, {urls: ['<all_urls>'], types: ['webbundle']}, [%s]);
+
+        chrome.test.sendMessage('ready');
+      )",
+                                        opt_extra_info_spec.c_str()));
+  const Extension* extension = nullptr;
+  {
+    ExtensionTestMessageListener listener("ready");
+    extension = LoadExtension(test_dir.UnpackedPath());
+    ASSERT_TRUE(extension);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  std::string web_bundle;
+  RegisterWebBundleRequestHandler("/web_bundle.wbn", &web_bundle);
+
+  std::string page_html = R"(
+        <title>Page loaded</title>
+        <body>
+        <script>
+          (() => {
+            const script = document.createElement('script');
+            script.type = 'webbundle';
+            script.textContent = JSON.stringify({
+              'source': 'web_bundle.wbn',
+              'resources': ['cancel.js']
+            });
+            script.addEventListener('error', () => {
+              document.title = 'web_bundle.wbn loading canceled';
+            });
+            script.addEventListener('load', () => {
+              document.title = 'web_bundle.wbn loaded';
+            });
+            document.body.appendChild(script);
+          })();
+        </script>
+        </body>
+      )";
+  RegisterRequestHandler("/test.html", "text/html", page_html);
+
+  std::string pass_js = "document.title = 'pass.js loaded';";
+  RegisterRequestHandler("/pass.js", "application/javascript", pass_js);
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Create a web bundle.
+  web_package::WebBundleBuilder builder;
+  GURL cancel_js_url = embedded_test_server()->GetURL("/cancel.js");
+  builder.AddExchange(
+      cancel_js_url,
+      {{":status", "200"}, {"content-type", "application/javascript"}},
+      "document.title = 'cancel.js loaded';");
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  web_bundle = std::string(bundle.begin(), bundle.end());
+
+  GURL page_url = embedded_test_server()->GetURL("/test.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
+  EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
+
+  std::u16string expected_title1 = u"web_bundle.wbn loading canceled";
+  content::TitleWatcher title_watcher1(web_contents, expected_title1);
+  title_watcher1.AlsoWaitForTitle(u"web_bundle.wbn loaded");
+  // Check that the request for web_bundle.wbn was correctly canceled.
+  EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
+
+  // Check that the onBeforeRequest listener is called for the 'webbundle'
+  // resource type request.
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.numOnBeforeRequestCalled"));
+  static constexpr char kScript[] =
+      "chrome.test.sendScriptResult(JSON.stringify(self.unexpectedRequests));";
+  EXPECT_EQ("[]",
+            ExecuteScriptAndReturnString(extension->id(), profile(), kScript));
+
+  // Try 'script' resource type request to check that the onBeforeRequest
+  // listener is invoked only for a 'webbundle' resource type request.
+  std::u16string expected_title2 = u"pass.js loaded";
+  content::TitleWatcher title_watcher2(web_contents, expected_title2);
+  EXPECT_TRUE(TryLoadScript("pass.js"));
+  // Check that the pass.js was correctly loaded.
+  EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
+
+  // Check that the onBeforeRequest listener is not called for the 'script'
+  // resource type request.
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.numOnBeforeRequestCalled"));
+  EXPECT_EQ("[]",
+            ExecuteScriptAndReturnString(extension->id(), profile(), kScript));
+}
+
 // TODO(crbug.com/1082020) When we implement variant matching of subresource
 // web bundles, we should add test for request header modification.
 
@@ -6277,6 +6398,150 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
                        u"Unchecked runtime.lastError: You do not have "
                        u"permission to use blocking webRequest listeners."))
       << errors[0]->message();
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest, RecordUkmOnNavigation) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  TestExtensionDir test_dir1;
+  test_dir1.WriteManifest(R"({
+           "name": "MV3 WebRequest",
+           "version": "0.1",
+           "manifest_version": 3,
+           "content_scripts": [
+             {
+               "matches": ["<all_urls>"],
+               "js": ["contentscript.js"]
+             }
+           ],
+           "permissions": [
+             "webRequest",
+             "webRequestBlocking",
+             "webRequestAuthProvider",
+             "declarativeNetRequest",
+             "declarativeNetRequestFeedback",
+             "declarativeNetRequestWithHostAccess"
+           ],
+           "host_permissions": ["http://a.com/*"],
+           "background": {"service_worker": "background.js"}
+         })");
+  test_dir1.WriteFile(FILE_PATH_LITERAL("contentscript.js"), /*contents=*/"");
+  test_dir1.WriteFile(FILE_PATH_LITERAL("background.js"),
+                      "chrome.test.sendMessage('ready');");
+  ASSERT_TRUE(LoadPolicyExtension(test_dir1));
+
+  // declarativeWebRequest is only supported by manifest version 2 or lower.
+  TestExtensionDir test_dir2;
+  test_dir2.WriteManifest(R"({
+           "name": "MV2 WebRequest",
+           "version": "0.1",
+           "manifest_version": 2,
+           "content_scripts": [
+             {
+               "matches": ["<all_urls>"],
+               "js": ["contentscript.js"]
+             }
+           ],
+           "permissions": [
+             "declarativeWebRequest",
+             "http://b.com/*"
+           ],
+           "background": {"scripts": ["background.js"], "persistent": true}
+         })");
+  test_dir2.WriteFile(FILE_PATH_LITERAL("contentscript.js"), /*contents=*/"");
+  test_dir2.WriteFile(FILE_PATH_LITERAL("background.js"),
+                      "chrome.test.sendMessage('ready');");
+  ExtensionTestMessageListener listener("ready");
+  ASSERT_TRUE(LoadExtension(test_dir2.UnpackedPath()));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  base::RunLoop ukm_loop;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  ukm_recorder.SetOnAddEntryCallback(
+      ukm::builders::Extensions_OnNavigation::kEntryName,
+      base::BindLambdaForTesting([&]() {
+        if (ukm_recorder
+                .GetMergedEntriesByName(
+                    ukm::builders::Extensions_OnNavigation::kEntryName)
+                .size() == 2) {
+          ukm_loop.Quit();
+        }
+      }));
+
+  const GURL kUrlA = embedded_test_server()->GetURL("a.com", "/simple.html");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), kUrlA));
+
+  const GURL kUrlB = embedded_test_server()->GetURL("b.com", "/simple.html");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), kUrlB));
+
+  // Waits until UKM data is recorded.
+  ukm_loop.Run();
+
+  const double kBucketSpacing = 2;
+  auto merged_entries = ukm_recorder.GetMergedEntriesByName(
+      ukm::builders::Extensions_OnNavigation::kEntryName);
+  EXPECT_EQ(2u, merged_entries.size());
+  for (const auto& entry : merged_entries) {
+    const ukm::mojom::UkmEntry* ukm_entry = entry.second.get();
+    const GURL& url =
+        ukm_recorder.GetSourceForSourceId(ukm_entry->source_id)->url();
+    ukm_recorder.ExpectEntrySourceHasUrl(ukm_entry, url);
+    ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+        ukm_entry, "EnabledExtensionCount",
+        ukm::GetExponentialBucketMin(2u, kBucketSpacing));
+    ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+        ukm_entry, "EnabledExtensionCount.InjectContentScript",
+        ukm::GetExponentialBucketMin(2u, kBucketSpacing));
+    ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+        ukm_entry, "EnabledExtensionCount.HaveHostPermissions",
+        ukm::GetExponentialBucketMin(1u, kBucketSpacing));
+    if (url == kUrlA) {
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "WebRequestAuthProviderPermissionCount",
+          ukm::GetExponentialBucketMin(1u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "WebRequestBlockingPermissionCount",
+          ukm::GetExponentialBucketMin(1u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "WebRequestPermissionCount",
+          ukm::GetExponentialBucketMin(1u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "DeclarativeNetRequestFeedbackPermissionCount",
+          ukm::GetExponentialBucketMin(1u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "DeclarativeNetRequestPermissionCount",
+          ukm::GetExponentialBucketMin(1u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "DeclarativeNetRequestWithHostAccessPermissionCount",
+          ukm::GetExponentialBucketMin(1u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "DeclarativeWebRequestPermissionCount",
+          ukm::GetExponentialBucketMin(0u, kBucketSpacing));
+    } else if (url == kUrlB) {
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "WebRequestAuthProviderPermissionCount",
+          ukm::GetExponentialBucketMin(0u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "WebRequestBlockingPermissionCount",
+          ukm::GetExponentialBucketMin(0u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "WebRequestPermissionCount",
+          ukm::GetExponentialBucketMin(0u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "DeclarativeNetRequestFeedbackPermissionCount",
+          ukm::GetExponentialBucketMin(0u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "DeclarativeNetRequestPermissionCount",
+          ukm::GetExponentialBucketMin(0u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "DeclarativeNetRequestWithHostAccessPermissionCount",
+          ukm::GetExponentialBucketMin(0u, kBucketSpacing));
+      ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
+          ukm_entry, "DeclarativeWebRequestPermissionCount",
+          ukm::GetExponentialBucketMin(1u, kBucketSpacing));
+    } else {
+      NOTREACHED();
+    }
+  }
 }
 
 }  // namespace extensions

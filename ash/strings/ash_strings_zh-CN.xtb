@@ -288,6 +288,7 @@
 <translation id="2475982808118771221">出现错误</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2484513351006226581">按 <ph name="KEYBOARD_SHORTCUT" />键可切换键盘布局。</translation>
+<translation id="2487915095798731898">加入</translation>
 <translation id="2501920221385095727">粘滞键</translation>
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@
 <translation id="3925540965556789199"><ph name="DATE" />，正在加载活动。</translation>
 <translation id="3932043219784172185">未连接任何设备</translation>
 <translation id="3934456833412894880">已开启“自适应充电”功能。电池电量将会保持在 80% 以延长电池寿命，并会在您需要时完全充满。</translation>
+<translation id="3936620957945677513">按 Enter 键即可加入<ph name="EVENT_SUMMARY" />活动</translation>
 <translation id="3943857333388298514">粘贴</translation>
 <translation id="394485226368336402">音频设置</translation>
 <translation id="3945319193631853098">点按即可完成设置</translation>
@@ -927,7 +929,7 @@
 <translation id="5909862606227538307">闲置的桌面。</translation>
 <translation id="5911231045062997865">目前不支持 Lacros 窗口。其他应用会被保存。</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
-<translation id="5916664084637901428">启用</translation>
+<translation id="5916664084637901428">已启用</translation>
 <translation id="5920710855273935292">麦克风已静音。</translation>
 <translation id="5946788582095584774">“<ph name="FEATURE_NAME" />”功能已开启。</translation>
 <translation id="5947494881799873997">还原</translation>

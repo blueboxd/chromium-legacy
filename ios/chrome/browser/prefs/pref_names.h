@@ -24,7 +24,10 @@ extern const char kFirstFollowUIShownCount[];
 extern const char kHttpServerProperties[];
 extern const char kIncognitoModeAvailability[];
 extern const char kIncognitoInterstitialEnabled[];
+extern const char kIosCredentialProviderPromoPolicyEnabled[];
 extern const char kIosCredentialProviderPromoStopPromo[];
+extern const char kIosCredentialProviderPromoSource[];
+extern const char kIosCredentialProviderPromoHasRegisteredWithPromoManager[];
 extern const char kIosBookmarkCachedFolderId[];
 extern const char kIosBookmarkCachedTopMostRow[];
 extern const char kIosBookmarkFolderDefault[];
@@ -77,6 +80,7 @@ extern const char kHttpsOnlyModeEnabled[];
 extern const char kMixedContentAutoupgradeEnabled[];
 
 extern const char kAutofillBrandingIconAnimationRemainingCountPrefName[];
+extern const char kPriceNotificationsHasBeenShown[];
 
 }  // namespace prefs
 

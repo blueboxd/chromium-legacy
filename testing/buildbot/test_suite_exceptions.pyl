@@ -97,6 +97,7 @@
         },
       },
       'android-nougat-x86-rel': {
+        'ci_only': True,
         'swarming': {
           'shards': 2,
         },
@@ -1545,7 +1546,37 @@
           ],
         },
       },
+      'lacros-amd64-generic-chrome-skylab': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64',
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
       'lacros-arm-generic-chrome': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64',
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
+      'lacros-arm-generic-chrome-skylab': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64',
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
+      'lacros-arm64-generic-chrome-skylab': {
         'swarming': {
           'dimension_sets': [
             {
@@ -3391,6 +3422,9 @@
           # TODO(crbug.com/1264654): Fix the failed tests
           '--gtest_filter=-PacLibraryTest.ActualPacMyIpAddress*'
         ],
+        'swarming': {
+          'shards': 2,
+        },
       },
       'android-nougat-x86-rel': {
         'args': [
@@ -3398,7 +3432,7 @@
           '--gtest_filter=-PacLibraryTest.ActualPacMyIpAddress*'
         ],
         'swarming': {
-          'shards': 2,
+          'shards': 3,
           'inverse_quickrun_shards': 4,
         },
       },

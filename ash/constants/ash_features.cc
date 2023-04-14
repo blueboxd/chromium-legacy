@@ -270,7 +270,7 @@ BASE_FEATURE(kBluetoothWbsDogfood,
 
 BASE_FEATURE(kRobustAudioDeviceSelectLogic,
              "RobustAudioDeviceSelectLogic",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable Big GL when using Borealis.
 BASE_FEATURE(kBorealisBigGl, "BorealisBigGl", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -310,12 +310,6 @@ BASE_FEATURE(kBorealisStorageBallooning,
              "BorealisStorageBallooning",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable TermsOfServiceURL policy for managed users.
-// https://crbug.com/1221342
-BASE_FEATURE(kManagedTermsOfService,
-             "ManagedTermsOfService",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable or disable calendar view from the system tray. Also enables the system
 // tray to show date in the shelf when the screen is sufficiently large.
 BASE_FEATURE(kCalendarView, "CalendarView", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -345,7 +339,7 @@ BASE_FEATURE(kCameraPrivacySwitchNotifications,
 // Mode.
 BASE_FEATURE(kCaptureModeDemoTools,
              "CaptureModeDemoTools",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, allow eSIM installation bypass the non-cellular internet
 // connectivity check.
@@ -642,6 +636,12 @@ BASE_FEATURE(kEcheSWADisableStunServer,
 BASE_FEATURE(kEcheSWACheckAndroidNetworkInfo,
              "EcheSWACheckAndroidNetworkInfo",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Allows CrOS to process Android
+// accessibility tree information.
+BASE_FEATURE(kEcheSWAProcessAndroidAccessibilityTree,
+             "EcheSWAProcessAndroidAccessibilityTree",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, allows the creation of up to 16 desks (default is 8).
 BASE_FEATURE(kEnable16Desks,
@@ -1180,6 +1180,11 @@ BASE_FEATURE(kVirtualKeyboardNewHeader,
 // features (e.g. auto-correct).
 BASE_FEATURE(kImeRuleConfig, "ImeRuleConfig", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// If enabled use the updated US English IME language models.
+BASE_FEATURE(kImeUsEnglishModelUpdate,
+             "ImeUsEnglishModelUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable or disable system emoji picker falling back to clipboard.
 BASE_FEATURE(kImeSystemEmojiPickerClipboard,
              "SystemEmojiPickerClipboard",
@@ -1227,6 +1232,11 @@ BASE_FEATURE(kInstantTethering,
 BASE_FEATURE(kInternalServerSideSpeechRecognition,
              "InternalServerSideSpeechRecognition",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Feature overrides the `InternalServerSideSpeechRecognition` flag if disabled.
+BASE_FEATURE(kInternalServerSideSpeechRecognitionControl,
+             "InternalServerSideSpeechRecognitionControl",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables sending `client-info` values to IPP printers on ChromeOS.
 BASE_FEATURE(kIppClientInfo, "IppClientInfo", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1382,7 +1392,7 @@ BASE_FEATURE(kEcheLauncher, "EcheLauncher", base::FEATURE_ENABLED_BY_DEFAULT);
 // Switch full apps list in Phone Hub from grid view to list view.
 BASE_FEATURE(kEcheLauncherListView,
              "EcheLauncherListView",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Switch the "More Apps" button in eche launcher to show small app icons
 BASE_FEATURE(kEcheLauncherIconsInMoreAppsButton,
@@ -1581,6 +1591,12 @@ BASE_FEATURE(kPhoneHubNudge,
 BASE_FEATURE(kPhoneHubPingOnBubbleOpen,
              "PhoneHubPingOnBubbleOpen",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether policy provided trust anchors are allowed at the lock
+// screen.
+BASE_FEATURE(kPolicyProvidedTrustAnchorsAllowedAtLockScreen,
+             "PolicyProvidedTrustAnchorsAllowedAtLockScreen",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables the preference of using constant frame rate for camera
 // when streaming.
@@ -1826,12 +1842,6 @@ BASE_FEATURE(kSettingsAppThemeChangeAnimation,
 BASE_FEATURE(kShelfAutoHideSeparation,
              "ShelfAutoHideSeparation",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables shelf gestures (swipe to show hotseat, swipe to go home or overview)
-// in tablet mode when virtual keyboard is shown.
-BASE_FEATURE(kShelfGesturesWithVirtualKeyboard,
-             "ShelfGesturesWithVirtualKeyboard",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables launcher nudge that animates the home button to guide users to open
 // the launcher.
@@ -2235,6 +2245,11 @@ bool AreContextualNudgesEnabled() {
 
 bool AreDesksTemplatesEnabled() {
   return base::FeatureList::IsEnabled(kDesksTemplates);
+}
+
+bool ArePolicyProvidedTrustAnchorsAllowedAtLockScreen() {
+  return base::FeatureList::IsEnabled(
+      kPolicyProvidedTrustAnchorsAllowedAtLockScreen);
 }
 
 bool ArePromiseIconsEnabled() {
@@ -2689,8 +2704,18 @@ bool IsInternalServerSideSpeechRecognitionEnabled() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(b/245614967): Once ready, enable this feature under
   // kProjectorBleedingEdgeExperience flag as well.
-  return ShouldForceEnableServerSideSpeechRecognitionForDev() ||
-         base::FeatureList::IsEnabled(kInternalServerSideSpeechRecognition);
+  return IsInternalServerSideSpeechRecognitionControlEnabled() &&
+         (ShouldForceEnableServerSideSpeechRecognitionForDev() ||
+          base::FeatureList::IsEnabled(kInternalServerSideSpeechRecognition));
+#else
+  return false;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+}
+
+bool IsInternalServerSideSpeechRecognitionControlEnabled() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return base::FeatureList::IsEnabled(
+      kInternalServerSideSpeechRecognitionControl);
 #else
   return false;
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -2767,10 +2792,6 @@ bool IsProductivityLauncherImageSearchEnabled() {
 
 bool IsMacAddressRandomizationEnabled() {
   return base::FeatureList::IsEnabled(kMacAddressRandomization);
-}
-
-bool IsManagedTermsOfServiceEnabled() {
-  return base::FeatureList::IsEnabled(kManagedTermsOfService);
 }
 
 bool IsMicMuteNotificationsEnabled() {

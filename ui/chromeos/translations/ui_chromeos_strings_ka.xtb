@@ -351,7 +351,6 @@
 <translation id="3924145049010392604">მეტა</translation>
 <translation id="3943857333388298514">ჩასმა</translation>
 <translation id="3952872973865944257">ტელუგუ ფონეტიკური</translation>
-<translation id="3954354850384043518">მიმდინარეობს</translation>
 <translation id="3958548648197196644">კივი</translation>
 <translation id="3971140002794351170">მობილური პროფილის ჩამოტვირთვა, ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">ინგლისური (გაერთიანებული სამეფო)</translation>
@@ -365,6 +364,7 @@
 <translation id="4092890906744441904">ირლანდიური</translation>
 <translation id="4124935795427217608">ზღაპრული მარტორქა</translation>
 <translation id="4131235941541910880">გადაიტანეთ არასაჭირო ერთეულები წაშლილებში</translation>
+<translation id="4134804435730168042">ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, გაააქტიურეთ მოწყობილობის დაყენების შემდეგ</translation>
 <translation id="4153015322587141338">თაროდან თქვენს ფაილებზე სწრაფი წვდომა რომ იქონიოთ, მარჯვენა ღილაკით დააწკაპუნეთ ფაილზე და აირჩიეთ „<ph name="PIN_COMMAND" />“.</translation>
 <translation id="4157569377477607576">ადმინისტრატორის წესების მიხედვით რეკომენდებული არ არის:</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> გადატანილია.</translation>
@@ -407,6 +407,7 @@
 <translation id="4414834425328380570">„<ph name="FILE_NAME" />“ წაიშლება და მის აღდგენას ვერ შეძლებთ.</translation>
 <translation id="4418686080762064601">შექმენით თქვენი ფაილების მალსახმობი</translation>
 <translation id="4425149324548788773">ჩემი Drive</translation>
+<translation id="4432921877815220091">ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, გაააქტიურეთ მოწყობილობის დაყენების შემდეგ, მართავს თქვენი ადმინისტრატორი</translation>
 <translation id="4439427728133035643">ქსელი <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />%, დაკავშირება</translation>
 <translation id="4442424173763614572">DNS ძიება ვერ განხორციელდა</translation>
 <translation id="4462159676511157176">ინდივიდუალური სახელთა სერვერები</translation>
@@ -615,6 +616,7 @@
 <translation id="5913638992615760742">კოპირების ოპერაცია ვერ შესრულდა, მოულოდნელი შეცდომა: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5926082595146149752">ნიდერლანდური (ნიდერლანდები) აშშ-ის საერთაშორისო (PC) კლავიატურით</translation>
 <translation id="5932901536148835538">Chromebit</translation>
+<translation id="5948255720516436063">ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, გაააქტიურეთ მოწყობილობის დაყენების შემდეგ</translation>
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> ერთეული</translation>
 <translation id="5957366693331451795">Chromebox-ები</translation>
 <translation id="5982621672636444458">დალაგების ვარიანტები</translation>
@@ -761,6 +763,7 @@
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ - &lt;em&gt;ძიება Drive-ზე&lt;/em&gt;</translation>
 <translation id="7135561821015524160">კანადა ფონეტიკური</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7162080671816799010">ავტორიზაციის სერვერის დადასტურებისთვის აკლია „სუბიექტის ალტერნატიული სახელის დამთხვევა“ ან „დომენის სუფიქსის დამთხვევა“</translation>
 <translation id="7165320105431587207">ქსელის კონფიგურაცია ვერ მოხერხდა</translation>
 <translation id="7170041865419449892">დიაპაზონს მიღმა</translation>
 <translation id="7180611975245234373">განახლება</translation>
@@ -831,6 +834,7 @@
 <translation id="7724603315864178912">ამოჭრა</translation>
 <translation id="7732111077498238432">ქსელი იმართება წესებით</translation>
 <translation id="7736003208887389532">გსურთ, სამუდამოდ წაშალოთ ეს ფაილები?</translation>
+<translation id="7740287852186792672">ძიების შედეგები</translation>
 <translation id="7748626145866214022">დამატებითი ვარიანტები ხელმისაწვდომია ქმედებათა ზოლში. ქმედებათა ზოლის ფოკუსში მოსაქცევად გამოიყენეთ კლავიშთა კომბინაცია: Alt + A.</translation>
 <translation id="7760449188139285140">ჩინური Wubi</translation>
 <translation id="7765158879357617694">გადატანა</translation>
@@ -882,6 +886,7 @@
 <translation id="8116072619078571545">გაყინული წყალი</translation>
 <translation id="8128733386027980860">ინგლისური (გაერთიანებული სამეფო) Dvorak კლავიატურით</translation>
 <translation id="8137331602592933310">„<ph name="FILENAME" />“ გაზიარებულია თქვენთვის. მისი წაშლა შეუძლებელია, რადგან ის თქვენ არ გეკუთვნით.</translation>
+<translation id="8138705869659070104">გააქტიურება მოწყობილობის დაყენების შემდეგ</translation>
 <translation id="813913629614996137">მიმდინარეობს ინიცირება…</translation>
 <translation id="8147028810663464959">სიმბოლოთა სიგანე სავსეა</translation>
 <translation id="8151638057146502721">კონფიგურირება</translation>
@@ -934,6 +939,7 @@
 <translation id="8487700953926739672">ოფლაინში ხელმისაწვდომი</translation>
 <translation id="8492972329130824181">სახლის ქსელი მიუწვდომელია. დასაკავშირებლად საჭიროა მობილური ინტერნეტის როუმინგის ჩართვა.</translation>
 <translation id="8499098729323186194">მიმდინარეობს <ph name="NUMBER_OF_ITEMS" /> ერთეულის ამოღება...</translation>
+<translation id="8502913769543567768">ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, გაააქტიურეთ მოწყობილობის დაყენების შემდეგ, მართავს თქვენი ადმინისტრატორი</translation>
 <translation id="8521441079177373948">დიდი ბრიტანეთი</translation>
 <translation id="853494022971700746">ფრანგული (საფრანგეთი)</translation>
 <translation id="8540608333167683902">ქსელი <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />%, დეტალები</translation>
@@ -995,6 +1001,7 @@
 <translation id="9046895021617826162">დაკავშირება ვერ მოხერხდა</translation>
 <translation id="9065512565307033593">თუ დადასტურებას ვერ მოახერხებთ, ქსელზე წვდომა გაითიშება.</translation>
 <translation id="908378762078012445">რუსული ფონეტიკური AATSEEL კლავიატურით</translation>
+<translation id="9086302186042011942">სინქრონიზაცია</translation>
 <translation id="9099674669267916096">გვერდების რაოდენობა</translation>
 <translation id="9100610230175265781">აუცილებელია კოდური ფრაზის მითითება</translation>
 <translation id="9110990317705400362">ჩვენ მუდამ ვზრუნავთ იმაზე, თუ როგორ გავზარდოთ ჩვენი ბრაუზერის უსაფრთხოება. ადრე ნებისმიერ საიტს შეეძლო თქვენთვის ბრაუზერში გაფართოების დამატების შემოთავაზება. Google Chrome-ის უახლეს ვერსიებში პირდაპირ უნდა მიუთითოთ Chrome-ს, რომ გსურთ გაფართოების დაინსტალირება, გაფართოების გევრდზე მისი დამატების გზით. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>

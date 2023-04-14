@@ -293,6 +293,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNewBaseUrlInheritanceBehaviorAllowed,
     prefs::kNewBaseUrlInheritanceBehaviorAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kHttpAllowlist,
+    prefs::kHttpAllowlist,
+    base::Value::Type::LIST },
+  { key::kHttpsUpgradesEnabled,
+    prefs::kHttpsUpgradesEnabled,
+    base::Value::Type::BOOLEAN },
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
   { key::kAuthAndroidNegotiateAccountType,
@@ -937,7 +943,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     ash::prefs::kAccessibilityDictationEnabled,
     base::Value::Type::BOOLEAN },
   { key::kPrimaryMouseButtonSwitch,
-    prefs::kPrimaryMouseButtonRight,
+    ash::prefs::kPrimaryMouseButtonRight,
     base::Value::Type::BOOLEAN },
   { key::kKeyboardFocusHighlightEnabled,
     ash::prefs::kAccessibilityFocusHighlightEnabled,
@@ -1387,6 +1393,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kUsbDetectorNotificationEnabled,
     ash::prefs::kUsbDetectorNotificationEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kShowTouchpadScrollScreenEnabled,
+    ash::prefs::kShowTouchpadScrollScreenEnabled,
+    base::Value::Type::BOOLEAN },
+
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1870,7 +1880,7 @@ void GetExtensionAllowedTypesMap(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 // Future policies are not supported on Stable and Beta by default.
-bool AreFuturePoliciesSupported() {
+bool AreFuturePoliciesEnabledByDefault() {
   // Enable future policies for branded browser tests.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
     return true;
@@ -1898,11 +1908,10 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       new ConfigurationPolicyHandlerList(
           base::BindRepeating(&PopulatePolicyHandlerParameters),
           base::BindRepeating(&GetChromePolicyDetails),
-          AreFuturePoliciesSupported()));
-  for (size_t i = 0; i < std::size(kSimplePolicyMap); ++i) {
+          AreFuturePoliciesEnabledByDefault()));
+  for (PolicyToPreferenceMapEntry entry : kSimplePolicyMap) {
     handlers->AddHandler(std::make_unique<SimplePolicyHandler>(
-        kSimplePolicyMap[i].policy_name, kSimplePolicyMap[i].preference_path,
-        kSimplePolicyMap[i].value_type));
+        entry.policy_name, entry.preference_path, entry.value_type));
   }
 
   // Policies for all platforms - Start

@@ -551,11 +551,17 @@ void WebFrameWidgetImpl::OnStartStylusWriting(
 }
 
 void WebFrameWidgetImpl::HandleStylusWritingGestureAction(
-    mojom::blink::StylusWritingGestureDataPtr gesture_data) {
+    mojom::blink::StylusWritingGestureDataPtr gesture_data,
+    HandleStylusWritingGestureActionCallback callback) {
   LocalFrame* focused_frame = FocusedLocalFrameInWidget();
-  if (!focused_frame)
+  if (!focused_frame) {
+    std::move(callback).Run(mojom::blink::HandwritingGestureResult::kFailed);
     return;
-  StylusWritingGesture::ApplyGesture(focused_frame, std::move(gesture_data));
+  }
+  mojom::blink::HandwritingGestureResult result =
+      StylusWritingGesture::ApplyGesture(focused_frame,
+                                         std::move(gesture_data));
+  std::move(callback).Run(result);
 }
 
 void WebFrameWidgetImpl::SetBackgroundOpaque(bool opaque) {
@@ -3204,11 +3210,18 @@ void WebFrameWidgetImpl::AddEditCommandForNextKeyEvent(const WebString& name,
 }
 
 bool WebFrameWidgetImpl::HandleCurrentKeyboardEvent() {
-  bool did_execute_command = false;
+  if (edit_commands_.empty()) {
+    return false;
+  }
   WebLocalFrame* frame = FocusedWebLocalFrameInWidget();
   if (!frame)
     frame = local_root_;
-  for (const auto& command : edit_commands_) {
+  bool did_execute_command = false;
+  // Executing an edit command can run JS and we can end up reassigning
+  // `edit_commands_` so move it to a stack variable before iterating on it.
+  Vector<mojom::blink::EditCommandPtr> edit_commands =
+      std::move(edit_commands_);
+  for (const auto& command : edit_commands) {
     // In gtk and cocoa, it's possible to bind multiple edit commands to one
     // key (but it's the exception). Once one edit command is not executed, it
     // seems safest to not execute the rest.
@@ -3893,7 +3906,6 @@ void WebFrameWidgetImpl::MoveCaret(const gfx::Point& point_in_dips) {
       widget_base_->DIPsToRoundedBlinkSpace(point_in_dips));
 }
 
-#if BUILDFLAG(IS_ANDROID)
 void WebFrameWidgetImpl::SelectAroundCaret(
     mojom::blink::SelectionGranularity granularity,
     bool should_show_handle,
@@ -3958,7 +3970,6 @@ void WebFrameWidgetImpl::SelectAroundCaret(
   result->word_end_adjust = word_end_adjust;
   std::move(callback).Run(std::move(result));
 }
-#endif
 
 void WebFrameWidgetImpl::ForEachRemoteFrameControlledByWidget(
     base::FunctionRef<void(RemoteFrame*)> callback) {

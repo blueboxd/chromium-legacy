@@ -473,7 +473,8 @@ chrome.fileManagerPrivate.IconSet;
  *   diskFileSystemType: (string|undefined),
  *   iconSet: !chrome.fileManagerPrivate.IconSet,
  *   driveLabel: (string|undefined),
- *   remoteMountPath: (string|undefined)
+ *   remoteMountPath: (string|undefined),
+ *   vmType: (!chrome.fileManagerPrivate.VmType|undefined),
  * }}
  */
 chrome.fileManagerPrivate.VolumeMetadata;
@@ -556,8 +557,8 @@ chrome.fileManagerPrivate.FileWatchEvent;
  *   arcRemovableMediaAccessEnabled: boolean,
  *   folderShortcuts: !Array<string>,
  *   trashEnabled: boolean,
- *   officeFileMovedOneDrive: boolean,
- *   officeFileMovedGoogleDrive: boolean,
+ *   officeFileMovedOneDrive: number,
+ *   officeFileMovedGoogleDrive: number,
  * }}
  */
 chrome.fileManagerPrivate.Preferences;
@@ -827,7 +828,7 @@ chrome.fileManagerPrivate.DialogCallerInformation;
  * @typedef {{
  *   restoreEntry: !Entry,
  *   trashInfoFileName: string,
- *   deletionDate: Date,
+ *   deletionDate: number,
  * }}
  */
 chrome.fileManagerPrivate.ParsedTrashInfoFile;

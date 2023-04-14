@@ -288,6 +288,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2484513351006226581">Prima <ph name="KEYBOARD_SHORTCUT" /> para mudar o esquema do teclado.</translation>
+<translation id="2487915095798731898">Aderir</translation>
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, a carregar eventos.</translation>
 <translation id="3932043219784172185">Nenhum dispositivo ligado</translation>
 <translation id="3934456833412894880">O carregamento adaptável está ativado. A bateria vai permanecer nos 80% para prolongar a autonomia da mesma e ser carregada totalmente quando precisar.</translation>
+<translation id="3936620957945677513">Prima Enter para participar no evento <ph name="EVENT_SUMMARY" /></translation>
 <translation id="3943857333388298514">Colar</translation>
 <translation id="394485226368336402">Definições de áudio</translation>
 <translation id="3945319193631853098">Toque para concluir a configuração.</translation>
@@ -938,7 +940,7 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="5976112937189445008">Prima Enter para gravar a janela</translation>
 <translation id="5978382165065462689">A partilhar o controlo do seu ecrã através da Assistência remota.</translation>
 <translation id="5980301590375426705">Sair sess. de conv.</translation>
-<translation id="598407983968395253">Utilizar modelo</translation>
+<translation id="598407983968395253">Usar modelo</translation>
 <translation id="598882571027504733">Para obter a atualização, reinicie o Chromebook com o teclado ligado.</translation>
 <translation id="6002179289567220515">Usou o interruptor físico para desativar 1 câmara. Também pode desativar o acesso para todas as câmaras.</translation>
 <translation id="6012623610530968780">Página <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>

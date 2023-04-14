@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class AwMetricsLogUploader implements AndroidMetricsLogConsumer {
     private static final String TAG = "AwMetricsLogUploader";
-    private static final long SEND_DATA_TIMEOUT_MS = 2_000;
+    private static final long SEND_DATA_TIMEOUT_MS = 10_000;
 
     private final InitialMetricsServiceConnection mInitialConnection;
     private final boolean mWaitForResults;
@@ -95,6 +95,7 @@ public class AwMetricsLogUploader implements AndroidMetricsLogConsumer {
         private final boolean mUseDefaultUploadQos;
         private final @NonNull byte[] mData;
         private final CompletableFuture<Integer> mResult;
+        private final AtomicBoolean mPosted = new AtomicBoolean();
 
         public MetricsLogUploaderServiceConnection(boolean useDefaultUploadQos,
                 @NonNull byte[] data, @NonNull CompletableFuture<Integer> resultFuture) {
@@ -105,6 +106,11 @@ public class AwMetricsLogUploader implements AndroidMetricsLogConsumer {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            // We want to avoid re-posting if the service connection dies
+            // and reconnects.
+            if (mPosted.getAndSet(true)) {
+                return;
+            }
             // onServiceConnected is called on the app main looper so post it to a background thread
             // for execution. No need to enforce the order in which the logs are sent to the service
             // as this isn't required/enforced by UMA.

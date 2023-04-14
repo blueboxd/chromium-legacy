@@ -65,8 +65,11 @@ BASE_FEATURE(kEnablePasswordManagerWithinFencedFrame,
 // affiliated website.
 BASE_FEATURE(kFillingAcrossAffiliatedWebsites,
              "FillingAcrossAffiliatedWebsites",
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
-
+#endif
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 BASE_FEATURE(kFillOnAccountSelect,
@@ -117,7 +120,7 @@ BASE_FEATURE(kIOSShowPasswordStorageInSaveInfobar,
 // for the password weakness check.
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 BASE_FEATURE(kMemoryMapWeaknessCheckDictionaries,
-             "kMemoryMapWeaknessCheckDictionaries",
+             "MemoryMapWeaknessCheckDictionaries",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

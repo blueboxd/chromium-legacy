@@ -65,6 +65,7 @@ MEDIA_EXPORT extern const char kAudioCapturerWithEchoCancellation[];
 
 #if defined(USE_CRAS)
 MEDIA_EXPORT extern const char kUseCras[];
+MEDIA_EXPORT extern const char kSystemAecEnabled[];
 #endif
 
 MEDIA_EXPORT extern const char
@@ -216,6 +217,8 @@ MEDIA_EXPORT extern const base::FeatureParam<int>
     kHardwareSecureDecryptionFallbackMinDisablingDays;
 MEDIA_EXPORT extern const base::FeatureParam<int>
     kHardwareSecureDecryptionFallbackMaxDisablingDays;
+MEDIA_EXPORT extern const base::FeatureParam<bool>
+    kHardwareSecureDecryptionFallbackOnHardwareContextReset;
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kInternalMediaSession);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kKeepRvfcFrameAlive);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kKeyPressMonitoring);

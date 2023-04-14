@@ -760,6 +760,12 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CREDENTIAL_PROVIDER_PROMO_NO_THANKS" desc="Text of the secondary button in the inital and 'Learn More' step views of the Credential Provider Exention Promo. [iOS only]">
         No Thanks
       </message>
+      <message name="IDS_IOS_CREDENTIAL_PROVIDER_PROMO_OS_PASSWORDS_SETTINGS_TITLE_IOS16" desc="Text of the menu item on the iOS Settings -> Passwords page to turn on crendential provider, for iOS 16 and above. Translate using the same text as the OS Settings in that language. [iOS only]">
+        Password Options
+      </message>
+      <message name="IDS_IOS_CREDENTIAL_PROVIDER_PROMO_OS_PASSWORDS_SETTINGS_TITLE_BELOW_IOS16" desc="Text of the menu item on the iOS Settings -> Passwords page to turn on crendential provider, for iOS 15 and older. Translate using the same text as the OS Settings in that language. [iOS only]">
+        AutoFill Passwords
+      </message>
       <message name="IDS_IOS_OPEN_SETTINGS" desc="Text of the button that will take the user to the Settings page to configure the default browser [iOS only]">
         Open Settings
       </message>
@@ -942,6 +948,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_FEED_CARD_SIGN_IN_PROMO_TITLE" desc="Title of the feed card sign-in promo UI. [iOS only]">
         Sign in to manage the content you see
+      </message>
+      <message name="IDS_IOS_FEED_CARD_SIGN_IN_ONLY_PROMO_LABEL" desc="Label of the feed card sign-in only promo UI. [iOS only]">
+        You can manage your preferences after you sign in to Chrome with your Google Account.
       </message>
       <message name="IDS_IOS_FEED_CUSTOM_SEARCH_ENGINE_LABEL" desc="Message informing users with custom search engines that the feed is provided by Google.">
         Provided by Google
@@ -1774,6 +1783,24 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER" desc="Footer to invite the user to open the Sync and Google Services settings.">
         For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">BEGIN_LINK</ph>Sync and Google Services<ph name="END_LINK">END_LINK</ph>.
       </message>
+      <message name="IDS_IOS_PARTIAL_TRANSLATE_ACTION_TRANSLATE_FULL_PAGE" desc="The action button to translate the full page (Title Case).">
+        Translate Full Page
+      </message>
+      <message name="IDS_IOS_PARTIAL_TRANSLATE_EDIT_MENU_ENTRY" desc="Action displayed in Edit Menu to trigger Partial Translate. As an action, it should be an infinitive verb, but should also respect the 'Google Translate' branding. Possible variations are 'Google Translate' or 'Translate with Google' are acceptable to meet those criteria [MAX_LENGTH=25em].">
+        Google Translate
+      </message>
+      <message name="IDS_IOS_PARTIAL_TRANSLATE_ERROR_GENERIC" desc="Error message when when the process failed (unknown reason).">
+        Partial translation failed.
+      </message>
+      <message name="IDS_IOS_PARTIAL_TRANSLATE_ERROR_STRING_EMPTY" desc="Error message when the string is empty.">
+        The selected text is empty.
+      </message>
+      <message name="IDS_IOS_PARTIAL_TRANSLATE_ERROR_STRING_TOO_LONG_ERROR" desc="Error message when the string is too long.">
+        The selected text is too large for partial translation.
+      </message>
+      <message name="IDS_IOS_PARTIAL_TRANSLATE_SWITCH_FULL_PAGE_TRANSLATION" desc="Title of the alert proposing to switch to full page translation if partial translate fails.">
+        Switch to Full Page Translation
+      </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_PERMISSION_REDIRECT_ALERT_CANCEL" desc="The label for the alert's cancel button">
           Cancel
       </message>
@@ -2307,7 +2334,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE" desc="Title and accessibility label of the badge displayed on a tools menu item when it represents a new feature [Length: 20em]" meaning="A badge with this title is displayed informing the user that this feature that is new to them.">
         New
       </message>
-      <message name="IDS_IOS_NEW_LABEL_FEATURE_BADGE" desc="Character representing the word new displayed inside the badge to represent a new features [iOS only]">
+      <message name="IDS_IOS_NEW_LABEL_FEATURE_BADGE" desc="Character representing the word new displayed inside the badge to represent a new features [CHAR_LIMIT=1][iOS only]" meaning="A badge with a character representing the word new is displayed to inform users that a feature a new. [CHAR_LIMIT=1][iOS only]">
         N
       </message>
       <message name="IDS_IOS_TOOLS_MENU_DOWNLOADS" desc="The iOS menu item for opening the downloads folder [iOS only]" meaning="[Length: unlimited]">
@@ -2579,7 +2606,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Cancel
       </message>
       <message name="IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT" desc="Footer text of an account address profile when it is viewed in settings. [iOS only]">
-          This address is saved in your Google Account(<ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>). You can use this address across Google products on any device.
+          This address is saved in your Google Account (<ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>). You can use this address across Google products on any device.
       </message>
       <message name="IDS_IOS_SETTINGS_EDIT_AUTOFILL_ADDRESS_REQUIREMENT_ERROR" desc="Error shown when the address is edited in settings and one of the required fields is empty. [iOS only]">
           {count, plural,
@@ -2587,12 +2614,14 @@ While in Incognito, sites can't use cookies to see your browsing activity across
           other {Some required fields are empty. Fill them before saving.}}
       </message>
       <message name="IDS_IOS_SETTINGS_AUTOFILL_DELETE_ADDRESS_CONFIRMATION_BUTTON" desc="Confirmation button title shown to the user when the address is deleted. [iOS only]">
-          Delete Address
+          {count, plural,
+          =1 {Delete Address}
+          other {Delete Addresses}}
       </message>
       <message name="IDS_IOS_SETTINGS_AUTOFILL_DELETE_ACCOUNT_ADDRESS_CONFIRMATION_TITLE" desc="Title of the confirmation shown to the user when an account address is deleted. [iOS only]">
           {count, plural,
-          =1 {This address will be deleted from your Google Account(<ph name="USER_EMAIL">{email}<ex>janedoe@google.com</ex></ph>) and from this device.}
-          other {These addresses will be deleted from your Google Account(<ph name="USER_EMAIL">{email}<ex>janedoe@google.com</ex></ph>) and from this device.}}
+          =1 {This address will be deleted from your Google Account (<ph name="USER_EMAIL">{email}<ex>janedoe@google.com</ex></ph>) and from this device.}
+          other {These addresses will be deleted from your Google Account (<ph name="USER_EMAIL">{email}<ex>janedoe@google.com</ex></ph>) and from this device.}}
       </message>
       <message name="IDS_IOS_SETTINGS_AUTOFILL_DELETE_SYNC_ADDRESS_CONFIRMATION_TITLE" desc="Title of the confirmation shown to the user when a sync address is deleted. [iOS only]">
           {count, plural,

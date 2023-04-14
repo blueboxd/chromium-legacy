@@ -4,8 +4,6 @@
 
 # Do not add any imports to non-//build directories here.
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
-
-import("//build/config/android/channel.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/copy_ex.gni")
 import("//build/config/clang/clang.gni")
@@ -16,7 +14,6 @@ import("//build/config/rts.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
-
 assert(is_android || is_robolectric)
 
 declare_args() {
@@ -1897,6 +1894,8 @@ if (enable_java_templates && is_android) {
   #   proguard_enabled: Whether to enable R8.
   #   proguard_configs: List of proguard configs.
   #   proguard_enable_obfuscation: Whether to enable obfuscation (default=true).
+  #   package_name: Used in the Proguard map ID.
+  #   version_code: Used in the Proguard map ID.
   #
   # Example
   #   dist_dex("lib_fatjar") {
@@ -1930,10 +1929,12 @@ if (enable_java_templates && is_android) {
                              TESTONLY_AND_VISIBILITY + [
                                    "data",
                                    "data_deps",
+                                   "package_name",
                                    "proguard_configs",
                                    "proguard_enabled",
                                    "proguard_enable_obfuscation",
                                    "min_sdk_version",
+                                   "version_code",
                                  ])
       deps = [ ":$_build_config_target_name" ] + _deps
       build_config = _build_config
@@ -3178,7 +3179,6 @@ if (enable_java_templates && is_android) {
           # Generates proguard configs
           deps += [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
-          proguard_sourcefile_suffix = "$android_channel-$_version_code"
           has_apk_under_test = defined(invoker.apk_under_test)
         } else {
           if (_min_sdk_version >= default_min_sdk_version) {
@@ -3665,6 +3665,15 @@ if (enable_java_templates && is_android) {
       assert(!defined(invoker.shared_resources_allowlist_locales))
       assert(defined(invoker.base_module_target))
       assert(!defined(invoker.bundle_target))
+    }
+
+    # android_app_bundle's write_build_config expects module targets to be named
+    # according to java_target_patterns otherwise it ignores them when listed in
+    # possible_config_deps. See https://crbug.com/1418398.
+    if (filter_exclude([ target_name ], [ "*_bundle_module" ]) != []) {
+      assert(false,
+             "Invalid android_app_bundle_module target name ($target_name), " +
+                 "must end in _bundle_module.")
     }
 
     # TODO(tiborg): We have several flags that are necessary for workarounds
@@ -5062,7 +5071,6 @@ if (enable_java_templates && is_android) {
         enable_multidex = _enable_multidex
         proguard_enabled = true
         proguard_mapping_path = _proguard_mapping_path
-        proguard_sourcefile_suffix = "$android_channel-$_version_code"
         build_config = _build_config
 
         deps = _module_java_targets + [ ":$_build_config_target" ]
@@ -5085,8 +5093,6 @@ if (enable_java_templates && is_android) {
       if (!_proguard_enabled) {
         _module_target_name = get_label_info(_module_target, "name")
         _dex_target = "${_module_target_name}__final_dex"
-        _rebased_module_build_config =
-            rebase_path(_module_build_config, root_build_dir)
         _dex_path = "$target_out_dir/$_module_target_name/$_module_target_name.mergeddex.jar"
         dex(_dex_target) {
           forward_variables_from(invoker,
@@ -5271,7 +5277,7 @@ if (enable_java_templates && is_android) {
       }
 
       if (_enable_language_splits) {
-        args += [ "--base-allowlist-rtxt-path=@FileArg(" + "${_rebased_base_module_build_config}:deps_info:base_allowlist_rtxt_path)" ]
+        args += [ "--base-allowlist-rtxt-path=@FileArg($_rebased_base_module_build_config:deps_info:base_allowlist_rtxt_path)" ]
         if (_strip_unused_resources) {
           # Use the stripped out rtxt file to set resources that are pinned to
           # the default language split.
@@ -5282,9 +5288,7 @@ if (enable_java_templates && is_android) {
           args +=
               [ "--base-module-rtxt-path=$_rebased_unused_resources_r_txt_out" ]
         } else {
-          args +=
-              [ "--base-module-rtxt-path=@FileArg(" +
-                "${_rebased_base_module_build_config}:deps_info:r_text_path)" ]
+          args += [ "--base-module-rtxt-path=@FileArg($_rebased_base_module_build_config:deps_info:r_text_path)" ]
         }
       }
       if (defined(invoker.validate_services) && invoker.validate_services) {
@@ -5368,8 +5372,7 @@ if (enable_java_templates && is_android) {
       args = [
         "--script-output-path",
         rebase_path(_bundle_wrapper_script_path, root_build_dir),
-        "--package-name=@FileArg(" +
-            "$_rebased_base_module_build_config:deps_info:package_name)",
+        "--package-name=@FileArg($_rebased_base_module_build_config:deps_info:package_name)",
         "--aapt2",
         rebase_path(_android_aapt2_path, root_build_dir),
         "--bundle-path",

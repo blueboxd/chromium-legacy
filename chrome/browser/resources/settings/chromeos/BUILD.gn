@@ -65,6 +65,8 @@ ts_library("build_ts") {
   allow_js = true
   tsconfig_base = "tsconfig_base.json"
   deps = [
+    "//ash/webui/common/resources/hotspot:build_ts",
+    "//chrome/browser/resources/nearby_share/shared:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
@@ -81,7 +83,6 @@ ts_library("build_ts") {
     ":preprocess",
     "//ash/webui/common/resources:generate_definitions",
     "//chrome/browser/resources/nearby_share:generate_definitions",
-    "//chrome/browser/resources/nearby_share/shared:preprocess",
   ]
   path_mappings = [
     # Additional path mappings for Nearby share Mojo files
@@ -92,8 +93,10 @@ ts_library("build_ts") {
   definitions = ts_definition_files
   root_dir = tsc_input_dir
   in_files = src_ts_files + html_wrapper_files + css_wrapper_files +
-             mojom_webui_files + nearby_share_shared_files
+             mojom_webui_files + shared_nearby_share_files
   out_dir = tsc_output_dir
+
+  composite = true
 }
 
 preprocess_if_expr("preprocess") {
@@ -125,6 +128,7 @@ group("generate_mojom_webui") {
   public_deps = [
     ":copy_mojom_ts",
     ":generate_ash_search_mojo_webui",
+    ":generate_input_device_settings_mojom",
     ":generate_personalization_search_mojom",
     ":generate_settings_mojo_webui",
   ]
@@ -139,6 +143,20 @@ copy("copy_mojom_ts") {
   sources = [
     "$root_gen_dir/chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom-webui.ts",
     "$root_gen_dir/chromeos/ash/components/audio/public/mojom/cros_audio_config.mojom-webui.ts",
+  ]
+  outputs = [ "$tsc_input_dir/mojom-webui/{{source_file_part}}" ]
+}
+
+copy("generate_input_device_settings_mojom") {
+  deps = [
+    "//ash/public/mojom:input_device_settings_webui_js",
+    "//chrome/browser/ui/webui/settings/ash/input_device_settings:mojom_ts__generator",
+    "//ui//chromeos/events/mojom:mojom_webui_js",
+  ]
+  sources = [
+    "$root_gen_dir/chrome/browser/ui/webui/settings/ash/input_device_settings/input_device_settings_provider.mojom-webui.ts",
+    "$root_gen_dir/mojom-webui/ash/public/mojom/input_device_settings.mojom-webui.js",
+    "$root_gen_dir/mojom-webui/ui/chromeos/events/mojom/modifier_key.mojom-webui.js",
   ]
   outputs = [ "$tsc_input_dir/mojom-webui/{{source_file_part}}" ]
 }

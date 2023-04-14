@@ -351,11 +351,11 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Inserează</translation>
 <translation id="3952872973865944257">Telugu fonetică</translation>
-<translation id="3954354850384043518">În desfășurare</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Descarcă profilul mobil, Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Engleză (Regatul Unit)</translation>
 <translation id="3975895378829046965">Bengaleză fonetică</translation>
+<translation id="3999574733850440202">Fișierele Microsoft deschise recent au fost mutate în OneDrive</translation>
 <translation id="4002066346123236978">Titlu</translation>
 <translation id="4017788180641807848">Engleză (S.U.A.) cu tastatură Workman</translation>
 <translation id="4019998208269143058">Fixează în Fișiere rapide</translation>
@@ -364,6 +364,7 @@
 <translation id="4092890906744441904">Irlandeză</translation>
 <translation id="4124935795427217608">Unicorn</translation>
 <translation id="4131235941541910880">Mută elementele de care nu ai nevoie în coșul de gunoi</translation>
+<translation id="4134804435730168042">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Activează după configurarea dispozitivului</translation>
 <translation id="4153015322587141338">Dă clic dreapta pe un fișier și selectează <ph name="PIN_COMMAND" /> pentru acces rapid la fișierele din raft.</translation>
 <translation id="4157569377477607576">Politica implementată de administrator nu recomandă:</translation>
 <translation id="4159731583141908892">Mutate: <ph name="FILE_NAME" />.</translation>
@@ -406,6 +407,7 @@
 <translation id="4414834425328380570"><ph name="FILE_NAME" /> va fi șters și nu vei putea să-l restabilești.</translation>
 <translation id="4418686080762064601">Creează o comandă rapidă pentru fișiere</translation>
 <translation id="4425149324548788773">Contul meu Drive</translation>
+<translation id="4432921877815220091">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Activează după configurarea dispozitivului, Gestionată de administratorul tău</translation>
 <translation id="4439427728133035643">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, conectează-te</translation>
 <translation id="4442424173763614572">Căutarea DNS nu a reușit</translation>
 <translation id="4462159676511157176">Servere de nume personalizate</translation>
@@ -615,6 +617,7 @@
 <translation id="5913638992615760742">Nu s-a putut copia, eroare neprevăzută: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5926082595146149752">Neerlandeză (Țările de Jos) cu tastatură S.U.A. internațională pentru PC</translation>
 <translation id="5932901536148835538">Chromebit</translation>
+<translation id="5948255720516436063">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Activează după configurarea dispozitivului</translation>
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elemente</translation>
 <translation id="5957366693331451795">Chromeboxurile</translation>
 <translation id="5982621672636444458">Opțiuni de sortare</translation>
@@ -761,6 +764,7 @@
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” – &lt;em&gt;căutați în Google Drive&lt;/em&gt;</translation>
 <translation id="7135561821015524160">Kannada fonetică</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7162080671816799010">Lipsește Potrivirea numelui alternativ al subiectului sau Potrivirea sufixului de domeniu pentru validarea identității serverului de autentificare</translation>
 <translation id="7165320105431587207">Rețeaua nu a putut fi configurată</translation>
 <translation id="7170041865419449892">Fără acoperire</translation>
 <translation id="7180611975245234373">Actualizați</translation>
@@ -831,6 +835,7 @@
 <translation id="7724603315864178912">Decupează</translation>
 <translation id="7732111077498238432">Rețeaua este controlată de politică</translation>
 <translation id="7736003208887389532">Ștergi definitiv fișierele?</translation>
+<translation id="7740287852186792672">Rezultatele căutării</translation>
 <translation id="7748626145866214022">Mai multe opțiuni disponibile în bara de acțiuni. Apasă pe Alt + A pentru a focaliza bara de acțiune.</translation>
 <translation id="7760449188139285140">Chineză Wubi</translation>
 <translation id="7765158879357617694">Mută</translation>
@@ -882,6 +887,7 @@
 <translation id="8116072619078571545">Apă cu gheață</translation>
 <translation id="8128733386027980860">Engleză (S.U.A.) cu tastatură Dvorak</translation>
 <translation id="8137331602592933310">V-a fost permis accesul la „<ph name="FILENAME" />”. Nu puteți șterge fișierul, deoarece nu vă aparține.</translation>
+<translation id="8138705869659070104">Activează după configurare</translation>
 <translation id="813913629614996137">Se inițializează...</translation>
 <translation id="8147028810663464959">Lățimea pentru caractere este completă</translation>
 <translation id="8151638057146502721">Configurați</translation>
@@ -907,6 +913,7 @@
 <translation id="8300849813060516376">OTASP nu a reușit</translation>
 <translation id="8312871300878166382">Inserați în dosar</translation>
 <translation id="8329978297633540474">Text simplu</translation>
+<translation id="8332007959299458842">Fișierele Microsoft deschise recent au fost mutate în Google Drive</translation>
 <translation id="8335587457941836791">Anulați fixarea din raft</translation>
 <translation id="8335837413233998004">Belarusă</translation>
 <translation id="8336153091935557858">Ieri, la <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -933,6 +940,7 @@
 <translation id="8487700953926739672">Disponibil offline</translation>
 <translation id="8492972329130824181">Rețeaua de domiciliu nu este disponibilă. Trebuie să activezi roamingul de date mobile pentru a te conecta.</translation>
 <translation id="8499098729323186194">Se extrag <ph name="NUMBER_OF_ITEMS" /> elemente...</translation>
+<translation id="8502913769543567768">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Activează după configurarea dispozitivului, Gestionată de administratorul tău</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="853494022971700746">Franceză (Franța)</translation>
 <translation id="8540608333167683902">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, detalii</translation>
@@ -994,6 +1002,7 @@
 <translation id="9046895021617826162">Conectare nereușită</translation>
 <translation id="9065512565307033593">Dacă nu confirmi codul, accesul tău la rețea va fi oprit.</translation>
 <translation id="908378762078012445">Tastatură rusă fonetică AATSEEL</translation>
+<translation id="9086302186042011942">Se sincronizează</translation>
 <translation id="9099674669267916096">Numărul de pagini</translation>
 <translation id="9100610230175265781">Este necesară o expresie de acces</translation>
 <translation id="9110990317705400362">Google caută mereu modalități de a face navigarea mai sigură. Înainte, orice site îți putea solicita să adaugi o extensie în browser. În ultimele versiuni Google Chrome, trebuie să indici explicit că dorești să instalezi aceste extensii, adăugându-le în pagina Extensii. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>

@@ -27,6 +27,20 @@
 
 namespace cc::slim {
 
+LayerTreeImpl::PresentationCallbackInfo::PresentationCallbackInfo(
+    uint32_t frame_token,
+    std::vector<PresentationCallback> presentation_callbacks,
+    std::vector<SuccessfulCallback> success_callbacks)
+    : frame_token(frame_token),
+      presentation_callbacks(std::move(presentation_callbacks)),
+      success_callbacks(std::move(success_callbacks)) {}
+LayerTreeImpl::PresentationCallbackInfo::~PresentationCallbackInfo() = default;
+LayerTreeImpl::PresentationCallbackInfo::PresentationCallbackInfo(
+    PresentationCallbackInfo&&) = default;
+LayerTreeImpl::PresentationCallbackInfo&
+LayerTreeImpl::PresentationCallbackInfo::operator=(PresentationCallbackInfo&&) =
+    default;
+
 LayerTreeImpl::LayerTreeImpl(LayerTreeClient* client) : client_(client) {}
 
 LayerTreeImpl::~LayerTreeImpl() = default;
@@ -76,12 +90,12 @@ bool LayerTreeImpl::IsVisible() const {
 
 void LayerTreeImpl::RequestPresentationTimeForNextFrame(
     PresentationCallback callback) {
-  // TODO(crbug.com/1408128): Implement.
+  presentation_callback_for_next_frame_.emplace_back(std::move(callback));
 }
 
 void LayerTreeImpl::RequestSuccessfulPresentationTimeForNextFrame(
     SuccessfulCallback callback) {
-  // TODO(crbug.com/1408128): Implement.
+  success_callback_for_next_frame_.emplace_back(std::move(callback));
 }
 
 void LayerTreeImpl::set_display_transform_hint(gfx::OverlayTransform hint) {
@@ -90,7 +104,18 @@ void LayerTreeImpl::set_display_transform_hint(gfx::OverlayTransform hint) {
 
 void LayerTreeImpl::RequestCopyOfOutput(
     std::unique_ptr<viz::CopyOutputRequest> request) {
-  // TODO(crbug.com/1408128): Implement.
+  if (request->has_source()) {
+    const base::UnguessableToken& source = request->source();
+    auto it = base::ranges::find_if(
+        copy_requests_for_next_frame_,
+        [&source](const std::unique_ptr<viz::CopyOutputRequest>& x) {
+          return x->has_source() && x->source() == source;
+        });
+    if (it != copy_requests_for_next_frame_.end()) {
+      copy_requests_for_next_frame_.erase(it);
+    }
+  }
+  copy_requests_for_next_frame_.push_back(std::move(request));
 }
 
 base::OnceClosure LayerTreeImpl::DeferBeginFrame() {
@@ -214,7 +239,32 @@ void LayerTreeImpl::DidSubmitCompositorFrame() {
 void LayerTreeImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
     const viz::FrameTimingDetails& details) {
-  // TODO(crbug.com/1408128): Implement.
+  const bool success = !details.presentation_feedback.failed();
+  for (auto itr = pending_presentation_callbacks_.begin();
+       itr != pending_presentation_callbacks_.end();) {
+    if (viz::FrameTokenGT(itr->frame_token, frame_token)) {
+      break;
+    }
+    for (auto& callback : itr->presentation_callbacks) {
+      std::move(callback).Run(details.presentation_feedback);
+    }
+    itr->presentation_callbacks.clear();
+
+    // Only run `success_callbacks` if successful.
+    if (success) {
+      for (auto& callback : itr->success_callbacks) {
+        std::move(callback).Run(details.presentation_feedback.timestamp);
+      }
+      itr->success_callbacks.clear();
+    }
+    // Keep the entry of `success_callbacks` is not empty, meaning this frame
+    // wasn't successful, so that it can run on a subsequent successful frame.
+    if (itr->success_callbacks.empty()) {
+      itr = pending_presentation_callbacks_.erase(itr);
+    } else {
+      itr++;
+    }
+  }
 }
 
 void LayerTreeImpl::DidLoseLayerTreeFrameSink() {
@@ -229,6 +279,32 @@ void LayerTreeImpl::NotifyTreeChanged() {
 
 void LayerTreeImpl::NotifyPropertyChanged() {
   SetNeedsDraw();
+}
+
+viz::ClientResourceProvider* LayerTreeImpl::GetClientResourceProvider() {
+  if (!frame_sink_) {
+    return nullptr;
+  }
+  return frame_sink_->client_resource_provider();
+}
+
+viz::ResourceId LayerTreeImpl::GetVizResourceId(cc::UIResourceId id) {
+  if (!frame_sink_) {
+    return viz::kInvalidResourceId;
+  }
+  return frame_sink_->GetVizResourceId(id);
+}
+
+bool LayerTreeImpl::IsUIResourceOpaque(int resource_id) {
+  return !frame_sink_ || frame_sink_->IsUIResourceOpaque(resource_id);
+}
+
+gfx::Size LayerTreeImpl::GetUIResourceSize(int resource_id) {
+  if (!frame_sink_) {
+    return gfx::Size();
+  }
+
+  return frame_sink_->GetUIResourceSize(resource_id);
 }
 
 void LayerTreeImpl::AddSurfaceRange(const viz::SurfaceRange& range) {
@@ -292,6 +368,20 @@ void LayerTreeImpl::GenerateCompositorFrame(
   // * Surface embedding fields (referenced surfaces, activation dependency,
   //   deadline)
   TRACE_EVENT0("cc", "slim::LayerTreeImpl::ProduceFrame");
+
+  for (auto& resource_request :
+       ui_resource_manager_.TakeUIResourcesRequests()) {
+    switch (resource_request.GetType()) {
+      case cc::UIResourceRequest::UI_RESOURCE_CREATE:
+        frame_sink_->UploadUIResource(resource_request.GetId(),
+                                      resource_request.GetBitmap());
+        break;
+      case cc::UIResourceRequest::UI_RESOURCE_DELETE:
+        frame_sink_->MarkUIResourceForDeletion(resource_request.GetId());
+        break;
+    }
+  }
+
   auto render_pass = viz::CompositorRenderPass::Create();
   render_pass->SetNew(viz::CompositorRenderPassId(root_->id()),
                       /*output_rect=*/device_viewport_rect_,
@@ -312,6 +402,8 @@ void LayerTreeImpl::GenerateCompositorFrame(
   Draw(*root_, *render_pass, /*transform_to_target=*/gfx::Transform(),
        /*clip_from_parent=*/nullptr);
 
+  render_pass->copy_requests = std::move(copy_requests_for_next_frame_);
+  copy_requests_for_next_frame_.clear();
   out_frame.render_pass_list.push_back(std::move(render_pass));
 
   for (const auto& pass : out_frame.render_pass_list) {
@@ -320,6 +412,14 @@ void LayerTreeImpl::GenerateCompositorFrame(
         out_resource_ids.insert(resource_id);
       }
     }
+  }
+
+  if (!presentation_callback_for_next_frame_.empty() ||
+      !success_callback_for_next_frame_.empty()) {
+    pending_presentation_callbacks_.emplace_back(
+        out_frame.metadata.frame_token,
+        std::move(presentation_callback_for_next_frame_),
+        std::move(success_callback_for_next_frame_));
   }
 }
 

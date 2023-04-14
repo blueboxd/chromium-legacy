@@ -118,13 +118,25 @@ ColorTransform SelectBasedOnDarkInput(
 COMPONENT_EXPORT(COLOR)
 ColorTransform SetAlpha(ColorTransform transform, SkAlpha alpha);
 
-// A transform that gets a Google color that matches the hue of `color` and
-// contrasts similarly against `background_color`, subject to being at least
-// `min_contrast`. If `color` isn't very saturated, grey will be used instead.
+// A transform that gets a Google color with a similar hue to the result of
+// `foreground_transform` and a similar contrast against the result of
+// `background_transform`, subject to being at least `min_contrast`. If the
+// result of `foreground_transform` isn't very saturated, grey will be used
+// instead.
 COMPONENT_EXPORT(COLOR)
-ColorTransform PickGoogleColor(ColorTransform color,
-                               ColorTransform background_color,
-                               float min_contrast = 0.0f);
+ColorTransform PickGoogleColor(
+    ColorTransform foreground_transform,
+    ColorTransform background_transform = FromTransformInput(),
+    float min_contrast = 0.0f);
+
+// Like the version above, but attempts to contrast sufficiently against both
+// supplied backgrounds.
+COMPONENT_EXPORT(COLOR)
+ColorTransform PickGoogleColorTwoBackgrounds(
+    ColorTransform foreground_transform,
+    ColorTransform background_a_transform,
+    ColorTransform background_b_transform,
+    float min_contrast);
 
 // A transform that returns the HSL shifted color given the input color.
 COMPONENT_EXPORT(COLOR)

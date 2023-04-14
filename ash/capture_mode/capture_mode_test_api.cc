@@ -53,6 +53,10 @@ void CaptureModeTestApi::SetCaptureModeSource(CaptureModeSource source) {
   controller_->SetSource(source);
 }
 
+void CaptureModeTestApi::SetRecordingType(RecordingType recording_type) {
+  controller_->SetRecordingType(recording_type);
+}
+
 bool CaptureModeTestApi::IsSessionActive() const {
   return controller_->IsActive();
 }
@@ -120,7 +124,7 @@ bool CaptureModeTestApi::GetAudioRecordingEnabled() const {
 }
 
 void CaptureModeTestApi::FlushRecordingServiceForTesting() {
-  DCHECK(controller_->is_recording_in_progress());
+  DCHECK(controller_->recording_service_remote_.is_bound());
   controller_->recording_service_remote_.FlushForTesting();
 }
 

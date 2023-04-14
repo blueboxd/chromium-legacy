@@ -173,8 +173,56 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Webapp.AmbientBadge.Click" enum="InstallAmbientBadgeAppType"
+    expires_after="2023-12-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
+  <summary>
+    On mobile, an install ambient badge may automatically shows to promote an
+    application related to the current website when the site meets all install
+    criteria. When the ambient badge was clicked by the user and displaying the
+    app banner UI, record the type of the app (native app or web app).
+  </summary>
+</histogram>
+
+<histogram name="Webapp.AmbientBadge.Dismiss" enum="InstallAmbientBadgeAppType"
+    expires_after="2023-12-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
+  <summary>
+    On mobile, an install ambient badge may automatically shows to promote an
+    application related to the current website when the site meets all install
+    criteria. When the ambient badge was explictly dismissed by the user, record
+    the type of the app (native app or web app).
+  </summary>
+</histogram>
+
+<histogram name="Webapp.AmbientBadge.Display" enum="InstallAmbientBadgeAppType"
+    expires_after="2023-12-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
+  <summary>
+    On mobile, an install ambient badge may automatically shows to promote an
+    application related to the current website when the site meets all install
+    criteria. When an ambient badge was shown, record the type of the app
+    (native app or web app).
+  </summary>
+</histogram>
+
+<histogram name="Webapp.AmbientBadge.Messages.DismissReason"
+    enum="MessageDismissReason" expires_after="2023-12-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
+  <summary>
+    On mobile, an install ambient badge may automatically shows to promote an
+    application related to the current website when the site meets all install
+    criteria. When a message UI style ambient badge was dismissed for any
+    reason, record the dismiss reason.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.AppIdentityDialog.AlreadyApproved"
-    enum="AppIdentityDisplayMetric" expires_after="2023-01-15">
+    enum="AppIdentityDisplayMetric" expires_after="2024-01-15">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -193,7 +241,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AppIdentityDialog.NotShowing"
-    enum="AppIdentityDisplayMetric" expires_after="2023-08-08">
+    enum="AppIdentityDisplayMetric" expires_after="2024-01-15">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -209,7 +257,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AppIdentityDialog.Showing"
-    enum="AppIdentityDisplayMetric" expires_after="2023-08-08">
+    enum="AppIdentityDisplayMetric" expires_after="2024-01-15">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -697,7 +745,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Install.SyncFallbackInstallInitiated"
-    enum="WebAppInstallResultCode" expires_after="M110">
+    enum="WebAppInstallResultCode" expires_after="2024-01-15">
   <owner>dmurph@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1109,6 +1157,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="WebApp.RunOnOsLogin.Registration.Result" enum="BooleanSuccess"
+    expires_after="2024-03-01">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of registering Run On OS Login with the OS. This is
+    triggered during OS integration whenever an app is being installed or the
+    run on OS login state is being updated by the user from various UI surfaces
+    like the chrome://apps context menu or from the app settings page for an
+    app.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.RunOnOsLogin.Unregistration.Result"
+    enum="BooleanSuccess" expires_after="2024-03-01">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of unregistering Run On OS Login with the OS. This is
+    triggered during OS integration whenever an app is being uninstalled or the
+    user is modifying the app preferences to not have it run on startup from the
+    chrome://apps context menu or app settings page.
+  </summary>
+</histogram>
+
 <histogram name="WebApp.Shortcuts.Creation.Result"
     enum="ShortcutsCreationResult" expires_after="2023-08-20">
   <owner>phillis@chromium.org</owner>
@@ -1237,7 +1310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Uninstall.NonSyncIncompleteCount"
-    units="Partially uninstalled webapps" expires_after="2023-01-15">
+    units="Partially uninstalled webapps" expires_after="2024-01-15">
   <owner>dmurph@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>

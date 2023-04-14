@@ -25,6 +25,23 @@ constexpr char kTmpDir[] = "back_migrator_tmp";
 
 constexpr char kFinalStatusUMA[] = "Ash.BrowserDataBackMigrator.FinalStatus";
 constexpr char kPosixErrnoUMA[] = "Ash.BrowserDataBackMigrator.PosixErrno.";
+constexpr char kSuccessfulMigrationTimeUMA[] =
+    "Ash.BrowserDataBackMigrator.SuccessfulMigrationTime";
+
+constexpr char kPreMigrationCleanUpTimeUMA[] =
+    "Ash.BrowserDataBackMigrator.ElapsedTimePreMigrationCleanUp";
+constexpr char kMergeSplitItemsTimeUMA[] =
+    "Ash.BrowserDataBackMigrator.ElapsedTimeMergeSplitItems";
+constexpr char kDeleteAshItemsTimeUMA[] =
+    "Ash.BrowserDataBackMigrator.ElapsedTimeDeleteAshItems";
+constexpr char kMoveLacrosItemsToAshDirTimeUMA[] =
+    "Ash.BrowserDataBackMigrator.ElapsedTimeMoveLacrosItemsToAshDir";
+constexpr char kMoveMergedItemsBackToAshTimeUMA[] =
+    "Ash.BrowserDataBackMigrator.ElapsedTimeMoveMergedItemsBackToAsh";
+constexpr char kDeleteLacrosDirTimeUMA[] =
+    "Ash.BrowserDataBackMigrator.ElapsedTimeDeleteLacrosDir";
+constexpr char kDeleteTmpDirTimeUMA[] =
+    "Ash.BrowserDataBackMigrator.ElapsedTimeDeleteTmpDir";
 
 // Injects the restart function called from
 // `BrowserDataBackMigrator::AttemptRestart()` in RAII manner.
@@ -103,7 +120,17 @@ class BrowserDataBackMigrator {
   FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest, RecordFinalStatus);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest,
                            RecordPosixErrnoIfAvailable);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest,
+                           RecordMigrationTimeIfSuccessful);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest, TaskStatusToString);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest,
+                           MergesAshOnlyPreferencesCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest,
+                           MergesDictSplitPreferencesCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest,
+                           MergesListSplitPreferencesCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest,
+                           MergesLacrosPreferencesCorrectly);
 
   // A list of all the possible results of migration, including success and all
   // failure types in each step of the migration.
@@ -252,6 +279,15 @@ class BrowserDataBackMigrator {
                                const base::FilePath& lacros_pref_path,
                                const base::FilePath& tmp_pref_path);
 
+  // For Lacros preferences that were neither split nor ash-only,
+  // simply prefer them over the ones that are currently in Ash.
+  // Traverse all JSON dotted paths in Lacros preferences using
+  // depth-first search and merge them into |ash_root_dict|.
+  static bool MergeLacrosPreferences(base::Value::Dict& ash_root_dict,
+                                     std::string& current_path,
+                                     const base::Value& current_value,
+                                     unsigned int recursion_depth);
+
   // Decides whether preferences for the given `extension_id` should be migrated
   // back from Lacros to Ash.
   static bool IsLacrosOnlyExtension(const base::StringPiece extension_id);
@@ -309,11 +345,17 @@ class BrowserDataBackMigrator {
   // Records the final status of the migration in `kFinalStatusUMA`.
   static void RecordFinalStatus(TaskResult result);
 
-  // Record Ash.BrowserDataBackMigrator.PosixErrno.{result.status} UMA with the
+  // Records Ash.BrowserDataBackMigrator.PosixErrno.{result.status} UMA with the
   // value of `result.posix_errno` if the migration failed.
   static void RecordPosixErrnoIfAvailable(TaskResult result);
 
-  // Convert `TaskStatus` to string.
+  // Records `kSuccessfulMigrationTimeUMA` UMA with the elapsed time since
+  // starting backward migration. Only recorded if migration was successful.
+  static void RecordMigrationTimeIfSuccessful(
+      TaskResult result,
+      base::TimeTicks migration_start_time);
+
+  // Converts `TaskStatus` to string.
   static std::string TaskStatusToString(TaskStatus task_status);
 
   // Path to the ash profile directory.
@@ -324,6 +366,9 @@ class BrowserDataBackMigrator {
 
   // Local state prefs, not owned.
   PrefService* local_state_ = nullptr;
+
+  // Used to record how long the migration takes in UMA.
+  base::TimeTicks migration_start_time_;
 
   base::WeakPtrFactory<BrowserDataBackMigrator> weak_factory_{this};
 };

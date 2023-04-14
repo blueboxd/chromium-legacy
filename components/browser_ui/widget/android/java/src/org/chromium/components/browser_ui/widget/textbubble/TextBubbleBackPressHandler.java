@@ -21,8 +21,10 @@ public class TextBubbleBackPressHandler implements BackPressHandler {
     }
 
     @Override
-    public void handleBackPress() {
+    public @BackPressResult int handleBackPress() {
+        boolean bubbleShowing = TextBubble.getCountSupplier().get() > 0;
         TextBubble.dismissBubbles();
+        return bubbleShowing ? BackPressResult.SUCCESS : BackPressResult.FAILURE;
     }
 
     @Override

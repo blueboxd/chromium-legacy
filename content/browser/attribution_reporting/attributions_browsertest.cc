@@ -24,12 +24,14 @@
 #include "components/attribution_reporting/os_support.mojom.h"
 #include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
+#include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
+#include "content/browser/private_aggregation/private_aggregation_manager.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -74,6 +76,7 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -1670,7 +1673,8 @@ class AttributionsFencedFrameBrowserTest : public AttributionsBrowserTest {
   AttributionsFencedFrameBrowserTest() {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         /*enabled_features=*/{{blink::features::kFencedFrames, {}},
-                              {features::kPrivacySandboxAdsAPIsOverride, {}}},
+                              {features::kPrivacySandboxAdsAPIsOverride, {}},
+                              {kAttributionFencedFrameReportingBeacon, {}}},
         /*disabled_features=*/{});
   }
 
@@ -1717,7 +1721,13 @@ class AttributionsFencedFrameBrowserTest : public AttributionsBrowserTest {
             ->GetStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcess(),
         AttributionDataHostManager::FromBrowserContext(
-            web_contents()->GetBrowserContext()));
+            web_contents()->GetBrowserContext()),
+        /*direct_seller_is_seller=*/false,
+        PrivateAggregationManager::GetManager(
+            *web_contents()->GetBrowserContext()),
+        /*main_frame_origin=*/
+        web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin(),
+        /*winner_origin=*/url::Origin::Create(GURL("https://a.test")));
   }
 
  private:

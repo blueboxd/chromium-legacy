@@ -27,6 +27,7 @@
 <translation id="1201402288615127009">Další</translation>
 <translation id="1209796539517632982">Automatické názvové servery</translation>
 <translation id="1210831758834677569">laoština</translation>
+<translation id="1221555006497674479">V úložišti na sdíleném disku vám zbývá už jen <ph name="REMAINING_PERCENTAGE" /> % z <ph name="TOTAL_SPACE" />.</translation>
 <translation id="1243314992276662751">Nahrát</translation>
 <translation id="1249250836236328755">Žánr</translation>
 <translation id="1254593899333212300">Přímé připojení k internetu</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">čínština (pchin-jin)</translation>
 <translation id="1646019627374511909">Zpřístupňování <ph name="NUMBER_OF_ITEMS" /> souborů offline</translation>
 <translation id="164969095109328410">Zařízení Chrome</translation>
+<translation id="1661207570040737402">Zaplnili jste celé své úložiště Google Workspace na sdíleném disku.</translation>
 <translation id="1661867754829461514">Chybí kód PIN</translation>
 <translation id="166439687370499867">Změna konfigurace sdílené sítě není povolena</translation>
 <translation id="1665611772925418501">Soubor se nepodařilo upravit.</translation>
@@ -349,7 +351,6 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Vložit</translation>
 <translation id="3952872973865944257">telugština (fonetická)</translation>
-<translation id="3954354850384043518">Probíhá</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Stáhněte si mobilní profil, síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">angličtina (Velká Británie)</translation>
@@ -363,6 +364,7 @@
 <translation id="4092890906744441904">irština</translation>
 <translation id="4124935795427217608">Jednorožec</translation>
 <translation id="4131235941541910880">Nepotřebné položky přesuňte do koše</translation>
+<translation id="4134804435730168042">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, aktivujte po nastavení zařízení</translation>
 <translation id="4153015322587141338">Klikněte pravým tlačítkem na soubor a výběrem možnosti <ph name="PIN_COMMAND" /> umožněte rychlý přístup k souborům na poličce.</translation>
 <translation id="4157569377477607576">Zásady administrátora nedoporučují:</translation>
 <translation id="4159731583141908892">Přesunutá položka: <ph name="FILE_NAME" />.</translation>
@@ -405,6 +407,7 @@
 <translation id="4414834425328380570">Soubor „<ph name="FILE_NAME" />“ bude smazán bez možnosti obnovy.</translation>
 <translation id="4418686080762064601">Vytvořte zástupce svých souborů</translation>
 <translation id="4425149324548788773">Můj disk</translation>
+<translation id="4432921877815220091">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, aktivujte po nastavení zařízení, spravováno administrátorem</translation>
 <translation id="4439427728133035643">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, připojit</translation>
 <translation id="4442424173763614572">Nepodařilo se nalézt server DNS.</translation>
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
@@ -613,6 +616,7 @@
 <translation id="5913638992615760742">Kopírování se nezdařilo, neočekávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5926082595146149752">nizozemština (Nizozemsko) s klávesnicí USA – mezinárodní (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
+<translation id="5948255720516436063">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, aktivujte po nastavení zařízení</translation>
 <translation id="5955954492236143329">Počet položek: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5957366693331451795">Chromebox</translation>
 <translation id="5982621672636444458">Možnosti řazení</translation>
@@ -759,6 +763,7 @@
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; – &lt;em&gt;vyhledat na Disku&lt;/em&gt;</translation>
 <translation id="7135561821015524160">kannadština (fonetická)</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7162080671816799010">Chybí údaj „Shoda alternativních názvů subjektu“ nebo „Shoda přípon domén“ k ověření identity ověřovacího serveru</translation>
 <translation id="7165320105431587207">Konfigurace sítě se nezdařila</translation>
 <translation id="7170041865419449892">Mimo dosah</translation>
 <translation id="7180611975245234373">Obnovit</translation>
@@ -829,6 +834,7 @@
 <translation id="7724603315864178912">Vyjmout</translation>
 <translation id="7732111077498238432">Síť podléhá zásadám</translation>
 <translation id="7736003208887389532">Trvale tyto soubory smazat?</translation>
+<translation id="7740287852186792672">Výsledky vyhledávání</translation>
 <translation id="7748626145866214022">Další možnosti jsou k dispozici na panelu akcí. Na panel akcí přejdete stisknutím kláves Alt + A.</translation>
 <translation id="7760449188139285140">čínština (Wubi)</translation>
 <translation id="7765158879357617694">Přesunout</translation>
@@ -880,6 +886,7 @@
 <translation id="8116072619078571545">Ledová voda</translation>
 <translation id="8128733386027980860">angličtina (Velká Británie) s klávesnicí Dvorak</translation>
 <translation id="8137331602592933310">Soubor <ph name="FILENAME" /> s vámi někdo sdílí. Nemůžete ho smazat, protože ho nevlastníte.</translation>
+<translation id="8138705869659070104">Po nastavení zařízení</translation>
 <translation id="813913629614996137">Probíhá inicializace...</translation>
 <translation id="8147028810663464959">Šířka znaků je Plná</translation>
 <translation id="8151638057146502721">Konfigurovat</translation>
@@ -932,6 +939,7 @@
 <translation id="8487700953926739672">Dostupné offline</translation>
 <translation id="8492972329130824181">Domácí síť není k dispozici. K připojení musí být zapnutý roaming pro mobilní data.</translation>
 <translation id="8499098729323186194">Rozbalování položek (<ph name="NUMBER_OF_ITEMS" />)…</translation>
+<translation id="8502913769543567768">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, aktivujte po nastavení zařízení, spravováno administrátorem</translation>
 <translation id="8521441079177373948">Britská klávesnice</translation>
 <translation id="853494022971700746">francouzština (Francie)</translation>
 <translation id="8540608333167683902">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>
@@ -993,6 +1001,7 @@
 <translation id="9046895021617826162">Připojení selhalo</translation>
 <translation id="9065512565307033593">Pokud se vám nepodaří provést ověření, bude vám zakázán přístup k síti.</translation>
 <translation id="908378762078012445">ruština s fonetickou klávesnicí AATSEEL</translation>
+<translation id="9086302186042011942">Synchronizace</translation>
 <translation id="9099674669267916096">Počet stránek</translation>
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9110990317705400362">Neustále hledáme způsoby, jak zvýšit bezpečnost prohlížení. V minulosti vás k přidání rozšíření do prohlížeče mohl vyzvat kterýkoliv web. V nejnovějších verzích Google Chrome musíte Chromu výslovně sdělit, že rozšíření chcete nainstalovat. Učiníte tak tím, že rozšíření přidáte na stránce Rozšíření. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>

@@ -549,9 +549,17 @@ const CGFloat kSymbolSize = 18;
     [_buttonNewTab setImage:buttonNewTabImage forState:UIControlStateNormal];
     [_buttonNewTab.imageView setTintColor:[UIColor colorNamed:kGrey500Color]];
 
+    // TODO(crbug.com/1418068): Remove after minimum version required is >=
+    // iOS 15.
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+    _buttonNewTab.configuration.contentInsets = NSDirectionalEdgeInsetsMake(
+        0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
+#else
     UIEdgeInsets imageInsets = UIEdgeInsetsMake(
         0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
     _buttonNewTab.imageEdgeInsets = imageInsets;
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+
     SetA11yLabelAndUiAutomationName(
         _buttonNewTab,
         _isIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
@@ -694,13 +702,15 @@ const CGFloat kSymbolSize = 18;
     // Configure an action that should be executed on each tap.
     __weak UIButton* weakButton = view;
     __weak __typeof(self) weakSelf = self;
-    UIAction* displayMenu = [UIAction
-        actionWithTitle:@""
-                  image:nil
-             identifier:kMenuActionIdentifier
-                handler:^(UIAction* uiAction) {
-                  weakButton.menu = [weakSelf menuForWebstate:webState];
-                }];
+    base::WeakPtr<web::WebState> weakWebState = webState->GetWeakPtr();
+    UIAction* displayMenu =
+        [UIAction actionWithTitle:@""
+                            image:nil
+                       identifier:kMenuActionIdentifier
+                          handler:^(UIAction* uiAction) {
+                            weakButton.menu =
+                                [weakSelf menuForWebstate:weakWebState.get()];
+                          }];
     [view addAction:displayMenu
         forControlEvents:UIControlEventMenuActionTriggered];
 
@@ -726,6 +736,10 @@ const CGFloat kSymbolSize = 18;
 
 // Returns an UIMenu for the given `webState`.
 - (UIMenu*)menuForWebstate:(web::WebState*)webState {
+  DCHECK(IsPinnedTabsEnabled());
+  if (!webState) {
+    return [UIMenu menuWithTitle:@"" children:@[]];
+  }
   int webStateIndex = _webStateList->GetIndexOfWebState(webState);
   NSString* identifier = webState->GetStableIdentifier();
   BOOL pinnedState = _webStateList->IsWebStatePinnedAt(webStateIndex);

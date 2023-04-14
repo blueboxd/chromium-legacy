@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonPropertie
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -147,7 +148,7 @@ public class BaseSuggestionViewBinderUnitTest {
         Assert.assertEquals(1, actionButtons.size());
         Assert.assertEquals(View.VISIBLE, actionButtons.get(0).getVisibility());
         Assert.assertEquals(list.get(0).icon.drawable, actionButtons.get(0).getDrawable());
-        Assert.assertNotNull(actionButtons.get(0).getBackground());
+        Assert.assertNotNull(actionButtons.get(0).getForeground());
         verify(mBaseView, times(1)).addView(actionButtons.get(0));
 
         Assert.assertTrue(actionButtons.get(0).performClick());
@@ -285,12 +286,35 @@ public class BaseSuggestionViewBinderUnitTest {
     }
 
     @Test
-    public void suggestionBackground() {
+    public void partialSuggestionRounding() {
         mModel.set(DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, false);
         mModel.set(DropdownCommonProperties.BG_TOP_CORNER_ROUNDED, true);
 
-        verify(mBaseView).setBackground(any());
-        Assert.assertNotNull(mBaseView.getBackground());
+        Assert.assertTrue(mBaseView.getClipToOutline());
+        // Expect the RoundedCornerOutlineProvider. Fail if it's anything else.
+        var provider = (RoundedCornerOutlineProvider) mBaseView.getOutlineProvider();
+        Assert.assertTrue(provider.isTopEdgeRoundedForTesting());
+        Assert.assertFalse(provider.isBottomEdgeRoundedForTesting());
+    }
+
+    @Test
+    public void fullSuggestionRounding() {
+        mModel.set(DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, true);
+        mModel.set(DropdownCommonProperties.BG_TOP_CORNER_ROUNDED, true);
+
+        Assert.assertTrue(mBaseView.getClipToOutline());
+        // Expect the RoundedCornerOutlineProvider. Fail if it's anything else.
+        var provider = (RoundedCornerOutlineProvider) mBaseView.getOutlineProvider();
+        Assert.assertTrue(provider.isTopEdgeRoundedForTesting());
+        Assert.assertTrue(provider.isBottomEdgeRoundedForTesting());
+    }
+
+    @Test
+    public void noSuggestionRounding() {
+        mModel.set(DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, false);
+        mModel.set(DropdownCommonProperties.BG_TOP_CORNER_ROUNDED, false);
+
+        Assert.assertFalse(mBaseView.getClipToOutline());
     }
 
     @Test

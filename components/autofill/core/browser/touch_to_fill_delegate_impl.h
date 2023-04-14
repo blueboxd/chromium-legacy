@@ -97,7 +97,7 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
   void ScanCreditCard() override;
   void OnCreditCardScanned(const CreditCard& card) override;
   void ShowCreditCardSettings() override;
-  void SuggestionSelected(std::string unique_id) override;
+  void SuggestionSelected(std::string unique_id, bool is_virtual) override;
   void OnDismissed(bool dismissed_by_user) override;
 
   void LogMetricsAfterSubmission(const FormStructure& submitted_form) const;
@@ -115,13 +115,13 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
 
   struct DryRunResult {
     DryRunResult(TriggerOutcome outcome,
-                 std::vector<CreditCard*> cards_to_suggest);
+                 std::vector<CreditCard> cards_to_suggest);
     DryRunResult(DryRunResult&&);
     DryRunResult& operator=(DryRunResult&&);
     ~DryRunResult();
 
     TriggerOutcome outcome;
-    std::vector<CreditCard*> cards_to_suggest;
+    std::vector<CreditCard> cards_to_suggest;
   };
 
   // Checks all preconditions for showing the TTF, that is, for calling

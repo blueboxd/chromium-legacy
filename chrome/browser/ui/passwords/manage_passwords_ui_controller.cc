@@ -200,6 +200,8 @@ bool ManagePasswordsUIController::OnChooseCredentials(
   DCHECK(!local_credentials.empty());
   if (!HasBrowserWindow())
     return false;
+  // Delete any existing window from the screen.
+  dialog_controller_.reset();
   // If |local_credentials| contains PSL matches they shouldn't be propagated to
   // the state (unless they are also web affiliations) because PSL matches
   // aren't saved for current page. This logic is implemented here because
@@ -310,6 +312,10 @@ void ManagePasswordsUIController::OnShowMoveToAccountBubble(
 
 void ManagePasswordsUIController::OnBiometricAuthenticationForFilling(
     PrefService* prefs) {
+  // Existing dialog shouldn't be closed.
+  if (dialog_controller_) {
+    return;
+  }
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   const std::string promo_shown_counter =
       password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter;

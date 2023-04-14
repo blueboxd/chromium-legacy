@@ -288,6 +288,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="2475982808118771221">Prišlo je do napake</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="2484513351006226581">Pritisnite <ph name="KEYBOARD_SHORTCUT" />, če želite preklopiti postavitev tipkovnice</translation>
+<translation id="2487915095798731898">Pridruži se</translation>
 <translation id="2501920221385095727">Zaklepanje tipk</translation>
 <translation id="2509468283778169019">Tipka CAPS LOCK je vklopljena</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, dogodki se nalagajo.</translation>
 <translation id="3932043219784172185">Nobena naprava ni povezana</translation>
 <translation id="3934456833412894880">Prilagodljivo polnjenje je vklopljeno. Polnjenje baterije se bo zaradi podaljšanja časa delovanja baterije ustavilo pri 80 %, v celoti pa se bo napolnila, ko jo boste potrebovali.</translation>
+<translation id="3936620957945677513">Pritisnite Enter, če se želite pridružiti dogodku <ph name="EVENT_SUMMARY" /></translation>
 <translation id="3943857333388298514">Prilepi</translation>
 <translation id="394485226368336402">Nastavitve zvoka</translation>
 <translation id="3945319193631853098">Dotaknite se, da dokončate nastavitev</translation>

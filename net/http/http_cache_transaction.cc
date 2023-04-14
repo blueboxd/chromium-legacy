@@ -111,7 +111,7 @@ enum class RestrictedPrefetchReused {
 
 void RecordPervasivePayloadIndex(const char* histogram_name, int index) {
   if (index != -1) {
-    base::UmaHistogramExactLinear(histogram_name, index, 101);
+    base::UmaHistogramCustomCounts(histogram_name, index, 1, 323, 323);
   }
 }
 
@@ -693,12 +693,13 @@ bool HttpCache::Transaction::ResponseChecksumMatches(
   if (hex_result != request_->checksum) {
     DVLOG(2) << "Pervasive payload checksum mismatch for \"" << request_->url
              << "\": got " << hex_result << ", expected " << request_->checksum;
-    RecordPervasivePayloadIndex("Network.CacheTransparency.MismatchedChecksums",
-                                request_->pervasive_payloads_index_for_logging);
+    RecordPervasivePayloadIndex(
+        "Network.CacheTransparency2.MismatchedChecksums",
+        request_->pervasive_payloads_index_for_logging);
     return false;
   }
   RecordPervasivePayloadIndex(
-      "Network.CacheTransparency.SingleKeyedCacheIsUsed",
+      "Network.CacheTransparency2.SingleKeyedCacheIsUsed",
       request_->pervasive_payloads_index_for_logging);
   return true;
 }
@@ -1618,7 +1619,7 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   }
 
   if (response_.single_keyed_cache_entry_unusable) {
-    RecordPervasivePayloadIndex("Network.CacheTransparency.MarkedUnusable",
+    RecordPervasivePayloadIndex("Network.CacheTransparency2.MarkedUnusable",
                                 request_->pervasive_payloads_index_for_logging);
 
     // We've read the single keyed entry and it turned out to be unusable. Let's
@@ -1862,10 +1863,6 @@ int HttpCache::Transaction::DoSendRequest() {
   DCHECK(mode_ & WRITE || mode_ == NONE);
   DCHECK(!network_trans_.get());
 
-  // We do not expect to send a request if the cache entry was used.
-  // TODO(https://crbug.com/1409150): If this CHECK fails investigate how we got
-  // here. Remove the CHECK.
-  CHECK_NE(cache_entry_status_, CacheEntryStatus::ENTRY_USED);
   send_request_since_ = TimeTicks::Now();
 
   // Create a network transaction.
@@ -3859,12 +3856,6 @@ void HttpCache::Transaction::UpdateCacheEntryStatus(
     return;
   DCHECK(cache_entry_status_ == CacheEntryStatus::ENTRY_UNDEFINED ||
          new_cache_entry_status == CacheEntryStatus::ENTRY_OTHER);
-  // If we are using the entry then we should not have sent a request.
-  // TODO(https://crbug.com/1409150): If this CHECK fires then trace when the
-  // request was sent. Remove this CHECK.
-  if (new_cache_entry_status == CacheEntryStatus::ENTRY_USED) {
-    CHECK(send_request_since_.is_null());
-  }
   cache_entry_status_ = new_cache_entry_status;
   SyncCacheEntryStatusToResponse();
 }
@@ -3985,14 +3976,14 @@ void HttpCache::Transaction::RecordHistograms() {
 
   bool did_send_request = !send_request_since_.is_null();
 
-  // TODO(ricea): Understand why this CHECK is failing in the wild, fix it, and
+  // TODO(ricea): Understand why this DCHECK is failing in the wild, fix it, and
   // remove it. See https://crbug.com/1409150.
   if (did_send_request) {
-    CHECK_NE(cache_entry_status_, CacheEntryStatus::ENTRY_USED);
+    DCHECK_NE(cache_entry_status_, CacheEntryStatus::ENTRY_USED);
   }
-  // This CHECK() should not fire, because the one above should catch all the
+  // This DCHECK() should not fire, because the one above should catch all the
   // erroneous cases.
-  CHECK(
+  DCHECK(
       (did_send_request &&
        (cache_entry_status_ == CacheEntryStatus::ENTRY_NOT_IN_CACHE ||
         cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED ||

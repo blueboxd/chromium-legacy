@@ -38,9 +38,12 @@ public class SelectionPopupBackPressHandler
     }
 
     @Override
-    public void handleBackPress() {
+    public @BackPressResult int handleBackPress() {
         assert mPopupController != null;
+        int res =
+                mPopupController.hasSelection() ? BackPressResult.SUCCESS : BackPressResult.FAILURE;
         mPopupController.clearSelection();
+        return res;
     }
 
     @Override
@@ -54,8 +57,8 @@ public class SelectionPopupBackPressHandler
         if (mPopupController != null) {
             mPopupController.isSelectActionBarShowingSupplier().removeObserver(mCallback);
         }
+        if (mTab != null) mTab.removeObserver(this);
         if (tab.getWebContents() == null) return;
-        if (mTab != null) tab.removeObserver(this);
         tab.addObserver(this);
         mTab = tab;
         mPopupController = SelectionPopupController.fromWebContents(tab.getWebContents());

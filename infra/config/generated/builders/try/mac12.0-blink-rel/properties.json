@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "try",
               "builder": "mac12.0-blink-rel",
-              "project": "chromium"
+              "project": "chromium-m112"
             },
             "builder_spec": {
               "builder_group": "tryserver.blink",
@@ -31,7 +31,7 @@
         {
           "bucket": "try",
           "builder": "mac12.0-blink-rel",
-          "project": "chromium"
+          "project": "chromium-m112"
         }
       ],
       "retry_failed_shards": false
@@ -40,7 +40,8 @@
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",
     "jobs": 150,
-    "metrics_project": "chromium-reclient-metrics"
+    "metrics_project": "chromium-reclient-metrics",
+    "scandeps_server": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

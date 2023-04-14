@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_coordinator.h"
 
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -91,10 +93,9 @@
 
   _navigationController =
       [[TableViewNavigationController alloc] initWithTable:_viewController];
+  _navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
   _navigationController.toolbarHidden = YES;
   _navigationController.presentationController.delegate = self;
-  [_navigationController
-      setModalPresentationStyle:UIModalPresentationFormSheet];
 
   [self.baseViewController presentViewController:_navigationController
                                         animated:YES
@@ -213,6 +214,8 @@
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSBookmarksEditorClosedWithSwipeDown"));
   [_viewController dismissBookmarkEditorView];
 }
 

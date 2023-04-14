@@ -288,6 +288,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2475982808118771221">Došlo k chybě</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2484513351006226581">Rozložení klávesnice změníte stisknutím kláves <ph name="KEYBOARD_SHORTCUT" /></translation>
+<translation id="2487915095798731898">Připojit se</translation>
 <translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, načítání událostí.</translation>
 <translation id="3932043219784172185">Není připojeno žádné zařízení</translation>
 <translation id="3934456833412894880">Je zapnuté adaptivní nabíjení. Baterie zůstane nabitá na 80 %, aby se prodloužila její životnost, a plně se nabije, jen když to budete potřebovat.</translation>
+<translation id="3936620957945677513">Stisknutím klávesy Enter se připojíte k události <ph name="EVENT_SUMMARY" /></translation>
 <translation id="3943857333388298514">Vložit</translation>
 <translation id="394485226368336402">Nastavení zvuku</translation>
 <translation id="3945319193631853098">Klepnutím dokončete nastavení</translation>

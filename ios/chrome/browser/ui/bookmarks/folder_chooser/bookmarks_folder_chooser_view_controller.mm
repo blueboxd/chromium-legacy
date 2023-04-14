@@ -9,6 +9,8 @@
 
 #import "base/check.h"
 #import "base/containers/contains.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
@@ -145,7 +147,7 @@ using bookmarks::BookmarkNode;
   [self delayedNotifyDelegateOfSelection];
 }
 
-#pragma mark - View lifecycle
+#pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -178,6 +180,13 @@ using bookmarks::BookmarkNode;
 
   // Load the model.
   [self reloadModel];
+}
+
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent) {
+    [self.delegate bookmarksFolderChooserViewControllerDidDismiss:self];
+  }
 }
 
 #pragma mark - Accessibility
@@ -321,11 +330,15 @@ using bookmarks::BookmarkNode;
 #pragma mark - Actions
 
 - (void)done:(id)sender {
+  base::RecordAction(
+      base::UserMetricsAction("MobileBookmarksFolderChooserDone"));
   [self.delegate bookmarksFolderChooserViewController:self
                                   didFinishWithFolder:self.selectedFolder];
 }
 
 - (void)cancel:(id)sender {
+  base::RecordAction(
+      base::UserMetricsAction("MobileBookmarksFolderChooserCanceled"));
   [self.delegate bookmarksFolderChooserViewControllerDidCancel:self];
 }
 

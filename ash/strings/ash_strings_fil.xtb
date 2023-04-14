@@ -288,6 +288,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="2475982808118771221">May isang naganap na error</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2484513351006226581">Pindutin ang <ph name="KEYBOARD_SHORTCUT" /> upang palitan ang layout ng keyboard.</translation>
+<translation id="2487915095798731898">Sumali</translation>
 <translation id="2501920221385095727">Mga sticky key</translation>
 <translation id="2509468283778169019">Naka-on ang CAPS LOCK</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@ Isaksak ang iyong device.</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, Nilo-load ang mga event.</translation>
 <translation id="3932043219784172185">Walang nakakonektang device</translation>
 <translation id="3934456833412894880">Naka-on ang adaptive na pag-charge. Mananatili ang iyong baterya sa 80% para mapahaba ang buhay ng baterya, at ganap na na-charge kapag kailangan mo ito.</translation>
+<translation id="3936620957945677513">Pindutin ang enter para sumali sa event sa <ph name="EVENT_SUMMARY" /></translation>
 <translation id="3943857333388298514">I-paste</translation>
 <translation id="394485226368336402">Mga setting ng audio</translation>
 <translation id="3945319193631853098">I-tap para tapusin ang pag-set up</translation>

@@ -1378,6 +1378,9 @@
       }
     ]
   },
+  "DeviceSystemAecEnabled": {
+    "reason_for_missing_test": "Maps into CrosSettings"
+  },
   "DevicePrintingClientNameTemplate": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
@@ -4107,6 +4110,42 @@
         },
         "prefs": {
           "browser.show_home_button": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "ShowTouchpadScrollScreenEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "The default is changed by default_for_enterprise_users",
+        "policies": {},
+        "prefs": {
+          "ash.touchpad_scroll_screen_oobe_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ShowTouchpadScrollScreenEnabled": false
+        },
+        "prefs": {
+          "ash.touchpad_scroll_screen_oobe_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ShowTouchpadScrollScreenEnabled": true
+        },
+        "prefs": {
+          "ash.touchpad_scroll_screen_oobe_enabled": {
             "value": true
           }
         }
@@ -10810,7 +10849,7 @@
           ]
         },
         "prefs": {
-          "native_messaging.blacklist": {}
+          "native_messaging.blocklist": {}
         }
       }
     ]
@@ -10833,7 +10872,7 @@
           ]
         },
         "prefs": {
-          "native_messaging.whitelist": {}
+          "native_messaging.allowlist": {}
         }
       }
     ]
@@ -15930,7 +15969,7 @@
           }
         },
         "prefs": {
-          "child_user.per_app_time_limits.whitelist": {}
+          "child_user.per_app_time_limits.allowlist": {}
         }
       }
     ]
@@ -19294,7 +19333,81 @@
         },
         "prefs": {
           "https_only_mode_enabled": {
-            "default_value": false
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "HttpAllowlist": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "HttpAllowlist": [
+            "example.org",
+            "[*.]example.com",
+            "10.0.22.1"
+          ]
+        },
+        "prefs": {
+          "https_upgrades.policy.http_allowlist": {
+            "value": [
+              "example.org",
+              "[*.]example.com",
+              "10.0.22.1"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "HttpsUpgradesEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "HttpsUpgradesEnabled": true
+        },
+        "prefs": {
+          "https_upgrades.policy.upgrades_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "HttpsUpgradesEnabled": false
+        },
+        "prefs": {
+          "https_upgrades.policy.upgrades_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "HttpsUpgradesEnabled": {}
+        },
+        "prefs": {
+          "https_upgrades.policy.upgrades_enabled": {
+            "default_value": true
           }
         }
       }
@@ -22178,5 +22291,8 @@
         }
       }
     ]
+  },
+  "CredentialProviderPromoEnabled" : {
+    "reason_for_missing_test": "Maps into an iOS-specific pref"
   }
 }

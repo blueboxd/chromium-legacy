@@ -5,12 +5,15 @@
 package org.chromium.content.browser;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.url.GURL;
 
 /**
  * Handles passing registrations with Web Attribution Reporting API to the underlying native
  * library.
  */
+@JNINamespace("content")
 public class AttributionOsLevelManager {
     private long mNativePtr;
 
@@ -31,8 +34,40 @@ public class AttributionOsLevelManager {
         // This is dependent on support for the Tiramisu Privacy Sandbox SDK.
     }
 
+    /**
+     * Deletes attribution data with native, see `deleteRegistrations()`:
+     * https://developer.android.com/design-for-safety/privacy-sandbox/reference/adservices/measurement/MeasurementManager.
+     */
+    @CalledByNative
+    private void deleteRegistrations(int requestId, long startMs, long endMs, GURL[] origins,
+            String[] domains, int deletionMode, int matchBehavior) {
+        // TODO(linnan): Delete registrations with the Android API, see
+        // https://developer.android.com/design-for-safety/privacy-sandbox/guides/attribution.
+        // This is dependent on support for the Tiramisu Privacy Sandbox SDK.
+        if (mNativePtr != 0) {
+            AttributionOsLevelManagerJni.get().onDataDeletionCompleted(mNativePtr, requestId);
+        }
+    }
+
+    /**
+     * Gets Measurement API status with native, see `getMeasurementApiStatus()`:
+     * https://developer.android.com/reference/androidx/privacysandbox/ads/adservices/measurement/MeasurementManager#getMeasurementApiStatus
+     */
+    @CalledByNative
+    private int getMeasurementApiStatus() {
+        // TODO(linnan):  Get from Android API, see
+        // https://developer.android.com/design-for-safety/privacy-sandbox/guides/attribution.
+        // This is dependent on support for the Tiramisu Privacy Sandbox SDK.
+        return 0;
+    }
+
     @CalledByNative
     private void nativeDestroyed() {
         mNativePtr = 0;
+    }
+
+    @NativeMethods
+    interface Natives {
+        void onDataDeletionCompleted(long nativeAttributionOsLevelManagerAndroid, int requestId);
     }
 }

@@ -300,6 +300,12 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
     return;
   }
 
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  if (NTPHelper) {
+    self.selectedFeed = NTPHelper->GetNextNTPFeedType();
+  }
+
   // NOTE: anything that executes below WILL NOT execute for OffTheRecord
   // browsers!
 
@@ -375,7 +381,6 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   self.NTPViewController = nil;
   self.feedHeaderViewController.ntpDelegate = nil;
   self.feedHeaderViewController = nil;
-  self.feedTopSectionCoordinator.ntpDelegate = nil;
   [self.feedTopSectionCoordinator stop];
   self.feedTopSectionCoordinator = nil;
 
@@ -453,6 +458,10 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     return;
   }
+  // Call this before RefreshFeed() to ensure some NTP state configs are reset
+  // before callbacks in repsonse to a feed refresh are called, ensuring the NTP
+  // returns to a state at the top of the surface upon refresh.
+  [self.NTPViewController resetStateUponReload];
   self.discoverFeedService->RefreshFeed(/*feed_visible=*/true);
   [self reloadContentSuggestions];
 }
@@ -1096,7 +1105,14 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 }
 
 - (BOOL)isStartSurface {
-  DCHECK(self.webState);
+  // TODO(crbug.com/1425382): This condition should be removed once the issue of
+  // having this coordinator started with no valid webstate (e.g. visible NTP in
+  // non-active tab) is resolved. At that point, we should just leave the
+  // `self.webState` DCHECK.
+  if (!self.webState) {
+    DCHECK(NO);
+    return NO;
+  }
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(self.webState);
   return NTPHelper && NTPHelper->ShouldShowStartSurface();
@@ -1232,10 +1248,9 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
     if (IsWebChannelsEnabled()) {
       [self.feedHeaderViewController updateForFollowingFeedVisibilityChanged];
-      [self.NTPViewController updateNTPLayout];
       [self updateFeedLayout];
-      [self.NTPViewController setContentOffsetToTop];
     }
+    [self.NTPViewController setContentOffsetToTop];
   }
 }
 
@@ -1535,7 +1550,6 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 // Handles how the NTP reacts when the default search engine is changed.
 - (void)defaultSearchEngineDidChange {
   [self.feedHeaderViewController updateForDefaultSearchEngineChanged];
-  [self.NTPViewController updateNTPLayout];
   [self updateFeedLayout];
   [self.NTPViewController setContentOffsetToTop];
 }
@@ -1604,6 +1618,12 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
     if (visible) {
       if ([self isFollowingFeedAvailable]) {
+        NewTabPageTabHelper* helper =
+            NewTabPageTabHelper::FromWebState(self.webState);
+        self.shouldScrollIntoFeed = helper->GetNextNTPScrolledToFeed();
+        [self selectFeedType:helper->GetNextNTPFeedType()];
+        helper->SetNextNTPFeedType(NewTabPageTabHelper::DefaultFeedType());
+
         self.NTPViewController.shouldScrollIntoFeed = self.shouldScrollIntoFeed;
         // Reassign the sort type in case it changed in another tab.
         self.feedHeaderViewController.followingFeedSortType =
@@ -1615,10 +1635,6 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
         self.feedMetricsRecorder.feedControlDelegate = self;
         self.feedMetricsRecorder.followDelegate = self;
       }
-      NewTabPageTabHelper* helper =
-          NewTabPageTabHelper::FromWebState(self.webState);
-      self.shouldScrollIntoFeed = helper->GetNextNTPScrolledToFeed();
-      [self selectFeedType:helper->GetNextNTPFeedType()];
     } else {
       // Unfocus omnibox, to prevent it from lingering when it should be
       // dismissed (for example, when navigating away or when changing feed

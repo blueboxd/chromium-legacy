@@ -337,8 +337,8 @@ gfx::Size GetMaximumCursorSize(const DrmWrapper& drm) {
   uint64_t width = 0, height = 0;
   // Querying cursor dimensions is optional and is unsupported on older Chrome
   // OS kernels.
-  if (drm.GetCapability(DRM_CAP_CURSOR_WIDTH, &width) != 0 ||
-      drm.GetCapability(DRM_CAP_CURSOR_HEIGHT, &height) != 0) {
+  if (!drm.GetCapability(DRM_CAP_CURSOR_WIDTH, &width) ||
+      !drm.GetCapability(DRM_CAP_CURSOR_HEIGHT, &height)) {
     return gfx::Size(kDefaultCursorWidth, kDefaultCursorHeight);
   }
   return gfx::Size(width, height);
@@ -741,6 +741,12 @@ std::vector<uint64_t> ParsePathBlob(const drmModePropertyBlobRes& path_blob) {
   }
 
   return path;
+}
+
+bool IsAddfb2ModifierCapable(const DrmWrapper& drm) {
+  uint64_t addfb2_mod_cap = 0;
+  return drm.GetCapability(DRM_CAP_ADDFB2_MODIFIERS, &addfb2_mod_cap) &&
+         addfb2_mod_cap;
 }
 
 std::string GetEnumNameForProperty(

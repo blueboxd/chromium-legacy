@@ -1223,7 +1223,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   <token key="Survey">
     <variant name="General"/>
     <variant name="Performance"/>
-    <variant name="PrivacyHubBaseline"/>
     <variant name="Stability"/>
   </token>
 </histogram>
@@ -1411,6 +1410,21 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   </token>
 </histogram>
 
+<histogram name="ChromeOS.Inputs.AutoRepeatUsage" units="key_event"
+    expires_after="2024-01-05">
+  <owner>dpad@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records a hash of a keycode + modifier keys pressed everytime a user event
+    is repeated due to auto repeat. This also includes events which are
+    suppressed by downstream system such as the diacritics menu or wayland.
+
+    See `RecordAutoRepeatUsageMetric` in
+    //ui/chromeos/events/event_rewriter_chromeos.cc for information on how to
+    decode the values.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.Inputs.EventRewriter.KeyRewriteLatency"
     units="microseconds" expires_after="2024-01-05">
   <owner>wangdanny@chromium.org</owner>
@@ -1422,6 +1436,39 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
     This metric is reported for all users and will not cause abnormal
     distribution since the metric is ChromeOS specified.
   </summary>
+</histogram>
+
+<histogram name="ChromeOS.Inputs.Keyboard.ModifierPressed.{KeyboardType}"
+    enum="ModifierKeyDomCodes" expires_after="2024-01-05">
+  <owner>dpad@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the number of times modifier keys are pressed before any modifier
+    remapping takes place on {KeyboardType} keyboards.
+  </summary>
+  <token key="KeyboardType">
+    <variant name="AppleExternal"/>
+    <variant name="CrOSExternal"/>
+    <variant name="External"/>
+    <variant name="Internal"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ChromeOS.Inputs.Keyboard.RemappedModifierPressed.{KeyboardType}"
+    enum="ModifierKeyDomCodes" expires_after="2024-01-05">
+  <owner>dpad@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the number of times modifier keys are pressed after modifier
+    remappings takes place on {KeyboardType} keyboards.
+  </summary>
+  <token key="KeyboardType">
+    <variant name="AppleExternal"/>
+    <variant name="CrOSExternal"/>
+    <variant name="External"/>
+    <variant name="Internal"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerAction"
@@ -1896,16 +1943,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   <owner>chromeos-commercial-networking@google.com</owner>
   <summary>
     Records events related to the owner key generation, loading and usage.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.PlatformVerification.Available"
-    enum="BooleanAvailable" expires_after="2021-12-21">
-  <owner>apronin@chromium.org</owner>
-  <owner>cros-hwsec+uma@chromium.org</owner>
-  <summary>
-    Whether platform verification subsystem features are available at the time a
-    platform verification request is made for content protection on Chrome OS.
   </summary>
 </histogram>
 
@@ -2428,15 +2465,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   <summary>
     Records the number of notifications that are removed in a single clear all
     action by the user.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.SystemTray.OpenHelpPageForManaged"
-    enum="CrosSystemTrayManagedType" expires_after="M83">
-  <owner>yamaguchi@chromium.org</owner>
-  <summary>
-    Type of the support page which user opened by clicking the indicator of
-    managed device type in the unified system tray bubble.
   </summary>
 </histogram>
 

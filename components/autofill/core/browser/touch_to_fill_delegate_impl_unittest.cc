@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/touch_to_fill_delegate_impl.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -14,6 +15,7 @@
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -46,7 +48,7 @@ class MockAutofillClient : public TestAutofillClient {
   MOCK_METHOD(bool,
               ShowTouchToFillCreditCard,
               (base::WeakPtr<autofill::TouchToFillDelegate> delegate,
-               base::span<const autofill::CreditCard* const> cards_to_suggest),
+               base::span<const CreditCard> cards_to_suggest),
               (override));
   MOCK_METHOD(void, HideTouchToFillCreditCard, (), (override));
   MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason reason), (override));
@@ -54,8 +56,7 @@ class MockAutofillClient : public TestAutofillClient {
   void ExpectDelegateWeakPtrFromShowInvalidatedOnHide() {
     EXPECT_CALL(*this, ShowTouchToFillCreditCard)
         .WillOnce([this](base::WeakPtr<autofill::TouchToFillDelegate> delegate,
-                         base::span<const autofill::CreditCard* const>
-                             cards_to_suggest) {
+                         base::span<const CreditCard> cards_to_suggest) {
           captured_delegate_ = delegate;
           return true;
         });
@@ -96,6 +97,12 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
                const FormFieldData& field,
                const CreditCard* credit_card));
   MOCK_METHOD(void,
+              FillOrPreviewVirtualCardInformation,
+              (mojom::RendererFormDataAction action,
+               const std::string& guid,
+               const FormData& form,
+               const FormFieldData& field));
+  MOCK_METHOD(void,
               DidShowSuggestions,
               (bool has_autofill_suggestions,
                const FormData& form,
@@ -107,6 +114,17 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
 }  // namespace
 
 class TouchToFillDelegateImplUnitTest : public testing::Test {
+ public:
+  static std::vector<CreditCard> GetCardsToSuggest(
+      std::vector<CreditCard*> credit_cards) {
+    std::vector<CreditCard> cards_to_suggest;
+    cards_to_suggest.reserve(credit_cards.size());
+    for (const CreditCard* card : credit_cards) {
+      cards_to_suggest.push_back(*card);
+    }
+    return cards_to_suggest;
+  }
+
  protected:
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
@@ -177,6 +195,7 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
   std::unique_ptr<MockBrowserAutofillManager> browser_autofill_manager_;
   raw_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate_;
   base::HistogramTester histogram_tester_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(TouchToFillDelegateImplUnitTest, TryToShowTouchToFillSucceeds) {
@@ -434,11 +453,13 @@ TEST_F(TouchToFillDelegateImplUnitTest, TryToShowTouchToFillShowsExpiredCards) {
   CreditCard expired_card = test::GetExpiredCreditCard();
   autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card);
   autofill_client_.GetPersonalDataManager()->AddCreditCard(expired_card);
-  std::vector<autofill::CreditCard*> credit_cards =
+  std::vector<CreditCard*> credit_cards =
       autofill_client_.GetPersonalDataManager()->GetCreditCardsToSuggest();
+
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
   EXPECT_CALL(autofill_client_,
-              ShowTouchToFillCreditCard(_, ElementsAreArray(credit_cards)));
+              ShowTouchToFillCreditCard(
+                  _, ElementsAreArray(GetCardsToSuggest(credit_cards))));
 
   TryToShowTouchToFill(/*expected_success=*/true);
 }
@@ -458,7 +479,49 @@ TEST_F(TouchToFillDelegateImplUnitTest,
   ASSERT_FALSE(disused_expired_card.IsCompleteValidCard());
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
   EXPECT_CALL(autofill_client_,
-              ShowTouchToFillCreditCard(_, ElementsAre(Pointee(credit_card))));
+              ShowTouchToFillCreditCard(_, ElementsAre(credit_card)));
+
+  TryToShowTouchToFill(/*expected_success=*/true);
+}
+
+TEST_F(
+    TouchToFillDelegateImplUnitTest,
+    TryToShowTouchToFillShowsVirtualCardSuggestionsForEnrolledCardsWhenEnabled) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillVirtualCardsOnTouchToFillAndroid);
+  autofill_client_.GetPersonalDataManager()->ClearCreditCards();
+  CreditCard credit_card =
+      autofill::test::GetMaskedServerCardEnrolledIntoVirtualCardNumber();
+  autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card);
+  ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
+
+  // Since the card is enrolled into virtual card number, and showing virtual
+  // cards is enabled, a virtual card suggestion should be created and added
+  // before the real card.
+  EXPECT_CALL(
+      autofill_client_,
+      ShowTouchToFillCreditCard(
+          _, ElementsAreArray(
+                 {CreditCard::CreateVirtualCard(credit_card), credit_card})));
+
+  TryToShowTouchToFill(/*expected_success=*/true);
+}
+
+TEST_F(
+    TouchToFillDelegateImplUnitTest,
+    TryToShowTouchToFillDoesNotShowVirtualCardSuggestionsForEnrolledCardsWhenDisabled) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillVirtualCardsOnTouchToFillAndroid);
+  autofill_client_.GetPersonalDataManager()->ClearCreditCards();
+  CreditCard credit_card =
+      autofill::test::GetMaskedServerCardEnrolledIntoVirtualCardNumber();
+  autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card);
+  ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
+
+  // Since showing virtual cards is disabled, no virtual card suggestion is
+  // shown for virtual card number enrolled card.
+  EXPECT_CALL(autofill_client_,
+              ShowTouchToFillCreditCard(_, ElementsAre(credit_card)));
 
   TryToShowTouchToFill(/*expected_success=*/true);
 }
@@ -517,11 +580,12 @@ TEST_F(TouchToFillDelegateImplUnitTest, PassTheCreditCardsToTheClient) {
   CreditCard credit_card2 = autofill::test::GetCreditCard2();
   autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card1);
   autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card2);
-  std::vector<autofill::CreditCard*> credit_cards =
+  std::vector<CreditCard*> credit_cards =
       autofill_client_.GetPersonalDataManager()->GetCreditCardsToSuggest();
 
   EXPECT_CALL(autofill_client_,
-              ShowTouchToFillCreditCard(_, ElementsAreArray(credit_cards)));
+              ShowTouchToFillCreditCard(
+                  _, ElementsAreArray(GetCardsToSuggest(credit_cards))));
 
   TryToShowTouchToFill(/*expected_success=*/true);
 
@@ -546,7 +610,7 @@ TEST_F(TouchToFillDelegateImplUnitTest, ShowCreditCardSettingsIsCalled) {
               ShowAutofillSettings(testing::Eq(PopupType::kCreditCards)));
   touch_to_fill_delegate_->ShowCreditCardSettings();
 
-  ASSERT_EQ(touch_to_fill_delegate_->IsShowingTouchToFill(), false);
+  ASSERT_EQ(touch_to_fill_delegate_->IsShowingTouchToFill(), true);
 }
 
 TEST_F(TouchToFillDelegateImplUnitTest, CardSelectionClosesTheSheet) {
@@ -557,7 +621,7 @@ TEST_F(TouchToFillDelegateImplUnitTest, CardSelectionClosesTheSheet) {
   TryToShowTouchToFill(/*expected_success=*/true);
 
   EXPECT_CALL(autofill_client_, HideTouchToFillCreditCard).Times(1);
-  touch_to_fill_delegate_->SuggestionSelected(credit_card.server_id());
+  touch_to_fill_delegate_->SuggestionSelected(credit_card.server_id(), false);
 }
 
 TEST_F(TouchToFillDelegateImplUnitTest, CardSelectionFillsCardForm) {
@@ -568,7 +632,19 @@ TEST_F(TouchToFillDelegateImplUnitTest, CardSelectionFillsCardForm) {
   TryToShowTouchToFill(/*expected_success=*/true);
 
   EXPECT_CALL(*browser_autofill_manager_, FillOrPreviewCreditCardForm);
-  touch_to_fill_delegate_->SuggestionSelected(credit_card.server_id());
+  touch_to_fill_delegate_->SuggestionSelected(credit_card.server_id(), false);
+}
+
+TEST_F(TouchToFillDelegateImplUnitTest, VirtualCardSelectionFillsCardForm) {
+  autofill_client_.GetPersonalDataManager()->ClearCreditCards();
+  CreditCard credit_card =
+      autofill::test::GetMaskedServerCardEnrolledIntoVirtualCardNumber();
+  autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card);
+
+  TryToShowTouchToFill(/*expected_success=*/true);
+
+  EXPECT_CALL(*browser_autofill_manager_, FillOrPreviewVirtualCardInformation);
+  touch_to_fill_delegate_->SuggestionSelected(credit_card.server_id(), true);
 }
 
 TEST_F(TouchToFillDelegateImplUnitTest, AutofillUsedAfterTouchToFillDismissal) {

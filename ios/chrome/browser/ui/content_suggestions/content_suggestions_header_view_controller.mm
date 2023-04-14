@@ -387,7 +387,6 @@ NSString* const kSignOutIdentityIconName = @"sign_out_icon";
   [self.identityDiscButton addTarget:self.commandHandler
                               action:@selector(identityDiscWasTapped)
                     forControlEvents:UIControlEventTouchUpInside];
-
   self.identityDiscButton.pointerInteractionEnabled = YES;
   self.identityDiscButton.pointerStyleProvider =
       ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
@@ -411,11 +410,7 @@ NSString* const kSignOutIdentityIconName = @"sign_out_icon";
       [self updateIdentityDiscState];
     }
   } else {
-    // `self.identityDiscButton` should not be updated if
-    // `self.identityDiscAccessibilityLabel` is not available yet.
-    if (self.identityDiscAccessibilityLabel) {
-      [self updateIdentityDiscState];
-    }
+    [self updateIdentityDiscState];
   }
   [self.headerView setIdentityDiscView:self.identityDiscButton];
 }
@@ -425,10 +420,10 @@ NSString* const kSignOutIdentityIconName = @"sign_out_icon";
 - (void)updateIdentityDiscState {
   if (base::FeatureList::IsEnabled(switches::kIdentityStatusConsistency)) {
     DCHECK(self.identityDiscImage);
+    DCHECK(self.identityDiscAccessibilityLabel);
   } else {
     self.identityDiscButton.hidden = !self.identityDiscImage;
   }
-  DCHECK(self.identityDiscAccessibilityLabel);
   self.identityDiscButton.accessibilityLabel =
       self.identityDiscAccessibilityLabel;
   [self.identityDiscButton setImage:self.identityDiscImage

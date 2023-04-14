@@ -2471,14 +2471,17 @@ void AccessibilityManager::InstallPumpkinForDictation(
   install_pumpkin_callback_ = std::move(callback);
   pumpkin_installer_->MaybeInstall(
       base::BindOnce(&AccessibilityManager::OnPumpkinInstalled,
-                     base::Unretained(this)),
+                     weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating([](double progress) {}),
       base::BindOnce(&AccessibilityManager::OnPumpkinError,
-                     base::Unretained(this)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AccessibilityManager::OnPumpkinInstalled(bool success) {
-  DCHECK(!install_pumpkin_callback_.is_null());
+  if (install_pumpkin_callback_.is_null()) {
+    return;
+  }
+
   if (!::features::IsExperimentalAccessibilityDictationWithPumpkinEnabled() ||
       !success) {
     std::move(install_pumpkin_callback_).Run(nullptr);
@@ -2500,12 +2503,18 @@ void AccessibilityManager::OnPumpkinInstalled(bool success) {
 
 void AccessibilityManager::OnPumpkinDataCreated(
     std::unique_ptr<PumpkinData> data) {
-  CHECK(!install_pumpkin_callback_.is_null());
+  if (install_pumpkin_callback_.is_null()) {
+    return;
+  }
+
   std::move(install_pumpkin_callback_).Run(std::move(data));
 }
 
 void AccessibilityManager::OnPumpkinError(const std::string& error) {
-  DCHECK(!install_pumpkin_callback_.is_null());
+  if (install_pumpkin_callback_.is_null()) {
+    return;
+  }
+
   std::move(install_pumpkin_callback_).Run(nullptr);
   is_pumpkin_installed_for_testing_ = false;
 
@@ -2528,17 +2537,39 @@ base::FilePath AccessibilityManager::TtsDlcTypeToPath(DlcType dlc) {
   // Paths to TTS DLCs.
   static constexpr auto kTtsDlcTypeToSubDir =
       base::MakeFixedFlatMap<DlcType, base::StringPiece>(
-          {{DlcType::DLC_TYPE_TTSDEDE, "tts-de-de/"},
+          {{DlcType::DLC_TYPE_TTSBNBD, "tts-bn-bd/"},
+           {DlcType::DLC_TYPE_TTSCSCZ, "tts-cs-cz/"},
+           {DlcType::DLC_TYPE_TTSDADK, "tts-da-dk/"},
+           {DlcType::DLC_TYPE_TTSDEDE, "tts-de-de/"},
+           {DlcType::DLC_TYPE_TTSELGR, "tts-el-gr/"},
+           {DlcType::DLC_TYPE_TTSENAU, "tts-en-au/"},
+           {DlcType::DLC_TYPE_TTSENGB, "tts-en-gb/"},
            {DlcType::DLC_TYPE_TTSENUS, "tts-en-us/"},
            {DlcType::DLC_TYPE_TTSESES, "tts-es-es/"},
            {DlcType::DLC_TYPE_TTSESUS, "tts-es-us/"},
+           {DlcType::DLC_TYPE_TTSFIFI, "tts-fi-fi/"},
+           {DlcType::DLC_TYPE_TTSFILPH, "tts-fil-ph/"},
            {DlcType::DLC_TYPE_TTSFRFR, "tts-fr-fr/"},
            {DlcType::DLC_TYPE_TTSHIIN, "tts-hi-in/"},
+           {DlcType::DLC_TYPE_TTSHUHU, "tts-hu-hu/"},
+           {DlcType::DLC_TYPE_TTSIDID, "tts-id-id/"},
            {DlcType::DLC_TYPE_TTSITIT, "tts-it-it/"},
            {DlcType::DLC_TYPE_TTSJAJP, "tts-ja-jp/"},
+           {DlcType::DLC_TYPE_TTSKMKH, "tts-km-kh/"},
+           {DlcType::DLC_TYPE_TTSKOKR, "tts-ko-kr/"},
+           {DlcType::DLC_TYPE_TTSNBNO, "tts-nb-no/"},
+           {DlcType::DLC_TYPE_TTSNENP, "tts-ne-np/"},
            {DlcType::DLC_TYPE_TTSNLNL, "tts-nl-nl/"},
+           {DlcType::DLC_TYPE_TTSPLPL, "tts-pl-pl/"},
            {DlcType::DLC_TYPE_TTSPTBR, "tts-pt-br/"},
-           {DlcType::DLC_TYPE_TTSSVSE, "tts-sv-se/"}});
+           {DlcType::DLC_TYPE_TTSSILK, "tts-si-lk/"},
+           {DlcType::DLC_TYPE_TTSSKSK, "tts-sk-sk/"},
+           {DlcType::DLC_TYPE_TTSSVSE, "tts-sv-se/"},
+           {DlcType::DLC_TYPE_TTSTHTH, "tts-th-th/"},
+           {DlcType::DLC_TYPE_TTSTRTR, "tts-tr-tr/"},
+           {DlcType::DLC_TYPE_TTSUKUA, "tts-uk-ua/"},
+           {DlcType::DLC_TYPE_TTSVIVN, "tts-vi-vn/"},
+           {DlcType::DLC_TYPE_TTSYUEHK, "tts-yue-hk/"}});
 
   if (!base::Contains(kTtsDlcTypeToSubDir, dlc)) {
     NOTREACHED();

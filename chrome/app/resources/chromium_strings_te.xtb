@@ -14,7 +14,6 @@
 <translation id="1315551408014407711">మీ కొత్త Chromium ప్రొఫైల్‍ను సెట్ అప్ చేయండి</translation>
 <translation id="1396446129537741364">Chromium పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది.</translation>
 <translation id="1414495520565016063">మీరు Chromiumకు సైన్ ఇన్ చేశారు!</translation>
-<translation id="1493803763272692301">Chromium అందించే ప్రయోజనాలన్నింటినీ మీరు ఆస్వాదించవచ్చు</translation>
 <translation id="1524282610922162960">Chromium ట్యాబ్‌ను షేర్ చేయండి</translation>
 <translation id="1553461853655228091">మీ పరిసరాల 3D మ్యాప్‌ను క్రియేట్ చేయడానికి Chromiumకు మీ కెమెరాను యాక్సెస్ చేసే అనుమతి కావాలి</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{అప్‌డేట్‌ను వర్తింపజేయడం కోసం మీరు Chromiumను పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు}=1{అప్‌డేట్‌ను వర్తింపజేయడం కోసం మీరు Chromiumను పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు. మీ అజ్ఞాత విండో మళ్లీ తెరవబడదు.}other{అప్‌డేట్‌ను వర్తింపజేయడం కోసం మీరు Chromiumను పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు. మీ # అజ్ఞాత విండోలు మళ్లీ తెరవబడవు.}}</translation>
@@ -337,6 +336,7 @@
 <translation id="8266560134891435528">మీరు సైన్ ఇన్ చేయనందున Chromium మీ పాస్‌వర్డ్‌లను చెక్ చేయలేదు</translation>
 <translation id="8276522524898344151">పాస్‌వర్డ్‌లను కాపీ చేయడానికి Chromium ప్రయత్నిస్తోంది.</translation>
 <translation id="8290862415967981663">ఈ ఫైల్ అపాయకరం కావచ్చు, కాబట్టి Chromium దీన్ని బ్లాక్ చేసింది.</translation>
+<translation id="8325404639443959713">Chromiumతో మరెన్నో చేయండి</translation>
 <translation id="8330519371938183845">మీ పరికరాల అంతటా Chromiumను సింక్ చేయడానికి, వ్యక్తిగతీకరించడానికి సైన్ ఇన్ చేయండి</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> మునుపు Chromiumని ఉపయోగించింది</translation>
 <translation id="8357820681460164151">మీ అన్ని పరికరాలలో మీ Chromium బ్రౌజర్ సంబంధిత అంశాలను యాక్సెస్ చేయడానికి, సైన్ ఇన్ చేసి, ఆపై సింక్‌ను ఆన్ చేయండి</translation>
@@ -376,6 +376,7 @@
 <translation id="9158494823179993217"><ph name="TARGET_URL_HOSTNAME" />‌ను యాక్సెస్ చేయడం కోసం ఒక ప్రత్యామ్నాయ బ్రౌజర్‌ను తెరిచే విధంగా Chromiumను మీ సిస్టమ్ నిర్వాహకులు కాన్ఫిగర్ చేశారు.</translation>
 <translation id="9185526690718004400">&amp;Chromiumను అప్‌డేట్ చేయడానికి రీ-లాంచ్ చేయండి</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="924957577793602335">Chromiumను మీకు అనుకూలంగా ఉండే విధంగా వ్యక్తిగతీకరించుకోండి</translation>
 <translation id="93478295209880648">Chromiumకి ఇప్పుడు Windows XP లేదా Windows Vistaలో మద్దతు లేనందున ఇది సరిగ్గా పని చేయకపోవచ్చు</translation>
 <translation id="942598560705308788">Chromium ద్వారా మేనేజ్ చేయబడే సర్టిఫికెట్‌లు</translation>
 <translation id="965162752251293939">Chromiumను ఎవరు ఉపయోగిస్తున్నారు?</translation>

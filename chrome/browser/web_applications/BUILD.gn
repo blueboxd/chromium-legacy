@@ -133,8 +133,6 @@ source_set("web_applications") {
     "os_integration/uninstallation_via_os_settings_sub_manager.h",
     "os_integration/url_handler_manager.cc",
     "os_integration/url_handler_manager.h",
-    "os_integration/url_handling_sub_manager.cc",
-    "os_integration/url_handling_sub_manager.h",
     "os_integration/web_app_file_handler_manager.cc",
     "os_integration/web_app_file_handler_manager.h",
     "os_integration/web_app_file_handler_registration.cc",
@@ -323,17 +321,6 @@ source_set("web_applications") {
       "os_integration/web_app_shortcuts_menu_win.cc",
       "os_integration/web_app_shortcuts_menu_win.h",
       "os_integration/web_app_uninstallation_via_os_settings_registration_win.cc",
-    ]
-  }
-
-  if (is_win || is_mac || is_linux) {
-    sources += [
-      "os_integration/url_handler_manager_impl.cc",
-      "os_integration/url_handler_manager_impl.h",
-      "url_handler_launch_params.cc",
-      "url_handler_launch_params.h",
-      "url_handler_prefs.cc",
-      "url_handler_prefs.h",
     ]
   }
 
@@ -625,8 +612,8 @@ source_set("web_applications_unit_tests") {
     "os_integration/protocol_handling_sub_manager_unittest.cc",
     "os_integration/run_on_os_login_sub_manager_unittest.cc",
     "os_integration/shortcut_menu_handling_sub_manager_unittest.cc",
+    "os_integration/shortcut_sub_manager_unittest.cc",
     "os_integration/uninstallation_via_os_settings_sub_manager_unittest.cc",
-    "os_integration/url_handling_sub_manager_unittest.cc",
     "os_integration/web_app_file_handler_manager_unittest.cc",
     "os_integration/web_app_protocol_handler_manager_unittest.cc",
     "os_integration/web_app_shortcut_unittest.cc",
@@ -684,13 +671,6 @@ source_set("web_applications_unit_tests") {
       "os_integration/web_app_file_handler_registration_linux_unittest.cc",
       "os_integration/web_app_run_on_os_login_linux_unittest.cc",
       "os_integration/web_app_shortcut_linux_unittest.cc",
-    ]
-  }
-
-  if (is_win || is_mac || is_linux) {
-    sources += [
-      "os_integration/url_handler_manager_impl_unittest.cc",
-      "url_handler_prefs_unittest.cc",
     ]
   }
 
@@ -793,7 +773,6 @@ source_set("web_applications_browser_tests") {
     "isolated_web_apps/isolated_web_app_browsertest.cc",
     "isolated_web_apps/isolated_web_app_url_loader_factory_browsertest.cc",
     "manifest_update_manager_browsertest.cc",
-    "os_integration/shortcut_sub_manager_browsertest.cc",
     "policy/web_app_policy_manager_browsertest.cc",
     "preinstalled_web_app_manager_browsertest.cc",
     "preinstalled_web_apps_browsertest.cc",

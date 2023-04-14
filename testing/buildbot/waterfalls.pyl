@@ -233,6 +233,7 @@
         ],
         'test_suites': {
           'skylab_tests': 'lacros_skylab_tests_amd64_generic',
+          'isolated_scripts': 'chrome_sizes',
         },
         'os_type': 'chromeos',
       },
@@ -266,6 +267,7 @@
         ],
         'test_suites': {
           'skylab_tests': 'lacros_skylab_arm',
+          'isolated_scripts': 'chrome_sizes',
         },
         'os_type': 'chromeos',
       },
@@ -296,6 +298,7 @@
         ],
         'test_suites': {
           'skylab_tests': 'lacros_skylab_arm64',
+          'isolated_scripts': 'chrome_sizes',
         },
         'os_type': 'chromeos',
       },
@@ -352,6 +355,12 @@
         'test_suites': {
           'isolated_scripts': 'chrome_isolated_script_tests',
         },
+      },
+      'win-branded-rel': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_official_builder',
+        ],
       },
       'win-chrome': {
         'additional_compile_targets': [
@@ -1745,7 +1754,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2653,7 +2661,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2668,7 +2675,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2737,7 +2743,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2752,7 +2757,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -3734,6 +3738,28 @@
           'has_native_resultdb_integration',
           'isolate_profile_data',
           'mac_12_x64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_content_shell',
+        },
+        'os_type': 'mac',
+      },
+      'mac13-arm64-wpt-content-shell-fyi-rel': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'isolate_profile_data',
+          'mac_beta_x64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_content_shell',
+        },
+        'os_type': 'mac',
+      },
+      'mac13-wpt-content-shell-fyi-rel': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'isolate_profile_data',
+          'mac_beta_arm64',
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests_content_shell',

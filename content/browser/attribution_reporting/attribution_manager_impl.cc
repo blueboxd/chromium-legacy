@@ -5,6 +5,7 @@
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 
 #include <cmath>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
@@ -30,6 +32,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "components/attribution_reporting/os_support.mojom.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -42,6 +45,7 @@
 #include "content/browser/attribution_reporting/attribution_cookie_checker_impl.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
+#include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_metrics.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
@@ -57,6 +61,7 @@
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
+#include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/browser_context.h"
@@ -70,10 +75,12 @@
 #include "content/public/common/content_switches.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/attribution_os_level_manager.h"
 #include "content/browser/attribution_reporting/attribution_os_level_manager_android.h"
 #endif
 
@@ -322,16 +329,34 @@ bool IsOperationAllowed(
 
 bool g_run_in_memory = false;
 
+// This flag is per device and can only be changed by the OS.
+//
+// TODO(linnan): As currently we don't listen to the flag changes on the OS and
+// the API is synchronous, consider changing this to be per instance instead of
+// global which is set on creation. The renderer would be initialized with the
+// instance value without further updates.
+attribution_reporting::mojom::OsSupport g_os_support =
+    attribution_reporting::mojom::OsSupport::kDisabled;
+
+void SetOsSupport(attribution_reporting::mojom::OsSupport os_support) {
+  if (g_os_support == os_support) {
+    return;
+  }
+
+  g_os_support = os_support;
+
+  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->SetOsSupportForAttributionReporting(g_os_support);
+  }
+}
+
 }  // namespace
 
 struct AttributionManagerImpl::SourceOrTriggerRFH {
   SourceOrTrigger source_or_trigger;
   GlobalRenderFrameHostId rfh_id;
 };
-
-BASE_FEATURE(kAttributionVerboseDebugReporting,
-             "AttributionVerboseDebugReporting",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 absl::optional<base::TimeDelta> GetFailedReportDelay(int failed_send_attempts) {
   DCHECK_GT(failed_send_attempts, 0);
@@ -358,17 +383,13 @@ ScopedUseInMemoryStorageForTesting::~ScopedUseInMemoryStorageForTesting() {
 
 ScopedOsSupportForTesting::ScopedOsSupportForTesting(
     attribution_reporting::mojom::OsSupport os_support)
-    : previous_(AttributionManagerImpl::g_os_support_) {
-  AttributionManagerImpl::SetOsSupportForTesting(os_support);
+    : previous_(g_os_support) {
+  SetOsSupport(os_support);
 }
 
 ScopedOsSupportForTesting::~ScopedOsSupportForTesting() {
-  AttributionManagerImpl::SetOsSupportForTesting(previous_);
+  SetOsSupport(previous_);
 }
-
-// static
-attribution_reporting::mojom::OsSupport AttributionManagerImpl::g_os_support_ =
-    attribution_reporting::mojom::OsSupport::kDisabled;
 
 // static
 std::unique_ptr<AttributionManagerImpl>
@@ -386,6 +407,11 @@ AttributionManagerImpl::CreateWithNewDbForTesting(
   return std::make_unique<AttributionManagerImpl>(
       storage_partition, user_data_directory,
       std::move(special_storage_policy));
+}
+
+// static
+attribution_reporting::mojom::OsSupport AttributionManagerImpl::GetOsSupport() {
+  return g_os_support;
 }
 
 bool AttributionManagerImpl::IsReportAllowed(
@@ -418,17 +444,6 @@ AttributionManagerImpl::CreateForTesting(
       /*data_host_manager=*/nullptr, std::move(storage_task_runner)));
 }
 
-// static
-void AttributionManagerImpl::SetOsSupportForTesting(
-    attribution_reporting::mojom::OsSupport os_support) {
-  g_os_support_ = os_support;
-
-  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->SetOsSupportForAttributionReporting(g_os_support_);
-  }
-}
-
 AttributionManagerImpl::AttributionManagerImpl(
     StoragePartitionImpl* storage_partition,
     const base::FilePath& user_data_directory,
@@ -452,7 +467,8 @@ AttributionManagerImpl::AttributionManagerImpl(
               base::TaskTraits(base::TaskPriority::BEST_EFFORT,
                                base::MayBlock(),
                                base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-                               base::ThreadPolicy::MUST_USE_FOREGROUND))) {}
+                               base::ThreadPolicy::MUST_USE_FOREGROUND))) {
+}  // namespace content
 
 AttributionManagerImpl::AttributionManagerImpl(
     StoragePartitionImpl* storage_partition,
@@ -486,8 +502,15 @@ AttributionManagerImpl::AttributionManagerImpl(
   DCHECK(report_sender_);
 
 #if BUILDFLAG(IS_ANDROID)
-  attribution_os_level_manager_ =
-      std::make_unique<AttributionOsLevelManagerAndroid>();
+  if (base::FeatureList::IsEnabled(
+          blink::features::kAttributionReportingCrossAppWeb)) {
+    attribution_os_level_manager_ =
+        std::make_unique<AttributionOsLevelManagerAndroid>();
+    // The measurement API status can only change when user changes the setting
+    // on the device, therefore it's fine to update the global variable to keep
+    // track of the latest setting.
+    SetOsSupport(attribution_os_level_manager_->GetOsSupport());
+  }
 #endif
 }
 
@@ -802,6 +825,15 @@ void AttributionManagerImpl::ClearData(
     BrowsingDataFilterBuilder* filter_builder,
     bool delete_rate_limit_data,
     base::OnceClosure done) {
+#if BUILDFLAG(IS_ANDROID)
+  const bool should_clear_from_os = attribution_os_level_manager_ != nullptr;
+#else
+  const bool should_clear_from_os = false;
+#endif
+
+  auto on_done =
+      base::BarrierClosure(should_clear_from_os ? 2 : 1, std::move(done));
+
   // When a clear data task is queued or running, we use a higher priority.
   ++num_pending_clear_data_tasks_;
   storage_task_runner_->UpdatePriority(base::TaskPriority::USER_VISIBLE);
@@ -809,9 +841,32 @@ void AttributionManagerImpl::ClearData(
   attribution_storage_.AsyncCall(&AttributionStorage::ClearData)
       .WithArgs(delete_begin, delete_end, std::move(filter),
                 delete_rate_limit_data)
-      .Then(std::move(done).Then(
+      .Then(base::OnceClosure(on_done).Then(
           base::BindOnce(&AttributionManagerImpl::OnClearDataComplete,
                          weak_factory_.GetWeakPtr())));
+
+#if BUILDFLAG(IS_ANDROID)
+  if (!should_clear_from_os) {
+    return;
+  }
+
+  if (filter_builder) {
+    auto* filter_builder_impl =
+        static_cast<BrowsingDataFilterBuilderImpl*>(filter_builder);
+    attribution_os_level_manager_->ClearData(
+        delete_begin, delete_end, filter_builder_impl->GetOrigins(),
+        filter_builder_impl->GetRegisterableDomains(),
+        filter_builder->GetMode(), delete_rate_limit_data, std::move(on_done));
+  } else {
+    // When there is not filter_builder, we clear all the data.
+    attribution_os_level_manager_->ClearData(
+        delete_begin, delete_end, /*origins=*/{}, /*domains=*/{},
+        // By preserving data only from an empty list, we are effectively
+        // clearing all the data.
+        BrowsingDataFilterBuilder::Mode::kPreserve, delete_rate_limit_data,
+        std::move(on_done));
+  }
+#endif
 }
 
 void AttributionManagerImpl::OnClearDataComplete() {
@@ -1155,5 +1210,12 @@ void AttributionManagerImpl::MaybeSendVerboseDebugReport(
                        weak_factory_.GetWeakPtr()));
   }
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void AttributionManagerImpl::OverrideOsLevelManagerForTesting(
+    std::unique_ptr<AttributionOsLevelManager> os_level_manager) {
+  attribution_os_level_manager_ = std::move(os_level_manager);
+}
+#endif
 
 }  // namespace content

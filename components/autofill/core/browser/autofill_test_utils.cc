@@ -538,6 +538,26 @@ AutofillProfile GetServerProfile2() {
   return profile;
 }
 
+void SetProfileCategory(AutofillProfile& profile,
+                        AutofillProfileSourceCategory category) {
+  switch (category) {
+    case AutofillProfileSourceCategory::kLocalOrSyncable:
+      profile.set_source_for_testing(AutofillProfile::Source::kLocalOrSyncable);
+      break;
+    case AutofillProfileSourceCategory::kAccountChrome:
+    case AutofillProfileSourceCategory::kAccountNonChrome:
+      profile.set_source_for_testing(AutofillProfile::Source::kAccount);
+      // Any value that is not kInitialCreatorOrModifierChrome works.
+      const int kInitialCreatorOrModifierNonChrome =
+          AutofillProfile::kInitialCreatorOrModifierChrome + 1;
+      profile.set_initial_creator_id(
+          category == AutofillProfileSourceCategory::kAccountChrome
+              ? AutofillProfile::kInitialCreatorOrModifierChrome
+              : kInitialCreatorOrModifierNonChrome);
+      break;
+  }
+}
+
 IBAN GetIBAN() {
   IBAN iban(base::GenerateGUID());
   iban.set_value(u"DE91 1000 0000 0123 4567 89");
@@ -627,6 +647,13 @@ CreditCard GetMaskedServerCardWithNickname() {
                           NextMonth().c_str(), NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kVisaCard);
   credit_card.SetNickname(u"Test nickname");
+  return credit_card;
+}
+
+CreditCard GetMaskedServerCardEnrolledIntoVirtualCardNumber() {
+  CreditCard credit_card = GetMaskedServerCard();
+  credit_card.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
   return credit_card;
 }
 

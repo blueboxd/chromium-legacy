@@ -24,16 +24,17 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
+#include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
-#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/public/browser/attribution_data_model.h"
@@ -56,6 +57,7 @@ namespace {
 
 using ::attribution_reporting::FilterPair;
 using ::attribution_reporting::SuitableOrigin;
+using ::attribution_reporting::mojom::SourceType;
 
 using ::testing::AllOf;
 using ::testing::Field;
@@ -397,7 +399,7 @@ void MockAttributionManager::NotifySourceRegistrationFailure(
     const std::string& header_value,
     const SuitableOrigin& source_origin,
     const SuitableOrigin& reporting_origin,
-    AttributionSourceType source_type,
+    SourceType source_type,
     attribution_reporting::mojom::SourceRegistrationError error) {
   base::Time source_time = base::Time::Now();
   for (auto& observer : observers_) {
@@ -477,8 +479,8 @@ SourceBuilder::SourceBuilder(base::Time time)
     : source_time_(time),
       expiry_(base::Milliseconds(kExpiryTime)),
       source_origin_(*SuitableOrigin::Deserialize(kDefaultSourceOrigin)),
-      destination_sites_(
-          {net::SchemefulSite::Deserialize(kDefaultDestinationOrigin)}),
+      destination_sites_(*attribution_reporting::DestinationSet::Create(
+          {net::SchemefulSite::Deserialize(kDefaultDestinationOrigin)})),
       reporting_origin_(*SuitableOrigin::Deserialize(kDefaultReportOrigin)) {}
 
 SourceBuilder::~SourceBuilder() = default;
@@ -524,7 +526,8 @@ SourceBuilder& SourceBuilder::SetDestinationOrigin(
 
 SourceBuilder& SourceBuilder::SetDestinationSites(
     base::flat_set<net::SchemefulSite> sites) {
-  destination_sites_ = std::move(sites);
+  destination_sites_ =
+      *attribution_reporting::DestinationSet::Create(std::move(sites));
   return *this;
 }
 
@@ -533,7 +536,7 @@ SourceBuilder& SourceBuilder::SetReportingOrigin(SuitableOrigin origin) {
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetSourceType(AttributionSourceType source_type) {
+SourceBuilder& SourceBuilder::SetSourceType(SourceType source_type) {
   source_type_ = source_type;
   return *this;
 }
@@ -743,13 +746,13 @@ AttributionTrigger TriggerBuilder::Build(
         trigger_data_, priority_, dedup_key_,
         FilterPair{.positive =
                        attribution_reporting::Filters::ForSourceTypeForTesting(
-                           AttributionSourceType::kNavigation)});
+                           SourceType::kNavigation)});
 
     event_triggers.emplace_back(
         event_source_trigger_data_, priority_, dedup_key_,
         attribution_reporting::FilterPair{
             .positive = attribution_reporting::Filters::ForSourceTypeForTesting(
-                AttributionSourceType::kEvent)});
+                SourceType::kEvent)});
   }
 
   return AttributionTrigger(
@@ -882,7 +885,7 @@ bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
   const auto tie = [](const CommonSourceInfo& source) {
     return std::make_tuple(
         source.source_event_id(), source.source_origin(),
-        source.destination_sites(), source.reporting_origin(),
+        source.destination_sites().destinations(), source.reporting_origin(),
         source.source_time(), source.expiry_time(),
         source.event_report_window_time(),
         source.aggregatable_report_window_time(), source.source_type(),
@@ -1115,16 +1118,10 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
-  out << "{source_event_id=" << source.source_event_id()
-      << ",source_origin=" << source.source_origin() << ",destination_sites={";
-
-  const char* separator = "";
-  for (const auto& site : source.destination_sites()) {
-    out << separator << site;
-    separator = ",";
-  }
-
-  return out << "},reporting_origin=" << source.reporting_origin()
+  return out << "{source_event_id=" << source.source_event_id()
+             << ",source_origin=" << source.source_origin()
+             << "destination_sites=" << source.destination_sites()
+             << "reporting_origin=" << source.reporting_origin()
              << ",source_time=" << source.source_time()
              << ",expiry_time=" << source.expiry_time()
              << ",event_report_window_time="

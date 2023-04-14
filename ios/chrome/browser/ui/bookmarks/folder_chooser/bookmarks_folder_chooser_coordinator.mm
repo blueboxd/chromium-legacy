@@ -9,6 +9,8 @@
 #import "base/check.h"
 #import "base/check_op.h"
 #import "base/mac/foundation_util.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -73,6 +75,7 @@
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _hiddenNodes = hiddenNodes;
+    _allowsNewFolders = YES;
   }
   return self;
 }
@@ -85,9 +88,9 @@
           self.browser->GetBrowserState());
   _viewController = [[BookmarksFolderChooserViewController alloc]
       initWithBookmarkModel:model
-           allowsNewFolders:YES
+           allowsNewFolders:_allowsNewFolders
                 editedNodes:_hiddenNodes
-               allowsCancel:YES
+               allowsCancel:!_baseNavigationController
              selectedFolder:_selectedFolder
                     browser:self.browser];
   _viewController.delegate = self;
@@ -99,8 +102,8 @@
   } else {
     _navigationController = [[BookmarkNavigationController alloc]
         initWithRootViewController:_viewController];
-    _navigationController.presentationController.delegate = self;
     _navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+    _navigationController.presentationController.delegate = self;
     [self.baseViewController presentViewController:_navigationController
                                           animated:YES
                                         completion:nil];
@@ -122,7 +125,8 @@
   } else {
     // If there is no `_baseNavigationController` and `_navigationController`,
     // the view controller has been already dismissed. See
-    // `presentationControllerDidDismiss:`.
+    // `presentationControllerDidDismiss:` and
+    // `bookmarksFolderChooserViewControllerDidDismiss:`.
     // Therefore `self.baseViewController.presentedViewController` must be
     // `nullptr`.
     DCHECK(!self.baseViewController.presentedViewController);
@@ -174,7 +178,14 @@
 }
 
 - (void)bookmarksFolderChooserViewControllerDidCancel:
-    (BookmarksFolderChooserViewController*)folderPicker {
+    (BookmarksFolderChooserViewController*)viewController {
+  [_delegate bookmarksFolderChooserCoordinatorDidCancel:self];
+}
+
+- (void)bookmarksFolderChooserViewControllerDidDismiss:
+    (BookmarksFolderChooserViewController*)viewController {
+  DCHECK(_baseNavigationController);
+  _baseNavigationController = nil;
   [_delegate bookmarksFolderChooserCoordinatorDidCancel:self];
 }
 
@@ -206,6 +217,8 @@
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSBookmarksFolderChooserClosedWithSwipeDown"));
   DCHECK(_navigationController);
   _navigationController = nil;
   [_delegate bookmarksFolderChooserCoordinatorDidCancel:self];

@@ -34,6 +34,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -4058,9 +4059,27 @@ absl::optional<base::UnguessableToken> RenderFrameHostImpl::ComputeNonce(
   return frame_tree_node_->GetFencedFrameNonce();
 }
 
+bool RenderFrameHostImpl::IsMainFrameThirdPartyStoragePartitioningEnabled() {
+  RuntimeFeatureStateDocumentData* rfs_document_data_for_storage_key =
+      RuntimeFeatureStateDocumentData::GetForCurrentDocument(GetMainFrame());
+
+  DCHECK(rfs_document_data_for_storage_key);
+
+  // If the deprecation trial is enabled, we have directive to override the
+  // current value of net::features::ThirdPartyStoragePartitioning.
+  if (rfs_document_data_for_storage_key->runtime_feature_read_context()
+          .IsDisableThirdPartyStoragePartitioningEnabled()) {
+    return false;
+  }
+  // Otherwise, return whatever the browser-side feature flag value is:
+  return base::FeatureList::IsEnabled(
+      net::features::kThirdPartyStoragePartitioning);
+}
+
 blink::StorageKey RenderFrameHostImpl::CalculateStorageKey(
     const url::Origin& new_rfh_origin,
-    const base::UnguessableToken* nonce) {
+    const base::UnguessableToken* nonce,
+    bool is_third_party_storage_partitioning_allowed) {
   if (nonce) {
     // If the nonce isn't null, we can use the simpler form of the constructor.
     return blink::StorageKey::CreateWithNonce(new_rfh_origin, *nonce);
@@ -4121,15 +4140,19 @@ blink::StorageKey RenderFrameHostImpl::CalculateStorageKey(
   }
 
   return blink::StorageKey::Create(new_rfh_origin, top_level_site,
-                                   ancestor_chain_bit);
+                                   ancestor_chain_bit,
+                                   is_third_party_storage_partitioning_allowed);
 }
 
 void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
-    const url::Origin& new_frame_creator) {
+    RenderFrameHostImpl* creator_frame) {
   // This method should only be called for *new* frames, that haven't committed
   // a navigation yet.
   DCHECK(!has_committed_any_navigation_);
   DCHECK(GetLastCommittedOrigin().opaque());
+
+  url::Origin creator_origin =
+      creator_frame ? creator_frame->GetLastCommittedOrigin() : url::Origin();
 
   // Calculate and set |new_frame_origin|.
   bool new_frame_should_be_sandboxed =
@@ -4137,16 +4160,35 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
       (browsing_context_state_->active_sandbox_flags() &
        network::mojom::WebSandboxFlags::kOrigin);
   url::Origin new_frame_origin = new_frame_should_be_sandboxed
-                                     ? new_frame_creator.DeriveNewOpaqueOrigin()
-                                     : new_frame_creator;
+                                     ? creator_origin.DeriveNewOpaqueOrigin()
+                                     : creator_origin;
   isolation_info_ = ComputeIsolationInfoInternal(
       new_frame_origin, net::IsolationInfo::RequestType::kOther,
       IsCredentialless(),
       /*fenced_frame_nonce_for_navigation=*/absl::nullopt);
   SetLastCommittedOrigin(new_frame_origin);
 
+  if (creator_frame) {
+    // If we're given a parent/opener frame, copy the
+    // RuntimeFeatureStateReadContext.
+    RuntimeFeatureStateDocumentData* rfs_document_data_from_creator =
+        RuntimeFeatureStateDocumentData::GetForCurrentDocument(creator_frame);
+    DCHECK(rfs_document_data_from_creator);
+    RuntimeFeatureStateDocumentData::CreateForCurrentDocument(
+        this, rfs_document_data_from_creator->runtime_feature_read_context());
+  } else {
+    // Otherwise create a RuntimeFeatureStateContext. We need to construct a
+    // RuntimeFeatureStateContext because its constructor initializes default
+    // values while the RuntimeFeatureStateReadContext's doesn't.
+    RuntimeFeatureStateDocumentData::CreateForCurrentDocument(
+        this, blink::RuntimeFeatureStateContext());
+  }
+
+  // For the StorageKey, we want the main frame's
+  // RuntimeFeatureStateReadContext.
   SetStorageKey(CalculateStorageKey(
-      new_frame_origin, base::OptionalToPtr(isolation_info_.nonce())));
+      new_frame_origin, base::OptionalToPtr(isolation_info_.nonce()),
+      IsMainFrameThirdPartyStoragePartitioningEnabled()));
 
   // Apply private network request policy according to our new origin.
   if (GetContentClient()->browser()->ShouldAllowInsecurePrivateNetworkRequests(
@@ -4192,10 +4234,11 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   owner_->GetRenderFrameHostManager().CreateProxiesForChildFrame(child.get());
 
   // When the child is added, it hasn't committed any navigation yet - its
-  // initial empty document should inherit the origin of its parent (the origin
-  // may change after the first commit). See also https://crbug.com/932067.
-  child->current_frame_host()->SetOriginDependentStateOfNewFrame(
-      GetLastCommittedOrigin());
+  // initial empty document should inherit the origin (the origin may change
+  // after the first commit) and other state (such as the
+  // RuntimeFeatureStateReadContext) from its parent. See also
+  // https://crbug.com/932067.
+  child->current_frame_host()->SetOriginDependentStateOfNewFrame(this);
 
   children_.push_back(std::move(child));
   return children_.back().get();
@@ -5932,6 +5975,15 @@ bool RenderFrameHostImpl::IsFeatureEnabled(
     blink::mojom::PermissionsPolicyFeature feature) {
   return permissions_policy_ && permissions_policy_->IsFeatureEnabledForOrigin(
                                     feature, GetLastCommittedOrigin());
+}
+
+const blink::PermissionsPolicy* RenderFrameHostImpl::GetPermissionsPolicy() {
+  return permissions_policy_.get();
+}
+
+const blink::ParsedPermissionsPolicy&
+RenderFrameHostImpl::GetPermissionsPolicyHeader() {
+  return permissions_policy_header_;
 }
 
 void RenderFrameHostImpl::ViewSource() {
@@ -7761,6 +7813,50 @@ void RenderFrameHostImpl::CreateNewWindow(
   new_main_rfh->render_view_host()->RenderViewCreated(new_main_rfh);
 }
 
+void RenderFrameHostImpl::SendPrivateAggregationRequestsForFencedFrameEvent(
+    const std::string& event_type) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kPrivateAggregationApiFledgeExtensions)) {
+    mojo::ReportBadMessage(
+        "FLEDGE extensions must be enabled to use reportEvent() for private "
+        "aggregation events.");
+    return;
+  }
+  // We only care if the event type starts with "reserved." - We allow event
+  // types like "myevent.reserved.name".
+  if (base::StartsWith(event_type, blink::kFencedFrameReservedPAEventPrefix)) {
+    mojo::ReportBadMessage("Reserved events cannot be triggered manually.");
+    return;
+  }
+  // Get the reporting metadata associated with the fenced frame.
+  const absl::optional<FencedFrameProperties>& fenced_frame_properties =
+      frame_tree_node_->GetFencedFrameProperties();
+  if (!fenced_frame_properties.has_value() ||
+      !fenced_frame_properties->fenced_frame_reporter_) {
+    // No associated fenced frame reporter. This should have been captured
+    // in the renderer process at `Fence::reportEvent`.
+    // This implies there is an inconsistency between the browser and the
+    // renderer.
+    mojo::ReportBadMessage(
+        "This frame had reporting metadata registered in its renderer process"
+        "but not in its browser process. The reporting metadata should be"
+        "consistent between the two.");
+    return;
+  }
+  if (!fenced_frame_properties->mapped_url_.has_value() ||
+      !GetLastCommittedOrigin().IsSameOriginWith(
+          url::Origin::Create(fenced_frame_properties->mapped_url_
+                                  ->GetValueIgnoringVisibility()))) {
+    mojo::ReportBadMessage(
+        "This frame is cross-origin to the mapped url of its fenced frame "
+        "config, so the renderer should not be able to call reportEvent.");
+    return;
+  }
+
+  fenced_frame_properties->fenced_frame_reporter_
+      ->SendPrivateAggregationRequestsForEvent(event_type);
+}
+
 void RenderFrameHostImpl::CreatePortal(
     mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
@@ -8219,8 +8315,10 @@ void RenderFrameHostImpl::BeginNavigation(
 
   blink::mojom::CommonNavigationParamsPtr validated_common_params =
       unvalidated_common_params.Clone();
-  if (!VerifyBeginNavigationCommonParams(GetSiteInstance(),
-                                         &*validated_common_params)) {
+  if (!VerifyBeginNavigationCommonParams(
+          *this, GetSiteInstance(),
+          base::OptionalToPtr(begin_params->initiator_frame_token),
+          &*validated_common_params)) {
     return;
   }
 
@@ -10761,14 +10859,6 @@ void RenderFrameHostImpl::BindNonAssociatedLocalFrameHost(
   non_associated_local_frame_host_receiver_.Bind(std::move(receiver));
 }
 
-void RenderFrameHostImpl::CreateRuntimeFeatureStateController(
-    mojo::PendingReceiver<blink::mojom::RuntimeFeatureStateController>
-        receiver) {
-  runtime_feature_state_controller_ =
-      std::make_unique<RuntimeFeatureStateControllerImpl>(*this,
-                                                          std::move(receiver));
-}
-
 bool RenderFrameHostImpl::CancelPrerendering(
     const PrerenderCancellationReason& reason) {
   // A prerendered page is identified by its root FrameTreeNode id, so if this
@@ -12364,6 +12454,9 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
       navigation_request
           ->is_target_fenced_frame_root_originating_from_opaque_url();
 
+  RuntimeFeatureStateDocumentData::CreateForCurrentDocument(
+      this, navigation_request->GetRuntimeFeatureStateContext());
+
   // TODO(https://crbug.com/888079): Once we are able to compute the origin to
   // commit in the browser, `navigation_request->commit_params().storage_key`
   // will contain the correct origin and it won't be necessary to override it
@@ -12373,7 +12466,8 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
 
   url::Origin origin = GetLastCommittedOrigin();
   blink::StorageKey storage_key_to_commit = CalculateStorageKey(
-      origin, base::OptionalToPtr(provisional_storage_key.nonce()));
+      origin, base::OptionalToPtr(provisional_storage_key.nonce()),
+      IsMainFrameThirdPartyStoragePartitioningEnabled());
   SetStorageKey(storage_key_to_commit);
 
   coep_reporter_ = navigation_request->TakeCoepReporter();
@@ -14721,9 +14815,11 @@ void RenderFrameHostImpl::CookieChangeListener::OnCookieChange(
     const net::CookieChangeInfo& change) {
   // TODO (https://crbug.com/1399741): After adding the invalidation signals
   // API, we could mark the page as ineligible for BFCache as soon as the cookie
-  // change event is received.
-  cookie_change_info_.http_only_cookie_modified |= change.cookie.IsHttpOnly();
-  cookie_change_info_.cookie_modified = true;
+  // change event is received after the navigation is committed.
+  cookie_change_info_.cookie_modification_count_++;
+  if (change.cookie.IsHttpOnly()) {
+    cookie_change_info_.http_only_cookie_modification_count_++;
+  }
 }
 
 RenderFrameHostImpl::CookieChangeListener::CookieChangeInfo

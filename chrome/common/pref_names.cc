@@ -54,6 +54,12 @@ const char kDownloadRestrictions[] = "download_restrictions";
 // set to false, the old download shelf UI will be shown instead.
 const char kDownloadBubbleEnabled[] = "download_bubble_enabled";
 
+// A boolean specifying whether the download bubble IPH should be suppressed.
+// This will be set to true for users who are using the download bubble prior
+// to the addition of the IPH, so that the IPH will not be shown to users who
+// have already used the download bubble.
+const char kDownloadBubbleIphSuppression[] = "suppress_download_bubble_iph";
+
 // Whether the user wants to be prompted upon downloading a duplicate file. Only
 // used when the new download bubble UI is enabled.
 const char kDownloadDuplicateFilePromptEnabled[] =
@@ -445,9 +451,6 @@ const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 const char kEnableTouchpadThreeFingerClick[] =
     "settings.touchpad.enable_three_finger_click";
 
-// A boolean pref set to true if primary mouse button is the left button.
-const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
-
 // A boolean pref set to true if primary pointing stick button is the left
 // button.
 const char kPrimaryPointingStickButtonRight[] =
@@ -456,14 +459,6 @@ const char kPrimaryPointingStickButtonRight[] =
 // Copy of the primary pointing stick buttons option to use on login screen.
 const char kOwnerPrimaryPointingStickButtonRight[] =
     "owner.pointing_stick.primary_right";
-
-// A boolean pref set to true if mouse acceleration is enabled. When disabled
-// only simple linear scaling is applied based on sensitivity.
-const char kMouseAcceleration[] = "settings.mouse.acceleration";
-
-// A boolean pref set to true if mouse scroll acceleration is enabled. When
-// disabled, only simple linear scaling is applied based on sensitivity.
-const char kMouseScrollAcceleration[] = "settings.mouse.scroll_acceleration";
 
 // A boolean pref set to true if pointing stick acceleration is enabled. When
 // disabled only simple linear scaling is applied based on sensitivity.
@@ -486,13 +481,6 @@ const char kTouchpadHapticFeedback[] = "settings.touchpad.haptic_feedback";
 // feedback to Firm feedback [1, 3, 5].
 const char kTouchpadHapticClickSensitivity[] =
     "settings.touchpad.haptic_click_sensitivity";
-
-// A integer pref for the touchpad sensitivity.
-const char kMouseSensitivity[] = "settings.mouse.sensitivity2";
-
-// A integer pref for the touchpad scroll sensitivity, in the range
-// [PointerSensitivity::kLowest, PointerSensitivity::kHighest].
-const char kMouseScrollSensitivity[] = "settings.mouse.scroll_sensitivity";
 
 // A integer pref for the touchpad sensitivity.
 const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
@@ -1048,10 +1036,8 @@ const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";
 
 // Dictionary pref containing the allowed urls, schemes and applications
 // that would not be blocked by per app time limits.
-// Note that this used to be `kPerAppTimeLimitsWhitelistPolicy`, hence the
-// difference between the variable name and the string value.
 const char kPerAppTimeLimitsAllowlistPolicy[] =
-    "child_user.per_app_time_limits.whitelist";
+    "child_user.per_app_time_limits.allowlist";
 
 // Integer pref to record the day id (number of days since origin of time) when
 // family user metrics were last recorded.
@@ -1247,24 +1233,9 @@ const char kExtensionsUIDeveloperMode[] = "extensions.ui.developer_mode";
 // extension + named command pair.
 const char kExtensionCommands[] = "extensions.commands";
 
-// Pref containing the directory for internal plugins as written to the plugins
-// list (below).
-const char kPluginsLastInternalDirectory[] = "plugins.last_internal_directory";
-
-// List pref containing information (dictionaries) on plugins.
-const char kPluginsPluginsList[] = "plugins.plugins_list";
-
 // Whether Chrome should use its internal PDF viewer or not.
 const char kPluginsAlwaysOpenPdfExternally[] =
     "plugins.always_open_pdf_externally";
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-// Whether about:plugins is shown in the details mode or not.
-const char kPluginsShowDetails[] = "plugins.show_details";
-#endif
-
-// Boolean that indicates whether outdated plugins are allowed or not.
-const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
 
 // Int64 containing the internal value of the time at which the default browser
 // infobar was last dismissed by the user.
@@ -1350,14 +1321,6 @@ const char kShowUpdatePromotionInfoBar[] =
 // Boolean that is false if we should show window manager decorations.  If
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
-#endif
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-// Which plugins have been allowed manually by the user.
-// Note that this used to be `kContentSettingsPluginWhitelist`, hence the
-// difference between the variable name and the string value.
-const char kContentSettingsPluginAllowlist[] =
-    "profile.content_settings.plugin_whitelist";
 #endif
 
 // Double that indicates the default zoom level.
@@ -1673,6 +1636,11 @@ const char kWebRtcTextLogCollectionAllowed[] =
 // Boolean that indicates that the first run experience has been finished (or
 // skipped by some policy) for this browser install.
 const char kFirstRunFinished[] = "browser.first_run_finished";
+
+// String that refers to the study group in which this install was enrolled.
+// Used to implement the sticky experiment tracking.
+// TODO(crbug.com/1418017): Clean up experiment setup.
+const char kFirstRunStudyGroup[] = "browser.first_run_study_group";
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1693,7 +1661,7 @@ const char kManagedAccountsSigninRestrictionScopeMachine[] =
 #if !BUILDFLAG(IS_CHROMEOS)
 // Whether or not the option to keep existing browsing data is checked by
 // default.
-extern const char kEnterpriseProfileCreationKeepBrowsingData[] =
+const char kEnterpriseProfileCreationKeepBrowsingData[] =
     "profile.enterprise_profile_creation.keep_existing_data_by_default";
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 #endif
@@ -2182,12 +2150,6 @@ const char kWebAppsPreferences[] = "web_apps.web_app_ids";
 // its isolation requirements.
 const char kWebAppsIsolationState[] = "web_apps.isolation_state";
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
-// Dictionary that maps origins to web apps that can act as URL handlers.
-const char kWebAppsUrlHandlerInfo[] = "web_apps.url_handler_info";
-#endif
-
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 
@@ -2656,13 +2618,6 @@ const char kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount[] =
 const char kKnownUserParentAccessCodeConfig[] =
     "child_user.parent_access_code.config";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// Whether there is a Flash version installed that supports clearing LSO data.
-const char kClearPluginLSODataEnabled[] = "browser.clear_lso_data_enabled";
-
-// Whether we should show Pepper Flash-specific settings.
-const char kPepperFlashSettingsEnabled[] =
-    "browser.pepper_flash_settings_enabled";
 
 // String which specifies where to store the disk cache.
 const char kDiskCacheDir[] = "browser.disk_cache_dir";
@@ -3712,5 +3667,12 @@ const char kOutOfProcessSystemDnsResolutionEnabled[] =
 #if BUILDFLAG(IS_ANDROID)
 const char kQuickDeleteDialogSuppressed[] = "quick_delete.dialog_suppressed";
 #endif
+
+// A list of hostnames to disable HTTPS Upgrades / HTTPS-First Mode warnings on.
+const char kHttpAllowlist[] = "https_upgrades.policy.http_allowlist";
+
+// Whether the HTTPS Upgrades feature is enabled or disabled by the
+// `HttpsUpgradesEnabled` enterprise policy.
+const char kHttpsUpgradesEnabled[] = "https_upgrades.policy.upgrades_enabled";
 
 }  // namespace prefs

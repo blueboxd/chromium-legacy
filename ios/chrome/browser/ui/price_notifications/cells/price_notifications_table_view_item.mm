@@ -30,6 +30,7 @@ namespace {
 
 const CGFloat kCellContentHeight = 64.0;
 const CGFloat kCellContentSpacing = 14;
+const CGFloat kTableViewColumnSpacing = 8;
 // Notification icon's point size.
 const CGFloat kNotificationIconPointSize = 20;
 // The space in between elements in the vertical UIStackView element.
@@ -106,8 +107,8 @@ UIStackView* CreateHorizontalStack(TableViewItemStackContent content) {
         verticalStack, content.menu_button, content.track_button
       ]];
   horizontalStack.axis = UILayoutConstraintAxisHorizontal;
-  horizontalStack.spacing = kTableViewHorizontalSpacing;
-  horizontalStack.distribution = UIStackViewDistributionEqualSpacing;
+  horizontalStack.spacing = kTableViewColumnSpacing;
+  horizontalStack.distribution = UIStackViewDistributionFill;
   horizontalStack.alignment = UIStackViewAlignmentCenter;
   horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -339,12 +340,14 @@ UIStackView* CreateLoadingScreen(UIView* track_button, UIView* menu_button) {
   [super prepareForReuse];
   self.delegate = nil;
   self.loading = NO;
+  [self.trackButton setUserInteractionEnabled:YES];
 }
 
 #pragma mark - Private
 
 // Initiates the user's subscription to the product's price tracking events.
 - (void)trackItem {
+  [self.trackButton setUserInteractionEnabled:NO];
   [self.delegate trackItemForCell:self];
 }
 

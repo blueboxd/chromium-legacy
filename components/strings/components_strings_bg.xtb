@@ -84,6 +84,7 @@
 <translation id="1178821169867863726">12 x 16 инча</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1186201132766001848">Проверка на паролите</translation>
+<translation id="1195073053842921378">Адресът ще бъде изтрит от това устройство</translation>
 <translation id="1195558154361252544">Известията се блокират автоматично за всички сайтове освен за онези, за които ги разрешите</translation>
 <translation id="1197088940767939838">оранжево</translation>
 <translation id="1201402288615127009">Напред</translation>
@@ -587,8 +588,8 @@
 <translation id="2359629602545592467">Няколко</translation>
 <translation id="2359808026110333948">Напред</translation>
 <translation id="2361263712565360498">275 x 395 мм</translation>
-<translation id="2362083820973145409">Влезли сте като <ph name="USER_NAME" />. <ph name="USER_EMAIL" />. Отваря настройките.</translation>
 <translation id="236340516568226369">Меню с бутони за преоразмеряване</translation>
+<translation id="2365355378251437925">Въведете <ph name="FIELD" /></translation>
 <translation id="2367567093518048410">Ниво</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2383455408879745299">Персонализиране на инструментите за достъпност в настройките на Chrome</translation>
@@ -876,6 +877,7 @@
 <translation id="317878711435188021">Информация за това дали устройството се използва активно</translation>
 <translation id="3180358318770512945">Отглеждане на деца</translation>
 <translation id="3187306450550410410">Гъвкави режими на работа</translation>
+<translation id="3187380004437786923">Управление на плащанията</translation>
 <translation id="3187472288455401631">Измерване на рекламите</translation>
 <translation id="3190736958609431397">Спиране на проследяването</translation>
 <translation id="319282854780294203">Социални мрежи</translation>
@@ -1208,6 +1210,7 @@
 <translation id="3990250421422698716">Разделно офсетово отпечатване</translation>
 <translation id="3992684624889376114">Всичко за тази страница</translation>
 <translation id="399952081411886534">Други функции, които повишават поверителността на рекламите</translation>
+<translation id="4000598935132966791">Научете повече за ограниченията за сайтовете в управляваните браузъри</translation>
 <translation id="4006465311664329701">Начини на плащане, оферти и адреси посредством Google Pay</translation>
 <translation id="4009243425692662128">Съдържанието на страниците, които отпечатвате, се изпраща до Google Cloud или трети страни за анализ. Възможно е например да бъдат сканирани за чувствителни данни.</translation>
 <translation id="4010758435855888356">Да се разреши ли достъпът до хранилището?</translation>
@@ -1930,7 +1933,6 @@
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Използвайте виртуален номер за тази карта}other{Изберете карта}}</translation>
 <translation id="5752552348183096912">Средства против изпотяване, дезодоранти и спрейове за тяло</translation>
 <translation id="5754400531489347219">Домашни любимци и животни</translation>
-<translation id="5755162682436943950">Не сте в профила си. Отваря диалоговия прозорец за вход в профила и включване на синхронизирането.</translation>
 <translation id="5759751709240058861">Използване и местене на камерата ви</translation>
 <translation id="5763042198335101085">Въведете валиден имейл адрес</translation>
 <translation id="5764725887548570807">Форматът на източника е невалиден.</translation>
@@ -2018,7 +2020,6 @@
 <translation id="5992691462791905444">Z-образно сгъване на A3 до размер A4</translation>
 <translation id="5992805036496113940">Вижте информацията, използвана при показването на реклами</translation>
 <translation id="5995727681868049093">Управление на информацията ви и настройките за поверителност и сигурност в профила ви в Google</translation>
-<translation id="5996887213716993070">Полето „<ph name="FIELD" />“ трябва да се попълни</translation>
 <translation id="5997247540087773573">Паролата, която току-що използвахте, е разкрита при нарушение на сигурността на данните. За да защитите профилите си, Google Мениджър на пароли ви препоръчва да я промените сега и да проверите запазените си пароли.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултата за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6005765687956866568">Автоматично попълнената информация е изчистена от формуляра</translation>
@@ -2475,7 +2476,6 @@
 <translation id="7153618581592392745">лавандулово</translation>
 <translation id="7156870133441232244">Сървърът трябва да се надстрои до TLS 1.2 или по-нова версия.</translation>
 <translation id="7163295244162773898">{0,plural, =1{Да се копира ли поверителният файл?}other{Да се копират ли поверителните файлове?}}</translation>
-<translation id="7168323970702333693">Влезли сте като <ph name="USER_NAME" />. Отваря настройките.</translation>
 <translation id="717330890047184534">Идентификатор в GAIA:</translation>
 <translation id="7174545416324379297">Обединени стойности</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -2689,6 +2689,7 @@
 <translation id="7630470133768862132">Състояние на съгласието:</translation>
 <translation id="7631444403134069754">Лека атлетика</translation>
 <translation id="7633909222644580952">Данни за ефективността и сигнали за сривове</translation>
+<translation id="7634280112532283638">Намаляване на спама и измамите</translation>
 <translation id="7637571805876720304">Кредитната карта да се премахне ли от Chromium?</translation>
 <translation id="7637586430889951925">{COUNT,plural, =0{Няма}=1{1 парола в профила ви (за <ph name="DOMAIN_LIST" />)}other{# пароли в профила ви (за <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="7638605456503525968">Серийни портове</translation>
@@ -3191,7 +3192,6 @@
 <translation id="8903921497873541725">Увеличаване на мащаба</translation>
 <translation id="890493561996401738">Бутон за премахване на предложенията. Натиснете Enter, за да премахнете – <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910898109640902752">8 x 10 инча</translation>
-<translation id="8912362522468806198">Профил в Google</translation>
 <translation id="8913778647360618320">Бутон „Управление на начините на плащане“. Натиснете Enter, за да управлявате информацията си за плащане и данните за кредитните си карти в настройките на Chrome</translation>
 <translation id="8922013791253848639">Рекламите на този сайт да са разрешени винаги</translation>
 <translation id="892588693504540538">Перфориране горе вдясно</translation>
@@ -3336,6 +3336,7 @@
 <translation id="950736567201356821">Тройно перфориране в горната част</translation>
 <translation id="961663415146723894">Подвързване на долната част</translation>
 <translation id="962484866189421427">Въпросното съдържание може да се опита да инсталира измамни приложения, които се представят за нещо друго или събират данни, които може да се използват за проследяването ви. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
+<translation id="963837307749850257">Всички потребители</translation>
 <translation id="964050462028070434">Управление на паролите и кодовете за достъп…</translation>
 <translation id="96680173638229310">Автомобили и превозни средства</translation>
 <translation id="969892804517981540">Официално издание</translation>

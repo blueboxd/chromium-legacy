@@ -127,16 +127,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Sharing.DesktopScreenshot.Action"
-    enum="SharingDesktopScreenshotAction" expires_after="2023-02-26">
-  <owner>jeffreycohen@chromium.org</owner>
-  <owner>src/chrome/browser/share/OWNERS</owner>
-  <summary>
-    Logged when actions are taken in the sharing desktop screenshot image
-    editing feature.
-  </summary>
-</histogram>
-
 <histogram name="Sharing.DeviceRegistrationResult"
     enum="SharingDeviceRegistrationResult" expires_after="M97">
   <owner>knollr@chromium.org</owner>
@@ -487,16 +477,6 @@ chromium-metrics-reviews@google.com.
 
     This is for the file types loaded from the resource bundle packaged with
     Chrome, which is always loaded at startup.
-  </summary>
-</histogram>
-
-<histogram name="Sharing.SharingHubAndroid.CloseReason"
-    enum="BottomSheet.StateChangeReason" expires_after="2023-01-15">
-  <owner>ellyjones@chromium.org</owner>
-  <owner>src/chrome/browser/share/OWNERS</owner>
-  <summary>
-    The reason why the Clank sharing hub was closed, logged when the bottom
-    sheet transitions into the HIDDEN state. Android-only.
   </summary>
 </histogram>
 

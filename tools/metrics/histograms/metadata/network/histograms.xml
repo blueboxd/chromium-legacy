@@ -420,7 +420,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.MarkedUnusable" units="list index"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
+  <obsolete>
+    Removed as of 03/2023, as it is replaced by Network.CacheTransparency2.
+    MarkedUnusable which has a higher range.
+  </obsolete>
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -431,7 +435,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.MismatchedChecksums"
-    units="list index" expires_after="2023-07-09">
+    units="list index" expires_after="2023-09-10">
+  <obsolete>
+    Removed as of 03/2023, as it is replaced by Network.CacheTransparency2.
+    MismatchedChecksums which has a higher range.
+  </obsolete>
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -443,7 +451,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.SingleKeyedCacheIsUsed"
-    units="list index" expires_after="2023-07-09">
+    units="list index" expires_after="2023-09-10">
+  <obsolete>
+    Removed as of 03/2023, as it is replaced by Network.CacheTransparency2.
+    SingleKeyedCacheIsUsed which has a higher range.
+  </obsolete>
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -456,7 +468,58 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.URLMatched" units="list index"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
+  <obsolete>
+    Removed as of 03/2023, as it is replaced by
+    Network.CacheTransparency2.URLMatched which has a higher range.
+  </obsolete>
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Records whether a requested resource's URL matched with any of the URLs in
+    the pervasive payloads list when a URL request is made. The list index is
+    the index of the URL in the pervasive payloads list.
+  </summary>
+</histogram>
+
+<histogram name="Network.CacheTransparency2.MarkedUnusable" units="list index"
+    expires_after="2023-11-01">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Records whether a URL in the pervasive payloads list is marked as
+    &quot;unusable&quot; when the cached response is read. The list index is the
+    index of the URL in the pervasive payloads list.
+  </summary>
+</histogram>
+
+<histogram name="Network.CacheTransparency2.MismatchedChecksums"
+    units="list index" expires_after="2023-11-01">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Records whether a URL in the pervasive payloads list has a different
+    checksum than what is expected when the response checksums are compared in
+    HttpCache::Transaction. The list index is the index of the URL in the
+    pervasive payloads list.
+  </summary>
+</histogram>
+
+<histogram name="Network.CacheTransparency2.SingleKeyedCacheIsUsed"
+    units="list index" expires_after="2023-11-01">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Records whether the single-keyed cache is used for a URL in the pervasive
+    payloads list (not just when a cache entry is hit because there could be an
+    &quot;unusable&quot; flag set). This is recorded when the response checksum
+    matches the expected checksum in HttpCache::Transaction. The list index is
+    the index of the URL in the pervasive payloads list.
+  </summary>
+</histogram>
+
+<histogram name="Network.CacheTransparency2.URLMatched" units="list index"
+    expires_after="2023-11-01">
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -1735,7 +1798,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.IPv6ConnectivityStatus"
-    enum="IPv6ConnectivityStatus" expires_after="2023-03-05">
+    enum="IPv6ConnectivityStatus" expires_after="2023-12-31">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1745,7 +1808,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.NetworkConnectionIPType"
-    enum="NetworkConnectionIPType" expires_after="2023-03-05">
+    enum="NetworkConnectionIPType" expires_after="2023-12-31">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1756,6 +1819,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Network.Shill.Cellular.PortalAttemptsToOnline" units="units"
     expires_after="2023-07-16">
+  <obsolete>
+    Removed as of 01/2023 in crrev/c/4141265.
+  </obsolete>
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1983,6 +2049,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Network.Shill.Ethernet.PortalAttemptsToOnline" units="units"
     expires_after="2023-05-07">
+  <obsolete>
+    Removed as of 01/2023 in crrev/c/4141265.
+  </obsolete>
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2974,6 +3043,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Network.Shill.Wifi.PortalAttemptsToOnline" units="units"
     expires_after="2023-06-18">
+  <obsolete>
+    Removed as of 01/2023 in https://crrev/c/4141265.
+  </obsolete>
   <owner>matthewmwang@chromium.org</owner>
   <owner>stevenjb@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -3278,7 +3350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToPortal" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-12-31">
   <owner>matthewmwang@chromium.org</owner>
   <owner>hugobenichi@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -3290,7 +3362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToRedirectFound" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-12-31">
   <owner>matthewmwang@chromium.org</owner>
   <owner>hugobenichi@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -3440,7 +3512,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.ManualConnection.FailureReason"
-    enum="ConnectionFailureReason" expires_after="2023-02-14">
+    enum="ConnectionFailureReason" expires_after="2023-06-18">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -3450,7 +3522,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.ManualConnection.Result"
-    enum="BooleanSuccess" expires_after="2023-04-16">
+    enum="BooleanSuccess" expires_after="2023-06-18">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -3477,6 +3549,17 @@ chromium-metrics-reviews@google.com.
     ChromeOS metric that tracks the failure reason for update attempts to synced
     Wi-Fi networks. This includes create/modify/remove operations. Each retry is
     counted seperately.
+  </summary>
+</histogram>
+
+<histogram
+    name="Network.Wifi.Synced.UpdateOperation.GenerateLocalNetworkConfig.Result"
+    enum="BooleanSuccess" expires_after="2023-06-18">
+  <owner>jonmann@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    ChromeOS metric that tracks the success or failure to generate a local
+    network config. Emitted on success and failure of add/update operations.
   </summary>
 </histogram>
 
@@ -3514,7 +3597,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.CorsPreflightMethodAllowed"
-    enum="NetworkServiceCorsPreflightMethodAllowed" expires_after="2023-02-12">
+    enum="NetworkServiceCorsPreflightMethodAllowed" expires_after="2023-06-18">
   <owner>hiroshige@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <summary>

@@ -131,8 +131,6 @@ class URLCookieAccessObserver : public content::WebContentsObserver {
   base::RunLoop run_loop_;
 };
 
-using StateForURLCallback = base::OnceCallback<void(const DIPSState&)>;
-
 // Histogram names
 constexpr char kTimeToInteraction[] =
     "Privacy.DIPS.TimeFromStorageToInteraction.Standard";
@@ -206,8 +204,7 @@ class DIPSTabHelperBrowserTest : public PlatformBrowserTest,
   absl::optional<StateValue> GetDIPSState(const GURL& url) {
     absl::optional<StateValue> state;
 
-    StateForURL(url,
-                base::BindLambdaForTesting([&](const DIPSState& loaded_state) {
+    StateForURL(url, base::BindLambdaForTesting([&](DIPSState loaded_state) {
                   if (loaded_state.was_loaded()) {
                     state = loaded_state.ToStateValue();
                   }
@@ -410,6 +407,57 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, StorageRecordedInSingleFrame) {
   // frame URLs to DIPS State.
   absl::optional<StateValue> state_b = GetDIPSState(url_b);
   EXPECT_FALSE(state_b.has_value());
+}
+
+IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
+                       StorageNotRecordedForThirdPartySubresource) {
+  // We host the "image" on an HTTPS server, because for it to write a
+  // cookie, the cookie needs to be SameSite=None and Secure.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  GURL page_url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  GURL image_url =
+      https_server.GetURL("b.test", "/set-cookie?foo=bar;Secure;SameSite=None");
+  content::WebContents* web_contents = GetActiveWebContents();
+  base::Time time = base::Time::FromDoubleT(1);
+
+  SetDIPSTime(time);
+  // Set SameSite=None cookie on b.test.
+  ASSERT_TRUE(content::NavigateToURL(
+      web_contents, https_server.GetURL(
+                        "b.test", "/set-cookie?foo=bar;Secure;SameSite=None")));
+  ASSERT_TRUE(GetDIPSState(image_url).has_value());
+  EXPECT_EQ(GetDIPSState(image_url).value().site_storage_times->second, time);
+
+  // Navigate top-level page to a.test.
+  ASSERT_TRUE(content::NavigateToURL(web_contents, page_url));
+
+  // Advance time and cause a third-party cookie read by loading an "image" from
+  // b.test.
+  SetDIPSTime(time + base::Seconds(10));
+  FrameCookieAccessObserver observer(web_contents,
+                                     web_contents->GetPrimaryMainFrame());
+  ASSERT_TRUE(content::ExecJs(web_contents,
+                              content::JsReplace(
+                                  R"(
+    let img = document.createElement('img');
+    img.src = $1;
+    document.body.appendChild(img);)",
+                                  image_url),
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  observer.Wait();
+
+  // Nothing recorded for a.test (the top-level frame).
+  EXPECT_FALSE(GetDIPSState(page_url).has_value());
+
+  // The last site storage timestamp for b.test (the site hosting the image)
+  // should be unchanged, since we don't record cookie accesses from loading
+  // third-party resources.
+  EXPECT_EQ(GetDIPSState(image_url).value().site_storage_times->second, time);
 }
 
 IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, MultipleSiteStoragesRecorded) {
@@ -801,7 +849,10 @@ IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PRE_PrepopulateExactlyOnce) {
   FlushLossyWebsiteSettings();
 }
 
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PrepopulateExactlyOnce) {
+// TODO (crbug.com/1418692): Rework this test to work without enabling and
+// disabling the DIPS feature, as opening a profile with the feature disabled
+// now causes any existing db files it has to be removed.
+IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, DISABLED_PrepopulateExactlyOnce) {
   ASSERT_NE(dips_service, nullptr);  // Verify that DIPS is on.
   // Only the sites that were prepopulated the first time is in the database.
   auto a_state = GetDIPSState(GURL("http://a.test"));

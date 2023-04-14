@@ -16,7 +16,6 @@
 <translation id="1315551408014407711">Chromium-н шинэ профайлаа тохируулах</translation>
 <translation id="1396446129537741364">Chromium нь нууц үгийг үзүүлэхээр ачаалж байна.</translation>
 <translation id="1414495520565016063">Та Chromium руу нэвтэрсэн байна!</translation>
-<translation id="1493803763272692301">Ta Chromium-г таатайгаар бүрэн ашиглах боломжтой</translation>
 <translation id="1524282610922162960">Chromium-н таб хуваалцах</translation>
 <translation id="1553461853655228091">Орчин тойрны тань 3D газрын зургийг үүсгэхийн тулд таны камерт хандах зөвшөөрөл Chromium-д шаардлагатай</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Шинэчлэлтийг хэрэгжүүлэхийн тулд Chromium-г дахин ачаалахыг таны администратор танаас шаардаж байна}=1{Шинэчлэлтийг хэрэгжүүлэхийн тулд Chromium-г дахин ачаалахыг таны администратор танаас шаардаж байна. Таны нууцлалтай цонхыг дахин нээхгүй.}other{Шинэчлэлтийг хэрэгжүүлэхийн тулд Chromium-г дахин ачаалахыг таны администратор танаас шаардаж байна. Таны # нууцлалтай цонхыг дахин нээхгүй.}}</translation>
@@ -339,6 +338,7 @@
 <translation id="8266560134891435528">Та нэвтрээгүй байгаа тул Chromium таны нууц үгсийг шалгах боломжгүй байна</translation>
 <translation id="8276522524898344151">Chromium нь нууц үгс хуулахыг оролдож байна.</translation>
 <translation id="8290862415967981663">Энэ файл аюултай тул Chromium блоклосон байна.</translation>
+<translation id="8325404639443959713">Chromium-р илүү ихийг хийгээрэй</translation>
 <translation id="8330519371938183845">Төхөөрөмжүүддээ Chromium-г синк хийж, хувийн болгохын тулд нэвтрэх</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> өмнө нь Chromium-г ашиглаж байсан</translation>
 <translation id="8357820681460164151">Та бүх төхөөрөмж дээрээ Chromium хөтчийн зүйлсдээ хандахын тулд нэвтэрч, дараа нь синк хийхийг асаана уу</translation>
@@ -378,6 +378,7 @@
 <translation id="9158494823179993217">Таны системийн админ Chromium-г<ph name="TARGET_URL_HOSTNAME" />-д хандахын тулд өөр хөтөч нээхээр тохируулсан байна.</translation>
 <translation id="9185526690718004400">&amp;Chromium-г шинэчлэхийн тулд дахин ачаалах</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="924957577793602335">Chromium-г өөрийн болгоoрой</translation>
 <translation id="93478295209880648">Windows XP болон Windows Vista нь цаашид Chromium-г дэмжихгүй тул буруу ажиллаж болзошгүй</translation>
 <translation id="942598560705308788">Chromium-с удирддаг гэрчилгээ</translation>
 <translation id="965162752251293939">Chromium-г хэн ашиглаж байна вэ?</translation>

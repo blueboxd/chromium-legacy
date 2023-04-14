@@ -436,7 +436,7 @@
     },
     {
       name: "BeforeunloadEventCancelByPreventDefault",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "BidiCaretAffinity",
@@ -937,6 +937,10 @@
       copied_from_base_feature_if: "overridden",
     },
     {
+      name: "CSSOverflowMediaFeatures",
+      status: "experimental",
+    },
+    {
       name: "CSSPaintAPIArguments",
       status: "experimental",
       base_feature: "none",
@@ -946,7 +950,7 @@
       // regardless of whether the new highlights or decorations are exposed
       // to authors (see CSSSpellingGrammarErrors).
       name: "CSSPaintingForSpellingGrammarErrors",
-      status: "stable",
+      status: "experimental",
       base_feature: "CssPaintingForSpellingGrammarErrors",
     },
     {
@@ -1027,11 +1031,6 @@
       // This flag is for querying custom properties only.
       name: "CSSStyleQueries",
       status: "stable",
-      base_feature: "none",
-    },
-    {
-      name: "CSSSystemAccentColor",
-      status: "experimental",
       base_feature: "none",
     },
     // `text-wrap: balance`. crbug.com/1251079
@@ -1409,7 +1408,8 @@
     },
     {
       name: "FastPositionIterator",
-      status: "stable",
+      // Not enabled due to a RTL issue. crbug.com/1421016.
+      status: "test",
     },
     {
       name: "FeaturePolicyReporting",
@@ -1837,6 +1837,13 @@
       status: "experimental",
     },
     {
+      // If enabled, and the inner html parser is unable to successfully
+      // parse, it will log histograms of why it failed. The logging is
+      // non-trivial.
+      name: "InnerHTMLParserFastpathLogFailure",
+      status: "experimental",
+    },
+    {
       name: "InputMultipleFieldsUI",
       // No plan to support complex UI for date/time INPUT types on Android.
       status: {"Android": "test", "default": "stable"},
@@ -1861,6 +1868,11 @@
       name: "LangAttributeAwareFormControlUI",
       base_feature: "none",
       settable_from_internals: true,
+    },
+    {
+      // crbug.com/1425520. Enabled since M113.
+      name: "LayoutMediaChildPaintContainment",
+      status: "stable",
     },
     {
       name: "LayoutMediaNGContainer",
@@ -1955,7 +1967,7 @@
     },
     {
       name: "MachineLearningNeuralNetwork",
-      status: "test",
+      status: {"Win": "experimental", "default": "test"},
       base_feature: "none",
     },
     {
@@ -2124,9 +2136,7 @@
     },
     {
       name: "NavigateEventCancelableTraversals",
-      status: "experimental",
-      base_feature: "NavigateEventCancelableTraversals",
-      base_feature_status: "enabled",
+      status: "stable",
     },
     {
       name: "NavigationId",
@@ -2322,6 +2332,16 @@
       name: "OriginTrialsSampleAPIPersistentFeature",
       base_feature: "none",
       origin_trial_feature_name: "FrobulatePersistent",
+      origin_trial_allows_third_party: true,
+    },
+    // As above. Do not change this flag to stable, as it exists solely to
+    // generate code used by the origin trials sample API implementation.
+    {
+      name: "OriginTrialsSampleAPIPersistentThirdPartyDeprecationFeature",
+      base_feature: "none",
+      origin_trial_feature_name: "FrobulatePersistentThirdPartyDeprecation",
+      origin_trial_allows_third_party: true,
+      origin_trial_type: "deprecation",
     },
     // As above. Do not change this flag to stable, as it exists solely to
     // generate code used by the origin trials sample API implementation.
@@ -2385,6 +2405,14 @@
       public: true,
       status: "experimental",
       base_feature: "none",
+    },
+    // Desktop only, if enabled PaymentHandler will use the new minimal header UX.
+    // See https://crbug.com/1385136.
+    {
+      name: "PaymentHandlerMinimalHeaderUX",
+      origin_trial_feature_name: "PaymentHandlerMinimalHeaderUX",
+      origin_trial_allows_third_party: true,
+      origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
     },
     {
       name: "PaymentInstruments",
@@ -2556,6 +2584,12 @@
       base_feature: "none",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
+    },
+    {
+      name: "PrivateAggregationApiFledgeExtensions",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
+      base_feature: "PrivateAggregationApiFledgeExtensions",
     },
     {
       name: "PrivateNetworkAccessNonSecureContextsAllowed",
@@ -3756,6 +3790,7 @@
       name: "WebViewXRequestedWithDeprecation",
       origin_trial_feature_name: "WebViewXRequestedWithDeprecation",
       origin_trial_allows_insecure: true,
+      origin_trial_allows_third_party: true,
       origin_trial_os: ["android"],
       origin_trial_type: "deprecation",
       status: "experimental",

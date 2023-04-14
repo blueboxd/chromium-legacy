@@ -184,9 +184,10 @@ void IOSChromeMainParts::PreCreateThreads() {
   // remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the ThreadPool on
   // shutdown.
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
-      base::ThreadPool::CreateSequencedTaskRunner(
+      base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 
   base::FilePath local_state_path;
   CHECK(base::PathService::Get(ios::FILE_LOCAL_STATE, &local_state_path));
@@ -445,6 +446,8 @@ void IOSChromeMainParts::SetupMetrics() {
 }
 
 void IOSChromeMainParts::StartMetricsRecording() {
+  // TODO(crbug.com/1417909) Add an EG2 test for cloned install detection.
+  application_context_->GetMetricsService()->CheckForClonedInstall();
   application_context_->GetMetricsServicesManager()->UpdateUploadPermissions(
       true);
 }

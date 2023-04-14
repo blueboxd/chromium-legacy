@@ -601,6 +601,9 @@ extern const char kPersonalizationKeyboardBacklightColor[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kPersonalizationKeyboardBacklightZoneColors[];
 
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kShowTouchpadScrollScreenEnabled[];
+
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAutozoomState[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAutozoomNudges[];
@@ -616,6 +619,17 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kBackgroundReplace[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPortraitRelighting[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRecordArcAppSyncMetrics[];
+
+// Input device settings.
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPrimaryMouseButtonRight[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMouseSensitivity[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMouseAcceleration[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMouseScrollSensitivity[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMouseScrollAcceleration[];
 
 }  // namespace prefs
 }  // namespace ash

@@ -11,7 +11,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_set.h"
-#include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -19,7 +18,8 @@
 #include "base/observer_list.h"
 #include "base/threading/sequence_bound.h"
 #include "build/build_config.h"
-#include "components/attribution_reporting/os_support.mojom.h"
+#include "build/buildflag.h"
+#include "components/attribution_reporting/os_support.mojom-forward.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "content/browser/aggregation_service/aggregation_service.h"
 #include "content/browser/aggregation_service/report_scheduler_timer.h"
@@ -59,14 +59,12 @@ class CreateReportResult;
 class StoragePartitionImpl;
 class StoredSource;
 
-#if BUILDFLAG(IS_ANDROID)
-class AttributionOsLevelManagerAndroid;
-#endif
-
 struct GlobalRenderFrameHostId;
 struct SendResult;
 
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kAttributionVerboseDebugReporting);
+#if BUILDFLAG(IS_ANDROID)
+class AttributionOsLevelManager;
+#endif
 
 // UI thread class that manages the lifetime of the underlying attribution
 // storage and coordinates sending attribution reports. Owned by the storage
@@ -128,9 +126,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
   // Returns whether OS-level attribution is enabled. `kDisabled` is returned
   // before the result is returned from the underlying platform (e.g. Android).
-  static attribution_reporting::mojom::OsSupport GetOsSupport() {
-    return g_os_support_;
-  }
+  static attribution_reporting::mojom::OsSupport GetOsSupport();
 
   AttributionManagerImpl(
       StoragePartitionImpl* storage_partition,
@@ -180,13 +176,6 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
  private:
   friend class AttributionManagerImplTest;
-
-  static void SetOsSupportForTesting(
-      attribution_reporting::mojom::OsSupport os_support);
-
-  // TODO(crbug.com/1373536): The OS-level support should be derived from the
-  // underlying platform (e.g. Android).
-  static attribution_reporting::mojom::OsSupport g_os_support_;
 
   using ReportSentCallback = AttributionReportSender::ReportSentCallback;
   using SourceOrTrigger = absl::variant<StorableSource, AttributionTrigger>;
@@ -270,6 +259,11 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
   void OnClearDataComplete();
 
+#if BUILDFLAG(IS_ANDROID)
+  void OverrideOsLevelManagerForTesting(
+      std::unique_ptr<AttributionOsLevelManager>);
+#endif
+
   // Never null.
   const raw_ptr<StoragePartitionImpl> storage_partition_;
 
@@ -317,8 +311,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   base::ObserverList<AttributionObserver> observers_;
 
 #if BUILDFLAG(IS_ANDROID)
-  std::unique_ptr<AttributionOsLevelManagerAndroid>
-      attribution_os_level_manager_;
+  std::unique_ptr<AttributionOsLevelManager> attribution_os_level_manager_;
 #endif
 
   base::WeakPtrFactory<AttributionManagerImpl> weak_factory_{this};

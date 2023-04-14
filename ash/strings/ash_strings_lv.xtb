@@ -288,6 +288,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="2475982808118771221">Radās kļūda</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2484513351006226581">Nospiediet īsinājumtaustiņu <ph name="KEYBOARD_SHORTCUT" />, lai pārslēgtu tastatūras izkārtojumu.</translation>
+<translation id="2487915095798731898">Pievienoties</translation>
 <translation id="2501920221385095727">Taustiņu ķēde</translation>
 <translation id="2509468283778169019">Funkcija Caps Lock ir ieslēgta</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@ Pievienojiet ierīci barošanas avotam.</translation>
 <translation id="3925540965556789199"><ph name="DATE" />: notiek pasākumu ielāde.</translation>
 <translation id="3932043219784172185">Nav pievienota neviena ierīce</translation>
 <translation id="3934456833412894880">Adaptīvā uzlāde ir ieslēgta. Akumulators tiks uzlādēts līdz 80%, lai paildzinātu tā darbību, taču varat to pilnībā uzlādēt, kad tas ir nepieciešams.</translation>
+<translation id="3936620957945677513">Lai pievienotos pasākumam <ph name="EVENT_SUMMARY" />, nospiediet taustiņu Enter</translation>
 <translation id="3943857333388298514">Ielīmēt</translation>
 <translation id="394485226368336402">Audio iestatījumi</translation>
 <translation id="3945319193631853098">Pieskarieties, lai pabeigtu iestatīšanu.</translation>
@@ -809,7 +811,7 @@ Pievienojiet ierīci barošanas avotam.</translation>
 <translation id="5297704307811127955">Izslēgta</translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5302048478445481009">Valoda</translation>
-<translation id="5308380583665731573">Pievienošana</translation>
+<translation id="5308380583665731573">Pievienot</translation>
 <translation id="5313326810920013265">Bluetooth iestatījumi</translation>
 <translation id="5314219114274263156">Ekrāna ieraksts uzņemts</translation>
 <translation id="5317780077021120954">Saglabāt</translation>

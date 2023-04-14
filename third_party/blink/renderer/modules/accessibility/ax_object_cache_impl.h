@@ -478,10 +478,6 @@ class MODULES_EXPORT AXObjectCacheImpl
     ax_tree_serializer_->InvalidateSubtree(&obj);
   }
 
-  bool SerializeChanges(AXObject& obj, ui::AXTreeUpdate* update) {
-    return ax_tree_serializer_->SerializeChanges(&obj, update);
-  }
-
   bool IsInClientTree(AXObject& obj) {
     return ax_tree_serializer_->IsInClientTree(&obj);
   }
@@ -492,10 +488,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   bool ShouldLoadInlineTextBoxes(AXObject& obj) {
     return ax_tree_source_->ShouldLoadInlineTextBoxes(&obj);
-  }
-
-  void GetChildren(AXObject& parent, std::vector<AXObject*>* out_children) {
-    return ax_tree_source_->GetChildren(&parent, out_children);
   }
 
   void SetImageAsDataNodeId(int id, const gfx::Size& max_size) {

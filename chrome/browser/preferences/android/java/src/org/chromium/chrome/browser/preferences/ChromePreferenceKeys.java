@@ -259,6 +259,12 @@ public final class ChromePreferenceKeys {
      */
     public static final String DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_TAB_SETTING_SET =
             "Chrome.RequestDesktopSiteExceptionsDowngrade.TabSettingSet";
+    /**
+     * Indicates display spec when the device is added to the default-on cohort for the desktop site
+     * global setting experiment.
+     */
+    public static final String DESKTOP_SITE_GLOBAL_SETTING_DEFAULT_ON_COHORT_DISPLAY_SPEC =
+            "Chrome.RequestDesktopSiteGlobalSetting.DefaultOnCohortDisplaySpec";
 
     public static final String DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
     public static final String DOWNLOAD_FOREGROUND_SERVICE_OBSERVERS = "ForegroundServiceObservers";
@@ -347,12 +353,7 @@ public final class ChromePreferenceKeys {
      */
     public static final String FLAGS_CACHED_COMMAND_LINE_ON_NON_ROOTED_ENABLED =
             "command_line_on_non_rooted_enabled";
-    /**
-     * Whether or not the download auto-resumption is enabled in native.
-     * Default value is true.
-     */
-    public static final String FLAGS_CACHED_DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE =
-            "download_auto_resumption_in_native";
+
     /**
      * Whether or not the grid tab switcher is enabled.
      * Default value is false.
@@ -1039,6 +1040,7 @@ public final class ChromePreferenceKeys {
                 DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT,
                 DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_GLOBAL_SETTING_ENABLED,
                 DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_TAB_SETTING_SET,
+                DESKTOP_SITE_GLOBAL_SETTING_DEFAULT_ON_COHORT_DISPLAY_SPEC,
                 DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT,
                 DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,

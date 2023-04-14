@@ -193,7 +193,7 @@ class ChromeAutofillClient
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
       base::WeakPtr<TouchToFillDelegate> delegate,
-      base::span<const autofill::CreditCard* const> cards_to_suggest) override;
+      base::span<const autofill::CreditCard> cards_to_suggest) override;
   void HideTouchToFillCreditCard() override;
   void ShowAutofillPopup(
       const PopupOpenArgs& open_args,
@@ -273,6 +273,8 @@ class ChromeAutofillClient
   std::u16string GetAccountHolderEmail();
   bool SupportsConsentlessExecution(const url::Origin& origin);
 
+  std::unique_ptr<LogManager> log_manager_;
+
   // These members are initialized lazily in their respective getters.
   // Therefore, do not access the members directly.
   std::unique_ptr<AutofillDownloadManager> download_manager_;
@@ -282,7 +284,6 @@ class ChromeAutofillClient
   std::unique_ptr<FormDataImporter> form_data_importer_;
 
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
-  std::unique_ptr<LogManager> log_manager_;
   FormInteractionsFlowId flow_id_{};
   base::Time flow_id_date_;
   // If set to true, the popup will stay open regardless of external changes on

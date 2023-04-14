@@ -16,10 +16,10 @@
 #include "base/time/time_override.h"
 #include "base/types/expected.h"
 #include "base/values.h"
+#include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
-#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
@@ -98,6 +98,7 @@ bool operator==(AttributionConfig a, AttributionConfig b) {
 
 namespace {
 
+using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 
@@ -174,26 +175,26 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
   EXPECT_EQ(source1->common_info().source_time(),
             kOffsetTime + base::Milliseconds(1643235573123));
   EXPECT_EQ(source1->common_info().source_type(),
-            AttributionSourceType::kNavigation);
+            attribution_reporting::mojom::SourceType::kNavigation);
   EXPECT_EQ(source1->common_info().reporting_origin(),
             *SuitableOrigin::Deserialize("https://a.r.test"));
   EXPECT_EQ(source1->common_info().source_origin(),
             *SuitableOrigin::Deserialize("https://a.s.test"));
-  EXPECT_EQ(source1->common_info().destination_site(),
-            net::SchemefulSite::Deserialize("https://d.test"));
+  EXPECT_THAT(source1->common_info().destination_sites().destinations(),
+              ElementsAre(net::SchemefulSite::Deserialize("https://d.test")));
   EXPECT_FALSE(source1->is_within_fenced_frame());
   EXPECT_TRUE(result->front().debug_permission);
 
   EXPECT_EQ(source2->common_info().source_time(),
             kOffsetTime + base::Milliseconds(1643235574123));
   EXPECT_EQ(source2->common_info().source_type(),
-            AttributionSourceType::kEvent);
+            attribution_reporting::mojom::SourceType::kEvent);
   EXPECT_EQ(source2->common_info().reporting_origin(),
             *SuitableOrigin::Deserialize("https://b.r.test"));
   EXPECT_EQ(source2->common_info().source_origin(),
             *SuitableOrigin::Deserialize("https://b.s.test"));
-  EXPECT_EQ(source2->common_info().destination_site(),
-            net::SchemefulSite::Deserialize("https://d.test"));
+  EXPECT_THAT(source2->common_info().destination_sites().destinations(),
+              ElementsAre(net::SchemefulSite::Deserialize("https://d.test")));
   EXPECT_FALSE(source2->is_within_fenced_frame());
   EXPECT_FALSE(result->back().debug_permission);
 }

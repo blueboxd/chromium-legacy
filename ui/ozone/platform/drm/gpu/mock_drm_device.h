@@ -30,6 +30,11 @@
 
 namespace ui {
 
+template <class Object>
+Object* DrmAllocator(size_t num_of_objects = 1) {
+  return static_cast<Object*>(drmMalloc(num_of_objects * sizeof(Object)));
+}
+
 // DRM Object Base IDs:
 constexpr uint32_t kPlaneOffset = 100;
 constexpr uint32_t kCrtcIdBase = 200;
@@ -193,6 +198,7 @@ class MockDrmDevice : public DrmDevice {
   int last_planes_committed_count() const {
     return last_planes_committed_count_;
   }
+  int modeset_sequence_id() const override;
 
   uint32_t get_cursor_handle_for_crtc(uint32_t crtc) const {
     const auto it = crtc_cursor_map_.find(crtc);
@@ -283,6 +289,10 @@ class MockDrmDevice : public DrmDevice {
                  uint32_t handle,
                  const gfx::Size& size) override;
   bool MoveCursor(uint32_t crtc_id, const gfx::Point& point) override;
+  bool CommitProperties(drmModeAtomicReq* request,
+                        uint32_t flags,
+                        uint32_t crtc_count,
+                        scoped_refptr<PageFlipRequest> callback) override;
   bool CreateDumbBuffer(const SkImageInfo& info,
                         uint32_t* handle,
                         uint32_t* stride) override;
@@ -308,12 +318,6 @@ class MockDrmDevice : public DrmDevice {
 
   ~MockDrmDevice() override;
 
-  bool CommitPropertiesInternal(
-      drmModeAtomicReq* request,
-      uint32_t flags,
-      uint32_t crtc_count,
-      scoped_refptr<PageFlipRequest> callback) override;
-
   bool UpdateProperty(uint32_t id,
                       uint64_t value,
                       std::vector<DrmWrapper::Property>* properties);
@@ -335,6 +339,7 @@ class MockDrmDevice : public DrmDevice {
   int set_object_property_count_ = 0;
   int set_gamma_ramp_count_ = 0;
   int last_planes_committed_count_ = 0;
+  int modeset_sequence_id_ = 0;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;
@@ -356,6 +361,7 @@ class MockDrmDevice : public DrmDevice {
 
   std::set<uint32_t> framebuffer_ids_;
   std::map<uint32_t, uint32_t> crtc_fb_;
+  std::map<uint64_t, uint64_t> capabilities_;
 
   base::queue<PageFlipRequest::PageFlipCallback> callbacks_;
 

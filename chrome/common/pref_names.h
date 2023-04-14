@@ -31,6 +31,7 @@ extern const char kSafeBrowsingForTrustedSourcesEnabled[];
 extern const char kDisableScreenshots[];
 extern const char kDownloadRestrictions[];
 extern const char kDownloadBubbleEnabled[];
+extern const char kDownloadBubbleIphSuppression[];
 extern const char kDownloadDuplicateFilePromptEnabled[];
 extern const char kForceEphemeralProfiles[];
 extern const char kHomePageIsNewTabPage[];
@@ -210,18 +211,13 @@ extern const char kEnableSyncConsent[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kTapToClickEnabled[];
 extern const char kEnableTouchpadThreeFingerClick[];
-extern const char kPrimaryMouseButtonRight[];
 extern const char kPrimaryPointingStickButtonRight[];
 extern const char kOwnerPrimaryPointingStickButtonRight[];
-extern const char kMouseAcceleration[];
-extern const char kMouseScrollAcceleration[];
 extern const char kPointingStickAcceleration[];
 extern const char kTouchpadAcceleration[];
 extern const char kTouchpadScrollAcceleration[];
 extern const char kTouchpadHapticFeedback[];
 extern const char kTouchpadHapticClickSensitivity[];
-extern const char kMouseSensitivity[];
-extern const char kMouseScrollSensitivity[];
 extern const char kTouchpadSensitivity[];
 extern const char kTouchpadScrollSensitivity[];
 extern const char kPointingStickSensitivity[];
@@ -404,13 +400,7 @@ extern const char kPolicyThemeColor[];
 extern const char kExtensionsUIDeveloperMode[];
 extern const char kExtensionsUIDismissedADTPromo[];
 extern const char kExtensionCommands[];
-extern const char kPluginsLastInternalDirectory[];
-extern const char kPluginsPluginsList[];
 extern const char kPluginsAlwaysOpenPdfExternally[];
-#if BUILDFLAG(ENABLE_PLUGINS)
-extern const char kPluginsShowDetails[];
-#endif
-extern const char kPluginsAllowOutdated[];
 extern const char kDefaultBrowserLastDeclined[];
 extern const char kResetCheckDefaultBrowser[];
 extern const char kDefaultBrowserSettingEnabled[];
@@ -421,9 +411,6 @@ extern const char kShowUpdatePromotionInfoBar[];
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 extern const char kUseCustomChromeFrame[];
-#endif
-#if BUILDFLAG(ENABLE_PLUGINS)
-extern const char kContentSettingsPluginAllowlist[];
 #endif
 extern const char kPartitionDefaultZoomLevel[];
 extern const char kPartitionPerHostZoomLevels[];
@@ -552,6 +539,7 @@ extern const char kWebRtcTextLogCollectionAllowed[];
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
 extern const char kFirstRunFinished[];
+extern const char kFirstRunStudyGroup[];
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -833,8 +821,6 @@ extern const char kLastRsuDeviceIdUploaded[];
 extern const char kDeviceName[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-extern const char kClearPluginLSODataEnabled[];
-extern const char kPepperFlashSettingsEnabled[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
 
@@ -1320,6 +1306,9 @@ extern const char kOutOfProcessSystemDnsResolutionEnabled[];
 #if BUILDFLAG(IS_ANDROID)
 extern const char kQuickDeleteDialogSuppressed[];
 #endif
+
+extern const char kHttpAllowlist[];
+extern const char kHttpsUpgradesEnabled[];
 
 }  // namespace prefs
 

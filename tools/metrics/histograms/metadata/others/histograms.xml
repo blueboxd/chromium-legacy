@@ -888,24 +888,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Ads.ResourceUsage.Size.Network" units="KB"
-    expires_after="2020-10-02">
-  <obsolete>
-    Removed 11/2020.
-  </obsolete>
-  <owner>johnidel@chromium.org</owner>
-  <owner>jkarlin@chromium.org</owner>
-  <summary>
-    For a given resource fetched from the network, logs the network bytes used
-    to load the resource (including headers), even if the resource request was
-    canceled or incomplete. Recorded when the resource request is complete, or
-    when the page is destroyed/navigated for incomplete resources. The sum of
-    samples across a page load may differ substatially from the true sum due to
-    per-sample rounding. These are not intended to be compared to page level
-    histograms.
-  </summary>
-</histogram>
-
 <histogram name="AnchorElementMetrics.Clicked.OnDSE.SameHost"
     enum="BooleanAnchorElementSameHost" expires_after="2021-08-09">
   <obsolete>
@@ -4018,7 +4000,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Conversions.SourceRegistrationError"
+<histogram name="Conversions.SourceRegistrationError2"
     enum="ConversionSourceRegistrationError" expires_after="M117">
   <owner>linnan@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -4104,6 +4086,85 @@ chromium-metrics-reviews@google.com.
     Records the time between a trigger and its reporting. This is emitted only
     when an event-level report is sent successfully to the reporting endpoint,
     and not emitted for debug reports.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.TriggerAttestation.DestinationOriginStatus"
+    enum="ConversionsTriggerAttestationDestinationOriginStatus"
+    expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the top_frame origin status when an attempting to complete a trigger
+    attestation. In the attribution context, the origin represents the
+    destination origin which is required to complete the attestation operation.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.TriggerAttestation.Duration.{TimeSpan}.{Outcome}"
+    units="ms" expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Time taken to execute various parts of a Trigger Attestation operation: [1]
+    GetKeyCommitment = time taken to retrieve the issuer's key commitment. [2]
+    InitializeCryptographer = time take to initialize the BoringSSL
+    cryptographer with the issuer's keys. [3] BlindMessage = time taken by the
+    cryptographer to blind the message. [4] Issuer = time from the end of the
+    outbound BlindMessage half to the beginning of the inbound UnblindSignature
+    half. [5] UnblindSignature = time taken to unblind the blind signature
+    received from the issuer. [6] Total = GetKeyCommitment +
+    InitializeCryptographer + BlindMessage + UnblindSignature (only recorded for
+    operations that see issuer's responses)
+
+    Each part of the operation can be a Failure or a Success. e.g. if we are
+    unable to retrieve key commitment for an issuer, it is a failure. The
+    metrics are recorded when the attestation operation finish.
+  </summary>
+  <token key="TimeSpan">
+    <variant name="BlindMessage"/>
+    <variant name="GetKeyCommitment"/>
+    <variant name="InitializeCryptographer"/>
+    <variant name="SignBlindMessage"/>
+    <variant name="Total"/>
+    <variant name="UnblindSignature"/>
+  </token>
+  <token key="Outcome">
+    <variant name="Failure"/>
+    <variant name="Success"/>
+  </token>
+</histogram>
+
+<histogram name="Conversions.TriggerAttestation.GetHeadersStatus"
+    enum="ConversionTriggerAttestationGetHeadersStatus" expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the status of the initial part of an attestation operation which
+    attempts to retrieve attestation headers to be added to a trigger
+    registration request.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.TriggerAttestation.HasReportAttestation"
+    enum="Boolean" expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records whether or not an aggregatable report is sent with an attestation or
+    not. Only recorded for reports if the Attestation feature is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.TriggerAttestation.ProcessAttestationStatus"
+    enum="ConversionTriggerAttestationProcessAttestationStatus"
+    expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the status of the second part of an attestation operation which
+    processes the private state issuer's signature to generate an attestation
+    token.
   </summary>
 </histogram>
 
@@ -4367,7 +4428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crashpad.IntermediateDump.Reader.InvalidKeySize"
-    enum="CrashpadIntermediateDumpKey" expires_after="2023-04-01">
+    enum="CrashpadIntermediateDumpKey" expires_after="2024-02-20">
   <owner>justincohen@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>
@@ -4376,7 +4437,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crashpad.IntermediateDump.Reader.MissingKey"
-    enum="CrashpadIntermediateDumpKey" expires_after="2023-04-01">
+    enum="CrashpadIntermediateDumpKey" expires_after="2024-02-20">
   <owner>justincohen@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>Records key id when id is missing in an intermediate dump.</summary>

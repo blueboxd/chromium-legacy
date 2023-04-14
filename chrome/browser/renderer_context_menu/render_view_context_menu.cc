@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -93,6 +94,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/user_notes/user_notes_controller.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
@@ -149,7 +151,6 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/url_formatter/url_formatter.h"
-#include "components/user_notes/browser/user_note_manager.h"
 #include "components/user_notes/user_notes_features.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -449,7 +450,7 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, 115},
        {IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH, 116},
        {IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT, 117},
-       {IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING, 118},
+       {IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE, 118},
        {IDC_FOLLOW, 119},
        {IDC_UNFOLLOW, 120},
        {IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST, 121},
@@ -700,6 +701,18 @@ bool IsFrameInPdfViewer(content::RenderFrameHost* rfh) {
   content::RenderFrameHost* parent_rfh = rfh->GetParent();
   return parent_rfh &&
          IsPdfExtensionOrigin(parent_rfh->GetLastCommittedOrigin());
+}
+
+Browser* FindNormalBrowser(const Profile* profile) {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (auto it = browser_list->begin_browsers_ordered_by_activation();
+       it != browser_list->end_browsers_ordered_by_activation(); ++it) {
+    Browser* browser = *it;
+    if (browser->is_type_normal() && browser->profile() == profile) {
+      return browser;
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -1013,7 +1026,6 @@ void RenderViewContextMenu::InitMenu() {
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_AUTOFILL)) {
     autofill_context_menu_manager_.AppendItems();
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   if (editable)
@@ -1915,9 +1927,7 @@ void RenderViewContextMenu::AppendLinkToTextItems() {
 
   link_to_text_menu_observer_ = LinkToTextMenuObserver::Create(
       this,
-      content::GlobalRenderFrameHostId(render_process_id_, render_frame_id_),
-      base::BindOnce(&RenderViewContextMenu::OnLinkToTextMenuCompleted,
-                     weak_pointer_factory_.GetWeakPtr()));
+      content::GlobalRenderFrameHostId(render_process_id_, render_frame_id_));
   if (link_to_text_menu_observer_) {
     observers_.AddObserver(link_to_text_menu_observer_.get());
     link_to_text_menu_observer_->InitMenu(params_);
@@ -1951,8 +1961,8 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
 }
 
 void RenderViewContextMenu::AppendReadAnythingItem() {
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING,
-                                  IDS_CONTENT_CONTEXT_READ_ANYTHING);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
+                                  IDS_CONTENT_CONTEXT_READING_MODE);
   menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
 }
 
@@ -2533,7 +2543,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_ROUTE_MEDIA:
       return IsRouteMediaEnabled();
 
-    case IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING:
+    case IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE:
       return true;
 
     case IDC_CONTENT_CONTEXT_ADD_A_NOTE:
@@ -2655,27 +2665,49 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   }
 
   switch (id) {
-    case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
-      OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
-                              WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                              ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
-                              true /* started_from_context_menu */);
+    case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB: {
+      WindowOpenDisposition new_tab_disposition =
+          WindowOpenDisposition::NEW_BACKGROUND_TAB;
+      Browser* browser = nullptr;
+      if (IsInProgressiveWebApp()) {
+        browser = FindNormalBrowser(GetProfile());
+        new_tab_disposition = browser
+                                  ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                  : WindowOpenDisposition::NEW_WINDOW;
+      }
+
+      OpenURLParams params = GetOpenURLParamsWithExtraHeaders(
+          params_.link_url, GetDocumentURL(params_), new_tab_disposition,
+          ui::PAGE_TRANSITION_LINK, /*extra_headers=*/std::string(),
+          /*started_from_context_menu=*/true);
+
+      if (browser) {
+        browser->OpenURL(params);
+      } else {
+        source_web_contents_->OpenURL(params);
+      }
       break;
+    }
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
+      DCHECK(!IsInProgressiveWebApp());
       OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
                               WindowOpenDisposition::NEW_WINDOW,
-                              ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
-                              true /* started_from_context_menu */);
+                              ui::PAGE_TRANSITION_LINK,
+                              /*extra_headers=*/std::string(),
+                              /*started_from_context_menu=*/true);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       // Pass along the |referring_url| so we can show it in browser UI. Note
       // that this won't and shouldn't be sent via the referrer header.
+      // Note that PWA app windows are never incognito, we always open an
+      // incognito browser tab.
       OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
                               WindowOpenDisposition::OFF_THE_RECORD,
-                              ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
-                              true /* started_from_context_menu */);
+                              ui::PAGE_TRANSITION_LINK,
+                              /*extra_headers=*/std::string(),
+                              /*started_from_context_menu=*/true);
       base::UmaHistogramEnumeration(kOpenLinkAsProfileHistogram,
                                     OpenLinkAs::kOpenLinkAsIncognitoClicked);
       break;
@@ -2726,7 +2758,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       ExecSearchLensForImage(/*is_image_translate=*/true);
       break;
 
-    case IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING:
+    case IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE:
       ExecOpenInReadAnything();
       break;
 
@@ -3377,14 +3409,7 @@ bool RenderViewContextMenu::IsRegionSearchEnabled() const {
 bool RenderViewContextMenu::IsAddANoteEnabled() const {
   DCHECK(user_notes::IsUserNotesEnabled());
 
-  RenderFrameHost* render_frame_host = GetRenderFrameHost();
-  if (!render_frame_host)
-    return false;
-
-  if (!render_frame_host->IsInPrimaryMainFrame())
-    return false;
-
-  return user_notes::UserNoteManager::GetForPage(render_frame_host->GetPage());
+  return UserNotesController::IsUserNotesSupported(source_web_contents_);
 }
 
 // Returns true if the item was appended.
@@ -3685,20 +3710,11 @@ void RenderViewContextMenu::ExecSearchLensForImage(bool is_image_translate) {
 }
 
 void RenderViewContextMenu::ExecAddANote() {
-  RenderFrameHost* render_frame_host = GetRenderFrameHost();
-  if (!render_frame_host)
+  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  if (!browser) {
     return;
-
-  DCHECK(render_frame_host->IsInPrimaryMainFrame());
-
-  auto* notes_manager =
-      user_notes::UserNoteManager::GetForPage(render_frame_host->GetPage());
-  if (!notes_manager)
-    return;
-
-  bool has_text_selection = !params().selection_text.empty();
-
-  notes_manager->OnAddNoteRequested(render_frame_host, has_text_selection);
+  }
+  UserNotesController::InitiateNoteCreationForCurrentTab(browser);
 }
 
 void RenderViewContextMenu::ExecRegionSearch(
@@ -3972,11 +3988,6 @@ void RenderViewContextMenu::PluginActionAt(
 
 Browser* RenderViewContextMenu::GetBrowser() const {
   return chrome::FindBrowserWithWebContents(embedder_web_contents_);
-}
-
-void RenderViewContextMenu::OnLinkToTextMenuCompleted() {
-  observers_.RemoveObserver(link_to_text_menu_observer_.get());
-  link_to_text_menu_observer_.reset();
 }
 
 bool RenderViewContextMenu::CanTranslate(bool menu_logging) {

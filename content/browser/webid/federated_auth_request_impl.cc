@@ -921,12 +921,29 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
       idp_enabled_auto_reauthn && IsFedCmAutoReauthnEnabled();
 
   bool auto_reauthn = auto_reauthn_enabled;
-  if (auto_reauthn_enabled &&
-      !auto_reauthn_permission_delegate_->HasAutoReauthnPermission(
-          GetEmbeddingOrigin())) {
-    // `auto_reauthn_permission_delegate_` will log the failure reason, so no
-    // need to log it here.
-    auto_reauthn = false;
+  bool has_auto_reauthn_content_setting = false;
+  bool is_auto_reauthn_embargoed = false;
+  absl::optional<base::TimeDelta> time_from_embargo;
+  if (auto_reauthn_enabled) {
+    has_auto_reauthn_content_setting =
+        auto_reauthn_permission_delegate_->HasAutoReauthnContentSetting();
+    auto_reauthn &= has_auto_reauthn_content_setting;
+    is_auto_reauthn_embargoed =
+        auto_reauthn_permission_delegate_->IsAutoReauthnEmbargoed(
+            GetEmbeddingOrigin());
+    if (is_auto_reauthn_embargoed) {
+      time_from_embargo =
+          base::Time::Now() -
+          auto_reauthn_permission_delegate_->GetAutoReauthnEmbargoStartTime(
+              GetEmbeddingOrigin());
+
+      // See `kFederatedIdentityAutoReauthnEmbargoDuration`.
+      render_frame_host().AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kInfo,
+          "Auto re-authn was previously triggered less than 10 minutes ago. "
+          "Only one auto re-authn request can be made every 10 minutes.");
+    }
+    auto_reauthn &= !is_auto_reauthn_embargoed;
   }
 
   const IdentityProviderData* auto_reauthn_idp = nullptr;
@@ -945,12 +962,6 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
     IdentityProviderData idp{*auto_reauthn_idp};
     idp.accounts = {account};
     idp_data_for_display = {idp};
-
-    // Embargo auto re-authn to mitigate a deadloop where an auto
-    // re-authenticated user gets auto re-authenticated again soon after logging
-    // out of the active session.
-    auto_reauthn_permission_delegate_->RecordDisplayAndEmbargo(
-        GetEmbeddingOrigin());
   }
 
   // TODO(crbug.com/1408520): opt-out affordance is not included in the origin
@@ -965,13 +976,15 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
       auto_reauthn ? SignInMode::kAuto : SignInMode::kExplicit,
       show_auto_reauthn_checkbox,
       base::BindOnce(&FederatedAuthRequestImpl::OnAccountSelected,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr(), auto_reauthn),
       base::BindOnce(&FederatedAuthRequestImpl::OnDialogDismissed,
                      weak_ptr_factory_.GetWeakPtr()));
 
   if (auto_reauthn_enabled) {
     fedcm_metrics_->RecordAutoReauthnMetrics(
-        has_single_returning_account, auto_reauthn_account, auto_reauthn);
+        has_single_returning_account, auto_reauthn_account, auto_reauthn,
+        !has_auto_reauthn_content_setting, is_auto_reauthn_embargoed,
+        time_from_embargo);
   }
 }
 
@@ -1169,7 +1182,8 @@ void FederatedAuthRequestImpl::ComputeLoginStateAndReorderAccounts(
   });
 }
 
-void FederatedAuthRequestImpl::OnAccountSelected(const GURL& idp_config_url,
+void FederatedAuthRequestImpl::OnAccountSelected(bool auto_reauthn,
+                                                 const GURL& idp_config_url,
                                                  const std::string& account_id,
                                                  bool is_sign_in) {
   DCHECK(!account_id.empty());
@@ -1187,6 +1201,14 @@ void FederatedAuthRequestImpl::OnAccountSelected(const GURL& idp_config_url,
         TokenStatus::kDisabledInSettings,
         /*should_delay_callback=*/true);
     return;
+  }
+
+  if (auto_reauthn) {
+    // Embargo auto re-authn to mitigate a deadloop where an auto
+    // re-authenticated user gets auto re-authenticated again soon after logging
+    // out of the active session.
+    auto_reauthn_permission_delegate_->RecordDisplayAndEmbargo(
+        GetEmbeddingOrigin());
   }
 
   fedcm_metrics_->RecordIsSignInUser(is_sign_in);

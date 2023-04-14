@@ -17,7 +17,9 @@
 #include "components/power_bookmarks/common/power.h"
 #include "components/power_bookmarks/common/power_overview.h"
 #include "components/power_bookmarks/core/power_bookmark_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync/protocol/power_bookmark_specifics.pb.h"
+#include "components/user_notes/user_notes_prefs.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/mojom/window_open_disposition.mojom.h"
 #include "ui/base/window_open_disposition.h"
@@ -98,6 +100,7 @@ UserNotesPageHandler::UserNotesPageHandler(
     mojo::PendingRemote<side_panel::mojom::UserNotesPage> page,
     Profile* profile,
     Browser* browser,
+    bool start_creation_flow,
     UserNotesSidePanelUI* user_notes_ui)
     : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
@@ -105,11 +108,19 @@ UserNotesPageHandler::UserNotesPageHandler(
       service_(PowerBookmarkServiceFactory::GetForBrowserContext(profile_)),
       browser_(browser),
       user_notes_ui_(user_notes_ui) {
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kUserNotesSortByNewest,
+      base::BindRepeating(&UserNotesPageHandler::OnSortByNewestPrefChanged,
+                          base::Unretained(this)));
   service_->AddObserver(this);
   DCHECK(browser_);
   browser_->tab_strip_model()->AddObserver(this);
   Observe(browser_->tab_strip_model()->GetActiveWebContents());
   UpdateCurrentTabUrl();
+  if (start_creation_flow) {
+    StartNoteCreation(false);
+  }
 }
 
 UserNotesPageHandler::~UserNotesPageHandler() {
@@ -222,6 +233,30 @@ void UserNotesPageHandler::NoteOverviewSelected(
   browser_->OpenURL(params);
 }
 
+void UserNotesPageHandler::SetSortOrder(bool sort_by_newest) {
+  PrefService* pref_service = profile_->GetPrefs();
+  if (pref_service && pref_service->GetBoolean(prefs::kUserNotesSortByNewest) !=
+                          sort_by_newest) {
+    pref_service->SetBoolean(prefs::kUserNotesSortByNewest, sort_by_newest);
+  }
+}
+
+void UserNotesPageHandler::OnSortByNewestPrefChanged() {
+  PrefService* pref_service = profile_->GetPrefs();
+  if (pref_service) {
+    page_->SortByNewestPrefChanged(
+        pref_service->GetBoolean(prefs::kUserNotesSortByNewest));
+  }
+}
+
+void UserNotesPageHandler::StartNoteCreation(bool wait_for_tab_change) {
+  if (wait_for_tab_change) {
+    start_creation_after_tab_change_ = true;
+  } else {
+    page_->StartNoteCreation();
+  }
+}
+
 void UserNotesPageHandler::OnPowersChanged() {
   page_->NotesChanged();
 }
@@ -246,6 +281,7 @@ void UserNotesPageHandler::UpdateCurrentTabUrl() {
       browser_->tab_strip_model()->GetActiveWebContents();
   if (web_contents && current_tab_url_ != web_contents->GetLastCommittedURL()) {
     current_tab_url_ = web_contents->GetLastCommittedURL();
-    page_->CurrentTabUrlChanged();
+    page_->CurrentTabUrlChanged(start_creation_after_tab_change_);
+    start_creation_after_tab_change_ = false;
   }
 }

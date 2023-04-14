@@ -288,6 +288,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2484513351006226581">Pressione <ph name="KEYBOARD_SHORTCUT" /> para alterar o layout do teclado.</translation>
+<translation id="2487915095798731898">Participar</translation>
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@ Conecte o dispositivo a uma fonte de energia.</translation>
 <translation id="3925540965556789199"><ph name="DATE" />. Carregando eventos.</translation>
 <translation id="3932043219784172185">Nenhum dispositivo conectado</translation>
 <translation id="3934456833412894880">O carregamento adaptável está ativado. Sua bateria vai parar em 80% para prolongar a vida útil e será totalmente carregada quando você precisar.</translation>
+<translation id="3936620957945677513">Pressione "Enter" para participar do evento <ph name="EVENT_SUMMARY" /></translation>
 <translation id="3943857333388298514">Colar</translation>
 <translation id="394485226368336402">Configurações de áudio</translation>
 <translation id="3945319193631853098">Toque para concluir a configuração</translation>
@@ -706,7 +708,7 @@ Conecte o dispositivo a uma fonte de energia.</translation>
 <translation id="4735944890391795473">Espaço de trabalho 12</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4740516757091333363">Excluir espaço de trabalho salvo?</translation>
-<translation id="4747410141429390146">Desbloqueie para conferir as notificações</translation>
+<translation id="4747410141429390146">Desbloqueie para acessar as notificações</translation>
 <translation id="4752784485658729358">São permitidos apenas seis espaços de trabalho. Remova um deles para salvar outro.</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4762573482154983647">Ocultar apps</translation>

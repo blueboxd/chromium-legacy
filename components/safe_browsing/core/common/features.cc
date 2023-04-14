@@ -112,7 +112,7 @@ BASE_FEATURE(kExtensionTelemetryCookiesGetAllSignal,
 
 BASE_FEATURE(kExtensionTelemetryPersistence,
              "SafeBrowsingExtensionTelemetryPersistence",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryConfiguration,
              "SafeBrowsingExtensionTelemetryConfiguration",
@@ -129,6 +129,15 @@ const base::FeatureParam<int> kExtensionTelemetryFileDataMaxFilesToProcess{
 const base::FeatureParam<int> kExtensionTelemetryFileDataMaxFileSizeBytes{
     &kExtensionTelemetryFileData, "MaxFileSizeBytes",
     /*default_value=100KB*/ 100 * 1024};
+
+const base::FeatureParam<int>
+    kExtensionTelemetryFileDataCollectionIntervalSeconds{
+        &kExtensionTelemetryFileData, "CollectionIntervalSeconds",
+        /*default_value=*/7200};
+
+const base::FeatureParam<int> kExtensionTelemetryFileDataStartupDelaySeconds{
+    &kExtensionTelemetryFileData, "StartupDelaySeconds",
+    /*default_value=*/300};
 
 BASE_FEATURE(kExtensionTelemetryPotentialPasswordTheft,
              "SafeBrowsingExtensionTelemetryPotentialPasswordTheft",
@@ -221,6 +230,12 @@ BASE_FEATURE(kSuspiciousSiteTriggerQuotaFeature,
 BASE_FEATURE(kTailoredSecurityDesktopNotice,
              "TailoredSecurityDesktopNotice",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kTailoredSecurityDialogRetryMechanism,
+             "TailoredSecurityDialogRetryMechanism",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kTailoredSecurityIntegration,
              "TailoredSecurityIntegration",

@@ -518,13 +518,18 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     // different pages, lest it be clipped and lost.
     //
     // There is a last-resort breakpoint before trailing border and padding, so
-    // first check if we can break there and still make progress.
+    // first check if we can break there and still make progress. Don't allow a
+    // break here for table cells, though, as that might disturb the row
+    // stretching machinery, causing an infinite loop. We'd add the stretch
+    // amount to the block-size to the content box of the table cell, even
+    // though we're past it.
     DCHECK_GE(desired_intrinsic_block_size, trailing_border_padding);
     DCHECK_GE(desired_block_size, trailing_border_padding);
 
     LayoutUnit subtractable_border_padding;
-    if (desired_block_size > trailing_border_padding)
+    if (desired_block_size > trailing_border_padding && !node.IsTableCell()) {
       subtractable_border_padding = trailing_border_padding;
+    }
 
     LayoutUnit modified_intrinsic_block_size = std::max(
         space_left, desired_intrinsic_block_size - subtractable_border_padding);
@@ -1332,6 +1337,17 @@ PhysicalOffset OffsetInStitchedFragments(
 #endif
     }
     stitched_block_size += NGFragment(writing_direction, walker).BlockSize();
+
+    // Repeated content isn't stitched, so just stop when we have processed one
+    // fragment.
+    if (walker.BreakToken() && walker.BreakToken()->IsRepeated()) {
+#if DCHECK_IS_ON()
+      // We haven't necessarily found |fragment|, but it doesn't matter in this
+      // case. Just silence the DHCECK below.
+      found_self = true;
+#endif
+      break;
+    }
   }
 #if DCHECK_IS_ON()
   DCHECK(found_self);

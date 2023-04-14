@@ -14,7 +14,7 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    sheriff_rotations = sheriff_rotations.CHROMIUM_FUZZ,
+    sheriff_rotations = sheriff_rotations.CHROMIUM,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     notifies = ["chromesec-lkgr-failures"],
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
@@ -364,7 +364,6 @@ ci.builder(
         category = "mac asan",
         short_name = "rel",
     ),
-    reclient_scandeps_server = True,
 )
 
 ci.builder(
@@ -396,7 +395,6 @@ ci.builder(
         category = "mac asan",
         short_name = "med",
     ),
-    reclient_scandeps_server = True,
 )
 
 ci.builder(
@@ -598,7 +596,6 @@ ci.builder(
         short_name = "ios",
     ),
     execution_timeout = 4 * time.hour,
-    reclient_scandeps_server = True,
     xcode = xcode.x14main,
 )
 
@@ -745,7 +742,6 @@ ci.builder(
         short_name = "mac-asan",
     ),
     execution_timeout = 4 * time.hour,
-    reclient_scandeps_server = True,
 )
 
 ci.builder(

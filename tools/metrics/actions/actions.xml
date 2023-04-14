@@ -3534,6 +3534,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="AppHome_LaunchDeprecatedApp">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User launches a deprecated app (chrome app, built on extensions system) by
+    clicking on the app icon from the new chrome://apps page. This will result
+    in the launch being interrupted with a dialog that post-m112 will block the
+    actual launch of the app. After m114, the admin policy allowing the bypass
+    of this dialog will expire as well. If the user ends up launching the app
+    itself, the web app's start_url opening up in a dedicated window or in a
+    browser tab, depending on the user's preference.
+  </description>
+</action>
+
+<action name="AppHome_LaunchWebApp">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User launches a web app by clicking on the app icon from the new
+    chrome://apps page. This results in the web app's start_url opening up in a
+    dedicated window or in a browser tab, depending on the user's preference.
+  </description>
+</action>
+
 <action name="AppHome_NavigationComplete">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@chromium.org</owner>
@@ -6011,6 +6035,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ClearBrowsingData_LSOData">
+  <obsolete>
+    LSO data relates to Flash, and Flash is no longer supported.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -11676,7 +11703,8 @@ should be able to be added at any place in this file.
   <description>
     The number of times the user navigated to the next match in Find in Page on
     iOS. For instance, the user pressed the Next button in the system Find panel
-    or Chrome Find bar, or used the associated keybinding.
+    or Chrome Find bar, or used the associated keybinding. From M112 onwards,
+    this is not recorded if the total number of matches is 2 or less.
   </description>
 </action>
 
@@ -11686,7 +11714,8 @@ should be able to be added at any place in this file.
   <description>
     The number of times the user navigated to the previous match in Find in Page
     on iOS. For instance, the user pressed the Previous button in the system
-    Find panel or Chrome Find bar, or used the associated keybinding.
+    Find panel or Chrome Find bar, or used the associated keybinding. From M112
+    onwards, this is not recorded if the total number of matches is 2 or less.
   </description>
 </action>
 
@@ -11833,6 +11862,32 @@ should be able to be added at any place in this file.
   <owner>sczs@chromium.org</owner>
   <description>
     Recorded when a user closes bookmark manager by swiping down. iOS-only.
+  </description>
+</action>
+
+<action name="IOSBookmarksEditorClosedWithSwipeDown">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the user closes bookmark editor by swiping down. iOS-only.
+  </description>
+</action>
+
+<action name="IOSBookmarksFolderChooserClosedWithSwipeDown">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the user closes bookmark folder chooser by swiping down.
+    iOS-only.
+  </description>
+</action>
+
+<action name="IOSBookmarksFolderEditorClosedWithSwipeDown">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the user closes bookmark folder editor by swiping down.
+    iOS-only.
   </description>
 </action>
 
@@ -17973,6 +18028,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileBookmarkManagerAddedBookmarkUndone">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>The user undid added bookmark on iOS only.</description>
+</action>
+
 <action name="MobileBookmarkManagerClose">
   <owner>twellington@google.com</owner>
   <owner>sczs@chromium.org</owner>
@@ -17991,6 +18052,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileBookmarkManagerDeletedEntryUndone">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>The user undid bookmark deletion on iOS only.</description>
+</action>
+
 <action name="MobileBookmarkManagerDragReorder">
   <owner>jhimawan@google.com</owner>
   <owner>twellington@google.com</owner>
@@ -18004,7 +18071,8 @@ should be able to be added at any place in this file.
   <owner>twellington@google.com</owner>
   <owner>clank-app-team@google.com</owner>
   <description>
-    Recorded when a user edits a bookmark in the Android bookmark manager.
+    Recorded when a user edits a bookmark in bookmark manager, on iOS or
+    Android.
   </description>
 </action>
 
@@ -18012,7 +18080,7 @@ should be able to be added at any place in this file.
   <owner>twellington@google.com</owner>
   <owner>clank-app-team@google.com</owner>
   <description>
-    Recorded when a user edits a folder in the Android bookmark manager.
+    Recorded when a user edits a folder in bookmark manager, on iOS or Android.
   </description>
 </action>
 
@@ -18086,8 +18154,14 @@ should be able to be added at any place in this file.
   <owner>clank-app-team@google.com</owner>
   <description>
     Recorded when a user moves all selected bookmark items to a new folder in
-    the Android bookmark manager.
+    bookmark manager, on iOS or Android.
   </description>
+</action>
+
+<action name="MobileBookmarkManagerMoveToFolderUndone">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>The user undid bookmark move on iOS only.</description>
 </action>
 
 <action name="MobileBookmarkManagerMoveUp">
@@ -18116,11 +18190,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileBookmarkManagerOpenedBookmarkEditorFromSnackbar">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user opened the bookmark editor using the snackbar.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerOpenFolder">
   <owner>twellington@google.com</owner>
   <owner>clank-app-team@google.com</owner>
   <description>
-    Recorded when a user opens a folder in the Android bookmark manager.
+    Recorded when a user opens a folder on iOS and Android.
   </description>
 </action>
 
@@ -18165,6 +18247,92 @@ should be able to be added at any place in this file.
   <description>
     Recorded when a user taps on an item in order to select it from the Android
     bookmark manager (this can only occur while in selection mode).
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerUpdatedBookmarkUndone">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>The user undid bookmark update on iOS only.</description>
+</action>
+
+<action name="MobileBookmarksEditorCanceled">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user canceled the bookmark editor view. iOS-only.
+  </description>
+</action>
+
+<action name="MobileBookmarksEditorDeletedBookmark">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user deleted the bookmark in the bookmark editor view. iOS-only.
+  </description>
+</action>
+
+<action name="MobileBookmarksEditorOpenedFolderChooser">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user opened the folder chooser in the bookmark editor view. iOS-only.
+  </description>
+</action>
+
+<action name="MobileBookmarksEditorSaved">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>The user saved the bookmark editor view. iOS-only.</description>
+</action>
+
+<action name="MobileBookmarksFolderChooserCanceled">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user canceled the bookmark folder chooser view. iOS-only.
+  </description>
+</action>
+
+<action name="MobileBookmarksFolderChooserDone">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user confirmed the bookmark folder chooser view. iOS-only.
+  </description>
+</action>
+
+<action name="MobileBookmarksFolderEditorCanceled">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user canceled the bookmark folder editor view. iOS-only.
+  </description>
+</action>
+
+<action name="MobileBookmarksFolderEditorDeletedFolder">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user deleted the folder while in the bookmark folder editor view.
+    iOS-only.
+  </description>
+</action>
+
+<action name="MobileBookmarksFolderEditorOpenedFolderChooser">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user opened the folder chooser in the bookmark folder editor view.
+    iOS-only.
+  </description>
+</action>
+
+<action name="MobileBookmarksFolderEditorSaved">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user confirmed the bookmark folder editor view. iOS-only.
   </description>
 </action>
 
@@ -18738,7 +18906,7 @@ should be able to be added at any place in this file.
 
 <action name="MobileFreUMALinkTapped">
   <owner>arthurmilchior@chromium.org</owner>
-  <owner>jlebel@google.com</owner>
+  <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
     User tapped on the UMA link on the first run welcome view. This metric is
@@ -20658,6 +20826,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareMenuAddToHome">
+  <owner>gambard@chromium.org</owner>
+  <description>User added current page to device home screen.</description>
+</action>
+
 <action name="MobileShareMenuBookmark">
   <owner>gambard@chromium.org</owner>
   <description>User shared to the device's bookmarks.</description>
@@ -20916,6 +21089,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileTabGridAddedMultipleNewBookmarks">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    User added multiple new bookmarks base on the selected tabs, in the iOS tab
+    grid. It is possible to have one tab selected.
+  </description>
+</action>
+
 <action name="MobileTabGridBeganReordering">
   <owner>edchin@chromium.org</owner>
   <owner>marq@chromium.org</owner>
@@ -21083,6 +21265,20 @@ should be able to be added at any place in this file.
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <description>User moves from a Tab to an existing other Tab.</description>
+</action>
+
+<action name="MobileTabGridOpenedBookmarkEditorForExistingBookmark">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    User edited an existing bookmark, in the iOS tab grid.
+  </description>
+</action>
+
+<action name="MobileTabGridOpenedBookmarkEditorForNewBookmark">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>User adds one new bookmark, in the iOS tab grid.</description>
 </action>
 
 <action name="MobileTabGridOpenIncognitoTab">
@@ -29809,6 +30005,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ShowAsTab">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="ShowAudioSettingsPage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

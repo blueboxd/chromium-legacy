@@ -11,12 +11,14 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
@@ -52,6 +54,7 @@
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 using autofill::PopupItemId;
@@ -71,6 +74,13 @@ constexpr int kAutofillPopupMaxWidth = kAutofillPopupWidthMultiple * 38;
 int GetContentsVerticalPadding() {
   return ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
+}
+
+int GetContentsHorizontalPadding() {
+  return base::FeatureList::IsEnabled(
+             features::kAutofillShowAutocompleteDeleteButton)
+             ? GetContentsVerticalPadding()
+             : 0;
 }
 
 // Returns true if the item at `line_number` is a footer item.
@@ -173,6 +183,14 @@ void PopupViewViews::SetSelectedCell(absl::optional<CellIndex> cell_index) {
 
 bool PopupViewViews::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
+  // If the row can handle the event itself (e.g. switching between cells in the
+  // same row), we let it.
+  if (absl::optional<CellIndex> selected_cell = GetSelectedCell()) {
+    if (GetPopupRowViewAt(selected_cell->first).HandleKeyPressEvent(event)) {
+      return true;
+    }
+  }
+
   const bool kHasShiftModifier =
       (event.GetModifiers() & blink::WebInputEvent::kShiftKey);
   const bool kHasNonShiftModifier =
@@ -310,12 +328,29 @@ void PopupViewViews::AxAnnounce(const std::u16string& text) {
 
 void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
                                                bool visible) {
-  if (visible) {
-    for (RowPointer& row_view : rows_) {
-      if (PopupRowView** row_view_pointer =
-              absl::get_if<PopupRowView*>(&row_view)) {
-        (*row_view_pointer)->MaybeShowIphPromo();
-      }
+  if (!visible || !controller_) {
+    return;
+  }
+
+  Browser* browser = GetBrowser();
+  if (!browser) {
+    return;
+  }
+
+  for (int row = 0; row < controller_->GetLineCount(); ++row) {
+    // Show the in-product-help promo anchored to this bubble.
+    // The in-product-help promo is a bubble anchored to this row item to show
+    // educational messages. The promo bubble should only be shown once in one
+    // session and has a limit for how many times it can be shown at most in a
+    // period of time.
+    if (controller_->GetSuggestionAt(row).feature_for_iph ==
+        "IPH_AutofillVirtualCardSuggestion") {
+      GetPopupRowViewAt(row).SetProperty(
+          views::kElementIdentifierKey,
+          kAutofillCreditCardSuggestionEntryElementId);
+
+      browser->window()->MaybeShowFeaturePromo(
+          feature_engagement::kIPHAutofillVirtualCardSuggestionFeature);
     }
   }
 }
@@ -344,8 +379,8 @@ void PopupViewViews::CreateChildViews() {
   raw_ptr<views::BoxLayoutView> content_view = AddChildView(
       views::Builder<views::BoxLayoutView>()
           .SetOrientation(views::BoxLayout::Orientation::kVertical)
-          .SetInsideBorderInsets(
-              gfx::Insets::VH(GetContentsVerticalPadding(), 0))
+          .SetInsideBorderInsets(gfx::Insets::VH(
+              GetContentsVerticalPadding(), GetContentsHorizontalPadding()))
           .SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kStart)
           .Build());
 

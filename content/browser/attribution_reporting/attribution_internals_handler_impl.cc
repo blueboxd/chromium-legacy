@@ -27,6 +27,7 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/parsing_utils.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
+#include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
@@ -34,7 +35,6 @@
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -74,8 +74,9 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
   const CommonSourceInfo& common_info = source.common_info();
   return attribution_internals::mojom::WebUISource::New(
       common_info.source_event_id(), common_info.source_origin(),
-      std::vector<net::SchemefulSite>(common_info.destination_sites().begin(),
-                                      common_info.destination_sites().end()),
+      std::vector<net::SchemefulSite>(
+          common_info.destination_sites().destinations().begin(),
+          common_info.destination_sites().destinations().end()),
       common_info.reporting_origin(), common_info.source_time().ToJsTime(),
       common_info.expiry_time().ToJsTime(),
       common_info.event_report_window_time().ToJsTime(),
@@ -392,7 +393,7 @@ void AttributionInternalsHandlerImpl::OnFailedSourceRegistration(
     base::Time source_time,
     const attribution_reporting::SuitableOrigin& source_origin,
     const attribution_reporting::SuitableOrigin& reporting_origin,
-    AttributionSourceType source_type,
+    attribution_reporting::mojom::SourceType source_type,
     attribution_reporting::mojom::SourceRegistrationError error) {
   auto web_ui_source = WebUISourceRegistration::New();
   web_ui_source->registration = GetRegistration(

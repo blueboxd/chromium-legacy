@@ -140,6 +140,7 @@
 #include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/new_tab_page/modules/drive/drive.mojom.h"
 #include "chrome/browser/new_tab_page/modules/feed/feed.mojom.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos.mojom.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes.mojom.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
@@ -181,6 +182,7 @@
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/commerce/core/mojom/shopping_list.mojom.h"  // nogncheck crbug.com/1125897
+#include "components/image_service/mojom/image_service.mojom.h"
 #include "components/search/ntp_features.h"
 #include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
@@ -265,6 +267,7 @@
 #include "chrome/browser/ui/webui/ash/audio/audio_ui.h"
 #include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_ui.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer.mojom.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
@@ -973,25 +976,18 @@ void PopulateChromeWebUIFrameBinders(
   if (history_clusters_service &&
       history_clusters_service->IsJourneysEnabled()) {
     if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys)) {
-      if (base::FeatureList::IsEnabled(
-              ntp_features::kNtpHistoryClustersModule)) {
-        RegisterWebUIControllerInterfaceBinder<
-            history_clusters::mojom::PageHandler, HistoryUI, NewTabPageUI,
-            HistoryClustersSidePanelUI>(map);
-      } else {
-        RegisterWebUIControllerInterfaceBinder<
-            history_clusters::mojom::PageHandler, HistoryUI,
-            HistoryClustersSidePanelUI>(map);
-      }
+      RegisterWebUIControllerInterfaceBinder<
+          history_clusters::mojom::PageHandler, HistoryUI,
+          HistoryClustersSidePanelUI>(map);
     } else {
-      if (base::FeatureList::IsEnabled(
-              ntp_features::kNtpHistoryClustersModule)) {
-        RegisterWebUIControllerInterfaceBinder<
-            history_clusters::mojom::PageHandler, NewTabPageUI, HistoryUI>(map);
-      } else {
-        RegisterWebUIControllerInterfaceBinder<
-            history_clusters::mojom::PageHandler, HistoryUI>(map);
-      }
+      RegisterWebUIControllerInterfaceBinder<
+          history_clusters::mojom::PageHandler, HistoryUI>(map);
+    }
+
+    if (history_clusters_service->IsJourneysImagesEnabled()) {
+      RegisterWebUIControllerInterfaceBinder<
+          image_service::mojom::ImageServiceHandler, HistoryUI,
+          HistoryClustersSidePanelUI>(map);
     }
   }
 
@@ -1050,6 +1046,13 @@ void PopulateChromeWebUIFrameBinders(
   if (base::FeatureList::IsEnabled(ntp_features::kNtpFeedModule)) {
     RegisterWebUIControllerInterfaceBinder<ntp::feed::mojom::FeedHandler,
                                            NewTabPageUI>(map);
+  }
+
+  if (base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule) ||
+      base::FeatureList::IsEnabled(
+          ntp_features::kNtpHistoryClustersModuleLoad)) {
+    RegisterWebUIControllerInterfaceBinder<
+        ntp::history_clusters::mojom::PageHandler, NewTabPageUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1358,13 +1361,13 @@ void PopulateChromeWebUIFrameBinders(
         ash::ManageMirrorSyncUI>(map);
   }
 
-  if (ash::features::IsUploadOfficeToCloudEnabled()) {
+  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud()) {
     RegisterWebUIControllerInterfaceBinder<
         ash::cloud_upload::mojom::PageHandlerFactory,
         ash::cloud_upload::CloudUploadUI>(map);
   }
 
-  if (ash::features::IsUploadOfficeToCloudEnabled()) {
+  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud()) {
     RegisterWebUIControllerInterfaceBinder<
         ash::office_fallback::mojom::PageHandlerFactory,
         ash::office_fallback::OfficeFallbackUI>(map);

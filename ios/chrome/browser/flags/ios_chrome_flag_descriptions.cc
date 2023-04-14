@@ -16,6 +16,11 @@ const char kAdaptiveSuggestionsCountDescription[] =
     "Allows Omnibox to dynamically adjust number of offered suggestions to "
     "fill in the space between Omnibox and the soft keyboard.";
 
+const char kAddToHomeScreenName[] = "Add to home screen";
+const char kAddToHomeScreenDescription[] =
+    "Allows to add a bookmark on the device home screen when sharing from a "
+    "web view.";
+
 const char kAppStoreRatingName[] = "Enable the App Store Rating promo.";
 const char kAppStoreRatingDescription[] =
     "When enabled, App Store Rating promo will be presented to eligible "
@@ -158,6 +163,11 @@ extern const char kAppleCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Apple "
     "Calendar event handling.";
 
+extern const char kConsistencyNewAccountInterfaceName[] =
+    "Consistency New Account Interface";
+extern const char kConsistencyNewAccountInterfaceDescription[] =
+    "Enables a sign-in only UI for users who need to add a new account.";
+
 extern const char kEmailName[] = "Email experience enable";
 extern const char kEmailDescription[] =
     "When enabled, one tapping or long pressing on an email address will "
@@ -235,7 +245,7 @@ const char kDetectMainThreadFreezeDescription[] =
     "the time specified by this flag.";
 
 const char kEnableDiscoverFeedTopSyncPromoName[] =
-    "Enable the sync promo on top of the feed.";
+    "Enables the top of feed sync promo.";
 const char kEnableDiscoverFeedTopSyncPromoDescription[] =
     "When enabled, a sync promotion will be presented to eligible users on top "
     "of the feed cards.";
@@ -284,10 +294,9 @@ const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
     "Enable using the discofeed endpoint for the discover feed.";
 
-const char kTileAblationMVTAndShortcutsForNewUsersName[] =
-    "Enable hiding the Most Visited Tiles and Shortcuts";
-const char kTileAblationMVTAndShortcutsForNewUsersDescription[] =
-    "Enable hiding the Most Visited Tiles and Shortcuts for new users";
+const char kTileAblationName[] = "Enables tile ablation";
+const char kTileAblationDescription[] =
+    "Hides the shortcuts and most visited tiles on the NTP for new users.";
 
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
@@ -349,11 +358,6 @@ const char kEnableRefineDataSourceReloadReportingName[] =
 const char kEnableRefineDataSourceReloadReportingDescription[] =
     "Enable refining data source reload reporting when having a very short "
     "attention log";
-
-const char kEnableWebPageAnnotationsName[] = "Enable Web Page Intent Detection";
-const char kEnableWebPageAnnotationsDescription[] =
-    "Prototype to detect and highlight data with possible intent in a web "
-    "page.";
 
 const char kEnableSuggestionsScrollingOnIPadName[] =
     "Enable omnibox suggestions scrolling on iPad";
@@ -488,11 +492,11 @@ const char kIOSPasswordManagerCrossOriginIframeSupportName[] =
 const char kIOSPasswordManagerCrossOriginIframeSupportDescription[] =
     "Enables password saving and filling in cross-origin iframes on IOS.";
 
-const char kIOSPopularSitesImprovedSuggestionsName[] =
-    "Most Visited Tiles (Improved Default Suggestions)";
-const char kIOSPopularSitesImprovedSuggestionsDescription[] =
-    "Enables improved default suggestions for the most visited tiles, by using "
-    "only Chrome iOS usage data to generate its suggestions.";
+const char kNewTabPageRetentionName[] =
+    "New tab page features that target new users";
+const char kNewTabPageRetentionDescription[] =
+    "Enables new tab page features that are available on first run for new "
+    "Chrome iOS users.";
 
 const char kIOSSharedHighlightingColorChangeName[] =
     "IOS Shared Highlighting color change";
@@ -539,6 +543,10 @@ const char kMetrickitNonCrashReportDescription[] =
     "Enables sending Metrickit reports for non crash type (hang, "
     "cpu-exception, diskwrite-exception)";
 
+const char kMixedContentAutoupgradeName[] = "Auto-upgrade mixed content";
+const char kMixedContentAutoupgradeDescription[] =
+    "Enables auto-upgrading of mixed content images, audio and video";
+
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
     "When enabled, the newly implemented tabstrip can be tested.";
@@ -560,6 +568,11 @@ const char kNativeFindInPageDescription[] =
     "When enabled, the JavaScript implementation of the Find in Page feature "
     "is replaced with a native implementation which also enables searching "
     "text in PDF files. Available for iOS 16 or later.";
+
+const char kNewNTPOmniboxLayoutName[] = "New NTP Omnibox Layout";
+const char kNewNTPOmniboxLayoutDescription[] =
+    "Enables the new NTP omnibox layout with leading-edge aligned hint label "
+    "and magnifying glass icon.";
 
 const char kNewOverflowMenuName[] = "New Overflow Menu";
 const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
@@ -742,6 +755,12 @@ const char kIPHPriceNotificationsWhileBrowsingDescription[] =
     "product "
     "webpage that supports price tracking.";
 
+const char kNotificationSettingsMenuItemName[] =
+    "Notification Settings Menu Item";
+const char kNotificationSettingsMenuItemDescription[] =
+    "Displays the menu item for the notification controls inside the chrome "
+    "settings UI.";
+
 const char kRecordSnapshotSizeName[] =
     "Record the size of image and PDF snapshots in UMA histograms";
 const char kRecordSnapshotSizeDescription[] =
@@ -815,6 +834,10 @@ const char kSmartSortingPriceTrackingDestinationName[] =
 const char kSmartSortingPriceTrackingDestinationDescription[] =
     "Adds the Price Tracking destination (with Smart Sorting) to the "
     "new overflow menu.";
+
+const char kSpotlightReadingListSourceName[] = "Show Reading List in Spotlight";
+const char kSpotlightReadingListSourceDescription[] =
+    "Donate Reading List items to iOS Search Engine Spotlight";
 
 const char kNewOverflowMenuShareChromeActionName[] =
     "Share Chrome App action in the new overflow menu";

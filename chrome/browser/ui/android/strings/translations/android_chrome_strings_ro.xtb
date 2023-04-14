@@ -226,6 +226,7 @@ Când ștergi istoricul de navigare (în întregime sau pentru un anumit site), 
 <translation id="2248941474044011069">Parolele tale sunt criptate pe dispozitiv înainte să se salveze în Managerul de parole Google</translation>
 <translation id="2249635629516220541">Personalizează informațiile folosite de site-uri pentru a-ți afișa anunțuri</translation>
 <translation id="2259659629660284697">Exportă parolele…</translation>
+<translation id="2276231040576210443">Poți să alegi oricând ce să sincronizezi în <ph name="BEGIN_LINK1" />setări<ph name="END_LINK1" />. Google poate personaliza Căutarea și alte servicii pe baza istoricului.</translation>
 <translation id="2276696007612801991">Conectează-te la contul Google pentru a verifica parolele</translation>
 <translation id="2278052315791335171">Prin ștergerea acestei parole, nu va fi șters și contul de pe <ph name="SITE" /></translation>
 <translation id="2286841657746966508">Adresa de facturare</translation>
@@ -354,6 +355,7 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="2951071800649516099">Adaugă pagini la lista de lecturi pentru mai târziu</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> pagină necitită}few{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> pagini necitite}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> de pagini necitite}}</translation>
 <translation id="2961210776189273067">Titlu</translation>
+<translation id="296370266220139811">Economisește timp și tastează mai puțin</translation>
 <translation id="2979025552038692506">Fila incognito selectată</translation>
 <translation id="2979639724566107830">Deschide într-o fereastră nouă</translation>
 <translation id="2981364137500752533">Poți deschide maximum cinci ferestre.</translation>
@@ -481,6 +483,7 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="3578874072190212775">Ajută site-urile să prevină frauda și să deosebească aplicațiile bot de persoane</translation>
 <translation id="3587482841069643663">Toate</translation>
 <translation id="3587596251841506391">Îmbunătățește securitatea pe web</translation>
+<translation id="3597179440835065298">Primește sugestii mai bune</translation>
 <translation id="3602290021589620013">Previzualizare</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Gestionează ferestrele</translation>
@@ -746,6 +749,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5005498671520578047">Copiază parola</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> dorește să se conecteze</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">Ultimele 15 minute</translation>
 <translation id="5032430150487044192">Nu s-a putut crea codul QR</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5040262127954254034">Confidențialitate</translation>
@@ -881,6 +885,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5813552293717797987">Browserul este gestionat de <ph name="PARENT_NAME_1" /> și de <ph name="PARENT_NAME_2" />.</translation>
 <translation id="5814131985548525293">Introdu text aici sau atinge pictograma microfon pentru a începe</translation>
 <translation id="5814749351757353073">Fii la curent cu site-urile preferate</translation>
+<translation id="5822875253699806474">Pentru a reveni rapid la site-urile pe care le-ai accesat, sincronizează filele și istoricul</translation>
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="5833984609253377421">Trimite linkul</translation>
 <translation id="5834764604050996579">Pentru a scana un cod QR, permite ca Chrome să utilizeze camera</translation>
@@ -1135,6 +1140,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7088681679121566888">Chrome este actualizat</translation>
 <translation id="7105047059074518658">Conectează-te pentru a naviga mai ușor pe diferite dispozitive</translation>
 <translation id="7106762743910369165">Browserul este gestionat de organizația ta</translation>
+<translation id="7116588989735740310">Pentru a reveni la site-urile accesate pe alte dispozitive, sincronizează filele și istoricul</translation>
 <translation id="7130504491556983216">Aici va apărea o listă de categorii de interese pe măsură ce navighezi pe web</translation>
 <translation id="7138678301420049075">Altele</translation>
 <translation id="7146622961999026732">Următoarele site-uri și aplicații par importante pentru tine:</translation>
@@ -1213,6 +1219,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="751961395872307827">Nu se poate realiza conexiunea la site</translation>
 <translation id="752220631458524187">Deconectează-te când ai terminat</translation>
 <translation id="7523960634226602883">Caută cu camera foto folosind Google Lens</translation>
+<translation id="7539698981064401140">Sincronizează filele și istoricul</translation>
 <translation id="7562080006725997899">Se șterg datele de navigare</translation>
 <translation id="756809126120519699">Datele Chrome au fost șterse</translation>
 <translation id="7577900504646297215">Gestionează interesele</translation>
@@ -1224,6 +1231,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7596558890252710462">Sistem de operare</translation>
 <translation id="7605594153474022051">Sincronizarea nu funcționează</translation>
 <translation id="7612619742409846846">Conectat(ă) la Google ca</translation>
+<translation id="7612989789287281429">Se conectează…</translation>
 <translation id="7616551326690708776">Selectează un șablon pentru evidențiere.</translation>
 <translation id="7619072057915878432">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza erorilor de rețea.</translation>
 <translation id="7626032353295482388">Bun venit la Chrome</translation>
@@ -1247,6 +1255,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7707922173985738739">va folosi datele mobile;</translation>
 <translation id="7709094866268987903">Interesele eliminate vor apărea aici</translation>
 <translation id="7709918231054955894">Accesează toate filele</translation>
+<translation id="772434085369393266">Doresc actualizarea navigărilor la HTTPS și un avertisment înainte de încărcarea site-urilor care nu acceptă acest protocol. Nu poți schimba această setare deoarece ai activată Protecția avansată.</translation>
 <translation id="7725024127233776428">Paginile pe care le marchezi apar aici</translation>
 <translation id="7757787379047923882">Text trimis de pe <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Cardul SD <ph name="SD_CARD_NUMBER" /></translation>
@@ -1394,6 +1403,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8461694314515752532">Criptează datele sincronizate folosind propria expresie de acces pentru sincronizare</translation>
 <translation id="8466613982764129868">Asigură-te că <ph name="TARGET_DEVICE_NAME" /> este conectat la internet</translation>
 <translation id="8473863474539038330">Adrese și altele</translation>
+<translation id="847433688444405067">Navighează pe mai multe dispozitive</translation>
 <translation id="8481980314595922412">Funcțiile de încercare sunt activate</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8489271220582375723">Deschide pagina Istoric</translation>
@@ -1447,6 +1457,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8712637175834984815">Am înțeles</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8746155870861185046">Distribuie selecția</translation>
+<translation id="874726034427945498">Pentru a vedea sugestii mai bune în bara de adrese, sincronizează filele și istoricul</translation>
 <translation id="8748850008226585750">Conținutul este ascuns</translation>
 <translation id="8756969031206844760">Actualizezi parola?</translation>
 <translation id="8765470054473112089">Când introduci text în bara de adrese sau în caseta de căutare, Chrome trimite ceea ce introduci la motorul de căutare prestabilit, pentru a primi sugestii mai bune. Această opțiune este dezactivată în modul incognito.</translation>
@@ -1493,6 +1504,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8970887620466824814">A apărut o eroare.</translation>
 <translation id="8972098258593396643">Descarci în dosarul prestabilit?</translation>
 <translation id="8987641763863173640">Gestionează setările pentru previzualizarea videoclipurilor</translation>
+<translation id="8987736167266086032">Reia de unde ai rămas</translation>
 <translation id="8989968390305463310">Istoricul tău de navigare influențează anunțurile pe care le vezi și categoriile de interese estimate de mai jos. Pentru a-ți proteja confidențialitatea, Chrome șterge automat categoriile de interese în permanență, în fiecare lună. Categoriile de interese se pot actualiza dacă nu le elimini.</translation>
 <translation id="8993760627012879038">Deschide o filă nouă în modul incognito</translation>
 <translation id="8996847606757455498">Alege alt furnizor</translation>
@@ -1511,6 +1523,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="9070377983101773829">Începe căutarea vocală</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9081543426177426948">Site-urile pe care le accesezi nu sunt salvate în modul incognito</translation>
+<translation id="9084103763810123431">Pentru a continua să navighezi pe alt dispozitiv, sincronizează filele și istoricul</translation>
 <translation id="9086302186042011942">Se sincronizează</translation>
 <translation id="9086455579313502267">Nu se poate accesa rețeaua</translation>
 <translation id="9099220545925418560">Pe baza istoricului de navigare. Setarea este dezactivată.</translation>

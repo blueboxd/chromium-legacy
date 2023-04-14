@@ -7,6 +7,8 @@
 #import "base/check.h"
 #import "base/check_op.h"
 #import "base/mac/foundation_util.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -104,8 +106,8 @@
         self.browser->GetCommandDispatcher(), SnackbarCommands);
     _navigationController = [[BookmarkNavigationController alloc]
         initWithRootViewController:_viewController];
-    _navigationController.presentationController.delegate = self;
     _navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+    _navigationController.presentationController.delegate = self;
 
     [self.baseViewController presentViewController:_navigationController
                                           animated:YES
@@ -128,13 +130,11 @@
   } else {
     // If there is no `_baseNavigationController` and `_navigationController`,
     // the view controller has been already dismissed. See
-    // `presentationControllerDidDismiss:`.
+    // `presentationControllerDidDismiss:` and
+    // `bookmarksFolderEditorDidDismiss:`.
     // Therefore `self.baseViewController.presentedViewController` must be
-    // `nullptr`. This should only happend when the user is editing an existing
-    // folder node.
+    // `nullptr`.
     DCHECK(!self.baseViewController.presentedViewController);
-    DCHECK(_folderNode);
-    DCHECK(!_parentFolderNode);
   }
   _viewController = nil;
 }
@@ -159,6 +159,7 @@
                                             : _navigationController)
                                browser:self.browser
                            hiddenNodes:hiddenNodes];
+  _folderChooserCoordinator.allowsNewFolders = NO;
   _folderChooserCoordinator.selectedFolder = parent;
   _folderChooserCoordinator.delegate = self;
   [_folderChooserCoordinator start];
@@ -181,6 +182,13 @@
 
 - (void)bookmarksFolderEditorDidCancel:
     (BookmarksFolderEditorViewController*)folderEditor {
+  [_delegate bookmarksFolderEditorCoordinatorShouldStop:self];
+}
+
+- (void)bookmarksFolderEditorDidDismiss:
+    (BookmarksFolderEditorViewController*)folderEditor {
+  DCHECK(_baseNavigationController);
+  _baseNavigationController = nil;
   [_delegate bookmarksFolderEditorCoordinatorShouldStop:self];
 }
 
@@ -212,6 +220,8 @@
 
 - (void)presentationControllerDidAttemptToDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSBookmarksFolderEditorClosedWithSwipeDown"));
   [_viewController presentationControllerDidAttemptToDismiss];
 }
 

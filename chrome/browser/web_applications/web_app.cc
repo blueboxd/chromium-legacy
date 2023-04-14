@@ -85,9 +85,9 @@ base::Value OsStatesDebugValue(
     shortcut_data.Set("description", current_states.shortcut().description());
     base::Value::Dict icon_data;
     for (const auto& data : current_states.shortcut().icon_data_any()) {
-      icon_data.Set(base::NumberToString(data.icon_size()),
-                    syncer::GetTimeDebugString(
-                        syncer::ProtoTimeToTime(data.timestamp())));
+      icon_data.Set(
+          base::NumberToString(data.icon_size()),
+          base::StreamableToString(syncer::ProtoTimeToTime(data.timestamp())));
     }
     shortcut_data.Set("icon_size_to_timestamp_map",
                       base::Value(std::move(icon_data)));
@@ -125,21 +125,20 @@ base::Value OsStatesDebugValue(
       base::Value::Dict icon_data_maskable_dict;
       base::Value::Dict icon_data_monochrome_dict;
       for (const auto& icon_data_any : shortcut_menu.icon_data_any()) {
-        icon_data_any_dict.Set(
-            base::NumberToString(icon_data_any.icon_size()),
-            syncer::GetTimeDebugString(
-                syncer::ProtoTimeToTime(icon_data_any.timestamp())));
+        icon_data_any_dict.Set(base::NumberToString(icon_data_any.icon_size()),
+                               base::StreamableToString(syncer::ProtoTimeToTime(
+                                   icon_data_any.timestamp())));
       }
       for (const auto& icon_data_maskable : shortcut_menu.icon_data_any()) {
         icon_data_maskable_dict.Set(
             base::NumberToString(icon_data_maskable.icon_size()),
-            syncer::GetTimeDebugString(
+            base::StreamableToString(
                 syncer::ProtoTimeToTime(icon_data_maskable.timestamp())));
       }
       for (const auto& icon_data_monochrome : shortcut_menu.icon_data_any()) {
         icon_data_monochrome_dict.Set(
             base::NumberToString(icon_data_monochrome.icon_size()),
-            syncer::GetTimeDebugString(
+            base::StreamableToString(
                 syncer::ProtoTimeToTime(icon_data_monochrome.timestamp())));
       }
       base::Value::Dict shortcut_menu_dict;
@@ -180,31 +179,6 @@ base::Value OsStatesDebugValue(
       file_handlers_list.Append(std::move(file_handler_dict));
     }
     debug_dict.Set("file_handling", std::move(file_handlers_list));
-  }
-
-  if (current_states.has_url_handling()) {
-    base::Value::List url_handlers;
-    for (const auto& url_handler :
-         current_states.url_handling().url_handlers()) {
-      base::Value::Dict url_handler_dict;
-      url_handler_dict.Set("origin", url_handler.origin());
-      url_handler_dict.Set("has_origin_wildcard",
-                           url_handler.has_origin_wildcard());
-      base::Value::List paths;
-      for (auto path : url_handler.paths()) {
-        paths.Append(path);
-      }
-      url_handler_dict.Set("paths", std::move(paths));
-      base::Value::List exclude_paths;
-      for (auto path : url_handler.exclude_paths()) {
-        exclude_paths.Append(path);
-      }
-      url_handler_dict.Set("exclude_paths", std::move(exclude_paths));
-      url_handlers.Append(std::move(url_handler_dict));
-    }
-    base::Value::Dict url_handling;
-    url_handling.Set("url_handlers", std::move(url_handlers));
-    debug_dict.Set("url_handling", std::move(url_handling));
   }
 
   return base::Value(std::move(debug_dict));

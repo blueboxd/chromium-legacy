@@ -1777,9 +1777,10 @@ class ContextRecyclerPrivateAggregationExtensionsEnabledTest
     : public ContextRecyclerTest {
  public:
   ContextRecyclerPrivateAggregationExtensionsEnabledTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        content::kPrivateAggregationApi,
-        {{"fledge_extensions_enabled", "true"}});
+    scoped_feature_list_.InitWithFeatures(
+        {content::kPrivateAggregationApi,
+         blink::features::kPrivateAggregationApiFledgeExtensions},
+        {});
   }
 
   // Creates a PrivateAggregationRequest with ForEvent contribution.
@@ -2191,7 +2192,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary bucket_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    bucket_dict.Set("baseValue", std::string("bidRejectReason"));
+    bucket_dict.Set("baseValue", std::string("bid-reject-reason"));
     bucket_dict.Set("scale", 2);
     bucket_dict.Set("offset", std::string("-255"));
 
@@ -2231,7 +2232,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary bucket_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    bucket_dict.Set("baseValue", std::string("bidRejectReason"));
+    bucket_dict.Set("baseValue", std::string("bid-reject-reason"));
 
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
     dict.Set("bucket", bucket_dict);
@@ -2315,7 +2316,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary bucket_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    bucket_dict.Set("baseValue", std::string("winningBid"));
+    bucket_dict.Set("baseValue", std::string("winning-bid"));
     bucket_dict.Set("scale", std::string("255"));
 
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
@@ -2340,7 +2341,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary bucket_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    bucket_dict.Set("baseValue", std::string("winningBid"));
+    bucket_dict.Set("baseValue", std::string("winning-bid"));
     bucket_dict.Set("offset", 255);
 
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
@@ -2365,7 +2366,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary value_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    value_dict.Set("baseValue", std::string("winningBid"));
+    value_dict.Set("baseValue", std::string("winning-bid"));
     value_dict.Set("scale", 2);
     value_dict.Set("offset", -5);
 
@@ -2675,9 +2676,8 @@ class ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest
     : public ContextRecyclerTest {
  public:
   ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        content::kPrivateAggregationApi,
-        {{"fledge_extensions_enabled", "false"}});
+    scoped_feature_list_.InitWithFeatures({content::kPrivateAggregationApi},
+                                          {});
   }
 
  private:

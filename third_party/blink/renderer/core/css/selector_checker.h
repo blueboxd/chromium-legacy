@@ -301,7 +301,13 @@ class CORE_EXPORT SelectorChecker {
       const StyleScope&,
       const StyleScopeActivations& outer_activations,
       StyleScopeFrame*) const;
-  bool MatchesWithScope(Element&, const CSSSelectorList&, Element* scope) const;
+  bool MatchesWithScope(Element&,
+                        const CSSSelector& selector_list,
+                        const ContainerNode* scope) const;
+  // https://drafts.csswg.org/css-cascade-6/#scoping-limit
+  bool ElementIsScopingLimit(const StyleScope&,
+                             const StyleScopeActivation&,
+                             Element& element) const;
 
   CustomScrollbar* scrollbar_;
   PartNames* part_names_;

@@ -26,12 +26,9 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h"
-#include "chrome/browser/supervised_user/permission_request_creator.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -90,8 +87,6 @@ namespace {
 // The URL from which to download a host denylist if no local one exists yet.
 const char kDenylistURL[] =
     "https://www.gstatic.com/chrome/supervised_user/denylist-20141001-1k.bin";
-// The filename under which we'll store the denylist (in the user data dir).
-const char kDenylistFilename[] = "su-denylist.bin";
 
 const char kDenylistSourceHistogramName[] = "FamilyUser.DenylistSource";
 
@@ -107,7 +102,7 @@ constexpr char const* kAllowlistExtensionIds[] = {
 base::FilePath GetDenylistPath() {
   base::FilePath denylist_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &denylist_dir);
-  return denylist_dir.AppendASCII(kDenylistFilename);
+  return denylist_dir.AppendASCII(supervised_user::kDenylistFilename);
 }
 
 bool AreWebFilterPrefsDefault(PrefService* pref_service) {

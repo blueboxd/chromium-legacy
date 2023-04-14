@@ -288,6 +288,7 @@
 <translation id="2475982808118771221">Παρουσιάστηκε σφάλμα</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2484513351006226581">Πατήστε <ph name="KEYBOARD_SHORTCUT" />, για να αλλάξετε διάταξη πληκτρολογίου.</translation>
+<translation id="2487915095798731898">Συμμετοχή</translation>
 <translation id="2501920221385095727">Σταθερά πλήκτρα</translation>
 <translation id="2509468283778169019">Το CAPS LOCK είναι ενεργοποιημένο</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -548,6 +549,7 @@
 <translation id="3925540965556789199"><ph name="DATE" />, φόρτωση συμβάντων.</translation>
 <translation id="3932043219784172185">Δεν υπάρχει συνδεδεμένη συσκευή</translation>
 <translation id="3934456833412894880">Η προσαρμοστική φόρτιση είναι ενεργή. Η μπαταρία θα παραμένει στο 80% για την επέκταση της διάρκειας ζωής της και θα φορτίζει πλήρως όταν χρειάζεστε τη συσκευή.</translation>
+<translation id="3936620957945677513">Πατήστε Enter για συμμετοχή στην εκδήλωση <ph name="EVENT_SUMMARY" /></translation>
 <translation id="3943857333388298514">Επικόλληση</translation>
 <translation id="394485226368336402">Ρυθμίσεις ήχου</translation>
 <translation id="3945319193631853098">Πατήστε για να ολοκληρώσετε τη ρύθμιση</translation>

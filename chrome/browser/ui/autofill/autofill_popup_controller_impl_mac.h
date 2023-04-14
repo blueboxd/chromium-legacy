@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_MAC_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_MAC_H_
 
+#import <Cocoa/Cocoa.h>
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 
 @class WebTextfieldTouchBarController;

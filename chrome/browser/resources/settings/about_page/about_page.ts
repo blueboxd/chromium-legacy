@@ -363,7 +363,7 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
     this.aboutBrowserProxy_.openFeedbackDialog();
   }
 
-  private onGetTheMostOutOfChromeTap_() {
+  private onGetTheMostOutOfChromeClick_() {
     Router.getInstance().navigateTo(routes.GET_MOST_CHROME);
   }
   // </if>
